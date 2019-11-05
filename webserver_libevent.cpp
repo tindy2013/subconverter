@@ -206,6 +206,8 @@ int start_web_server_multi(void *argv)
         if (ret != 0)
             return -1;
     }
+    while(true)
+        sleep(10000); //block forever
 
     return 0;
 }

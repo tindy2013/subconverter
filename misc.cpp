@@ -4,7 +4,7 @@
 #include <thread>
 #include <sstream>
 #include <iosfwd>
-#include <filesystem>
+//#include <filesystem>
 #include <unistd.h>
 
 #include <rapidjson/document.h>
@@ -485,9 +485,9 @@ std::string fileGet(std::string path, bool binary)
 
 bool fileExist(std::string path)
 {
-    //using c++17 standard
-    return std::filesystem::exists(path);
-    //return _access(path.data(), 4) != -1;
+    //using c++17 standard, but may cause problem on clang
+    //return std::filesystem::exists(path);
+    return _access(path.data(), 4) != -1;
 }
 
 bool fileCopy(std::string source, std::string dest)

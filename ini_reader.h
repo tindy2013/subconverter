@@ -17,6 +17,9 @@ class INIReader
     *  to store sections and items, allowing access in logarithmic time.
     */
 private:
+    /**
+    *  @brief Internal parsed flag.
+    */
     bool parsed = false;
     std::string current_section;
     ini_data_struct ini_content;
@@ -127,8 +130,8 @@ public:
         std::string strLine, thisSection, curSection, itemName, itemVal;
         string_multimap itemGroup, existItemGroup;
         std::stringstream strStrm;
-        unsigned int lineSize = 0, epos = 0;
-        char delimiter = count(content.begin(), content.end(), '\n') <= 1 ? '\r' : '\n';
+        unsigned int lineSize = 0;
+        //char delimiter = count(content.begin(), content.end(), '\n') <= 1 ? '\r' : '\n';
 
         EraseAll(); //first erase all data
         if(do_utf8_to_gbk && is_str_utf8(content))
@@ -137,7 +140,8 @@ public:
         if(store_isolated_line)
             curSection = isolated_items_section; //items before any section define will be store in this section
         strStrm<<content;
-        while(getline(strStrm, strLine, delimiter)) //get one line of content
+        //while(getline(strStrm, strLine, delimiter))
+        while(getline(strStrm, strLine)) //get one line of content
         {
             lineSize = strLine.size();
             if(!lineSize || lineSize > MAX_LINE_LENGTH || strLine[0] == ';' || strLine[0] == '#') //empty lines, lines longer than MAX_LINE_LENGTH and comments are ignored
@@ -147,15 +151,14 @@ public:
                 strLine.replace(lineSize - 1, 0, "");
                 lineSize--;
             }
-            epos = strLine.find("=");
-            if(epos != strLine.npos) //is an item
+            if(strLine.find("=") != strLine.npos) //is an item
             {
                 if(inExcludedSection) //this section is excluded
                     continue;
                 if(!curSection.size()) //not in any section
                     return -1;
-                itemName = trim(strLine.substr(0, epos));
-                itemVal = trim(strLine.substr(epos + 1));
+                itemName = trim(strLine.substr(0, strLine.find("=")));
+                itemVal = trim(strLine.substr(strLine.find("=") + 1));
                 itemGroup.emplace(itemName, itemVal); //insert to current section
             }
             else if(strLine[0] == '[' && strLine[lineSize - 1] == ']') //is a section title
@@ -672,6 +675,27 @@ public:
     int EraseFirst(std::string itemName)
     {
         return current_section.size() ? EraseFirst(current_section, itemName) : -1;
+    }
+
+    /**
+    *  @brief Erase all items in the given section.
+    */
+    void EraseSection(std::string section)
+    {
+        if(ini_content.find(section) == ini_content.end())
+            return;
+        eraseElements(ini_content.at(section));
+        if(cached_section == section)
+            eraseElements(cached_section_content);
+    }
+
+    /**
+    *  @brief Erase all items in current section.
+    */
+    void EraseSection()
+    {
+        if(current_section.size())
+            EraseSection(current_section);
     }
 
     /**

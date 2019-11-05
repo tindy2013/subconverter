@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <mutex>
 
 #include <yaml-cpp/yaml.h>
 
@@ -21,16 +22,24 @@ int listen_port = 25500, max_pending_connections = 10, max_concurrent_threads = 
 bool api_mode = true, update_ruleset_on_request = false, overwrite_original_rules = true;
 extern std::string custom_group;
 
+//safety lock for multi-thread
+typedef std::lock_guard<std::mutex> guarded_mutex;
+std::mutex on_configuring;
+
 //preferences
 string_array renames, emojis;
 bool add_emoji = false, remove_old_emoji = false;
 
 //clash custom
-std::string clash_rule_base, clash_base_content;
+std::string clash_rule_base;
 string_array clash_extra_group;
+
+//surge custom
+std::string surge_rule_base;
 
 std::string refreshRulesets()
 {
+    guarded_mutex guard(on_configuring);
     eraseElements(ruleset_content_array);
     string_array vArray;
     std::string rule_group, rule_url, proxy = getSystemProxy();
@@ -70,6 +79,7 @@ std::string refreshRulesets()
 
 void readConf()
 {
+    guarded_mutex guard(on_configuring);
     eraseElements(def_exclude_remarks);
     eraseElements(def_include_remarks);
     eraseElements(clash_extra_group);
@@ -91,6 +101,8 @@ void readConf()
         ini.GetAll("include_remarks", def_exclude_remarks);
     if(ini.ItemExist("clash_rule_base"))
         clash_rule_base = ini.Get("clash_rule_base");
+    if(ini.ItemExist("surge_rule_base"))
+        surge_rule_base = ini.Get("surge_rule_base");
     if(ini.ItemPrefixExist("rename_node"))
         ini.GetAll("rename_node", renames);
 
@@ -138,6 +150,7 @@ void readConf()
 }
 
 std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &baseConf, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, bool clashR);
+std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, int surge_ver);
 
 int main()
 {
@@ -160,9 +173,17 @@ int main()
         return refreshRulesets();
     });
 
-    append_response("GET", "/clash", "text/plain;charset=utf-8", [](RESPONSE_CALLBACK_ARGS) -> std::string
+    append_response("GET", "/readconf", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
         readConf();
+        return "done";
+    });
+
+    append_response("GET", "/clash", "text/plain;charset=utf-8", [](RESPONSE_CALLBACK_ARGS) -> std::string
+    {
+        if(!api_mode)
+            readConf();
+        std::string clash_base_content;
         std::string url = UrlDecode(getUrlArg(argument, "url")), include = UrlDecode(getUrlArg(argument, "regex")), group = UrlDecode(getUrlArg(argument, "group"));
         if(!url.size()) url = default_url;
         string_array urls = split(url, "|");
@@ -190,7 +211,9 @@ int main()
 
     append_response("GET", "/clashr", "text/plain;charset=utf-8", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
-        readConf();
+        if(!api_mode)
+            readConf();
+        std::string clash_base_content;
         std::string url = UrlDecode(getUrlArg(argument, "url")), include = UrlDecode(getUrlArg(argument, "regex")), group = UrlDecode(getUrlArg(argument, "group"));
         if(!url.size()) url = default_url;
         string_array urls = split(url, "|");
@@ -232,7 +255,7 @@ int main()
 
     listener_args args = {listen_address, listen_port, 10240, 4};
     std::cout<<"Serving HTTP @ http://"<<listen_address<<":"<<listen_port<<std::endl;
-    start_web_server(&args);
+    start_web_server_multi(&args);
 
 #ifdef _WIN32
     WSACleanup();
