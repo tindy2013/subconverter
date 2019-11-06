@@ -7,7 +7,7 @@
 void operator >> (const rapidjson::Value& value, std::string& i);
 void operator >> (const rapidjson::Value& value, int& i);
 std::string GetMember(const rapidjson::Value& value, std::string member);
-void GetMember(const rapidjson::Value& value, std::string member, std::string* target);
+void GetMember(const rapidjson::Value& value, std::string member, std::string& target);
 std::string SerializeObject(const rapidjson::Value& value);
 
 #endif // RAPIDJSON_EXTRA_H_INCLUDED

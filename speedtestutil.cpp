@@ -163,7 +163,7 @@ void explodeVmess(std::string vmess, std::string custom_port, int local_port, no
     jsondata.Parse(vmess.data());
 
     version = "1"; //link without version will treat as version 1
-    GetMember(jsondata, "v", &version); //try to get version
+    GetMember(jsondata, "v", version); //try to get version
 
     jsondata["ps"] >> ps;
     jsondata["add"] >> add;
@@ -391,11 +391,11 @@ void explodeSSD(std::string link, bool libev, std::string custom_port, int local
         jsondata["encryption"] >> method;
         jsondata["password"] >> password;
         jsondata["servers"][i]["server"] >> server;
-        GetMember(jsondata["servers"][i], "plugin", &plugin);
-        GetMember(jsondata["servers"][i], "plugin_options", &pluginopts);
-        GetMember(jsondata["servers"][i], "encryption", &method);
-        GetMember(jsondata["servers"][i], "port", &port);
-        GetMember(jsondata["servers"][i], "password", &password);
+        GetMember(jsondata["servers"][i], "plugin", plugin);
+        GetMember(jsondata["servers"][i], "plugin_options", pluginopts);
+        GetMember(jsondata["servers"][i], "encryption", method);
+        GetMember(jsondata["servers"][i], "port", port);
+        GetMember(jsondata["servers"][i], "password", password);
 
         if(custom_port != "")
             port = custom_port;
@@ -1105,7 +1105,7 @@ bool explodeSurge(std::string surge, std::string custom_port, int local_port, st
                         plugin = "simple-obfs";
                         pluginopts_mode = itemVal;
                     }
-                    else if(itemVal == "obfs-host")
+                    else if(itemName == "obfs-host")
                         pluginopts_host = itemVal;
                 }
                 if(plugin != "")

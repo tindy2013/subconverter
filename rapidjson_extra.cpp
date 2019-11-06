@@ -40,11 +40,11 @@ std::string GetMember(const rapidjson::Value& value, std::string member)
     return retStr;
 }
 
-void GetMember(const rapidjson::Value& value, std::string member, std::string* target)
+void GetMember(const rapidjson::Value& value, std::string member, std::string& target)
 {
     std::string retStr = GetMember(value, member);
     if(retStr.size())
-        target->assign(retStr);
+        target.assign(retStr);
 }
 
 std::string SerializeObject(const rapidjson::Value& value)
