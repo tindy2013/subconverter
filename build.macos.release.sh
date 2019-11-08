@@ -6,15 +6,15 @@ brew reinstall yaml-cpp rapidjson libevent zlib
 
 git clone https://github.com/curl/curl
 cd curl
-./buildconf
+./buildconf > /dev/null
 ./configure --with-ssl=/usr/local/opt/openssl@1.1 --without-mbedtls --disable-ldap --disable-ldaps --disable-rtsp --without-libidn2 > /dev/null
-make -j8
+make -j8 > /dev/null
 cd ..
 
 curl -L -o bzip2-1.0.6.tar.gz https://sourceforge.net/projects/bzip2/files/bzip2-1.0.6.tar.gz/download
 tar xvf bzip2-1.0.6.tar.gz
 cd bzip2-1.0.6
-make -j8
+make -j8 > /dev/null
 cd ..
 
 cp /usr/local/lib/libevent.a .

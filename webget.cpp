@@ -55,3 +55,66 @@ std::string webGet(std::string url, std::string proxy)
 {
     return curlGet(url, proxy);
 }
+
+long curlPost(std::string url, std::string data, std::string proxy)
+{
+    CURL *curl_handle;
+    double retVal = 0.0;
+
+    CURLcode res = curl_global_init(CURL_GLOBAL_ALL);
+
+    curl_handle = curl_easy_init();
+
+    curl_easy_setopt(curl_handle, CURLOPT_URL, url.data());
+    curl_easy_setopt(curl_handle, CURLOPT_HEADER, 0L);
+    curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1L);
+    curl_easy_setopt(curl_handle, CURLOPT_NOSIGNAL, 1L);
+    curl_easy_setopt(curl_handle, CURLOPT_POST, 1L);
+    curl_easy_setopt(curl_handle, CURLOPT_POSTFIELDS, data.data());
+    curl_easy_setopt(curl_handle, CURLOPT_POSTFIELDSIZE, data.size());
+    curl_easy_setopt(curl_handle, CURLOPT_TIMEOUT, 10L);
+    curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 1L);
+    if(proxy != "")
+        curl_easy_setopt(curl_handle, CURLOPT_PROXY, proxy.data());
+
+    res = curl_easy_perform(curl_handle);
+
+    if(res == CURLE_OK)
+    {
+        res = curl_easy_getinfo(curl_handle, CURLINFO_SPEED_UPLOAD, &retVal);
+    }
+
+    curl_easy_cleanup(curl_handle);
+    curl_global_cleanup();
+    return retVal;
+}
+
+int curlPatch(std::string url, std::string data, std::string proxy)
+{
+    CURL *curl_handle;
+    int retVal = 0;
+
+    CURLcode res = curl_global_init(CURL_GLOBAL_ALL);
+
+    curl_handle = curl_easy_init();
+
+    curl_easy_setopt(curl_handle, CURLOPT_URL, url.data());
+    curl_easy_setopt(curl_handle, CURLOPT_HEADER, 0L);
+    curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1L);
+    curl_easy_setopt(curl_handle, CURLOPT_NOSIGNAL, 1L);
+    curl_easy_setopt(curl_handle, CURLOPT_CUSTOMREQUEST, "PATCH");
+    curl_easy_setopt(curl_handle, CURLOPT_POSTFIELDS, data.data());
+    curl_easy_setopt(curl_handle, CURLOPT_POSTFIELDSIZE, data.size());
+    curl_easy_setopt(curl_handle, CURLOPT_TIMEOUT, 10L);
+    curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 1L);
+    if(proxy != "")
+        curl_easy_setopt(curl_handle, CURLOPT_PROXY, proxy.data());
+
+    res = curl_easy_perform(curl_handle);
+    if(res != CURLE_OK)
+        retVal = -1;
+
+    curl_easy_cleanup(curl_handle);
+    curl_global_cleanup();
+    return retVal;
+}

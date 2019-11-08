@@ -14,6 +14,7 @@
 extern bool overwrite_original_rules;
 extern string_array renames, emojis;
 extern bool add_emoji, remove_old_emoji;
+extern bool api_mode;
 
 std::string vmessConstruct(std::string add, std::string port, std::string type, std::string id, std::string aid, std::string net, std::string cipher, std::string path, std::string host, std::string tls, int local_port)
 {
@@ -216,6 +217,67 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset
     base_rule["Rule"] = Rules;
 }
 
+void rulesetToSurge(INIReader &base_rule, string_array &ruleset_array, int surge_ver)
+{
+    string_array allRules, vArray;
+    std::string rule_group, rule_path, retrived_rules, strLine;
+    std::stringstream strStrm;
+
+    base_rule.SetCurrentSection("Rule");
+
+    if(overwrite_original_rules)
+        base_rule.EraseSection();
+
+    for(std::string &x : ruleset_array)
+    {
+        vArray = split(x, ",");
+        if(vArray.size() != 2)
+            continue;
+        rule_group = trim(vArray[0]);
+        rule_path = trim(vArray[1]);
+        if(rule_path.find("[]") == 0)
+        {
+            strLine = rule_path.substr(2);
+            if(strLine == "MATCH")
+                strLine = "FINAL";
+            allRules.emplace_back(strLine + "," + rule_group);
+            continue;
+        }
+        else
+        {
+            if(fileExist(rule_path))
+            {
+                if(api_mode)
+                    continue;
+                retrived_rules = fileGet(rule_path, false);
+                char delimiter = count(retrived_rules.begin(), retrived_rules.end(), '\n') <= 1 ? '\r' : '\n';
+
+                strStrm.clear();
+                strStrm<<retrived_rules;
+                while(getline(strStrm, strLine, delimiter))
+                {
+                    strLine = replace_all_distinct(strLine, "\r", ""); //remove line break
+                    if(!strLine.size() || strLine.find("#") == 0 || strLine.find(";") == 0) //remove comments
+                        continue;
+                    if(surge_ver < 4 && strLine.find("IP-CIDR") == 0)
+                        strLine = replace_all_distinct(strLine, ",no-resolve", "");
+                    strLine += "," + rule_group;
+                    allRules.emplace_back(strLine);
+                }
+            }
+            else
+            {
+                allRules.emplace_back("RULESET," + rule_path + "," + rule_group);
+            }
+        }
+    }
+
+    for(std::string &x : allRules)
+    {
+        base_rule.Set("{NONAME}", x);
+    }
+}
+
 std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &baseConf, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, bool clashR)
 {
     YAML::Node yamlnode, proxies, singleproxy, singlegroup, original_groups;
@@ -412,4 +474,155 @@ std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &baseConf, st
     rulesetToClash(yamlnode, ruleset_content_array);
 
     return to_string(yamlnode);
+}
+
+std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, string_array &ruleset_array, string_array &extra_proxy_group, int surge_ver)
+{
+    rapidjson::Document json;
+    INIReader ini;
+    std::string proxy;
+    std::string type, remark, hostname, port, username, password, method;
+    std::string plugin, pluginopts;
+    std::string id, aid, transproto, faketype, host, path, quicsecure, quicsecret;
+    std::string url;
+    std::vector<std::string> nodelist;
+    bool tlssecure;
+    string_array vArray, filtered_nodelist;
+
+    ini.store_any_line = true;
+    if(ini.Parse(base_conf) != 0)
+        return std::string();
+
+    ini.SetCurrentSection("Proxy");
+    ini.EraseSection();
+    ini.Set("DIRECT", "direct");
+    for(nodeInfo &x : nodes)
+    {
+        json.Parse(x.proxyStr.data());
+        type = GetMember(json, "Type");
+        remark = addEmoji(trim(removeEmoji(nodeRename(x.remarks))));
+        hostname = GetMember(json, "Hostname");
+        port = std::__cxx11::to_string((unsigned short)stoi(GetMember(json, "Port")));
+        username = GetMember(json, "Username");
+        password = GetMember(json, "Password");
+        method = GetMember(json, "EncryptMethod");
+        proxy = "";
+
+        if(type == "SS")
+        {
+            if(surge_ver >= 3)
+            {
+                plugin = GetMember(json, "Plugin");
+                pluginopts = GetMember(json, "PluginOption");
+                proxy = "ss," + hostname + "," + port + ",encrypt-method=" + method + ",password=" + password;
+                if(plugin.size() && pluginopts.size())
+                {
+                    proxy += "," + replace_all_distinct(pluginopts, ";", ",");
+                }
+            }
+            else
+            {
+                if(GetMember(json, "Plugin") == "")
+                {
+                    proxy = "custom,"  + hostname + "," + port + "," + method + "," + password + ",https://github.com/ConnersHua/SSEncrypt/raw/master/SSEncrypt.module";
+                }
+                else
+                    continue;
+            }
+
+        }
+        else if(type == "VMess")
+        {
+            if(surge_ver < 4)
+                continue;
+            id = GetMember(json, "UserID");
+            aid = GetMember(json, "AlterID");
+            transproto = GetMember(json, "TransferProtocol");
+            host = GetMember(json, "Host");
+            path = GetMember(json, "Path");
+            tlssecure = GetMember(json, "TLSSecure") == "true";
+            proxy = "vmess," + hostname + "," + port + "," + method + ",username=" + id + ",tls=" + (tlssecure ? "true" : "false");
+            if(transproto == "ws")
+            {
+                proxy += ",ws=true,ws-path=" + path;
+            }
+            else if(transproto == "kcp" || transproto == "h2" || transproto == "quic")
+                continue;
+        }
+        else if(type == "Socks5")
+        {
+            proxy = "socks5," + hostname + "," + port;
+            if(username != "" && password != "")
+                proxy += "," + username + "," + password;
+        }
+        else if(type == "HTTP" || type == "HTTPS")
+        {
+            proxy = "http," + hostname + "," + port;
+            if(username != "" && password != "")
+                proxy += "," + username + "," + password;
+            proxy += std::string(",tls=") + (type == "HTTPS" ? "true" : "false");
+        }
+        else
+            continue;
+        ini.Set(remark, proxy);
+        nodelist.emplace_back(remark);
+    }
+
+    ini.SetCurrentSection("Proxy Group");
+    for(std::string &x : extra_proxy_group)
+    {
+        eraseElements(filtered_nodelist);
+        unsigned int rules_upper_bound = 0;
+        url = "";
+        proxy = "";
+
+        vArray = split(x, "`");
+        if(vArray.size() < 3)
+            continue;
+
+        if(vArray[1] == "select")
+        {
+            rules_upper_bound = vArray.size();
+        }
+        else if(vArray[1] == "url-test" || vArray[1] == "fallback" || vArray[1] == "load-balance")
+        {
+            if(vArray.size() < 5)
+                continue;
+            rules_upper_bound = vArray.size() - 2;
+            url = vArray[vArray.size() - 2];
+        }
+        else
+            continue;
+
+        for(unsigned int i = 2; i < rules_upper_bound; i++)
+        {
+            if(vArray[i].find("[]") == 0)
+            {
+                filtered_nodelist.emplace_back(vArray[i].substr(2));
+            }
+            else
+            {
+                for(std::string &y : nodelist)
+                {
+                    if(regFind(y, vArray[i]) && std::find(filtered_nodelist.begin(), filtered_nodelist.end(), y) == filtered_nodelist.end())
+                        filtered_nodelist.emplace_back(y);
+                }
+            }
+        }
+
+        if(!filtered_nodelist.size())
+            filtered_nodelist.emplace_back("DIRECT");
+
+        proxy = vArray[1];
+        for(std::string &x : filtered_nodelist)
+            proxy += "," + x;
+        if(vArray[1] == "url-test" || vArray[1] == "fallback" || vArray[1] == "load-balance")
+            proxy += ",url=" + url;
+
+        ini.Set("{NONAME}", vArray[0] + " = " + proxy); //insert order
+    }
+
+    rulesetToSurge(ini, ruleset_array, surge_ver);
+
+    return ini.ToString();
 }

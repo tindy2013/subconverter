@@ -1486,9 +1486,10 @@ void explodeSub(std::string sub, bool sslibev, bool ssrlibev, std::string custom
     std::string strLink;
     nodeInfo node;
 
-    //try to parse as surge configuration
-    if(explodeSurge(sub, custom_port, local_port, nodes, sslibev))
+    //try to parse as SSD configuration
+    if(strFind(sub, "ssd://"))
     {
+        explodeSSD(sub, sslibev, custom_port, local_port, nodes);
         return;
     }
 
@@ -1510,10 +1511,9 @@ void explodeSub(std::string sub, bool sslibev, bool ssrlibev, std::string custom
         //ignore
     }
 
-    //try to parse as SSD configuration
-    if(strFind(sub, "ssd://"))
+    //try to parse as surge configuration
+    if(explodeSurge(sub, custom_port, local_port, nodes, sslibev))
     {
-        explodeSSD(sub, sslibev, custom_port, local_port, nodes);
         return;
     }
 

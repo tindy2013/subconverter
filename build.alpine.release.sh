@@ -9,18 +9,18 @@ git clone https://github.com/curl/curl
 cd curl
 ./buildconf
 ./configure --with-ssl --disable-ldap --disable-ldaps --disable-rtsp --without-libidn2 > /dev/null
-make install -j4
+make install -j4 > /dev/null
 cd ..
 
 git clone https://github.com/jbeder/yaml-cpp
 cd yaml-cpp
-cmake .
-make install -j4
+cmake . > /dev/null
+make install -j4 > /dev/null
 cd ..
 
 git clone git://sourceware.org/git/bzip2.git
 cd bzip2
-make install -j4
+make install -j4 > /dev/null
 cd ..
 
 g++ -Wall -std=c++17 -fexceptions -DCURL_STATICLIB -c logger.cpp -o obj\logger.o

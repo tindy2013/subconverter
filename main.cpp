@@ -150,7 +150,7 @@ void readConf()
 }
 
 std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &baseConf, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, bool clashR);
-std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, int surge_ver);
+std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, string_array &ruleset_array, string_array &extra_proxy_group, int surge_ver);
 
 int main()
 {
@@ -237,6 +237,39 @@ int main()
         if(update_ruleset_on_request)
             refreshRulesets();
         return netchToClash(nodes, clash_base_content, ruleset_content_array, clash_extra_group, true);
+    });
+
+    append_response("GET", "/surge", "text/plain;charset=utf-8", [](RESPONSE_CALLBACK_ARGS) -> std::string
+    {
+        if(!api_mode)
+            readConf();
+        std::string surge_base_content;
+        std::string url = UrlDecode(getUrlArg(argument, "url")), include = UrlDecode(getUrlArg(argument, "regex")), group = UrlDecode(getUrlArg(argument, "group"));
+        int surge_ver = stoi(getUrlArg(argument, "ver"));
+        if(!url.size()) url = default_url;
+        string_array urls = split(url, "|");
+        std::vector<nodeInfo> nodes;
+        if(include.size())
+        {
+            eraseElements(def_include_remarks);
+            def_include_remarks.emplace_back(include);
+        }
+        if(group.size()) custom_group = group;
+        for(std::string &x : urls)
+        {
+            std::cerr<<"Fetching node data from url '"<<x<<"'. Generate target: Surge "<<surge_ver<<std::endl;
+            addNodes(x, nodes);
+        }
+        if(fileExist(surge_rule_base))
+        {
+            surge_base_content = fileGet(surge_rule_base, false);
+        }
+        else
+            surge_base_content = webGet(surge_rule_base, getSystemProxy());
+
+        if(update_ruleset_on_request)
+            refreshRulesets();
+        return netchToSurge(nodes, surge_base_content, rulesets, clash_extra_group, surge_ver);
     });
 
     if(!api_mode)
