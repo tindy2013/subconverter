@@ -188,6 +188,7 @@ int main()
         if(!url.size()) url = default_url;
         string_array urls = split(url, "|");
         std::vector<nodeInfo> nodes;
+        int groupID = 0;
         if(include.size())
         {
             eraseElements(def_include_remarks);
@@ -197,7 +198,8 @@ int main()
         for(std::string &x : urls)
         {
             std::cerr<<"Fetching node data from url '"<<x<<"'. Generate target: Clash"<<std::endl;
-            addNodes(x, nodes);
+            addNodes(x, nodes, groupID);
+            groupID++;
         }
         if(fileExist(clash_rule_base))
             clash_base_content = fileGet(clash_rule_base, false);
@@ -218,6 +220,7 @@ int main()
         if(!url.size()) url = default_url;
         string_array urls = split(url, "|");
         std::vector<nodeInfo> nodes;
+        int groupID = 0;
         if(include.size())
         {
             eraseElements(def_include_remarks);
@@ -227,7 +230,8 @@ int main()
         for(std::string &x : urls)
         {
             std::cerr<<"Fetching node data from url '"<<x<<"'. Generate target: ClashR"<<std::endl;
-            addNodes(x, nodes);
+            addNodes(x, nodes, groupID);
+            groupID++;
         }
         if(fileExist(clash_rule_base))
             clash_base_content = fileGet(clash_rule_base, false);
@@ -249,6 +253,7 @@ int main()
         if(!url.size()) url = default_url;
         string_array urls = split(url, "|");
         std::vector<nodeInfo> nodes;
+        int groupID = 0;
         if(include.size())
         {
             eraseElements(def_include_remarks);
@@ -258,12 +263,11 @@ int main()
         for(std::string &x : urls)
         {
             std::cerr<<"Fetching node data from url '"<<x<<"'. Generate target: Surge "<<surge_ver<<std::endl;
-            addNodes(x, nodes);
+            addNodes(x, nodes, groupID);
+            groupID++;
         }
         if(fileExist(surge_rule_base))
-        {
             surge_base_content = fileGet(surge_rule_base, false);
-        }
         else
             surge_base_content = webGet(surge_rule_base, getSystemProxy());
 
@@ -286,7 +290,7 @@ int main()
         });
     }
 
-    listener_args args = {listen_address, listen_port, 10240, 4};
+    listener_args args = {listen_address, listen_port, max_pending_connections, max_concurrent_threads};
     std::cout<<"Serving HTTP @ http://"<<listen_address<<":"<<listen_port<<std::endl;
     start_web_server_multi(&args);
 

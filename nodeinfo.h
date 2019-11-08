@@ -6,7 +6,8 @@
 struct nodeInfo
 {
     int linkType = -1;
-    int id = 0;
+    int id = -1;
+    int groupID = -1;
     std::string group;
     std::string remarks;
     std::string server;

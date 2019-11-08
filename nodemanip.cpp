@@ -11,6 +11,7 @@
 std::string override_conf_port, custom_group;
 int socksport;
 bool ss_libev, ssr_libev;
+extern bool api_mode;
 
 void copyNodes(std::vector<nodeInfo> *source, std::vector<nodeInfo> *dest)
 {
@@ -20,7 +21,7 @@ void copyNodes(std::vector<nodeInfo> *source, std::vector<nodeInfo> *dest)
     }
 }
 
-void addNodes(std::string link, std::vector<nodeInfo> &allNodes)
+void addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID)
 {
     int linkType = -1;
     std::vector<nodeInfo> nodes;
@@ -67,6 +68,8 @@ void addNodes(std::string link, std::vector<nodeInfo> &allNodes)
         {
             writeLog(LOG_TYPE_INFO, "Parsing subscription data...");
             explodeConfContent(strSub, override_conf_port, socksport, ss_libev, ssr_libev, nodes);
+            for(nodeInfo &x : nodes)
+                x.groupID = groupID;
             copyNodes(&nodes, &allNodes);
         }
         else
@@ -75,6 +78,8 @@ void addNodes(std::string link, std::vector<nodeInfo> &allNodes)
         }
         break;
     case SPEEDTEST_MESSAGE_FOUNDLOCAL:
+        if(api_mode)
+            break;
         writeLog(LOG_TYPE_INFO, "Parsing configuration file data...");
         if(explodeConf(link, override_conf_port, socksport, ss_libev, ssr_libev, nodes) == SPEEDTEST_ERROR_UNRECOGFILE)
         {
@@ -82,6 +87,8 @@ void addNodes(std::string link, std::vector<nodeInfo> &allNodes)
         }
         else
         {
+            for(nodeInfo &x : nodes)
+                x.groupID = groupID;
             copyNodes(&nodes, &allNodes);
         }
         break;
@@ -97,6 +104,7 @@ void addNodes(std::string link, std::vector<nodeInfo> &allNodes)
             }
             else
             {
+                node.groupID = groupID;
                 allNodes.push_back(node);
             }
         }

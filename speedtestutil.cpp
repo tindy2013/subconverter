@@ -165,19 +165,19 @@ void explodeVmess(std::string vmess, std::string custom_port, int local_port, no
     version = "1"; //link without version will treat as version 1
     GetMember(jsondata, "v", version); //try to get version
 
-    jsondata["ps"] >> ps;
-    jsondata["add"] >> add;
-    jsondata["type"] >> type;
-    jsondata["id"] >> id;
-    jsondata["aid"] >> aid;
-    jsondata["net"] >> net;
-    jsondata["tls"] >> tls;
+    GetMember(jsondata, "ps", ps);
+    GetMember(jsondata, "add", add);
+    GetMember(jsondata, "type", type);
+    GetMember(jsondata, "id", id);
+    GetMember(jsondata, "aid", aid);
+    GetMember(jsondata, "net", net);
+    GetMember(jsondata, "tls", tls);
     if(custom_port != "")
         port = custom_port;
     else
-        jsondata["port"] >> port;
+        GetMember(jsondata, "port", port);
 
-    jsondata["host"] >> host;
+    GetMember(jsondata, "host", host);
     if(version == "1")
     {
         if(host != "")
@@ -872,24 +872,12 @@ void explodeClash(Node yamlnode, std::string custom_port, int local_port, std::v
             yamlnode["Proxy"][i]["password"] >> password;
             if(yamlnode["Proxy"][i]["plugin"].IsDefined())
             {
-                if(yamlnode["Proxy"][i]["plugin"].as<std::string>() == "obfs")
+                yamlnode["Proxy"][i]["plugin"] >> plugin;
+                if(yamlnode["Proxy"][i]["plugin-opts"].IsDefined())
                 {
-                    plugin = "simple-obfs";
-                    if(yamlnode["Proxy"][i]["plugin-opts"].IsDefined())
-                    {
-                        yamlnode["Proxy"][i]["plugin-opts"]["mode"] >> pluginopts_mode;
-                        if(yamlnode["Proxy"][i]["plugin-opts"]["host"].IsDefined())
-                            yamlnode["Proxy"][i]["plugin-opts"]["host"] >> pluginopts_host;
-                    }
-                }
-            }
-            else if(yamlnode["Proxy"][i]["obfs"].IsDefined())
-            {
-                plugin = "simple-obfs";
-                yamlnode["Proxy"][i]["obfs"] >> pluginopts_mode;
-                if(yamlnode["Proxy"][i]["obfs-host"].IsDefined())
-                {
-                    yamlnode["Proxy"][i]["obfs-host"] >> pluginopts_host;
+                    yamlnode["Proxy"][i]["plugin-opts"]["mode"] >> pluginopts_mode;
+                    if(yamlnode["Proxy"][i]["plugin-opts"]["host"].IsDefined())
+                        yamlnode["Proxy"][i]["plugin-opts"]["host"] >> pluginopts_host;
                 }
             }
             else

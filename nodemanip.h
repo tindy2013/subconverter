@@ -6,6 +6,6 @@
 
 #include "nodeinfo.h"
 
-void addNodes(std::string link, std::vector<nodeInfo> &allNodes);
+void addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID);
 
 #endif // NODEMANIP_H_INCLUDED

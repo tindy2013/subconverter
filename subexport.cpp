@@ -286,7 +286,8 @@ std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &baseConf, st
     std::string plugin, pluginopts;
     std::string protocol, protoparam, obfs, obfsparam;
     std::string id, aid, transproto, faketype, host, path, quicsecure, quicsecret;
-    std::vector<std::string> nodelist;
+    std::vector<nodeInfo> nodelist;
+    std::string group;
     bool tlssecure, replace_flag;
     string_array vArray, filtered_nodelist;
 
@@ -305,7 +306,7 @@ std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &baseConf, st
         singleproxy.reset();
         json.Parse(x.proxyStr.data());
         type = GetMember(json, "Type");
-        remark = addEmoji(trim(removeEmoji(nodeRename(x.remarks))));
+        remark = x.remarks = addEmoji(trim(removeEmoji(nodeRename(x.remarks))));
         hostname = GetMember(json, "Hostname");
         port = GetMember(json, "Port");
         username = GetMember(json, "Username");
@@ -378,7 +379,7 @@ std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &baseConf, st
         singleproxy["server"] = hostname;
         singleproxy["port"] = (unsigned short)stoi(port);
         proxies.push_back(singleproxy);
-        nodelist.emplace_back(remark);
+        nodelist.emplace_back(x);
     }
 
     yamlnode["Proxy"] = proxies;
@@ -439,12 +440,30 @@ std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &baseConf, st
             {
                 filtered_nodelist.emplace_back(vArray[i].substr(2));
             }
+            else if(vArray[i].find("!!GROUP=") == 0)
+            {
+                group = vArray[i].substr(8);
+                for(nodeInfo &y : nodelist)
+                {
+                    if(regFind(y.group, group) && std::find(filtered_nodelist.begin(), filtered_nodelist.end(), y.remarks) == filtered_nodelist.end())
+                        filtered_nodelist.emplace_back(y.remarks);
+                }
+            }
+            else if(vArray[i].find("!!GROUPID=") == 0)
+            {
+                group = vArray[i].substr(10);
+                for(nodeInfo &y : nodelist)
+                {
+                    if(y.groupID == stoi(group) && std::find(filtered_nodelist.begin(), filtered_nodelist.end(), y.remarks) == filtered_nodelist.end())
+                        filtered_nodelist.emplace_back(y.remarks);
+                }
+            }
             else
             {
-                for(std::string &y : nodelist)
+                for(nodeInfo &y : nodelist)
                 {
-                    if(regFind(y, vArray[i]) && std::find(filtered_nodelist.begin(), filtered_nodelist.end(), y) == filtered_nodelist.end())
-                        filtered_nodelist.emplace_back(y);
+                    if(regFind(y.remarks, vArray[i]) && std::find(filtered_nodelist.begin(), filtered_nodelist.end(), y.remarks) == filtered_nodelist.end())
+                        filtered_nodelist.emplace_back(y.remarks);
                 }
             }
         }
@@ -484,8 +503,8 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
     std::string type, remark, hostname, port, username, password, method;
     std::string plugin, pluginopts;
     std::string id, aid, transproto, faketype, host, path, quicsecure, quicsecret;
-    std::string url;
-    std::vector<std::string> nodelist;
+    std::string url, group;
+    std::vector<nodeInfo> nodelist;
     bool tlssecure;
     string_array vArray, filtered_nodelist;
 
@@ -500,7 +519,7 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
     {
         json.Parse(x.proxyStr.data());
         type = GetMember(json, "Type");
-        remark = addEmoji(trim(removeEmoji(nodeRename(x.remarks))));
+        remark = x.remarks = addEmoji(trim(removeEmoji(nodeRename(x.remarks))));
         hostname = GetMember(json, "Hostname");
         port = std::__cxx11::to_string((unsigned short)stoi(GetMember(json, "Port")));
         username = GetMember(json, "Username");
@@ -565,7 +584,7 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
         else
             continue;
         ini.Set(remark, proxy);
-        nodelist.emplace_back(remark);
+        nodelist.emplace_back(x);
     }
 
     ini.SetCurrentSection("Proxy Group");
@@ -600,12 +619,30 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
             {
                 filtered_nodelist.emplace_back(vArray[i].substr(2));
             }
+            else if(vArray[i].find("!!GROUP=") == 0)
+            {
+                group = vArray[i].substr(8);
+                for(nodeInfo &y : nodelist)
+                {
+                    if(regFind(y.group, group) && std::find(filtered_nodelist.begin(), filtered_nodelist.end(), y.remarks) == filtered_nodelist.end())
+                        filtered_nodelist.emplace_back(y.remarks);
+                }
+            }
+            else if(vArray[i].find("!!GROUPID=") == 0)
+            {
+                group = vArray[i].substr(10);
+                for(nodeInfo &y : nodelist)
+                {
+                    if(y.groupID == stoi(group) && std::find(filtered_nodelist.begin(), filtered_nodelist.end(), y.remarks) == filtered_nodelist.end())
+                        filtered_nodelist.emplace_back(y.remarks);
+                }
+            }
             else
             {
-                for(std::string &y : nodelist)
+                for(nodeInfo &y : nodelist)
                 {
-                    if(regFind(y, vArray[i]) && std::find(filtered_nodelist.begin(), filtered_nodelist.end(), y) == filtered_nodelist.end())
-                        filtered_nodelist.emplace_back(y);
+                    if(regFind(y.remarks, vArray[i]) && std::find(filtered_nodelist.begin(), filtered_nodelist.end(), y.remarks) == filtered_nodelist.end())
+                        filtered_nodelist.emplace_back(y.remarks);
                 }
             }
         }
