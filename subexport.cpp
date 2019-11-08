@@ -267,7 +267,7 @@ void rulesetToSurge(INIReader &base_rule, string_array &ruleset_array, int surge
             }
             else
             {
-                allRules.emplace_back("RULESET," + rule_path + "," + rule_group);
+                allRules.emplace_back("RULE-SET," + rule_path + "," + rule_group);
             }
         }
     }

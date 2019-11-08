@@ -128,7 +128,8 @@ std::string UrlDecode(const std::string& str)
             strTemp += ' ';
         else if (str[i] == '%')
         {
-            assert(i + 2 < length);
+            if(i + 2 < length)
+                return strTemp;
             unsigned char high = FromHex((unsigned char)str[++i]);
             unsigned char low = FromHex((unsigned char)str[++i]);
             strTemp += high * 16 + low;

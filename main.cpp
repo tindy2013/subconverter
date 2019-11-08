@@ -248,8 +248,7 @@ int main()
         if(!api_mode)
             readConf();
         std::string surge_base_content;
-        std::string url = UrlDecode(getUrlArg(argument, "url")), include = UrlDecode(getUrlArg(argument, "regex")), group = UrlDecode(getUrlArg(argument, "group"));
-        int surge_ver = stoi(getUrlArg(argument, "ver"));
+        std::string url = UrlDecode(getUrlArg(argument, "url")), include = UrlDecode(getUrlArg(argument, "regex")), group = UrlDecode(getUrlArg(argument, "group")), version = getUrlArg(argument, "ver");        int surge_ver = version.size() ? stoi(version) : 3;
         if(!url.size()) url = default_url;
         string_array urls = split(url, "|");
         std::vector<nodeInfo> nodes;
