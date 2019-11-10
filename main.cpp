@@ -149,9 +149,6 @@ void readConf()
     remarksInit(def_exclude_remarks, def_include_remarks);
 }
 
-std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &baseConf, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, bool clashR);
-std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, string_array &ruleset_array, string_array &extra_proxy_group, int surge_ver);
-
 int main()
 {
 #ifdef _WIN32
@@ -248,7 +245,8 @@ int main()
         if(!api_mode)
             readConf();
         std::string surge_base_content;
-        std::string url = UrlDecode(getUrlArg(argument, "url")), include = UrlDecode(getUrlArg(argument, "regex")), group = UrlDecode(getUrlArg(argument, "group")), version = getUrlArg(argument, "ver");        int surge_ver = version.size() ? stoi(version) : 3;
+        std::string url = UrlDecode(getUrlArg(argument, "url")), include = UrlDecode(getUrlArg(argument, "regex")), group = UrlDecode(getUrlArg(argument, "group")), version = getUrlArg(argument, "ver");
+        int surge_ver = version.size() ? stoi(version) : 3;
         if(!url.size()) url = default_url;
         string_array urls = split(url, "|");
         std::vector<nodeInfo> nodes;
@@ -270,9 +268,151 @@ int main()
         else
             surge_base_content = webGet(surge_rule_base, getSystemProxy());
 
-        if(update_ruleset_on_request)
-            refreshRulesets();
         return netchToSurge(nodes, surge_base_content, rulesets, clash_extra_group, surge_ver);
+    });
+
+    append_response("GET", "/ss", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
+    {
+        if(!api_mode)
+            readConf();
+        std::string url = UrlDecode(getUrlArg(argument, "url")), include = UrlDecode(getUrlArg(argument, "regex"));
+        if(!url.size()) url = default_url;
+        string_array urls = split(url, "|");
+        std::vector<nodeInfo> nodes;
+        int groupID = 0;
+        if(include.size())
+        {
+            eraseElements(def_include_remarks);
+            def_include_remarks.emplace_back(include);
+        }
+        for(std::string &x : urls)
+        {
+            std::cerr<<"Fetching node data from url '"<<x<<"'. Generate target: SIP002"<<std::endl;
+            addNodes(x, nodes, groupID);
+            groupID++;
+        }
+
+        return netchToSS(nodes);
+    });
+
+    append_response("GET", "/ssr", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
+    {
+        if(!api_mode)
+            readConf();
+        std::string url = UrlDecode(getUrlArg(argument, "url")), include = UrlDecode(getUrlArg(argument, "regex"));
+        if(!url.size()) url = default_url;
+        string_array urls = split(url, "|");
+        std::vector<nodeInfo> nodes;
+        int groupID = 0;
+        if(include.size())
+        {
+            eraseElements(def_include_remarks);
+            def_include_remarks.emplace_back(include);
+        }
+        for(std::string &x : urls)
+        {
+            std::cerr<<"Fetching node data from url '"<<x<<"'. Generate target: SSR"<<std::endl;
+            addNodes(x, nodes, groupID);
+            groupID++;
+        }
+
+        return netchToSSR(nodes);
+    });
+
+    append_response("GET", "/v2rayn", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
+    {
+        if(!api_mode)
+            readConf();
+        std::string url = UrlDecode(getUrlArg(argument, "url")), include = UrlDecode(getUrlArg(argument, "regex"));
+        if(!url.size()) url = default_url;
+        string_array urls = split(url, "|");
+        std::vector<nodeInfo> nodes;
+        int groupID = 0;
+        if(include.size())
+        {
+            eraseElements(def_include_remarks);
+            def_include_remarks.emplace_back(include);
+        }
+        for(std::string &x : urls)
+        {
+            std::cerr<<"Fetching node data from url '"<<x<<"'. Generate target: VMess"<<std::endl;
+            addNodes(x, nodes, groupID);
+            groupID++;
+        }
+
+        return netchToVMess(nodes);
+    });
+
+    append_response("GET", "/v2rayq", "text/plain;charset=utf-8", [](RESPONSE_CALLBACK_ARGS) -> std::string
+    {
+        if(!api_mode)
+            readConf();
+        std::string url = UrlDecode(getUrlArg(argument, "url")), include = UrlDecode(getUrlArg(argument, "regex"));
+        if(!url.size()) url = default_url;
+        string_array urls = split(url, "|");
+        std::vector<nodeInfo> nodes;
+        int groupID = 0;
+        if(include.size())
+        {
+            eraseElements(def_include_remarks);
+            def_include_remarks.emplace_back(include);
+        }
+        for(std::string &x : urls)
+        {
+            std::cerr<<"Fetching node data from url '"<<x<<"'. Generate target: VMess"<<std::endl;
+            addNodes(x, nodes, groupID);
+            groupID++;
+        }
+
+        return netchToQuan(nodes);
+    });
+
+    append_response("GET", "/quanx", "text/plain;charset=utf-8", [](RESPONSE_CALLBACK_ARGS) -> std::string
+    {
+        if(!api_mode)
+            readConf();
+        std::string url = UrlDecode(getUrlArg(argument, "url")), include = UrlDecode(getUrlArg(argument, "regex"));
+        if(!url.size()) url = default_url;
+        string_array urls = split(url, "|");
+        std::vector<nodeInfo> nodes;
+        int groupID = 0;
+        if(include.size())
+        {
+            eraseElements(def_include_remarks);
+            def_include_remarks.emplace_back(include);
+        }
+        for(std::string &x : urls)
+        {
+            std::cerr<<"Fetching node data from url '"<<x<<"'. Generate target: Quantumult X"<<std::endl;
+            addNodes(x, nodes, groupID);
+            groupID++;
+        }
+
+        return netchToQuanX(nodes);
+    });
+
+    append_response("GET", "/ssd", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
+    {
+        if(!api_mode)
+            readConf();
+        std::string url = UrlDecode(getUrlArg(argument, "url")), include = UrlDecode(getUrlArg(argument, "regex")), group = UrlDecode(getUrlArg(argument, "group"));
+        if(!url.size()) url = default_url;
+        string_array urls = split(url, "|");
+        std::vector<nodeInfo> nodes;
+        int groupID = 0;
+        if(include.size())
+        {
+            eraseElements(def_include_remarks);
+            def_include_remarks.emplace_back(include);
+        }
+        for(std::string &x : urls)
+        {
+            std::cerr<<"Fetching node data from url '"<<x<<"'. Generate target: SSD"<<std::endl;
+            addNodes(x, nodes, groupID);
+            groupID++;
+        }
+
+        return netchToSSD(nodes, group);
     });
 
     if(!api_mode)

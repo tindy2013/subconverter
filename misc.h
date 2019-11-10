@@ -20,6 +20,7 @@ static const std::string base64_chars =
              "abcdefghijklmnopqrstuvwxyz"
              "0123456789+/";
 
+std::string UrlEncode(const std::string& str);
 std::string UrlDecode(const std::string& str);
 std::string base64_decode(std::string encoded_string);
 std::string base64_encode(std::string string_to_encode);
@@ -29,6 +30,7 @@ std::string getUrlArg(std::string url, std::string request);
 std::string replace_all_distinct(std::string str, std::string old_value, std::string new_value);
 std::string urlsafe_base64_reverse(std::string encoded_string);
 std::string urlsafe_base64_decode(std::string encoded_string);
+std::string urlsafe_base64_encode(std::string string_to_encode);
 std::string UTF8ToGBK(std::string str_src);
 std::string GBKToUTF8(std::string str_src);
 std::string trim(const std::string& str);

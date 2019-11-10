@@ -5,6 +5,7 @@
 #include "yamlcpp_extra.h"
 #include "webget.h"
 #include "subexport.h"
+#include "printout.h"
 
 #include <iostream>
 #include <rapidjson/writer.h>
@@ -18,6 +19,8 @@ extern bool api_mode;
 
 std::string vmessConstruct(std::string add, std::string port, std::string type, std::string id, std::string aid, std::string net, std::string cipher, std::string path, std::string host, std::string tls, int local_port)
 {
+    if(path == "")
+        path = "/";
     rapidjson::StringBuffer sb;
     rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
     writer.StartObject();
@@ -112,6 +115,37 @@ std::string ssConstruct(std::string server, std::string port, std::string passwo
     writer.String(plugin.data());
     writer.Key("PluginOption");
     writer.String(pluginopts.data());
+    writer.EndObject();
+    return sb.GetString();
+}
+
+std::string vmessLinkConstruct(std::string remarks, std::string add, std::string port, std::string type, std::string id, std::string aid, std::string net, std::string path, std::string host, std::string tls)
+{
+    rapidjson::StringBuffer sb;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
+    writer.StartObject();
+    writer.Key("v");
+    writer.String("2");
+    writer.Key("ps");
+    writer.String(remarks.data());
+    writer.Key("add");
+    writer.String(add.data());
+    writer.Key("port");
+    writer.Int(stoi(port));
+    writer.Key("type");
+    writer.String(type.data());
+    writer.Key("id");
+    writer.String(id.data());
+    writer.Key("aid");
+    writer.Int(stoi(aid));
+    writer.Key("net");
+    writer.String(net.data());
+    writer.Key("path");
+    writer.String(path.data());
+    writer.Key("host");
+    writer.String(host.data());
+    writer.Key("tls");
+    writer.String(tls.data());
     writer.EndObject();
     return sb.GetString();
 }
@@ -662,4 +696,265 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
     rulesetToSurge(ini, ruleset_array, surge_ver);
 
     return ini.ToString();
+}
+
+std::string netchToSS(std::vector<nodeInfo> &nodes)
+{
+    rapidjson::Document json;
+    std::string remark, hostname, port, password, method;
+    std::string plugin, pluginopts;
+    std::string proxyStr, allLinks;
+    for(nodeInfo &x : nodes)
+    {
+        json.Parse(x.proxyStr.data());
+        remark = x.remarks = addEmoji(trim(removeEmoji(nodeRename(x.remarks))));
+        hostname = GetMember(json, "Hostname");
+        port = std::__cxx11::to_string((unsigned short)stoi(GetMember(json, "Port")));
+        password = GetMember(json, "Password");
+        method = GetMember(json, "EncryptMethod");
+        plugin = GetMember(json, "Plugin");
+        pluginopts = GetMember(json, "PluginOption");
+
+        switch(x.linkType)
+        {
+        case SPEEDTEST_MESSAGE_FOUNDSS:
+            proxyStr = "ss://" + urlsafe_base64_encode(method + ":" + password + "@" + hostname + ":" + port);
+            if(plugin.size() & pluginopts.size())
+            {
+                proxyStr += "/?plugin=" + UrlEncode(plugin + ";" +pluginopts);
+            }
+            proxyStr += "#" + UrlEncode(remark);
+            break;
+        default:
+            continue;
+        }
+        allLinks += proxyStr + "\n";
+    }
+
+    return base64_encode(allLinks);
+}
+
+std::string netchToSSR(std::vector<nodeInfo> &nodes)
+{
+    rapidjson::Document json;
+    std::string remark, hostname, port, password, method;
+    std::string protocol, protoparam, obfs, obfsparam;
+    std::string proxyStr, allLinks;
+    for(nodeInfo &x : nodes)
+    {
+        json.Parse(x.proxyStr.data());
+        remark = x.remarks = addEmoji(trim(removeEmoji(nodeRename(x.remarks))));
+        hostname = GetMember(json, "Hostname");
+        port = std::__cxx11::to_string((unsigned short)stoi(GetMember(json, "Port")));
+        password = GetMember(json, "Password");
+        method = GetMember(json, "EncryptMethod");
+        protocol = GetMember(json, "Protocol");
+        protoparam = GetMember(json, "ProtocolParam");
+        obfs = GetMember(json, "OBFS");
+        obfsparam = GetMember(json, "OBFSParam");
+
+        switch(x.linkType)
+        {
+        case SPEEDTEST_MESSAGE_FOUNDSSR:
+            proxyStr = "ssr://" + urlsafe_base64_encode(hostname + ":" + port + ":" + protocol + ":" + method + ":" + obfs + ":" + urlsafe_base64_encode(password) \
+                       + "/?group=" + urlsafe_base64_encode(x.group) + "&remarks=" + urlsafe_base64_encode(remark) \
+                       + "&obfsparam=" + urlsafe_base64_encode(obfsparam) + "&protoparam=" + urlsafe_base64_encode(protoparam));
+            break;
+        default:
+            continue;
+        }
+        allLinks += proxyStr + "\n";
+    }
+
+    return base64_encode(allLinks);
+}
+
+std::string netchToVMess(std::vector<nodeInfo> &nodes)
+{
+    rapidjson::Document json;
+    std::string remark, hostname, port, method;
+    std::string id, aid, transproto, faketype, host, path, quicsecure, quicsecret;
+    std::string proxyStr, allLinks;
+    bool tlssecure;
+    for(nodeInfo &x : nodes)
+    {
+        json.Parse(x.proxyStr.data());
+        remark = x.remarks = addEmoji(trim(removeEmoji(nodeRename(x.remarks))));
+        hostname = GetMember(json, "Hostname");
+        port = std::__cxx11::to_string((unsigned short)stoi(GetMember(json, "Port")));
+        method = GetMember(json, "EncryptMethod");
+        id = GetMember(json, "UserID");
+        aid = GetMember(json, "AlterID");
+        transproto = GetMember(json, "TransferProtocol");
+        host = GetMember(json, "Host");
+        path = GetMember(json, "Path");
+        faketype = GetMember(json, "FakeType");
+        tlssecure = GetMember(json, "TLSSecure") == "true";
+
+        switch(x.linkType)
+        {
+        case SPEEDTEST_MESSAGE_FOUNDVMESS:
+            proxyStr = "vmess://" + base64_encode(vmessLinkConstruct(remark, hostname, port, faketype, id, aid, transproto, path, host, tlssecure ? "tls" : ""));
+            break;
+        default:
+            continue;
+        }
+        allLinks += proxyStr + "\n";
+    }
+
+    return base64_encode(allLinks);
+}
+
+std::string netchToQuan(std::vector<nodeInfo> &nodes)
+{
+    rapidjson::Document json;
+    std::string remark, hostname, port, method;
+    std::string id, aid, transproto, faketype, host, path, quicsecure, quicsecret;
+    std::string proxyStr, allLinks;
+    bool tlssecure;
+    for(nodeInfo &x : nodes)
+    {
+        json.Parse(x.proxyStr.data());
+        remark = x.remarks = addEmoji(trim(removeEmoji(nodeRename(x.remarks))));
+        hostname = GetMember(json, "Hostname");
+        port = std::__cxx11::to_string((unsigned short)stoi(GetMember(json, "Port")));
+        method = GetMember(json, "EncryptMethod");
+        id = GetMember(json, "UserID");
+        aid = GetMember(json, "AlterID");
+        transproto = GetMember(json, "TransferProtocol");
+        host = GetMember(json, "Host");
+        path = GetMember(json, "Path");
+        faketype = GetMember(json, "FakeType");
+        tlssecure = GetMember(json, "TLSSecure") == "true";
+
+        switch(x.linkType)
+        {
+        case SPEEDTEST_MESSAGE_FOUNDVMESS:
+            if(method == "auto")
+                method = "chacha20-ietf-poly1305";
+            proxyStr = remark + " = vmess, " + hostname + ", " + port + ", " + method + ", \"" + id + "\", group=" + x.group;
+            if(transproto == "ws")
+                proxyStr += ", obfs=ws, obfs-path=" + path + ", obfs-header=\"Host: " + host + "\"";
+            if(tlssecure)
+                proxyStr += ", over-tls=true, tls-host=" + host;
+            break;
+        default:
+            continue;
+        }
+        allLinks += "vmess://" + urlsafe_base64_encode(proxyStr) + "\n";
+    }
+
+    return allLinks;
+}
+
+std::string netchToQuanX(std::vector<nodeInfo> &nodes)
+{
+    rapidjson::Document json;
+    std::string remark, hostname, port, method;
+    std::string password, plugin, pluginopts;
+    std::string id, aid, transproto, host, path;
+    std::string proxyStr, allLinks;
+    for(nodeInfo &x : nodes)
+    {
+        json.Parse(x.proxyStr.data());
+        remark = x.remarks = addEmoji(trim(removeEmoji(nodeRename(x.remarks))));
+        hostname = GetMember(json, "Hostname");
+        port = std::__cxx11::to_string((unsigned short)stoi(GetMember(json, "Port")));
+        method = GetMember(json, "EncryptMethod");
+
+        switch(x.linkType)
+        {
+        case SPEEDTEST_MESSAGE_FOUNDVMESS:
+            id = GetMember(json, "UserID");
+            transproto = GetMember(json, "TransferProtocol");
+            host = GetMember(json, "Host");
+            path = GetMember(json, "Path");
+            if(method == "auto")
+                method = "chacha20-ietf-poly1305";
+            proxyStr = "vmess = " + hostname + ":" + port + ", method=" + method + ", password=" + id;
+            if(transproto == "ws")
+                proxyStr += ", obfs=ws, obfs-host=" + host + ", obfs-uri=" + path;
+            break;
+        case SPEEDTEST_MESSAGE_FOUNDSS:
+            password = GetMember(json, "Password");
+            plugin = GetMember(json, "Plugin");
+            pluginopts = GetMember(json, "PluginOption");
+            proxyStr = "shadowsocks = " + hostname + ":" + port + ", method=" + method + ", password=" + password;
+            if(plugin.size() && pluginopts.size())
+                proxyStr += ", " + replace_all_distinct(pluginopts, ";", ", ");
+            break;
+        default:
+            continue;
+        }
+        proxyStr += ", tag=" + remark;
+        allLinks += proxyStr + "\n";
+    }
+
+    return allLinks;
+}
+
+std::string netchToSSD(std::vector<nodeInfo> &nodes, std::string &group)
+{
+    rapidjson::Document json;
+    rapidjson::StringBuffer sb;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
+    std::string remark, hostname, password, method;
+    std::string plugin, pluginopts;
+    std::string proxyStr, allLinks;
+    int port, index = 0;
+    if(!group.size())
+        group = "SSD";
+
+    writer.StartObject();
+    writer.Key("airport");
+    writer.String(group.data());
+    writer.Key("port");
+    writer.Int(1);
+    writer.Key("encryption");
+    writer.String("aes-128-gcm");
+    writer.Key("password");
+    writer.String("password");
+    writer.Key("servers");
+    writer.StartArray();
+
+    for(nodeInfo &x : nodes)
+    {
+        switch(x.linkType)
+        {
+        case SPEEDTEST_MESSAGE_FOUNDSS:
+            json.Parse(x.proxyStr.data());
+            remark = x.remarks = addEmoji(trim(removeEmoji(nodeRename(x.remarks))));
+            hostname = GetMember(json, "Hostname");
+            port = (unsigned short)stoi(GetMember(json, "Port"));
+            password = GetMember(json, "Password");
+            method = GetMember(json, "EncryptMethod");
+            plugin = GetMember(json, "Plugin");
+            pluginopts = GetMember(json, "PluginOption");
+            writer.StartObject();
+            writer.Key("server");
+            writer.String(hostname.data());
+            writer.Key("port");
+            writer.Int(port);
+            writer.Key("encryption");
+            writer.String(method.data());
+            writer.Key("password");
+            writer.String(password.data());
+            writer.Key("plugin");
+            writer.String(plugin.data());
+            writer.Key("plugin_options");
+            writer.String(pluginopts.data());
+            writer.Key("remarks");
+            writer.String(remark.data());
+            writer.Key("id");
+            writer.Int(index);
+            writer.EndObject();
+            break;
+        default:
+            continue;
+        }
+        index++;
+    }
+    writer.EndArray();
+    writer.EndObject();
+    return "ssd://" + base64_encode(sb.GetString());
 }

@@ -104,6 +104,11 @@ void StringToWstring(std::wstring& szDst, std::string str)
 }
 #endif // _WIN32
 
+unsigned char ToHex(unsigned char x)
+{
+    return  x > 9 ? x + 55 : x + 48;
+}
+
 unsigned char FromHex(unsigned char x)
 {
     unsigned char y = '\0';
@@ -116,6 +121,30 @@ unsigned char FromHex(unsigned char x)
     else
         assert(0);
     return y;
+}
+
+std::string UrlEncode(const std::string& str)
+{
+    std::string strTemp = "";
+    size_t length = str.length();
+    for (size_t i = 0; i < length; i++)
+    {
+        if (isalnum((unsigned char)str[i]) ||
+            (str[i] == '-') ||
+            (str[i] == '_') ||
+            (str[i] == '.') ||
+            (str[i] == '~'))
+            strTemp += str[i];
+        else if (str[i] == ' ')
+            strTemp += "+";
+        else
+        {
+            strTemp += '%';
+            strTemp += ToHex((unsigned char)str[i] >> 4);
+            strTemp += ToHex((unsigned char)str[i] % 16);
+        }
+    }
+    return strTemp;
 }
 
 std::string UrlDecode(const std::string& str)
@@ -445,6 +474,11 @@ std::string urlsafe_base64_reverse(std::string encoded_string)
 std::string urlsafe_base64_decode(std::string encoded_string)
 {
     return base64_decode(urlsafe_base64_reverse(encoded_string));
+}
+
+std::string urlsafe_base64_encode(std::string string_to_encode)
+{
+    return replace_all_distinct(replace_all_distinct(base64_encode(string_to_encode), "+", "-"), "/", "_");
 }
 
 std::string getMD5(std::string data)
