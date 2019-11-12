@@ -1251,7 +1251,7 @@ bool explodeSurge(std::string surge, std::string custom_port, int local_port, st
         nodes.push_back(node);
         index++;
     }
-    return true;
+    return index;
 }
 
 void explodeSSTap(std::string sstap, std::string custom_port, int local_port, std::vector<nodeInfo> &nodes, bool ss_libev, bool ssr_libev)

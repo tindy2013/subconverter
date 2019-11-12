@@ -129,7 +129,7 @@ public:
         string_multimap itemGroup, existItemGroup;
         std::stringstream strStrm;
         unsigned int lineSize = 0;
-        //char delimiter = count(content.begin(), content.end(), '\n') <= 1 ? '\r' : '\n';
+        char delimiter = count(content.begin(), content.end(), '\n') <= 1 ? '\r' : '\n';
 
         EraseAll(); //first erase all data
         if(do_utf8_to_gbk && is_str_utf8(content))
@@ -138,8 +138,8 @@ public:
         if(store_isolated_line)
             curSection = isolated_items_section; //items before any section define will be store in this section
         strStrm<<content;
-        //while(getline(strStrm, strLine, delimiter))
-        while(getline(strStrm, strLine)) //get one line of content
+        while(getline(strStrm, strLine, delimiter))
+        //while(getline(strStrm, strLine)) //get one line of content
         {
             lineSize = strLine.size();
             if(!lineSize || strLine[0] == ';' || strLine[0] == '#') //empty lines and comments are ignored
