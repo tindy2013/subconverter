@@ -125,7 +125,7 @@ std::string socksConstruct(std::string remarks, std::string server, std::string 
     rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
     writer.StartObject();
     writer.Key("Type");
-    writer.String("Socks");
+    writer.String("Socks5");
     writer.Key("Remark");
     writer.String(remarks.data());
     writer.Key("Hostname");
@@ -417,7 +417,7 @@ std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &baseConf, st
         }
         else if(type == "Socks5")
         {
-            singleproxy["type"] = "socks";
+            singleproxy["type"] = "socks5";
             singleproxy["username"] = username;
         }
         else if(type == "HTTP" || type == "HTTPS")
