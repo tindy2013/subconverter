@@ -119,6 +119,27 @@ std::string ssConstruct(std::string server, std::string port, std::string passwo
     return sb.GetString();
 }
 
+std::string socksConstruct(std::string remarks, std::string server, std::string port, std::string username, std::string password)
+{
+    rapidjson::StringBuffer sb;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
+    writer.StartObject();
+    writer.Key("Type");
+    writer.String("Socks");
+    writer.Key("Remark");
+    writer.String(remarks.data());
+    writer.Key("Hostname");
+    writer.String(server.data());
+    writer.Key("Port");
+    writer.Int(stoi(port));
+    writer.Key("Username");
+    writer.String(username.data());
+    writer.Key("Password");
+    writer.String(password.data());
+    writer.EndObject();
+    return sb.GetString();
+}
+
 std::string vmessLinkConstruct(std::string remarks, std::string add, std::string port, std::string type, std::string id, std::string aid, std::string net, std::string path, std::string host, std::string tls)
 {
     rapidjson::StringBuffer sb;
@@ -333,7 +354,6 @@ std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &baseConf, st
     {
         return std::string();
     }
-
 
     for(nodeInfo &x : nodes)
     {
@@ -853,6 +873,7 @@ std::string netchToQuanX(std::vector<nodeInfo> &nodes)
     std::string remark, hostname, port, method;
     std::string password, plugin, pluginopts;
     std::string id, aid, transproto, host, path;
+    std::string protocol, protoparam, obfs, obfsparam;
     std::string proxyStr, allLinks;
     for(nodeInfo &x : nodes)
     {
@@ -882,6 +903,19 @@ std::string netchToQuanX(std::vector<nodeInfo> &nodes)
             proxyStr = "shadowsocks = " + hostname + ":" + port + ", method=" + method + ", password=" + password;
             if(plugin.size() && pluginopts.size())
                 proxyStr += ", " + replace_all_distinct(pluginopts, ";", ", ");
+            break;
+        case SPEEDTEST_MESSAGE_FOUNDSSR:
+            password = GetMember(json, "Password");
+            protocol = GetMember(json, "Protocol");
+            protoparam = GetMember(json, "ProtocolParam");
+            obfs = GetMember(json, "OBFS");
+            obfsparam = GetMember(json, "OBFSParam");
+            proxyStr = "shadowsocks = " + hostname + ":" + port + ", method=" + method + ", password=" + password + ", ssr-protocol=" + protocol;
+            if(protoparam.size())
+                proxyStr += ", ssr-protocol-param=" + protoparam;
+            proxyStr += ", obfs=" + obfs;
+            if(obfsparam.size())
+                proxyStr += ", obfs-host=" + obfsparam;
             break;
         default:
             continue;

@@ -37,6 +37,28 @@ string_array clash_extra_group;
 //surge custom
 std::string surge_rule_base;
 
+void setcd(char *argv[])
+{
+    #ifndef _WIN32
+	std::string path, prgpath;
+	char szTmp[1024];
+	prgpath.assign(argv[0]);
+	if(prgpath[0] == '/')
+	{
+		path = prgpath.substr(0, prgpath.rfind("/") + 1);
+	}
+	else
+	{
+		getcwd(szTmp, 1023);
+		path.append(szTmp);
+		path.append("/");
+		path.append(argv[0]);
+		path = path.substr(0, path.rfind("/") + 1);
+	}
+    chdir(path.data());
+    #endif // _WIN32
+}
+
 std::string refreshRulesets()
 {
     guarded_mutex guard(on_configuring);
@@ -157,7 +179,7 @@ void readConf()
     std::cerr<<"Read preference settings completed."<<std::endl;
 }
 
-int main()
+int main(int argc, char *argv[])
 {
 #ifdef _WIN32
     WSADATA wsaData;
@@ -169,6 +191,7 @@ int main()
     SetConsoleOutputCP(65001);
 #endif // _WIN32
 
+    setcd(argv);
     readConf();
     if(!update_ruleset_on_request)
         refreshRulesets();

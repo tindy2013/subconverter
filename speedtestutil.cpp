@@ -138,7 +138,13 @@ std::string ssConstruct(std::string server, std::string port, std::string passwo
 
     return base;
 }
+
+std::string socksConstruct(std::string remarks, std::string server, std::string port, std::string username, std::string password)
+{
+    return "user=" + username + "&pass=" + password;
+}
 */
+
 void explodeVmess(std::string vmess, std::string custom_port, int local_port, nodeInfo &node)
 {
     std::string version, ps, add, port, type, id, aid, net, path, host, tls;
@@ -297,7 +303,8 @@ void explodeVmessConf(std::string content, std::string custom_port, int local_po
         case 4: //socks config
             group = SOCKS_DEFAULT_GROUP;
             node.linkType = SPEEDTEST_MESSAGE_FOUNDSOCKS;
-            node.proxyStr = "user=&pass=";
+            node.proxyStr = socksConstruct(ps, add, port, "", "");
+            break;
         default:
             continue;
         }
@@ -697,7 +704,7 @@ void explodeSocks(std::string link, std::string custom_port, nodeInfo &node)
     node.remarks = remarks;
     node.server = server;
     node.port = stoi(port);
-    node.proxyStr = "user=" + username + "&pass=" + password;
+    node.proxyStr = socksConstruct(remarks, server, port, username, password);
 }
 
 void explodeQuan(std::string quan, std::string custom_port, int local_port, nodeInfo &node)
@@ -817,7 +824,7 @@ void explodeNetch(std::string netch, bool ss_libev, bool ssr_libev, std::string 
         username = GetMember(json, "Username");
         node.linkType = SPEEDTEST_MESSAGE_FOUNDSOCKS;
         node.group = SOCKS_DEFAULT_GROUP;
-        node.proxyStr = "user=" + username + "&pass=" + password;
+        node.proxyStr = socksConstruct(remark, address, port, username, password);
     }
     else
         return;
@@ -919,7 +926,7 @@ void explodeClash(Node yamlnode, std::string custom_port, int local_port, std::v
             }
 
             node.linkType = SPEEDTEST_MESSAGE_FOUNDSOCKS;
-            node.proxyStr = "user=" + user + "&pass=" + password;
+            node.proxyStr = socksConstruct(ps, server, port, user, password);
         }
         else if(proxytype == "ssr")
         {
@@ -1036,8 +1043,10 @@ void explodeKitsunebiNew(std::string kit, std::string custom_port, int local_por
 
 bool explodeSurge(std::string surge, std::string custom_port, int local_port, std::vector<nodeInfo> &nodes, bool libev)
 {
-    std::string line, remarks, server, port, method, username, password, plugin, pluginopts, pluginopts_mode, pluginopts_host = "cloudfront.net", mod_url, mod_md5;
-    std::string id, net, tls, host, path;
+    std::string line, remarks, server, port, method, username, password; //common
+    std::string plugin, pluginopts, pluginopts_mode, pluginopts_host = "cloudfront.net", mod_url, mod_md5; //ss
+    std::string id, net, tls, host, path; //v2
+    std::string protocol, protoparam; //ssr
     std::string itemName, itemVal;
     std::stringstream data;
     std::vector<std::string> configs, vArray, headers, header;
@@ -1160,7 +1169,7 @@ bool explodeSurge(std::string surge, std::string custom_port, int local_port, st
                 username = trim(configs[2]);
                 password = trim(configs[3]);
             }
-            node.proxyStr = "user=" + username + "&pass=" + password;
+            node.proxyStr = socksConstruct(remarks, server, port, username, password);
         }
         else if(configs[0] == "vmess") //surge 4 style vmess proxy
         {
@@ -1207,11 +1216,11 @@ bool explodeSurge(std::string surge, std::string custom_port, int local_port, st
             node.group = V2RAY_DEFAULT_GROUP;
             node.proxyStr = vmessConstruct(server, port, "", id, "0", net, method, path, host, tls, local_port);
         }
-        else if(remarks == "shadowsocks") //quantumult style ss link
+        else if(remarks == "shadowsocks") //quantumult style ss/ssr link
         {
             server = trim(configs[0].substr(0, configs[0].rfind(":")));
             port = custom_port == "" ? trim(configs[0].substr(configs[0].rfind(":") + 1)) : custom_port;
-            plugin = remarks = "";
+            plugin = protocol = remarks = "";
 
             for(i = 1; i < configs.size(); i++)
             {
@@ -1224,13 +1233,38 @@ bool explodeSurge(std::string surge, std::string custom_port, int local_port, st
                     password = vArray[1];
                 else if(vArray[0] == "tag")
                     remarks = vArray[1];
+                else if(vArray[0] == "ssr-protocol")
+                    protocol = vArray[1];
+                else if(vArray[0] == "ssr-protocol-param")
+                    protoparam = vArray[1];
+                else if(vArray[0] == "obfs")
+                {
+                    plugin = "simple-obfs";
+                    pluginopts_mode = vArray[1];
+                }
+                else if(vArray[0] == "obfs-host")
+                    pluginopts_host = vArray[1];
             }
             if(remarks == "")
                 remarks = server + ":" + port;
+            if(plugin != "")
+            {
+                pluginopts = "obfs=" + pluginopts_mode;
+                pluginopts += pluginopts_host == "" ? "" : ";obfs-host=" + pluginopts_host;
+            }
 
-            node.linkType = SPEEDTEST_MESSAGE_FOUNDSS;
-            node.group = SS_DEFAULT_GROUP;
-            node.proxyStr = ssConstruct(server, port, password, method, plugin, pluginopts, remarks, local_port, libev);
+            if(protocol.size())
+            {
+                node.linkType = SPEEDTEST_MESSAGE_FOUNDSSR;
+                node.group = SSR_DEFAULT_GROUP;
+                node.proxyStr = ssrConstruct(node.group, remarks, base64_encode(remarks), server, port, protocol, method, pluginopts_mode, password, pluginopts_host, protoparam, local_port, libev);
+            }
+            else
+            {
+                node.linkType = SPEEDTEST_MESSAGE_FOUNDSS;
+                node.group = SS_DEFAULT_GROUP;
+                node.proxyStr = ssConstruct(server, port, password, method, plugin, pluginopts, remarks, local_port, libev);
+            }
         }
         else
             continue;
@@ -1281,7 +1315,7 @@ void explodeSSTap(std::string sstap, std::string custom_port, int local_port, st
         {
             json["configs"][i]["username"] >> user;
             node.linkType = SPEEDTEST_MESSAGE_FOUNDSOCKS;
-            node.proxyStr = "user=" + user + "&pass=" + pass;
+            node.proxyStr = socksConstruct(remarks, server, port, user, pass);
         }
         else if(configType == "6") //ss/ssr
         {
