@@ -212,11 +212,11 @@ int start_web_server_multi(void *argv)
     return 0;
 }
 
-void append_response(std::string type, std::string request, std::string content_type, response_callback response)
+void append_response(std::string method, std::string uri, std::string content_type, response_callback response)
 {
     responseRoute rr;
-    rr.method = type;
-    rr.path = request;
+    rr.method = method;
+    rr.path = uri;
     rr.content_type = content_type;
     rr.rc = response;
     responses.emplace_back(rr);

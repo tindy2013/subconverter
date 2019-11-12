@@ -46,11 +46,17 @@ std::string refreshRulesets()
     ruleset_content rc;
     for(std::string &x : rulesets)
     {
+        /*
         vArray = split(x, ",");
         if(vArray.size() != 2)
             continue;
         rule_group = trim(vArray[0]);
         rule_url = trim(vArray[1]);
+        */
+        if(x.find(",") == x.npos)
+            continue;
+        rule_group = trim(x.substr(0, x.find(",")));
+        rule_url = trim(x.substr(x.find(",") + 1));
         if(rule_url.find("[]") == 0)
         {
             std::cerr<<"Adding rule '"<<rule_url.substr(2)<<","<<rule_group<<"'."<<std::endl;
@@ -80,6 +86,7 @@ std::string refreshRulesets()
 void readConf()
 {
     guarded_mutex guard(on_configuring);
+    std::cerr<<"Reading preference settings..."<<std::endl;
     eraseElements(def_exclude_remarks);
     eraseElements(def_include_remarks);
     eraseElements(clash_extra_group);
@@ -147,6 +154,7 @@ void readConf()
         max_concurrent_threads = ini.GetInt("max_concurrent_threads");
 
     remarksInit(def_exclude_remarks, def_include_remarks);
+    std::cerr<<"Read preference settings completed."<<std::endl;
 }
 
 int main()

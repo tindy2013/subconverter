@@ -5,8 +5,6 @@
 #include <vector>
 #include <algorithm>
 
-#define MAX_LINE_LENGTH 4096
-
 typedef std::map<std::string, std::multimap<std::string, std::string>> ini_data_struct;
 typedef std::multimap<std::string, std::string> string_multimap;
 
@@ -144,7 +142,7 @@ public:
         while(getline(strStrm, strLine)) //get one line of content
         {
             lineSize = strLine.size();
-            if(!lineSize || lineSize > MAX_LINE_LENGTH || strLine[0] == ';' || strLine[0] == '#') //empty lines, lines longer than MAX_LINE_LENGTH and comments are ignored
+            if(!lineSize || strLine[0] == ';' || strLine[0] == '#') //empty lines and comments are ignored
                 continue;
             if(strLine[lineSize - 1] == '\r') //remove line break
             {

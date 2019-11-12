@@ -13,7 +13,7 @@ struct listener_args
     int max_workers;
 };
 
-void append_response(std::string type, std::string request, std::string content_type, response_callback response);
+void append_response(std::string method, std::string uri, std::string content_type, response_callback response);
 int start_web_server(void *argv);
 int start_web_server_multi(void *argv);
 

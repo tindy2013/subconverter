@@ -880,6 +880,13 @@ void explodeClash(Node yamlnode, std::string custom_port, int local_port, std::v
                         yamlnode["Proxy"][i]["plugin-opts"]["host"] >> pluginopts_host;
                 }
             }
+            else if(yamlnode["Proxy"][i]["obfs"].IsDefined())
+            {
+                plugin = "simple-obfs";
+                yamlnode["Proxy"][i]["obfs"] >> pluginopts_mode;
+                if(yamlnode["Proxy"][i]["plugin-opts"]["obfs-host"].IsDefined())
+                    yamlnode["Proxy"][i]["obfs-host"] >> pluginopts_host;
+            }
             else
                 plugin = "";
 
