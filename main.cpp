@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <mutex>
+#include <unistd.h>
 
 #include <yaml-cpp/yaml.h>
 
