@@ -478,7 +478,7 @@ std::string urlsafe_base64_decode(std::string encoded_string)
 
 std::string urlsafe_base64_encode(std::string string_to_encode)
 {
-    return replace_all_distinct(replace_all_distinct(base64_encode(string_to_encode), "+", "-"), "/", "_");
+    return replace_all_distinct(replace_all_distinct(replace_all_distinct(base64_encode(string_to_encode), "+", "-"), "/", "_"), "=", "");
 }
 
 std::string getMD5(std::string data)

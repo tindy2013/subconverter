@@ -2,7 +2,6 @@
 #include "speedtestutil.h"
 #include "ini_reader.h"
 #include "rapidjson_extra.h"
-#include "yamlcpp_extra.h"
 #include "webget.h"
 #include "subexport.h"
 #include "printout.h"
@@ -245,7 +244,7 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset
             allRules.emplace_back(retrived_rules.substr(2) + "," + rule_group);
             continue;
         }
-        char delimiter = count(retrived_rules.begin(), retrived_rules.end(), '\n') <= 1 ? '\r' : '\n';
+        char delimiter = count(retrived_rules.begin(), retrived_rules.end(), '\n') < 1 ? '\r' : '\n';
 
         strStrm.clear();
         strStrm<<retrived_rules;
@@ -305,7 +304,7 @@ void rulesetToSurge(INIReader &base_rule, string_array &ruleset_array, int surge
                 if(api_mode)
                     continue;
                 retrived_rules = fileGet(rule_path, false);
-                char delimiter = count(retrived_rules.begin(), retrived_rules.end(), '\n') <= 1 ? '\r' : '\n';
+                char delimiter = count(retrived_rules.begin(), retrived_rules.end(), '\n') < 1 ? '\r' : '\n';
 
                 strStrm.clear();
                 strStrm<<retrived_rules;
@@ -527,7 +526,7 @@ std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &baseConf, st
 
         singlegroup["name"] = vArray[0];
         singlegroup["type"] = vArray[1];
-        singlegroup["proxies"] = vectorToNode(filtered_nodelist);
+        singlegroup["proxies"] = filtered_nodelist;
 
         for(unsigned int i = 0; i < original_groups.size(); i++)
         {
@@ -828,7 +827,9 @@ std::string netchToVMess(std::vector<nodeInfo> &nodes)
 std::string netchToQuan(std::vector<nodeInfo> &nodes)
 {
     rapidjson::Document json;
-    std::string remark, hostname, port, method;
+    std::string remark, hostname, port, method, password;
+    std::string plugin, pluginopts;
+    std::string protocol, protoparam, obfs, obfsparam;
     std::string id, aid, transproto, faketype, host, path, quicsecure, quicsecret;
     std::string proxyStr, allLinks;
     bool tlssecure;
@@ -839,17 +840,19 @@ std::string netchToQuan(std::vector<nodeInfo> &nodes)
         hostname = GetMember(json, "Hostname");
         port = std::__cxx11::to_string((unsigned short)stoi(GetMember(json, "Port")));
         method = GetMember(json, "EncryptMethod");
-        id = GetMember(json, "UserID");
-        aid = GetMember(json, "AlterID");
-        transproto = GetMember(json, "TransferProtocol");
-        host = GetMember(json, "Host");
-        path = GetMember(json, "Path");
-        faketype = GetMember(json, "FakeType");
-        tlssecure = GetMember(json, "TLSSecure") == "true";
+        password = GetMember(json, "Password");
 
         switch(x.linkType)
         {
         case SPEEDTEST_MESSAGE_FOUNDVMESS:
+            id = GetMember(json, "UserID");
+            aid = GetMember(json, "AlterID");
+            transproto = GetMember(json, "TransferProtocol");
+            host = GetMember(json, "Host");
+            path = GetMember(json, "Path");
+            faketype = GetMember(json, "FakeType");
+            tlssecure = GetMember(json, "TLSSecure") == "true";
+
             if(method == "auto")
                 method = "chacha20-ietf-poly1305";
             proxyStr = remark + " = vmess, " + hostname + ", " + port + ", " + method + ", \"" + id + "\", group=" + x.group;
@@ -857,11 +860,32 @@ std::string netchToQuan(std::vector<nodeInfo> &nodes)
                 proxyStr += ", obfs=ws, obfs-path=" + path + ", obfs-header=\"Host: " + host + "\"";
             if(tlssecure)
                 proxyStr += ", over-tls=true, tls-host=" + host;
+            proxyStr = "vmess://" + urlsafe_base64_encode(proxyStr);
+            break;
+        case SPEEDTEST_MESSAGE_FOUNDSSR:
+            protocol = GetMember(json, "Protocol");
+            protoparam = GetMember(json, "ProtocolParam");
+            obfs = GetMember(json, "OBFS");
+            obfsparam = GetMember(json, "OBFSParam");
+
+            proxyStr = "ssr://" + urlsafe_base64_encode(hostname + ":" + port + ":" + protocol + ":" + method + ":" + obfs + ":" + urlsafe_base64_encode(password) \
+                       + "/?group=" + urlsafe_base64_encode(x.group) + "&remarks=" + urlsafe_base64_encode(remark) \
+                       + "&obfsparam=" + urlsafe_base64_encode(obfsparam) + "&protoparam=" + urlsafe_base64_encode(protoparam));
+            break;
+        case SPEEDTEST_MESSAGE_FOUNDSS:
+            plugin = GetMember(json, "Plugin");
+            pluginopts = GetMember(json, "PluginOption");
+            proxyStr = "ss://" + urlsafe_base64_encode(method + ":" + password + "@" + hostname + ":" + port);
+            if(plugin.size() & pluginopts.size())
+            {
+                proxyStr += "/?plugin=" + UrlEncode(plugin + ";" +pluginopts);
+            }
+            proxyStr += "&group=" + urlsafe_base64_encode(x.group) + "#" + UrlEncode(remark);
             break;
         default:
             continue;
         }
-        allLinks += "vmess://" + urlsafe_base64_encode(proxyStr) + "\n";
+        allLinks += proxyStr + "\n";
     }
 
     return allLinks;
@@ -991,4 +1015,98 @@ std::string netchToSSD(std::vector<nodeInfo> &nodes, std::string &group)
     writer.EndArray();
     writer.EndObject();
     return "ssd://" + base64_encode(sb.GetString());
+}
+
+std::string buildGistData(std::string name, std::string content)
+{
+    rapidjson::StringBuffer sb;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
+    writer.StartObject();
+    writer.Key("description");
+    writer.String("subconverter");
+    writer.Key("public");
+    writer.Bool(false);
+    writer.Key("files");
+    writer.StartObject();
+    writer.Key(name.data());
+    writer.StartObject();
+    writer.Key("content");
+    writer.String(content.data());
+    writer.EndObject();
+    writer.EndObject();
+    writer.EndObject();
+    return sb.GetString();
+}
+
+int uploadGist(std::string path, std::string content, bool writeManageURL)
+{
+    INIReader ini;
+    rapidjson::Document json;
+    std::string token, id, username, retData, url;
+    int retVal = 0;
+
+    if(!fileExist("gistconf.ini"))
+    {
+        std::cerr<<"gistconf.ini not found. Skipping...\n";
+        return -1;
+    }
+
+    ini.ParseFile("gistconf.ini");
+    if(ini.EnterSection("common") == 0)
+    {
+        token = ini.Get("token");
+        if(!token.size())
+        {
+            std::cerr<<"No token is provided. Skipping...\n";
+            return -1;
+        }
+        id = ini.Get("id");
+        username = ini.Get("username");
+        if(!id.size())
+        {
+            std::cerr<<"No gist id is provided. Creating new gist...\n";
+            retVal = curlPost("https://api.github.com/gists", buildGistData(path, content), "", token, &retData);
+            if(retVal != 201)
+            {
+                std::cerr<<"Create new Gist failed! Return data:\n"<<retData<<"\n";
+                return -1;
+            }
+        }
+        else
+        {
+            url = ini.Get(path, "url");
+            if(!url.size())
+                url = "https://gist.githubusercontent.com/" + username + "/" + id + "/raw/" + path;
+            std::cerr<<"Gist id provided. Modifying gist...\n";
+            if(writeManageURL)
+                content = "#!MANAGED-CONFIG "+ url + "\n" + content;
+            retVal = curlPatch("https://api.github.com/gists/" + id, buildGistData(path, content), "", token, &retData);
+            if(retVal != 200)
+            {
+                std::cerr<<"Modify gist failed! Return data:\n"<<retData<<"\n";
+                return -1;
+            }
+        }
+        json.Parse(retData.data());
+        GetMember(json, "id", id);
+        if(json.HasMember("owner"))
+            GetMember(json["owner"], "login", username);
+        std::cerr<<"Writing to Gist success!\nPath: "<<path<<"\nRaw URL: "<<url<<"\nGist owner: "<<username<<"\n";
+    }
+    else
+    {
+        std::cerr<<"gistconf.ini has incorrect format. Skipping...\n";
+        return -1;
+    }
+    ini.EraseSection();
+    ini.Set("token", token);
+    ini.Set("id", id);
+    ini.Set("username", username);
+
+    ini.SetCurrentSection(path);
+    ini.EraseSection();
+    ini.Set("url", url);
+
+    ini.ToFile("gistconf.ini");
+    return 0;
 }

@@ -12,7 +12,8 @@
 std::string webGet(std::string url, std::string proxy = "");
 std::string httpGet(std::string host, std::string addr, std::string uri);
 std::string httpsGet(std::string host, std::string addr, std::string uri);
-long curlPost(std::string url, std::string data, std::string proxy);
+int curlPost(std::string url, std::string data, std::string proxy, std::string auth_token, std::string *retData);
+int curlPatch(std::string url, std::string data, std::string proxy, std::string auth_token, std::string *retData);
 std::string buildSocks5ProxyString(std::string addr, int port, std::string username, std::string password);
 
 #endif // WEBGET_H_INCLUDED

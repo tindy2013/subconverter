@@ -390,19 +390,24 @@ void explodeSSD(std::string link, bool libev, std::string custom_port, int local
     jsondata.Parse(link.c_str());
     if(!jsondata.HasMember("servers"))
         return;
+    GetMember(jsondata, "airport", group);
     for(unsigned int i = 0; i < jsondata["servers"].Size(); i++)
     {
-        jsondata["airport"] >> group;
-        jsondata["servers"][i]["remarks"] >> remarks;
-        jsondata["port"] >> port;
-        jsondata["encryption"] >> method;
-        jsondata["password"] >> password;
+        //get default info
+        GetMember(jsondata, "port", port);
+        GetMember(jsondata, "encryption", method);
+        GetMember(jsondata, "password", password);
+        GetMember(jsondata, "plugin", plugin);
+        GetMember(jsondata, "plugin_options", pluginopts);
+
+        //get server-specific info
         jsondata["servers"][i]["server"] >> server;
+        GetMember(jsondata["servers"][i], "remarks", remarks);
+        GetMember(jsondata["servers"][i], "port", port);
+        GetMember(jsondata["servers"][i], "encryption", method);
+        GetMember(jsondata["servers"][i], "password", password);
         GetMember(jsondata["servers"][i], "plugin", plugin);
         GetMember(jsondata["servers"][i], "plugin_options", pluginopts);
-        GetMember(jsondata["servers"][i], "encryption", method);
-        GetMember(jsondata["servers"][i], "port", port);
-        GetMember(jsondata["servers"][i], "password", password);
 
         if(custom_port != "")
             port = custom_port;
@@ -1550,7 +1555,7 @@ void explodeSub(std::string sub, bool sslibev, bool ssrlibev, std::string custom
     sub = urlsafe_base64_decode(sub);
     strstream << sub;
     unsigned int index = nodes.size();
-    char delimiter = split(sub, "\n").size() <= 1 ? split(sub, "\r").size() <= 1 ? ' ' : '\r' : '\n';
+    char delimiter = split(sub, "\n").size() < 1 ? split(sub, "\r").size() < 1 ? ' ' : '\r' : '\n';
     while(getline(strstream, strLink, delimiter))
     {
         explode(strLink, sslibev, ssrlibev, custom_port, local_port, node);

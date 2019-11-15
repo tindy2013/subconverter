@@ -18,5 +18,7 @@ std::string netchToVMess(std::vector<nodeInfo> &nodes);
 std::string netchToQuanX(std::vector<nodeInfo> &nodes);
 std::string netchToQuan(std::vector<nodeInfo> &nodes);
 std::string netchToSSD(std::vector<nodeInfo> &nodes, std::string &group);
+std::string buildGistData(std::string name, std::string content);
+int uploadGist(std::string path, std::string content, bool writeManageURL);
 
 #endif // SUBEXPORT_H_INCLUDED

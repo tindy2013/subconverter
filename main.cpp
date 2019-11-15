@@ -18,9 +18,9 @@
 //common settings
 string_array def_exclude_remarks, def_include_remarks, rulesets;
 std::vector<ruleset_content> ruleset_content_array;
-std::string listen_address = "127.0.0.1", default_url;
+std::string listen_address = "127.0.0.1", default_url, managed_config_prefix;
 int listen_port = 25500, max_pending_connections = 10, max_concurrent_threads = 4;
-bool api_mode = true, update_ruleset_on_request = false, overwrite_original_rules = true;
+bool api_mode = true, write_managed_config = true, update_ruleset_on_request = false, overwrite_original_rules = true;
 extern std::string custom_group;
 
 //safety lock for multi-thread
@@ -40,24 +40,24 @@ std::string surge_rule_base;
 
 void setcd(char *argv[])
 {
-    #ifndef _WIN32
-	std::string path, prgpath;
-	char szTmp[1024];
-	prgpath.assign(argv[0]);
-	if(prgpath[0] == '/')
-	{
-		path = prgpath.substr(0, prgpath.rfind("/") + 1);
-	}
-	else
-	{
-		getcwd(szTmp, 1023);
-		path.append(szTmp);
-		path.append("/");
-		path.append(argv[0]);
-		path = path.substr(0, path.rfind("/") + 1);
-	}
+#ifndef _WIN32
+    std::string path, prgpath;
+    char szTmp[1024];
+    prgpath.assign(argv[0]);
+    if(prgpath[0] == '/')
+    {
+        path = prgpath.substr(0, prgpath.rfind("/") + 1);
+    }
+    else
+    {
+        getcwd(szTmp, 1023);
+        path.append(szTmp);
+        path.append("/");
+        path.append(argv[0]);
+        path = path.substr(0, path.rfind("/") + 1);
+    }
     chdir(path.data());
-    #endif // _WIN32
+#endif // _WIN32
 }
 
 std::string refreshRulesets()
@@ -101,6 +101,8 @@ std::string refreshRulesets()
         }
         if(rc.rule_content.size())
             ruleset_content_array.emplace_back(rc);
+        else
+            std::cerr<<"Warning: No data was fetched from this link. Skipping..."<<std::endl;
     }
 
     return "done";
@@ -135,6 +137,12 @@ void readConf()
         surge_rule_base = ini.Get("surge_rule_base");
     if(ini.ItemPrefixExist("rename_node"))
         ini.GetAll("rename_node", renames);
+
+    ini.EnterSection("managed_config");
+    if(ini.ItemExist("write_managed_config"))
+        write_managed_config = ini.GetBool("write_managed_config");
+    if(ini.ItemExist("managed_config_prefix"))
+        managed_config_prefix = ini.Get("managed_config_prefix");
 
     ini.EnterSection("emojis");
     if(ini.ItemExist("add_emoji"))
@@ -180,6 +188,122 @@ void readConf()
     std::cerr<<"Read preference settings completed."<<std::endl;
 }
 
+std::string subconverter(RESPONSE_CALLBACK_ARGS)
+{
+    if(!api_mode)
+        readConf();
+    std::string target = getUrlArg(argument, "target"), url = UrlDecode(getUrlArg(argument, "url")), include = UrlDecode(getUrlArg(argument, "regex"));
+    std::string group = UrlDecode(getUrlArg(argument, "group")), upload = getUrlArg(argument, "upload"), version = getUrlArg(argument, "ver");
+    std::string base_content, output_content;
+    if(!url.size())
+        url = default_url;
+    string_array urls = split(url, "|");
+    std::vector<nodeInfo> nodes;
+    int groupID = 0;
+    if(include.size())
+    {
+        eraseElements(def_include_remarks);
+        def_include_remarks.emplace_back(include);
+    }
+    if(group.size())
+        custom_group = group;
+    for(std::string &x : urls)
+    {
+        std::cerr<<"Fetching node data from url '"<<x<<"'."<<std::endl;
+        addNodes(x, nodes, groupID);
+        groupID++;
+    }
+    if(!target.size())
+        return std::string();
+
+    std::cerr<<"Generate target: ";
+    if(target == "clash" || target == "clashr")
+    {
+        std::cerr<<"Clash"<<((target == "clashr") ? "R" : "")<<std::endl;
+        if(fileExist(clash_rule_base))
+            base_content = fileGet(clash_rule_base, false);
+        else
+            base_content = webGet(clash_rule_base, getSystemProxy());
+
+        if(update_ruleset_on_request)
+            refreshRulesets();
+        output_content = netchToClash(nodes, base_content, ruleset_content_array, clash_extra_group, target == "clashr");
+        if(upload == "true")
+            uploadGist("clash", output_content, false);
+        return output_content;
+    }
+    else if(target == "surge")
+    {
+        std::cerr<<"Surge "<<version<<std::endl;
+        int surge_ver = version.size() ? stoi(version) : 3;
+        if(fileExist(surge_rule_base))
+            base_content = fileGet(surge_rule_base, false);
+        else
+            base_content = webGet(surge_rule_base, getSystemProxy());
+
+        output_content = netchToSurge(nodes, base_content, rulesets, clash_extra_group, surge_ver);
+        if(upload == "true")
+            uploadGist("surge" + version, output_content, true);
+
+        if(write_managed_config && managed_config_prefix.size())
+            output_content = "#!MANAGED-CONFIG " + managed_config_prefix + "/sub?" + argument + "\n\n" + output_content;
+        return output_content;
+    }
+    else if(target == "ss")
+    {
+        std::cerr<<"SS"<<std::endl;
+        output_content = netchToSS(nodes);
+        if(upload == "true")
+            uploadGist("ss", output_content, false);
+        return output_content;
+    }
+    else if(target == "ssr")
+    {
+        std::cerr<<"SSR"<<std::endl;
+        output_content = netchToSSR(nodes);
+        if(upload == "true")
+            uploadGist("ssr", output_content, false);
+        return output_content;
+    }
+    else if(target == "v2ray")
+    {
+        std::cerr<<"v2rayN"<<std::endl;
+        output_content = netchToVMess(nodes);
+        if(upload == "true")
+            uploadGist("v2ray", output_content, false);
+        return output_content;
+    }
+    else if(target == "quan")
+    {
+        std::cerr<<"Quantumult"<<std::endl;
+        output_content = netchToQuan(nodes);
+        if(upload == "true")
+            uploadGist("quan", output_content, false);
+        return output_content;
+    }
+    else if(target == "quanx")
+    {
+        std::cerr<<"Quantumult X"<<std::endl;
+        output_content = netchToQuanX(nodes);
+        if(upload == "true")
+            uploadGist("quanx", output_content, false);
+        return output_content;
+    }
+    else if(target == "ssd")
+    {
+        std::cerr<<"SSD"<<std::endl;
+        output_content = netchToSSD(nodes, group);
+        if(upload == "true")
+            uploadGist("ssd", output_content, false);
+        return output_content;
+    }
+    else
+    {
+        std::cerr<<"Unspecified"<<std::endl;
+        return std::string();
+    }
+}
+
 int main(int argc, char *argv[])
 {
 #ifdef _WIN32
@@ -208,243 +332,51 @@ int main(int argc, char *argv[])
         return "done";
     });
 
+    append_response("GET", "/sub", "text/plain;charset=utf-8", subconverter);
+
     append_response("GET", "/clash", "text/plain;charset=utf-8", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
-        if(!api_mode)
-            readConf();
-        std::string clash_base_content;
-        std::string url = UrlDecode(getUrlArg(argument, "url")), include = UrlDecode(getUrlArg(argument, "regex")), group = UrlDecode(getUrlArg(argument, "group"));
-        if(!url.size()) url = default_url;
-        string_array urls = split(url, "|");
-        std::vector<nodeInfo> nodes;
-        int groupID = 0;
-        if(include.size())
-        {
-            eraseElements(def_include_remarks);
-            def_include_remarks.emplace_back(include);
-        }
-        if(group.size()) custom_group = group;
-        for(std::string &x : urls)
-        {
-            std::cerr<<"Fetching node data from url '"<<x<<"'. Generate target: Clash"<<std::endl;
-            addNodes(x, nodes, groupID);
-            groupID++;
-        }
-        if(fileExist(clash_rule_base))
-            clash_base_content = fileGet(clash_rule_base, false);
-        else
-            clash_base_content = webGet(clash_rule_base, getSystemProxy());
-
-        if(update_ruleset_on_request)
-            refreshRulesets();
-        return netchToClash(nodes, clash_base_content, ruleset_content_array, clash_extra_group, false);
+        return subconverter(argument + "&target=clash", postdata);
     });
 
     append_response("GET", "/clashr", "text/plain;charset=utf-8", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
-        if(!api_mode)
-            readConf();
-        std::string clash_base_content;
-        std::string url = UrlDecode(getUrlArg(argument, "url")), include = UrlDecode(getUrlArg(argument, "regex")), group = UrlDecode(getUrlArg(argument, "group"));
-        if(!url.size()) url = default_url;
-        string_array urls = split(url, "|");
-        std::vector<nodeInfo> nodes;
-        int groupID = 0;
-        if(include.size())
-        {
-            eraseElements(def_include_remarks);
-            def_include_remarks.emplace_back(include);
-        }
-        if(group.size()) custom_group = group;
-        for(std::string &x : urls)
-        {
-            std::cerr<<"Fetching node data from url '"<<x<<"'. Generate target: ClashR"<<std::endl;
-            addNodes(x, nodes, groupID);
-            groupID++;
-        }
-        if(fileExist(clash_rule_base))
-            clash_base_content = fileGet(clash_rule_base, false);
-        else
-            clash_base_content = webGet(clash_rule_base, getSystemProxy());
-
-        if(update_ruleset_on_request)
-            refreshRulesets();
-        return netchToClash(nodes, clash_base_content, ruleset_content_array, clash_extra_group, true);
+        return subconverter(argument + "&target=clashr", postdata);
     });
 
     append_response("GET", "/surge", "text/plain;charset=utf-8", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
-        if(!api_mode)
-            readConf();
-        std::string surge_base_content;
-        std::string url = UrlDecode(getUrlArg(argument, "url")), include = UrlDecode(getUrlArg(argument, "regex")), group = UrlDecode(getUrlArg(argument, "group")), version = getUrlArg(argument, "ver");
-        int surge_ver = version.size() ? stoi(version) : 3;
-        if(!url.size()) url = default_url;
-        string_array urls = split(url, "|");
-        std::vector<nodeInfo> nodes;
-        int groupID = 0;
-        if(include.size())
-        {
-            eraseElements(def_include_remarks);
-            def_include_remarks.emplace_back(include);
-        }
-        if(group.size()) custom_group = group;
-        for(std::string &x : urls)
-        {
-            std::cerr<<"Fetching node data from url '"<<x<<"'. Generate target: Surge "<<surge_ver<<std::endl;
-            addNodes(x, nodes, groupID);
-            groupID++;
-        }
-        if(fileExist(surge_rule_base))
-            surge_base_content = fileGet(surge_rule_base, false);
-        else
-            surge_base_content = webGet(surge_rule_base, getSystemProxy());
-
-        return netchToSurge(nodes, surge_base_content, rulesets, clash_extra_group, surge_ver);
+        return subconverter(argument + "&target=surge", postdata);
     });
 
     append_response("GET", "/ss", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
-        if(!api_mode)
-            readConf();
-        std::string url = UrlDecode(getUrlArg(argument, "url")), include = UrlDecode(getUrlArg(argument, "regex"));
-        if(!url.size()) url = default_url;
-        string_array urls = split(url, "|");
-        std::vector<nodeInfo> nodes;
-        int groupID = 0;
-        if(include.size())
-        {
-            eraseElements(def_include_remarks);
-            def_include_remarks.emplace_back(include);
-        }
-        for(std::string &x : urls)
-        {
-            std::cerr<<"Fetching node data from url '"<<x<<"'. Generate target: SIP002"<<std::endl;
-            addNodes(x, nodes, groupID);
-            groupID++;
-        }
-
-        return netchToSS(nodes);
+        return subconverter(argument + "&target=ss", postdata);
     });
 
     append_response("GET", "/ssr", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
-        if(!api_mode)
-            readConf();
-        std::string url = UrlDecode(getUrlArg(argument, "url")), include = UrlDecode(getUrlArg(argument, "regex"));
-        if(!url.size()) url = default_url;
-        string_array urls = split(url, "|");
-        std::vector<nodeInfo> nodes;
-        int groupID = 0;
-        if(include.size())
-        {
-            eraseElements(def_include_remarks);
-            def_include_remarks.emplace_back(include);
-        }
-        for(std::string &x : urls)
-        {
-            std::cerr<<"Fetching node data from url '"<<x<<"'. Generate target: SSR"<<std::endl;
-            addNodes(x, nodes, groupID);
-            groupID++;
-        }
-
-        return netchToSSR(nodes);
+        return subconverter(argument + "&target=ssr", postdata);
     });
 
-    append_response("GET", "/v2rayn", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
+    append_response("GET", "/v2ray", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
-        if(!api_mode)
-            readConf();
-        std::string url = UrlDecode(getUrlArg(argument, "url")), include = UrlDecode(getUrlArg(argument, "regex"));
-        if(!url.size()) url = default_url;
-        string_array urls = split(url, "|");
-        std::vector<nodeInfo> nodes;
-        int groupID = 0;
-        if(include.size())
-        {
-            eraseElements(def_include_remarks);
-            def_include_remarks.emplace_back(include);
-        }
-        for(std::string &x : urls)
-        {
-            std::cerr<<"Fetching node data from url '"<<x<<"'. Generate target: VMess"<<std::endl;
-            addNodes(x, nodes, groupID);
-            groupID++;
-        }
-
-        return netchToVMess(nodes);
+        return subconverter(argument + "&target=v2ray", postdata);
     });
 
-    append_response("GET", "/v2rayq", "text/plain;charset=utf-8", [](RESPONSE_CALLBACK_ARGS) -> std::string
+    append_response("GET", "/quan", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
-        if(!api_mode)
-            readConf();
-        std::string url = UrlDecode(getUrlArg(argument, "url")), include = UrlDecode(getUrlArg(argument, "regex"));
-        if(!url.size()) url = default_url;
-        string_array urls = split(url, "|");
-        std::vector<nodeInfo> nodes;
-        int groupID = 0;
-        if(include.size())
-        {
-            eraseElements(def_include_remarks);
-            def_include_remarks.emplace_back(include);
-        }
-        for(std::string &x : urls)
-        {
-            std::cerr<<"Fetching node data from url '"<<x<<"'. Generate target: VMess"<<std::endl;
-            addNodes(x, nodes, groupID);
-            groupID++;
-        }
-
-        return netchToQuan(nodes);
+        return subconverter(argument + "&target=quan", postdata);
     });
 
     append_response("GET", "/quanx", "text/plain;charset=utf-8", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
-        if(!api_mode)
-            readConf();
-        std::string url = UrlDecode(getUrlArg(argument, "url")), include = UrlDecode(getUrlArg(argument, "regex"));
-        if(!url.size()) url = default_url;
-        string_array urls = split(url, "|");
-        std::vector<nodeInfo> nodes;
-        int groupID = 0;
-        if(include.size())
-        {
-            eraseElements(def_include_remarks);
-            def_include_remarks.emplace_back(include);
-        }
-        for(std::string &x : urls)
-        {
-            std::cerr<<"Fetching node data from url '"<<x<<"'. Generate target: Quantumult X"<<std::endl;
-            addNodes(x, nodes, groupID);
-            groupID++;
-        }
-
-        return netchToQuanX(nodes);
+        return subconverter(argument + "&target=quanx", postdata);
     });
 
     append_response("GET", "/ssd", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
-        if(!api_mode)
-            readConf();
-        std::string url = UrlDecode(getUrlArg(argument, "url")), include = UrlDecode(getUrlArg(argument, "regex")), group = UrlDecode(getUrlArg(argument, "group"));
-        if(!url.size()) url = default_url;
-        string_array urls = split(url, "|");
-        std::vector<nodeInfo> nodes;
-        int groupID = 0;
-        if(include.size())
-        {
-            eraseElements(def_include_remarks);
-            def_include_remarks.emplace_back(include);
-        }
-        for(std::string &x : urls)
-        {
-            std::cerr<<"Fetching node data from url '"<<x<<"'. Generate target: SSD"<<std::endl;
-            addNodes(x, nodes, groupID);
-            groupID++;
-        }
-
-        return netchToSSD(nodes, group);
+        return subconverter(argument + "&target=ssd", postdata);
     });
 
     if(!api_mode)
