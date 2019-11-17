@@ -1581,12 +1581,3 @@ void remarksInit(string_array &exclude, string_array &include)
     exclude_remarks = exclude;
     include_remarks = include;
 }
-
-int appendClashRules(YAML::Node &base, YAML::Node &rules)
-{
-    if(rules["Proxy Group"].IsDefined())
-        base["Proxy Group"].reset(rules["Proxy Group"]);
-    if(rules["Rule"].IsDefined())
-        base["Rule"].reset(rules["Rule"]);
-    return 0;
-}

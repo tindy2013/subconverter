@@ -343,7 +343,7 @@ std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &baseConf, st
     std::vector<nodeInfo> nodelist;
     std::string group;
     bool tlssecure, replace_flag;
-    string_array vArray, filtered_nodelist;
+    string_array vArray, remarks_list, filtered_nodelist;
 
     try
     {
@@ -359,7 +359,9 @@ std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &baseConf, st
         singleproxy.reset();
         json.Parse(x.proxyStr.data());
         type = GetMember(json, "Type");
-        remark = x.remarks = addEmoji(trim(removeEmoji(nodeRename(x.remarks))));
+        remark = x.remarks = addEmoji("[" + type + "]" + trim(removeEmoji(nodeRename(x.remarks))));
+        while(std::count(remarks_list.begin(), remarks_list.end(), remark) > 0)
+            remark = x.remarks = x.remarks + "$";
         hostname = GetMember(json, "Hostname");
         port = GetMember(json, "Port");
         username = GetMember(json, "Username");
@@ -431,35 +433,14 @@ std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &baseConf, st
         singleproxy["name"] = remark;
         singleproxy["server"] = hostname;
         singleproxy["port"] = (unsigned short)stoi(port);
+        singleproxy.SetStyle(YAML::EmitterStyle::Flow);
         proxies.push_back(singleproxy);
+        remarks_list.emplace_back(remark);
         nodelist.emplace_back(x);
     }
 
     yamlnode["Proxy"] = proxies;
     std::string groupname;
-    /*
-    if(!overwrite_original_groups)
-    {
-        original_groups = yamlnode["Proxy Group"];
-        for(unsigned int i = 0; i < original_groups.size(); i++)
-        {
-            groupname = original_groups[i]["name"].as<std::string>();
-            if(groupname == "Proxy" || groupname == "PROXY")
-            {
-                original_groups[i]["name"] = "Proxy";
-                original_groups[i]["proxies"] = vectorToNode(nodelist);
-                break;
-            }
-        }
-    }
-    else
-    {
-        singlegroup["name"] = "Proxy";
-        singlegroup["type"] = "select";
-        singlegroup["proxies"] = vectorToNode(nodelist);
-        original_groups.push_back(singlegroup);
-    }
-    */
 
     for(std::string &x : extra_proxy_group)
     {
@@ -559,7 +540,7 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
     std::string url, group;
     std::vector<nodeInfo> nodelist;
     bool tlssecure;
-    string_array vArray, filtered_nodelist;
+    string_array vArray, remarks_list, filtered_nodelist;
 
     ini.store_any_line = true;
     if(ini.Parse(base_conf) != 0)
@@ -572,7 +553,9 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
     {
         json.Parse(x.proxyStr.data());
         type = GetMember(json, "Type");
-        remark = x.remarks = addEmoji(trim(removeEmoji(nodeRename(x.remarks))));
+        remark = x.remarks = addEmoji("[" + type + "]" + trim(removeEmoji(nodeRename(x.remarks))));
+        while(std::count(remarks_list.begin(), remarks_list.end(), remark) > 0)
+            remark = x.remarks = x.remarks + "$";
         hostname = GetMember(json, "Hostname");
         port = std::__cxx11::to_string((unsigned short)stoi(GetMember(json, "Port")));
         username = GetMember(json, "Username");
@@ -582,26 +565,18 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
 
         if(type == "SS")
         {
+            plugin = GetMember(json, "Plugin");
+            pluginopts = GetMember(json, "PluginOption");
             if(surge_ver >= 3)
             {
-                plugin = GetMember(json, "Plugin");
-                pluginopts = GetMember(json, "PluginOption");
                 proxy = "ss," + hostname + "," + port + ",encrypt-method=" + method + ",password=" + password;
-                if(plugin.size() && pluginopts.size())
-                {
-                    proxy += "," + replace_all_distinct(pluginopts, ";", ",");
-                }
             }
             else
             {
-                if(GetMember(json, "Plugin") == "")
-                {
-                    proxy = "custom,"  + hostname + "," + port + "," + method + "," + password + ",https://github.com/ConnersHua/SSEncrypt/raw/master/SSEncrypt.module";
-                }
-                else
-                    continue;
+                proxy = "custom,"  + hostname + "," + port + "," + method + "," + password + ",https://github.com/ConnersHua/SSEncrypt/raw/master/SSEncrypt.module";
             }
-
+            if(plugin.size() && pluginopts.size())
+                proxy += "," + replace_all_distinct(pluginopts, ";", ",");
         }
         else if(type == "VMess")
         {
@@ -638,6 +613,7 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
             continue;
         ini.Set(remark, proxy);
         nodelist.emplace_back(x);
+        remarks_list.emplace_back(remark);
     }
 
     ini.SetCurrentSection("Proxy Group");

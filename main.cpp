@@ -20,7 +20,7 @@ string_array def_exclude_remarks, def_include_remarks, rulesets;
 std::vector<ruleset_content> ruleset_content_array;
 std::string listen_address = "127.0.0.1", default_url, managed_config_prefix;
 int listen_port = 25500, max_pending_connections = 10, max_concurrent_threads = 4;
-bool api_mode = true, write_managed_config = true, update_ruleset_on_request = false, overwrite_original_rules = true;
+bool api_mode = true, write_managed_config = false, update_ruleset_on_request = false, overwrite_original_rules = true;
 extern std::string custom_group;
 
 //safety lock for multi-thread
@@ -36,28 +36,28 @@ std::string clash_rule_base;
 string_array clash_extra_group;
 
 //surge custom
-std::string surge_rule_base;
+std::string surge_rule_base, surfboard_rule_base;
 
 void setcd(char *argv[])
 {
-#ifndef _WIN32
-    std::string path, prgpath;
+    std::string path;
     char szTmp[1024];
-    prgpath.assign(argv[0]);
-    if(prgpath[0] == '/')
-    {
-        path = prgpath.substr(0, prgpath.rfind("/") + 1);
-    }
-    else
+#ifndef _WIN32
+    path.assign(argv[0]);
+    if(path[0] != '/')
     {
         getcwd(szTmp, 1023);
-        path.append(szTmp);
+        path.assign(szTmp);
         path.append("/");
         path.append(argv[0]);
-        path = path.substr(0, path.rfind("/") + 1);
     }
-    chdir(path.data());
+    path = path.substr(0, path.rfind("/") + 1);
+#else
+    GetModuleFileName(NULL, szTmp, 1023);
+    strrchr(szTmp, '\\')[1] = '\0';
+    path.assign(szTmp);
 #endif // _WIN32
+    chdir(path.data());
 }
 
 std::string refreshRulesets()
@@ -135,6 +135,8 @@ void readConf()
         clash_rule_base = ini.Get("clash_rule_base");
     if(ini.ItemExist("surge_rule_base"))
         surge_rule_base = ini.Get("surge_rule_base");
+    if(ini.ItemExist("surfboard_rule_base"))
+        surfboard_rule_base = ini.Get("surfboard_rule_base");
     if(ini.ItemPrefixExist("rename_node"))
         ini.GetAll("rename_node", renames);
 
@@ -249,6 +251,22 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
             output_content = "#!MANAGED-CONFIG " + managed_config_prefix + "/sub?" + argument + "\n\n" + output_content;
         return output_content;
     }
+    else if(target == "surfboard")
+    {
+        std::cerr<<"Surfboard"<<std::endl;
+        if(fileExist(surfboard_rule_base))
+            base_content = fileGet(surfboard_rule_base, false);
+        else
+            base_content = webGet(surfboard_rule_base, getSystemProxy());
+
+        output_content = netchToSurge(nodes, base_content, rulesets, clash_extra_group, 2);
+        if(upload == "true")
+            uploadGist("surfboard", output_content, true);
+
+        if(write_managed_config && managed_config_prefix.size())
+            output_content = "#!MANAGED-CONFIG " + managed_config_prefix + "/sub?" + argument + "\n\n" + output_content;
+        return output_content;
+    }
     else if(target == "ss")
     {
         std::cerr<<"SS"<<std::endl;
@@ -316,7 +334,9 @@ int main(int argc, char *argv[])
     SetConsoleOutputCP(65001);
 #endif // _WIN32
 
+#ifndef _DEBUG
     setcd(argv);
+#endif // _DEBUG
     readConf();
     if(!update_ruleset_on_request)
         refreshRulesets();
@@ -347,6 +367,11 @@ int main(int argc, char *argv[])
     append_response("GET", "/surge", "text/plain;charset=utf-8", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
         return subconverter(argument + "&target=surge", postdata);
+    });
+
+    append_response("GET", "/surfboard", "text/plain;charset=utf-8", [](RESPONSE_CALLBACK_ARGS) -> std::string
+    {
+        return subconverter(argument + "&target=surfboard", postdata);
     });
 
     append_response("GET", "/ss", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
