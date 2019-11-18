@@ -163,3 +163,22 @@ custom_proxy_group=🇺🇸US`url-test`(美|美国|United States)`http://www.gst
 #### advanced
 
 > no need description.
+
+<br>
+
+## support type
+
+| type         | as source | as target | argument    |
+| ------------ | --------- | --------- | ----------- |
+| clash        | ✔         | ✔         | clash       |
+| clashr       | ✔         | ✔         | clashr      |
+| surge2       | ✔         | ✔         | surge?ver=2 |
+| surge3       | ✔         | ✔         | surge?ver=3 |
+| surge4       | ✔         | ✔         | surge?ver=4 |
+| surfboard    | ✔         | ✔         | surfboard   |
+| quantumult   | ✔         | ✔         | quan        |
+| quantumult X | ✔         | ✔         | quanx       |
+| ss           | ✔         | ✔         | ss          |
+| ssr          | ✔         | ✔         | ssr         |
+| ssd          | ✔         | ✔         | ssd         |
+| v2ray        | ✔         | ✔         | v2ray       |
