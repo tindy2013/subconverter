@@ -718,7 +718,7 @@ public:
             content += "\n";
         }
 
-        return content;
+        return content.substr(0, content.size() - 2);
     }
 
     /**

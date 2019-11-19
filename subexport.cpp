@@ -15,6 +15,7 @@ extern bool overwrite_original_rules;
 extern string_array renames, emojis;
 extern bool add_emoji, remove_old_emoji;
 extern bool api_mode;
+extern string_array ss_ciphers, ssr_ciphers;
 
 std::string vmessConstruct(std::string add, std::string port, std::string type, std::string id, std::string aid, std::string net, std::string cipher, std::string path, std::string host, std::string tls, int local_port)
 {
@@ -271,7 +272,7 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset
     base_rule["Rule"] = Rules;
 }
 
-void rulesetToSurge(INIReader &base_rule, string_array &ruleset_array, int surge_ver)
+void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_content_array, int surge_ver)
 {
     string_array allRules, vArray;
     std::string rule_group, rule_path, retrived_rules, strLine;
@@ -282,13 +283,10 @@ void rulesetToSurge(INIReader &base_rule, string_array &ruleset_array, int surge
     if(overwrite_original_rules)
         base_rule.EraseSection();
 
-    for(std::string &x : ruleset_array)
+    for(ruleset_content &x : ruleset_content_array)
     {
-        vArray = split(x, ",");
-        if(vArray.size() != 2)
-            continue;
-        rule_group = trim(vArray[0]);
-        rule_path = trim(vArray[1]);
+        rule_group = x.rule_group;
+        rule_path = x.rule_path;
         if(rule_path.find("[]") == 0)
         {
             strLine = rule_path.substr(2);
@@ -303,25 +301,30 @@ void rulesetToSurge(INIReader &base_rule, string_array &ruleset_array, int surge
             {
                 if(api_mode)
                     continue;
-                retrived_rules = fileGet(rule_path, false);
-                char delimiter = count(retrived_rules.begin(), retrived_rules.end(), '\n') < 1 ? '\r' : '\n';
-
-                strStrm.clear();
-                strStrm<<retrived_rules;
-                while(getline(strStrm, strLine, delimiter))
-                {
-                    strLine = replace_all_distinct(strLine, "\r", ""); //remove line break
-                    if(!strLine.size() || strLine.find("#") == 0 || strLine.find(";") == 0) //remove comments
-                        continue;
-                    if(surge_ver < 4 && strLine.find("IP-CIDR") == 0)
-                        strLine = replace_all_distinct(strLine, ",no-resolve", "");
-                    strLine += "," + rule_group;
-                    allRules.emplace_back(strLine);
-                }
             }
             else
             {
-                allRules.emplace_back("RULE-SET," + rule_path + "," + rule_group);
+                if(surge_ver > 2)
+                {
+                    allRules.emplace_back("RULE-SET," + rule_path + "," + rule_group);
+                    continue;
+                }
+            }
+
+            retrived_rules = x.rule_content;
+            char delimiter = count(retrived_rules.begin(), retrived_rules.end(), '\n') < 1 ? '\r' : '\n';
+
+            strStrm.clear();
+            strStrm<<retrived_rules;
+            while(getline(strStrm, strLine, delimiter))
+            {
+                strLine = replace_all_distinct(strLine, "\r", ""); //remove line break
+                if(!strLine.size() || strLine.find("#") == 0 || strLine.find(";") == 0) //remove comments
+                    continue;
+                if(surge_ver < 4 && strLine.find("IP-CIDR") == 0)
+                    strLine = replace_all_distinct(strLine, ",no-resolve", "");
+                strLine += "," + rule_group;
+                allRules.emplace_back(strLine);
             }
         }
     }
@@ -332,7 +335,7 @@ void rulesetToSurge(INIReader &base_rule, string_array &ruleset_array, int surge
     }
 }
 
-std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &baseConf, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, bool clashR)
+std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, bool clashR)
 {
     YAML::Node yamlnode, proxies, singleproxy, singlegroup, original_groups;
     rapidjson::Document json;
@@ -347,7 +350,7 @@ std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &baseConf, st
 
     try
     {
-        yamlnode = YAML::Load(baseConf);
+        yamlnode = YAML::Load(base_conf);
     }
     catch (std::exception &e)
     {
@@ -508,6 +511,7 @@ std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &baseConf, st
         singlegroup["name"] = vArray[0];
         singlegroup["type"] = vArray[1];
         singlegroup["proxies"] = filtered_nodelist;
+        //singlegroup.SetStyle(YAML::EmitterStyle::Flow);
 
         for(unsigned int i = 0; i < original_groups.size(); i++)
         {
@@ -529,7 +533,7 @@ std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &baseConf, st
     return to_string(yamlnode);
 }
 
-std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, string_array &ruleset_array, string_array &extra_proxy_group, int surge_ver)
+std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, int surge_ver)
 {
     rapidjson::Document json;
     INIReader ini;
@@ -688,7 +692,7 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
         ini.Set("{NONAME}", vArray[0] + " = " + proxy); //insert order
     }
 
-    rulesetToSurge(ini, ruleset_array, surge_ver);
+    rulesetToSurge(ini, ruleset_content_array, surge_ver);
 
     return ini.ToString();
 }
@@ -698,6 +702,7 @@ std::string netchToSS(std::vector<nodeInfo> &nodes)
     rapidjson::Document json;
     std::string remark, hostname, port, password, method;
     std::string plugin, pluginopts;
+    std::string protocol, protoparam, obfs, obfsparam;
     std::string proxyStr, allLinks;
     for(nodeInfo &x : nodes)
     {
@@ -709,16 +714,24 @@ std::string netchToSS(std::vector<nodeInfo> &nodes)
         method = GetMember(json, "EncryptMethod");
         plugin = GetMember(json, "Plugin");
         pluginopts = GetMember(json, "PluginOption");
+        protocol = GetMember(json, "Protocol");
+        protoparam = GetMember(json, "ProtocolParam");
+        obfs = GetMember(json, "OBFS");
+        obfsparam = GetMember(json, "OBFSParam");
 
         switch(x.linkType)
         {
         case SPEEDTEST_MESSAGE_FOUNDSS:
             proxyStr = "ss://" + urlsafe_base64_encode(method + ":" + password + "@" + hostname + ":" + port);
-            if(plugin.size() & pluginopts.size())
+            if(plugin.size() && pluginopts.size())
             {
                 proxyStr += "/?plugin=" + UrlEncode(plugin + ";" +pluginopts);
             }
             proxyStr += "#" + UrlEncode(remark);
+            break;
+        case SPEEDTEST_MESSAGE_FOUNDSSR:
+            if(std::count(ss_ciphers.begin(), ss_ciphers.end(), method) > 0 && protocol == "origin" && obfs == "plain")
+                proxyStr = "ss://" + urlsafe_base64_encode(method + ":" + password + "@" + hostname + ":" + port) + "#" + UrlEncode(remark);
             break;
         default:
             continue;
@@ -754,6 +767,11 @@ std::string netchToSSR(std::vector<nodeInfo> &nodes)
             proxyStr = "ssr://" + urlsafe_base64_encode(hostname + ":" + port + ":" + protocol + ":" + method + ":" + obfs + ":" + urlsafe_base64_encode(password) \
                        + "/?group=" + urlsafe_base64_encode(x.group) + "&remarks=" + urlsafe_base64_encode(remark) \
                        + "&obfsparam=" + urlsafe_base64_encode(obfsparam) + "&protoparam=" + urlsafe_base64_encode(protoparam));
+            break;
+        case SPEEDTEST_MESSAGE_FOUNDSS:
+            if(std::count(ssr_ciphers.begin(), ssr_ciphers.end(), method) > 0 && !GetMember(json, "Plugin").size() && !GetMember(json, "Plugin").size())
+                proxyStr = "ssr://" + urlsafe_base64_encode(hostname + ":" + port + ":origin:" + method + ":plain:" + urlsafe_base64_encode(password) \
+                           + "/?group=" + urlsafe_base64_encode(x.group) + "&remarks=" + urlsafe_base64_encode(remark));
             break;
         default:
             continue;
@@ -934,6 +952,7 @@ std::string netchToSSD(std::vector<nodeInfo> &nodes, std::string &group)
     rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
     std::string remark, hostname, password, method;
     std::string plugin, pluginopts;
+    std::string protocol, protoparam, obfs, obfsparam;
     std::string proxyStr, allLinks;
     int port, index = 0;
     if(!group.size())
@@ -953,17 +972,22 @@ std::string netchToSSD(std::vector<nodeInfo> &nodes, std::string &group)
 
     for(nodeInfo &x : nodes)
     {
+        json.Parse(x.proxyStr.data());
+        remark = x.remarks = addEmoji(trim(removeEmoji(nodeRename(x.remarks))));
+        hostname = GetMember(json, "Hostname");
+        port = (unsigned short)stoi(GetMember(json, "Port"));
+        password = GetMember(json, "Password");
+        method = GetMember(json, "EncryptMethod");
+        plugin = GetMember(json, "Plugin");
+        pluginopts = GetMember(json, "PluginOption");
+        protocol = GetMember(json, "Protocol");
+        protoparam = GetMember(json, "ProtocolParam");
+        obfs = GetMember(json, "OBFS");
+        obfsparam = GetMember(json, "OBFSParam");
+
         switch(x.linkType)
         {
         case SPEEDTEST_MESSAGE_FOUNDSS:
-            json.Parse(x.proxyStr.data());
-            remark = x.remarks = addEmoji(trim(removeEmoji(nodeRename(x.remarks))));
-            hostname = GetMember(json, "Hostname");
-            port = (unsigned short)stoi(GetMember(json, "Port"));
-            password = GetMember(json, "Password");
-            method = GetMember(json, "EncryptMethod");
-            plugin = GetMember(json, "Plugin");
-            pluginopts = GetMember(json, "PluginOption");
             writer.StartObject();
             writer.Key("server");
             writer.String(hostname.data());
@@ -983,6 +1007,28 @@ std::string netchToSSD(std::vector<nodeInfo> &nodes, std::string &group)
             writer.Int(index);
             writer.EndObject();
             break;
+        case SPEEDTEST_MESSAGE_FOUNDSSR:
+            if(std::count(ss_ciphers.begin(), ss_ciphers.end(), method) > 0 && protocol == "origin" && obfs == "plain")
+            {
+                writer.StartObject();
+                writer.Key("server");
+                writer.String(hostname.data());
+                writer.Key("port");
+                writer.Int(port);
+                writer.Key("encryption");
+                writer.String(method.data());
+                writer.Key("password");
+                writer.String(password.data());
+                writer.String(pluginopts.data());
+                writer.Key("remarks");
+                writer.String(remark.data());
+                writer.Key("id");
+                writer.Int(index);
+                writer.EndObject();
+                break;
+            }
+            else
+                continue;
         default:
             continue;
         }
@@ -1014,7 +1060,7 @@ std::string buildGistData(std::string name, std::string content)
     return sb.GetString();
 }
 
-int uploadGist(std::string path, std::string content, bool writeManageURL)
+int uploadGist(std::string name, std::string path, std::string content, bool writeManageURL)
 {
     INIReader ini;
     rapidjson::Document json;
@@ -1028,52 +1074,58 @@ int uploadGist(std::string path, std::string content, bool writeManageURL)
     }
 
     ini.ParseFile("gistconf.ini");
-    if(ini.EnterSection("common") == 0)
-    {
-        token = ini.Get("token");
-        if(!token.size())
-        {
-            std::cerr<<"No token is provided. Skipping...\n";
-            return -1;
-        }
-        id = ini.Get("id");
-        username = ini.Get("username");
-        if(!id.size())
-        {
-            std::cerr<<"No gist id is provided. Creating new gist...\n";
-            retVal = curlPost("https://api.github.com/gists", buildGistData(path, content), "", token, &retData);
-            if(retVal != 201)
-            {
-                std::cerr<<"Create new Gist failed! Return data:\n"<<retData<<"\n";
-                return -1;
-            }
-        }
-        else
-        {
-            url = ini.Get(path, "url");
-            if(!url.size())
-                url = "https://gist.githubusercontent.com/" + username + "/" + id + "/raw/" + path;
-            std::cerr<<"Gist id provided. Modifying gist...\n";
-            if(writeManageURL)
-                content = "#!MANAGED-CONFIG "+ url + "\n" + content;
-            retVal = curlPatch("https://api.github.com/gists/" + id, buildGistData(path, content), "", token, &retData);
-            if(retVal != 200)
-            {
-                std::cerr<<"Modify gist failed! Return data:\n"<<retData<<"\n";
-                return -1;
-            }
-        }
-        json.Parse(retData.data());
-        GetMember(json, "id", id);
-        if(json.HasMember("owner"))
-            GetMember(json["owner"], "login", username);
-        std::cerr<<"Writing to Gist success!\nPath: "<<path<<"\nRaw URL: "<<url<<"\nGist owner: "<<username<<"\n";
-    }
-    else
+    if(ini.EnterSection("common") != 0)
     {
         std::cerr<<"gistconf.ini has incorrect format. Skipping...\n";
         return -1;
     }
+
+    token = ini.Get("token");
+    if(!token.size())
+    {
+        std::cerr<<"No token is provided. Skipping...\n";
+        return -1;
+    }
+
+    id = ini.Get("id");
+    username = ini.Get("username");
+    if(!path.size())
+    {
+        if(ini.ItemExist("path"))
+            path = ini.Get(name, "path");
+        else
+            path = name;
+    }
+
+    if(!id.size())
+    {
+        std::cerr<<"No gist id is provided. Creating new gist...\n";
+        retVal = curlPost("https://api.github.com/gists", buildGistData(path, content), getSystemProxy(), token, &retData);
+        if(retVal != 201)
+        {
+            std::cerr<<"Create new Gist failed! Return data:\n"<<retData<<"\n";
+            return -1;
+        }
+    }
+    else
+    {
+        url = "https://gist.githubusercontent.com/" + username + "/" + id + "/raw/" + path;
+        std::cerr<<"Gist id provided. Modifying gist...\n";
+        if(writeManageURL)
+            content = "#!MANAGED-CONFIG "+ url + "\n" + content;
+        retVal = curlPatch("https://api.github.com/gists/" + id, buildGistData(path, content), getSystemProxy(), token, &retData);
+        if(retVal != 200)
+        {
+            std::cerr<<"Modify gist failed! Return data:\n"<<retData<<"\n";
+            return -1;
+        }
+    }
+    json.Parse(retData.data());
+    GetMember(json, "id", id);
+    if(json.HasMember("owner"))
+        GetMember(json["owner"], "login", username);
+    std::cerr<<"Writing to Gist success!\nGenerator: "<<name<<"\nPath: "<<path<<"\nRaw URL: "<<url<<"\nGist owner: "<<username<<"\n";
+
     ini.EraseSection();
     ini.Set("token", token);
     ini.Set("id", id);
@@ -1081,6 +1133,7 @@ int uploadGist(std::string path, std::string content, bool writeManageURL)
 
     ini.SetCurrentSection(path);
     ini.EraseSection();
+    ini.Set("type", name);
     ini.Set("url", url);
 
     ini.ToFile("gistconf.ini");

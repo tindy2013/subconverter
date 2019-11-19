@@ -34,5 +34,5 @@ g++ -Wall -std=c++17 -fexceptions -DCURL_STATICLIB -c webget.cpp -o obj\webget.o
 g++ -Wall -std=c++17 -fexceptions -DCURL_STATICLIB -c webserver_libevent.cpp -o obj\webserver_libevent.o
 g++ -o subconverter obj\logger.o obj\main.o obj\misc.o obj\nodemanip.o obj\rapidjson_extra.o obj\speedtestutil.o obj\subexport.o obj\webget.o obj\webserver_libevent.o  -static -levent -lyaml-cpp -lcurl -lssl -lcrypto -lz -lbz2 -ldl -lpthread -O3 -s  
 
-chmod +rx subconverter pref.ini *.yml
-tar czf subconverter_linux64.tar.gz subconverter pref.ini *.yml
+chmod +rx subconverter pref.ini *.yml *.conf rules/*
+tar czf subconverter_linux64.tar.gz subconverter pref.ini *.yml *.conf rules/

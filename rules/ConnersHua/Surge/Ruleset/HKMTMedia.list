@@ -1,0 +1,7 @@
+# (HKMTMedia)
+# > 愛奇藝台灣站
+DOMAIN-SUFFIX,iqiyi.com
+DOMAIN-SUFFIX,71.am
+# > bilibili
+DOMAIN-SUFFIX,bilibili.com
+DOMAIN,upos-hz-mirrorakam.akamaized.net
