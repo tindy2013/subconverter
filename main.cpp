@@ -83,7 +83,7 @@ std::string refreshRulesets()
         if(rule_url.find("[]") == 0)
         {
             std::cerr<<"Adding rule '"<<rule_url.substr(2)<<","<<rule_group<<"'."<<std::endl;
-            rc = {rule_group, rule_url};
+            rc = {rule_group, "", rule_url};
             ruleset_content_array.emplace_back(rc);
             continue;
         }

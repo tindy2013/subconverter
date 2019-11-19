@@ -288,10 +288,10 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
     for(ruleset_content &x : ruleset_content_array)
     {
         rule_group = x.rule_group;
-        rule_path = x.rule_path;
-        if(rule_path.find("[]") == 0)
+        retrived_rules = x.rule_content;
+        if(retrived_rules.find("[]") == 0)
         {
-            strLine = rule_path.substr(2);
+            strLine = retrived_rules.substr(2);
             if(strLine == "MATCH")
                 strLine = "FINAL";
             allRules.emplace_back(strLine + "," + rule_group);
@@ -299,6 +299,7 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
         }
         else
         {
+            rule_path = x.rule_path;
             if(!fileExist(rule_path))
             {
                 if(surge_ver > 2)
@@ -308,7 +309,6 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
                 }
             }
 
-            retrived_rules = x.rule_content;
             char delimiter = count(retrived_rules.begin(), retrived_rules.end(), '\n') < 1 ? '\r' : '\n';
 
             strStrm.clear();
