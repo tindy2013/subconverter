@@ -261,6 +261,8 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset
             else if(strLine.find("DOMAIN-SUFFIX") == 0)
                 strLine = replace_all_distinct(strLine, ",force-remote-dns", "");
             strLine += "," + rule_group;
+            //if(strLine.find("IP-CIDR") == 0)
+            //strLine = regReplace(strLine, "^(.*)(,no-resolve)(.*)$", "$1$3$2");
             allRules.emplace_back(strLine);
         }
     }
@@ -297,12 +299,7 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
         }
         else
         {
-            if(fileExist(rule_path))
-            {
-                if(api_mode)
-                    continue;
-            }
-            else
+            if(!fileExist(rule_path))
             {
                 if(surge_ver > 2)
                 {
