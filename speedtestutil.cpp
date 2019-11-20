@@ -29,7 +29,8 @@ std::string wsset_vmess = "{\"connectionReuse\":true,\"path\":\"?path?\",\"heade
 std::string tcpset_vmess = "{\"connectionReuse\":true,\"header\":{\"type\":\"?type?\",\"request\":{\"version\":\"1.1\",\"method\":\"GET\",\"path\":[\"?path?\"],\"headers\":{\"Host\":[\"?host?\"],\"User-Agent\":[\"Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.75 Safari/537.36\",\"Mozilla/5.0 (iPhone; CPU iPhone OS 10_0_2 like Mac OS X) AppleWebKit/601.1 (KHTML, like Gecko) CriOS/53.0.2785.109 Mobile/14A456 Safari/601.1.46\"],\"Accept-Encoding\":[\"gzip, deflate\"],\"Connection\":[\"keep-alive\"],\"Pragma\":\"no-cache\"}}}}";
 std::string tlsset_vmess = "{\"serverName\":\"?serverName?\",\"allowInsecure\":false,\"allowInsecureCiphers\":false}";
 
-std::vector<std::string> ss_ciphers = {"rc4-md5","aes-128-gcm","aes-192-gcm","aes-256-gcm","aes-128-cfb","aes-192-cfb","aes-256-cfb","aes-128-ctr","aes-192-ctr","aes-256-ctr","camellia-128-cfb","camellia-192-cfb","camellia-256-cfb","bf-cfb","chacha20-ietf-poly1305","xchacha20-ietf-poly1305","salsa20","chacha20","chacha20-ietf"};
+string_array ss_ciphers = {"rc4-md5", "aes-128-gcm", "aes-192-gcm", "aes-256-gcm", "aes-128-cfb", "aes-192-cfb", "aes-256-cfb", "aes-128-ctr", "aes-192-ctr", "aes-256-ctr", "camellia-128-cfb", "camellia-192-cfb", "camellia-256-cfb", "bf-cfb", "chacha20-ietf-poly1305", "xchacha20-ietf-poly1305", "salsa20", "chacha20", "chacha20-ietf"};
+string_array ssr_ciphers = {"none", "table", "rc4", "rc4-md5", "aes-128-cfb", "aes-192-cfb", "aes-256-cfb", "aes-128-ctr", "aes-192-ctr", "aes-256-ctr", "bf-cfb", "camellia-128-cfb", "camellia-192-cfb", "camellia-256-cfb", "cast5-cfb", "des-cfb", "idea-cfb", "rc2-cfb", "seed-cfb", "salsa20", "chacha20", "chacha20-ietf"};
 
 std::map<std::string, std::string> parsedMD5;
 std::string modSSMD5 = "f7653207090ce3389115e9c88541afe0";
@@ -390,19 +391,24 @@ void explodeSSD(std::string link, bool libev, std::string custom_port, int local
     jsondata.Parse(link.c_str());
     if(!jsondata.HasMember("servers"))
         return;
+    GetMember(jsondata, "airport", group);
     for(unsigned int i = 0; i < jsondata["servers"].Size(); i++)
     {
-        jsondata["airport"] >> group;
-        jsondata["servers"][i]["remarks"] >> remarks;
-        jsondata["port"] >> port;
-        jsondata["encryption"] >> method;
-        jsondata["password"] >> password;
+        //get default info
+        GetMember(jsondata, "port", port);
+        GetMember(jsondata, "encryption", method);
+        GetMember(jsondata, "password", password);
+        GetMember(jsondata, "plugin", plugin);
+        GetMember(jsondata, "plugin_options", pluginopts);
+
+        //get server-specific info
         jsondata["servers"][i]["server"] >> server;
+        GetMember(jsondata["servers"][i], "remarks", remarks);
+        GetMember(jsondata["servers"][i], "port", port);
+        GetMember(jsondata["servers"][i], "encryption", method);
+        GetMember(jsondata["servers"][i], "password", password);
         GetMember(jsondata["servers"][i], "plugin", plugin);
         GetMember(jsondata["servers"][i], "plugin_options", pluginopts);
-        GetMember(jsondata["servers"][i], "encryption", method);
-        GetMember(jsondata["servers"][i], "port", port);
-        GetMember(jsondata["servers"][i], "password", password);
 
         if(custom_port != "")
             port = custom_port;
@@ -550,8 +556,8 @@ void explodeSSR(std::string ssr, bool ss_libev, bool ssr_libev, std::string cust
         group = urlsafe_base64_decode(getUrlArg(strobfs, "group"));
         remarks = urlsafe_base64_decode(getUrlArg(strobfs, "remarks"));
         remarks_base64 = urlsafe_base64_reverse(getUrlArg(strobfs, "remarks"));
-        obfsparam = urlsafe_base64_decode(getUrlArg(strobfs, "obfsparam"));
-        protoparam = urlsafe_base64_decode(getUrlArg(strobfs, "protoparam"));
+        obfsparam = regReplace(urlsafe_base64_decode(getUrlArg(strobfs, "obfsparam")), "\\s", "");
+        protoparam = regReplace(urlsafe_base64_decode(getUrlArg(strobfs, "protoparam")), "\\s", "");
     }
 
     ssr = regReplace(ssr, "(.*):(.*?):(.*?):(.*?):(.*?):(.*)", "$1,$2,$3,$4,$5,$6");
@@ -1550,7 +1556,7 @@ void explodeSub(std::string sub, bool sslibev, bool ssrlibev, std::string custom
     sub = urlsafe_base64_decode(sub);
     strstream << sub;
     unsigned int index = nodes.size();
-    char delimiter = split(sub, "\n").size() <= 1 ? split(sub, "\r").size() <= 1 ? ' ' : '\r' : '\n';
+    char delimiter = split(sub, "\n").size() < 1 ? split(sub, "\r").size() < 1 ? ' ' : '\r' : '\n';
     while(getline(strstream, strLink, delimiter))
     {
         explode(strLink, sslibev, ssrlibev, custom_port, local_port, node);
@@ -1575,13 +1581,4 @@ void remarksInit(string_array &exclude, string_array &include)
 {
     exclude_remarks = exclude;
     include_remarks = include;
-}
-
-int appendClashRules(YAML::Node &base, YAML::Node &rules)
-{
-    if(rules["Proxy Group"].IsDefined())
-        base["Proxy Group"].reset(rules["Proxy Group"]);
-    if(rules["Rule"].IsDefined())
-        base["Rule"].reset(rules["Rule"]);
-    return 0;
 }

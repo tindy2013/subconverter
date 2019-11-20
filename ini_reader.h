@@ -129,7 +129,7 @@ public:
         string_multimap itemGroup, existItemGroup;
         std::stringstream strStrm;
         unsigned int lineSize = 0;
-        char delimiter = count(content.begin(), content.end(), '\n') <= 1 ? '\r' : '\n';
+        char delimiter = count(content.begin(), content.end(), '\n') < 1 ? '\r' : '\n';
 
         EraseAll(); //first erase all data
         if(do_utf8_to_gbk && is_str_utf8(content))
@@ -718,7 +718,7 @@ public:
             content += "\n";
         }
 
-        return content;
+        return content.substr(0, content.size() - 2);
     }
 
     /**
