@@ -10,15 +10,24 @@ struct ruleset_content
     std::string rule_content;
 };
 
+struct extra_settings
+{
+    bool add_emoji = false;
+    bool remove_emoji = false;
+    bool append_proxy_type = true;
+    string_array include_remarks;
+};
 
-std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, bool clashR);
-std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, int surge_ver);
-std::string netchToSS(std::vector<nodeInfo> &nodes);
-std::string netchToSSR(std::vector<nodeInfo> &nodes);
-std::string netchToVMess(std::vector<nodeInfo> &nodes);
-std::string netchToQuanX(std::vector<nodeInfo> &nodes);
-std::string netchToQuan(std::vector<nodeInfo> &nodes);
-std::string netchToSSD(std::vector<nodeInfo> &nodes, std::string &group);
+
+std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, bool clashR, extra_settings &ext);
+std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, int surge_ver, extra_settings &ext);
+std::string netchToMellow(std::vector<nodeInfo> &nodes, std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, extra_settings &ext);
+std::string netchToSS(std::vector<nodeInfo> &nodes, extra_settings &ext);
+std::string netchToSSR(std::vector<nodeInfo> &nodes, extra_settings &ext);
+std::string netchToVMess(std::vector<nodeInfo> &nodes, extra_settings &ext);
+std::string netchToQuanX(std::vector<nodeInfo> &nodes, extra_settings &ext);
+std::string netchToQuan(std::vector<nodeInfo> &nodes, extra_settings &ext);
+std::string netchToSSD(std::vector<nodeInfo> &nodes, std::string &group, extra_settings &ext);
 std::string buildGistData(std::string name, std::string content);
 int uploadGist(std::string name, std::string path, std::string content, bool writeManageURL);
 

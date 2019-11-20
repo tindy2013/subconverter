@@ -21,6 +21,7 @@ std::vector<ruleset_content> ruleset_content_array;
 std::string listen_address = "127.0.0.1", default_url, managed_config_prefix;
 int listen_port = 25500, max_pending_connections = 10, max_concurrent_threads = 4;
 bool api_mode = true, write_managed_config = false, update_ruleset_on_request = false, overwrite_original_rules = true;
+bool print_debug_info = false;
 extern std::string custom_group;
 
 //safety lock for multi-thread
@@ -29,14 +30,12 @@ std::mutex on_configuring;
 
 //preferences
 string_array renames, emojis;
-bool add_emoji = false, remove_old_emoji = false;
+bool add_emoji = false, remove_old_emoji = false, append_proxy_type = true;
+std::string proxy_ruleset, proxy_subscription;
 
-//clash custom
 std::string clash_rule_base;
 string_array clash_extra_group;
-
-//surge custom
-std::string surge_rule_base, surfboard_rule_base;
+std::string surge_rule_base, surfboard_rule_base, mellow_rule_base;
 
 void setcd(char *argv[])
 {
@@ -65,8 +64,17 @@ std::string refreshRulesets()
     guarded_mutex guard(on_configuring);
     eraseElements(ruleset_content_array);
     string_array vArray;
-    std::string rule_group, rule_url, proxy = getSystemProxy();
+    std::string rule_group, rule_url;
     ruleset_content rc;
+
+    std::string proxy;
+    if(proxy_ruleset == "SYSTEM")
+        proxy = getSystemProxy();
+    else if(proxy_ruleset == "NONE")
+        proxy = "";
+    else
+        proxy = proxy_ruleset;
+
     for(std::string &x : rulesets)
     {
         /*
@@ -137,6 +145,14 @@ void readConf()
         surge_rule_base = ini.Get("surge_rule_base");
     if(ini.ItemExist("surfboard_rule_base"))
         surfboard_rule_base = ini.Get("surfboard_rule_base");
+    if(ini.ItemExist("mellow_rule_base"))
+        mellow_rule_base = ini.Get("mellow_rule_base");
+    if(ini.ItemExist("append_proxy_type"))
+        append_proxy_type = ini.GetBool("append_proxy_type");
+    if(ini.ItemExist("proxy_ruleset"))
+        proxy_ruleset = ini.Get("proxy_ruleset");
+    if(ini.ItemExist("proxy_subscription"))
+        proxy_subscription = ini.Get("proxy_subscription");
     if(ini.ItemPrefixExist("rename_node"))
         ini.GetAll("rename_node", renames);
 
@@ -181,6 +197,8 @@ void readConf()
         listen_port = ini.GetInt("port");
 
     ini.EnterSection("advanced");
+    if(ini.ItemExist("print_debug_info"))
+        print_debug_info = ini.GetBool("print_debug_info");
     if(ini.ItemExist("max_pending_connections"))
         max_pending_connections = ini.GetInt("max_pending_connections");
     if(ini.ItemExist("max_concurrent_threads"))
@@ -192,9 +210,34 @@ void readConf()
 
 std::string subconverter(RESPONSE_CALLBACK_ARGS)
 {
-    std::string target = getUrlArg(argument, "target"), url = UrlDecode(getUrlArg(argument, "url")), include = UrlDecode(getUrlArg(argument, "regex"));
+    std::string target = getUrlArg(argument, "target"), url = UrlDecode(getUrlArg(argument, "url")), include = UrlDecode(getUrlArg(argument, "regex")), emoji = getUrlArg(argument, "emoji");
     std::string group = UrlDecode(getUrlArg(argument, "group")), upload = getUrlArg(argument, "upload"), upload_path = getUrlArg(argument, "upload_path"), version = getUrlArg(argument, "ver");
+    std::string append_type = getUrlArg(argument, "append_type");
     std::string base_content, output_content;
+
+    extra_settings ext;
+    if(emoji == "true")
+    {
+        ext.add_emoji = ext.remove_emoji = true;
+    }
+    else
+    {
+        ext.add_emoji = add_emoji;
+        ext.remove_emoji = remove_old_emoji;
+    }
+    if(append_type.size())
+        ext.append_proxy_type = append_type == "true";
+    else
+        ext.append_proxy_type = append_proxy_type;
+
+    std::string proxy;
+    if(proxy_subscription == "SYSTEM")
+        proxy = getSystemProxy();
+    else if(proxy_subscription == "NONE")
+        proxy = "";
+    else
+        proxy = proxy_subscription;
+
     if(!url.size())
         url = default_url;
     if(!url.size() || !target.size())
@@ -207,15 +250,15 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     int groupID = 0;
     if(include.size())
     {
-        eraseElements(def_include_remarks);
-        def_include_remarks.emplace_back(include);
+        eraseElements(ext.include_remarks);
+        ext.include_remarks.emplace_back(include);
     }
     if(group.size())
         custom_group = group;
     for(std::string &x : urls)
     {
         std::cerr<<"Fetching node data from url '"<<x<<"'."<<std::endl;
-        addNodes(x, nodes, groupID);
+        addNodes(x, nodes, groupID, proxy);
         groupID++;
     }
     if(!nodes.size())
@@ -232,7 +275,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
 
         if(update_ruleset_on_request)
             refreshRulesets();
-        output_content = netchToClash(nodes, base_content, ruleset_content_array, clash_extra_group, target == "clashr");
+        output_content = netchToClash(nodes, base_content, ruleset_content_array, clash_extra_group, target == "clashr", ext);
         if(upload == "true")
             uploadGist("clash", upload_path, output_content, false);
         return output_content;
@@ -246,7 +289,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         else
             base_content = webGet(surge_rule_base, getSystemProxy());
 
-        output_content = netchToSurge(nodes, base_content, ruleset_content_array, clash_extra_group, surge_ver);
+        output_content = netchToSurge(nodes, base_content, ruleset_content_array, clash_extra_group, surge_ver, ext);
         if(upload == "true")
             uploadGist("surge" + version, upload_path, output_content, true);
 
@@ -262,7 +305,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         else
             base_content = webGet(surfboard_rule_base, getSystemProxy());
 
-        output_content = netchToSurge(nodes, base_content, ruleset_content_array, clash_extra_group, 2);
+        output_content = netchToSurge(nodes, base_content, ruleset_content_array, clash_extra_group, 2, ext);
         if(upload == "true")
             uploadGist("surfboard", upload_path, output_content, true);
 
@@ -270,10 +313,24 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
             output_content = "#!MANAGED-CONFIG " + managed_config_prefix + "/sub?" + argument + "\n\n" + output_content;
         return output_content;
     }
+    else if(target == "mellow")
+    {
+        std::cerr<<"Mellow"<<std::endl;
+        if(fileExist(mellow_rule_base))
+            base_content = fileGet(mellow_rule_base, false);
+        else
+            base_content = webGet(mellow_rule_base, getSystemProxy());
+
+        output_content = netchToMellow(nodes, base_content, ruleset_content_array, clash_extra_group, ext);
+        if(upload == "true")
+            uploadGist("mellow", upload_path, output_content, true);
+
+        return output_content;
+    }
     else if(target == "ss")
     {
         std::cerr<<"SS"<<std::endl;
-        output_content = netchToSS(nodes);
+        output_content = netchToSS(nodes, ext);
         if(upload == "true")
             uploadGist("ss", upload_path, output_content, false);
         return output_content;
@@ -281,7 +338,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     else if(target == "ssr")
     {
         std::cerr<<"SSR"<<std::endl;
-        output_content = netchToSSR(nodes);
+        output_content = netchToSSR(nodes, ext);
         if(upload == "true")
             uploadGist("ssr", upload_path, output_content, false);
         return output_content;
@@ -289,7 +346,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     else if(target == "v2ray")
     {
         std::cerr<<"v2rayN"<<std::endl;
-        output_content = netchToVMess(nodes);
+        output_content = netchToVMess(nodes, ext);
         if(upload == "true")
             uploadGist("v2ray", upload_path, output_content, false);
         return output_content;
@@ -297,7 +354,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     else if(target == "quan")
     {
         std::cerr<<"Quantumult"<<std::endl;
-        output_content = netchToQuan(nodes);
+        output_content = netchToQuan(nodes, ext);
         if(upload == "true")
             uploadGist("quan", upload_path, output_content, false);
         return output_content;
@@ -305,7 +362,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     else if(target == "quanx")
     {
         std::cerr<<"Quantumult X"<<std::endl;
-        output_content = netchToQuanX(nodes);
+        output_content = netchToQuanX(nodes, ext);
         if(upload == "true")
             uploadGist("quanx", upload_path, output_content, false);
         return output_content;
@@ -313,7 +370,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     else if(target == "ssd")
     {
         std::cerr<<"SSD"<<std::endl;
-        output_content = netchToSSD(nodes, group);
+        output_content = netchToSSD(nodes, group, ext);
         if(upload == "true")
             uploadGist("ssd", upload_path, output_content, false);
         return output_content;
@@ -375,6 +432,11 @@ int main(int argc, char *argv[])
     append_response("GET", "/surfboard", "text/plain;charset=utf-8", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
         return subconverter(argument + "&target=surfboard", postdata);
+    });
+
+    append_response("GET", "/mellow", "text/plain;charset=utf-8", [](RESPONSE_CALLBACK_ARGS) -> std::string
+    {
+        return subconverter(argument + "&target=mellow", postdata);
     });
 
     append_response("GET", "/ss", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string

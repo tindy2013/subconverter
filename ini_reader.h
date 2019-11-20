@@ -146,7 +146,7 @@ public:
                 continue;
             if(strLine[lineSize - 1] == '\r') //remove line break
             {
-                strLine.replace(lineSize - 1, 0, "");
+                strLine = strLine.substr(0, lineSize - 1);
                 lineSize--;
             }
             if(strLine.find("=") != strLine.npos) //is an item
@@ -354,7 +354,7 @@ public:
     /**
     *  @brief Retrieve all items in the given section.
     */
-    int GetItems(std::string section, std::multimap<std::string, std::string> &data)
+    int GetItems(std::string section, string_multimap &data)
     {
         if(!parsed || !SectionExist(section))
             return -1;

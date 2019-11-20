@@ -6,6 +6,6 @@
 
 #include "nodeinfo.h"
 
-void addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID);
+void addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID, std::string proxy = "");
 
 #endif // NODEMANIP_H_INCLUDED

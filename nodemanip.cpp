@@ -21,7 +21,7 @@ void copyNodes(std::vector<nodeInfo> *source, std::vector<nodeInfo> *dest)
     }
 }
 
-void addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID)
+void addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID, std::string proxy)
 {
     int linkType = -1;
     std::vector<nodeInfo> nodes;
@@ -51,7 +51,8 @@ void addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID)
         writeLog(LOG_TYPE_INFO, "Downloading subscription data...");
         if(strFind(link, "surge:///install-config")) //surge config link
             link = UrlDecode(getUrlArg(link, "url"));
-        strSub = webGet(link);
+        strSub = webGet(link, proxy);
+        /*
         if(strSub.size() == 0)
         {
             //try to get it again with system proxy
@@ -64,6 +65,7 @@ void addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID)
             else
                 writeLog(LOG_TYPE_WARN, "No system proxy is set. Skipping.");
         }
+        */
         if(strSub.size())
         {
             writeLog(LOG_TYPE_INFO, "Parsing subscription data...");
