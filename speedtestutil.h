@@ -15,8 +15,8 @@ void explodeVmess(std::string vmess, std::string custom_port, int local_port, no
 void explodeSSR(std::string ssr, bool ss_libev, bool libev, std::string custom_port, int local_port, nodeInfo &node);
 void explodeSS(std::string ss, bool libev, std::string custom_port, int local_port, nodeInfo &node);
 void explodeQuan(std::string quan, std::string custom_port, int local_port, nodeInfo &node);
+void explodeShadowrocket(std::string kit, std::string custom_port, int local_port, nodeInfo &node);
 void explodeKitsunebi(std::string kit, std::string custom_port, int local_port, nodeInfo &node);
-void explodeKitsunebiNew(std::string kit, std::string custom_port, int local_port, nodeInfo &node);
 void explode(std::string link, bool sslibev, bool ssrlibev, std::string custom_port, int local_port, nodeInfo &node);
 void explodeSSD(std::string link, bool libev, std::string custom_port, int local_port, std::vector<nodeInfo> &nodes);
 void explodeSub(std::string sub, bool sslibev, bool ssrlibev, std::string custom_port, int local_port, std::vector<nodeInfo> &nodes);

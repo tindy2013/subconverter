@@ -153,12 +153,12 @@ void explodeVmess(std::string vmess, std::string custom_port, int local_port, no
     std::vector<std::string> vArray;
     if(regMatch(vmess, "vmess://(.*?)\\?(.*)")) //kitsunebi style link
     {
-        explodeKitsunebi(vmess, custom_port, local_port, node);
+        explodeShadowrocket(vmess, custom_port, local_port, node);
         return;
     }
     else if(regMatch(vmess, "vmess1://(.*?)\\?(.*)")) // new kitsunebi style link
     {
-        explodeKitsunebiNew(vmess, custom_port, local_port, node);
+        explodeKitsunebi(vmess, custom_port, local_port, node);
         return;
     }
     vmess = urlsafe_base64_decode(regReplace(vmess, "(vmess|vmess1)://", ""));
@@ -971,7 +971,7 @@ void explodeClash(Node yamlnode, std::string custom_port, int local_port, std::v
     return;
 }
 
-void explodeKitsunebi(std::string kit, std::string custom_port, int local_port, nodeInfo &node)
+void explodeShadowrocket(std::string kit, std::string custom_port, int local_port, nodeInfo &node)
 {
     std::string ps, add, port, type, id, aid, net = "tcp", path, host, tls, cipher, remarks;
     std::string addition;
@@ -993,6 +993,9 @@ void explodeKitsunebi(std::string kit, std::string custom_port, int local_port, 
     host = getUrlArg(addition, "wsHost");
     path = getUrlArg(addition, "wspath");
 
+    if(aid == "")
+        aid = "0";
+
     if(remarks == "")
         remarks = add + ":" + port;
 
@@ -1004,7 +1007,7 @@ void explodeKitsunebi(std::string kit, std::string custom_port, int local_port, 
     node.proxyStr = vmessConstruct(add, port, type, id, aid, net, cipher, path, host, tls, local_port);
 }
 
-void explodeKitsunebiNew(std::string kit, std::string custom_port, int local_port, nodeInfo &node)
+void explodeKitsunebi(std::string kit, std::string custom_port, int local_port, nodeInfo &node)
 {
     std::string ps, add, port, type, id, aid = "0", net = "tcp", path, host, tls, cipher = "auto", remarks;
     std::string addition;

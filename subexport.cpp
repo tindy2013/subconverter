@@ -318,9 +318,11 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
                 strLine = replace_all_distinct(strLine, "\r", ""); //remove line break
                 if(!strLine.size() || strLine.find("#") == 0 || strLine.find(";") == 0) //remove comments
                     continue;
-                if(surge_ver < 4 && strLine.find("IP-CIDR") == 0)
-                    strLine = replace_all_distinct(strLine, ",no-resolve", "");
                 strLine += "," + rule_group;
+                if(strLine.find("IP-CIDR") == 0)
+                    strLine = regReplace(strLine, "^(.*)(,no-resolve)(.*)$", "$1$3$2");
+                else if(strLine.find("DOMAIN-SUFFIX") == 0)
+                    strLine = regReplace(strLine, "^(.*)(,force-remote-dns)(.*)$", "$1$3$2");
                 allRules.emplace_back(strLine);
             }
         }
