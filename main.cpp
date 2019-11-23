@@ -14,6 +14,7 @@
 #include "webget.h"
 #include "webserver.h"
 #include "subexport.h"
+#include "multithread.h"
 
 //common settings
 string_array def_exclude_remarks, def_include_remarks, rulesets;
@@ -24,9 +25,8 @@ bool api_mode = true, write_managed_config = false, update_ruleset_on_request = 
 bool print_debug_info = false;
 extern std::string custom_group;
 
-//safety lock for multi-thread
-typedef std::lock_guard<std::mutex> guarded_mutex;
-std::mutex on_configuring;
+//multi-thread lock
+extern std::mutex on_configuring;
 
 //preferences
 string_array renames, emojis;
@@ -124,8 +124,7 @@ void readConf()
     eraseElements(def_include_remarks);
     eraseElements(clash_extra_group);
     eraseElements(rulesets);
-    eraseElements(renames);
-    eraseElements(emojis);
+    string_array emojis_temp, renames_temp;
     INIReader ini;
     //ini.do_utf8_to_gbk = true;
     ini.ParseFile("pref.ini");
@@ -154,7 +153,10 @@ void readConf()
     if(ini.ItemExist("proxy_subscription"))
         proxy_subscription = ini.Get("proxy_subscription");
     if(ini.ItemPrefixExist("rename_node"))
-        ini.GetAll("rename_node", renames);
+    {
+        ini.GetAll("rename_node", renames_temp);
+        safe_set_renames(renames_temp);
+    }
 
     ini.EnterSection("managed_config");
     if(ini.ItemExist("write_managed_config"))
@@ -168,7 +170,10 @@ void readConf()
     if(ini.ItemExist("remove_old_emoji"))
         remove_old_emoji = ini.GetBool("remove_old_emoji");
     if(ini.ItemPrefixExist("rule"))
-        ini.GetAll("rule", emojis);
+    {
+        ini.GetAll("rule", emojis_temp);
+        safe_set_emojis(emojis_temp);
+    }
 
     ini.EnterSection("ruleset");
     if(ini.GetBool("enabled"))
@@ -257,6 +262,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         custom_group = group;
     for(std::string &x : urls)
     {
+        x = trim(x);
         std::cerr<<"Fetching node data from url '"<<x<<"'."<<std::endl;
         addNodes(x, nodes, groupID, proxy);
         groupID++;

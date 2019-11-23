@@ -5,6 +5,7 @@
 #include "webget.h"
 #include "subexport.h"
 #include "printout.h"
+#include "multithread.h"
 
 #include <iostream>
 #include <rapidjson/writer.h>
@@ -19,7 +20,9 @@ extern string_array ss_ciphers, ssr_ciphers;
 
 std::string vmessConstruct(std::string add, std::string port, std::string type, std::string id, std::string aid, std::string net, std::string cipher, std::string path, std::string host, std::string tls, int local_port)
 {
-    if(path == "")
+    if(!port.size())
+        port = "0";
+    if(!path.size())
         path = "/";
     rapidjson::StringBuffer sb;
     rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
@@ -67,6 +70,8 @@ std::string vmessConstruct(std::string add, std::string port, std::string type, 
 
 std::string ssrConstruct(std::string group, std::string remarks, std::string remarks_base64, std::string server, std::string port, std::string protocol, std::string method, std::string obfs, std::string password, std::string obfsparam, std::string protoparam, int local_port, bool libev)
 {
+    if(!port.size())
+        port = "0";
     rapidjson::StringBuffer sb;
     rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
     writer.StartObject();
@@ -96,6 +101,8 @@ std::string ssrConstruct(std::string group, std::string remarks, std::string rem
 
 std::string ssConstruct(std::string server, std::string port, std::string password, std::string method, std::string plugin, std::string pluginopts, std::string remarks, int local_port, bool libev)
 {
+    if(!port.size())
+        port = "0";
     rapidjson::StringBuffer sb;
     rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
     writer.StartObject();
@@ -121,6 +128,8 @@ std::string ssConstruct(std::string server, std::string port, std::string passwo
 
 std::string socksConstruct(std::string remarks, std::string server, std::string port, std::string username, std::string password)
 {
+    if(!port.size())
+        port = "0";
     rapidjson::StringBuffer sb;
     rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
     writer.StartObject();
@@ -142,6 +151,8 @@ std::string socksConstruct(std::string remarks, std::string server, std::string 
 
 std::string vmessLinkConstruct(std::string remarks, std::string add, std::string port, std::string type, std::string id, std::string aid, std::string net, std::string path, std::string host, std::string tls)
 {
+    if(!port.size())
+        port = "0";
     rapidjson::StringBuffer sb;
     rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
     writer.StartObject();
@@ -173,9 +184,9 @@ std::string vmessLinkConstruct(std::string remarks, std::string add, std::string
 
 std::string nodeRename(std::string remark)
 {
-    string_array vArray;
+    string_array vArray, renames_temp = safe_get_renames();
 
-    for(std::string &x : renames)
+    for(std::string &x : renames_temp)
     {
         vArray = split(x, "@");
         if(vArray.size() == 1)
@@ -211,8 +222,8 @@ std::string addEmoji(std::string remark)
 {
     if(!add_emoji)
         return remark;
-    string_array vArray;
-    for(std::string &x : emojis)
+    string_array vArray, emojis_temp = safe_get_emojis();
+    for(std::string &x : emojis_temp)
     {
         vArray = split(x, ",");
         if(vArray.size() != 2)
@@ -228,6 +239,7 @@ std::string addEmoji(std::string remark)
 
 void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset_content_array)
 {
+    try_config_lock();
     string_array allRules, vArray;
     std::string rule_group, rule_path, retrived_rules, strLine;
     std::stringstream strStrm;
@@ -276,6 +288,7 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset
 
 void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_content_array, int surge_ver)
 {
+    try_config_lock();
     string_array allRules, vArray;
     std::string rule_group, rule_path, retrived_rules, strLine;
     std::stringstream strStrm;
@@ -336,6 +349,7 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
 
 std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, bool clashR, extra_settings &ext)
 {
+    try_config_lock();
     YAML::Node yamlnode, proxies, singleproxy, singlegroup, original_groups;
     rapidjson::Document json;
     std::string type, remark, hostname, port, username, password, method;
@@ -543,6 +557,7 @@ std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &base_conf, s
 
 std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, int surge_ver, extra_settings &ext)
 {
+    try_config_lock();
     rapidjson::Document json;
     INIReader ini;
     std::string proxy;
@@ -1109,6 +1124,7 @@ std::string netchToSSD(std::vector<nodeInfo> &nodes, std::string &group, extra_s
 
 std::string netchToMellow(std::vector<nodeInfo> &nodes, std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, extra_settings &ext)
 {
+    try_config_lock();
     rapidjson::Document json;
     INIReader ini;
     std::string proxy;
@@ -1215,11 +1231,7 @@ std::string netchToMellow(std::vector<nodeInfo> &nodes, std::string &base_conf, 
 
         for(unsigned int i = 2; i < rules_upper_bound; i++)
         {
-            if(vArray[i].find("[]") == 0)
-            {
-                filtered_nodelist.emplace_back(vArray[i].substr(2));
-            }
-            else if(vArray[i].find("!!GROUP=") == 0)
+            if(vArray[i].find("!!GROUP=") == 0)
             {
                 group = vArray[i].substr(8);
                 for(nodeInfo &y : nodelist)
@@ -1248,7 +1260,7 @@ std::string netchToMellow(std::vector<nodeInfo> &nodes, std::string &base_conf, 
         }
 
         if(!filtered_nodelist.size())
-            filtered_nodelist.emplace_back("DIRECT");
+            filtered_nodelist = remarks_list;
 
         //don't process these for now
         /*
@@ -1261,7 +1273,7 @@ std::string netchToMellow(std::vector<nodeInfo> &nodes, std::string &base_conf, 
 
         proxy = vArray[0] + ", ";
         for(std::string &y : filtered_nodelist)
-            proxy += "\"" + y + "\":";
+            proxy += y + ":";
         proxy = proxy.substr(0, proxy.size() - 1);
         proxy += ", latency, interval=300, timeout=6"; //use hard-coded values for now
 
