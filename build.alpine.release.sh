@@ -23,17 +23,17 @@ cd bzip2
 make install -j4 > /dev/null
 cd ..
 
-g++ -Wall -std=c++17 -fexceptions -DCURL_STATICLIB -c logger.cpp -o obj\logger.o
-g++ -Wall -std=c++17 -fexceptions -DCURL_STATICLIB -c main.cpp -o obj\main.o
-g++ -Wall -std=c++17 -fexceptions -DCURL_STATICLIB -c misc.cpp -o obj\misc.o
-g++ -Wall -std=c++17 -fexceptions -DCURL_STATICLIB -c multithread.cpp -o obj\multithread.o
-g++ -Wall -std=c++17 -fexceptions -DCURL_STATICLIB -c nodemanip.cpp -o obj\nodemanip.o
-g++ -Wall -std=c++17 -fexceptions -DCURL_STATICLIB -c rapidjson_extra.cpp -o obj\rapidjson_extra.o
-g++ -Wall -std=c++17 -fexceptions -DCURL_STATICLIB -c speedtestutil.cpp -o obj\speedtestutil.o
-g++ -Wall -std=c++17 -fexceptions -DCURL_STATICLIB -c subexport.cpp -o obj\subexport.o
-g++ -Wall -std=c++17 -fexceptions -DCURL_STATICLIB -c webget.cpp -o obj\webget.o
-g++ -Wall -std=c++17 -fexceptions -DCURL_STATICLIB -c webserver_libevent.cpp -o obj\webserver_libevent.o
-g++ -o subconverter obj\logger.o obj\main.o obj\misc.o obj\multithread.o obj\nodemanip.o obj\rapidjson_extra.o obj\speedtestutil.o obj\subexport.o obj\webget.o obj\webserver_libevent.o  -static -levent -lyaml-cpp -lcurl -lssl -lcrypto -lz -lbz2 -ldl -lpthread -O3 -s  
+g++ -Wall -std=c++17 -fexceptions -DCURL_STATICLIB -c logger.cpp -o obj/logger.o
+g++ -Wall -std=c++17 -fexceptions -DCURL_STATICLIB -c main.cpp -o obj/main.o
+g++ -Wall -std=c++17 -fexceptions -DCURL_STATICLIB -c misc.cpp -o obj/misc.o
+g++ -Wall -std=c++17 -fexceptions -DCURL_STATICLIB -c multithread.cpp -o obj/multithread.o
+g++ -Wall -std=c++17 -fexceptions -DCURL_STATICLIB -c nodemanip.cpp -o obj/nodemanip.o
+g++ -Wall -std=c++17 -fexceptions -DCURL_STATICLIB -c rapidjson_extra.cpp -o obj/rapidjson_extra.o
+g++ -Wall -std=c++17 -fexceptions -DCURL_STATICLIB -c speedtestutil.cpp -o obj/speedtestutil.o
+g++ -Wall -std=c++17 -fexceptions -DCURL_STATICLIB -c subexport.cpp -o obj/subexport.o
+g++ -Wall -std=c++17 -fexceptions -DCURL_STATICLIB -c webget.cpp -o obj/webget.o
+g++ -Wall -std=c++17 -fexceptions -DCURL_STATICLIB -c webserver_libevent.cpp -o obj/webserver_libevent.o
+g++ -o subconverter obj/logger.o obj/main.o obj/misc.o obj/multithread.o obj/nodemanip.o obj/rapidjson_extra.o obj/speedtestutil.o obj/subexport.o obj/webget.o obj/webserver_libevent.o  -static -levent -lyaml-cpp -lcurl -lssl -lcrypto -lz -lbz2 -ldl -lpthread -O3 -s  
 
 chmod +rx subconverter
 chmod +r pref.ini *.yml *.conf README* rules/*

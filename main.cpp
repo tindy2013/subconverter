@@ -269,6 +269,8 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     }
     if(!nodes.size())
         return "No nodes were found!";
+    if(update_ruleset_on_request)
+        refreshRulesets();
 
     std::cerr<<"Generate target: ";
     if(target == "clash" || target == "clashr")
@@ -279,8 +281,6 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         else
             base_content = webGet(clash_rule_base, getSystemProxy());
 
-        if(update_ruleset_on_request)
-            refreshRulesets();
         output_content = netchToClash(nodes, base_content, ruleset_content_array, clash_extra_group, target == "clashr", ext);
         if(upload == "true")
             uploadGist("clash", upload_path, output_content, false);
