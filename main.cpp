@@ -22,7 +22,7 @@ std::vector<ruleset_content> ruleset_content_array;
 std::string listen_address = "127.0.0.1", default_url, managed_config_prefix;
 int listen_port = 25500, max_pending_connections = 10, max_concurrent_threads = 4;
 bool api_mode = true, write_managed_config = false, update_ruleset_on_request = false, overwrite_original_rules = true;
-bool print_debug_info = false;
+bool print_debug_info = false, cfw_child_process = false;
 extern std::string custom_group;
 
 //multi-thread lock
@@ -219,6 +219,9 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     std::string group = UrlDecode(getUrlArg(argument, "group")), upload = getUrlArg(argument, "upload"), upload_path = getUrlArg(argument, "upload_path"), version = getUrlArg(argument, "ver");
     std::string append_type = getUrlArg(argument, "append_type");
     std::string base_content, output_content;
+    string_array extra_group;
+    std::string groups = urlsafe_base64_decode(getUrlArg(argument, "groups"));
+    extra_group = split(groups, "`");
 
     extra_settings ext;
     if(emoji == "true")
@@ -247,7 +250,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         url = default_url;
     if(!url.size() || !target.size())
         return "Invalid request!";
-    if(!api_mode)
+    if(!api_mode || cfw_child_process)
         readConf();
 
     string_array urls = split(url, "|");
@@ -269,7 +272,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     }
     if(!nodes.size())
         return "No nodes were found!";
-    if(update_ruleset_on_request)
+    if(update_ruleset_on_request || cfw_child_process)
         refreshRulesets();
 
     std::cerr<<"Generate target: ";
@@ -385,6 +388,15 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     {
         std::cerr<<"Unspecified"<<std::endl;
         return std::string();
+    }
+}
+
+void chkArg(int argc, char *argv[])
+{
+    for(int i = 1; i < argc; i++)
+    {
+        if(strcmp(argv[i], "-cfw") == 0)
+            cfw_child_process = true;
     }
 }
 

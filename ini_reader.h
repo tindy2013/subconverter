@@ -712,7 +712,7 @@ public:
             for(auto &y : x.second)
             {
                 if(y.first != "{NONAME}")
-                    content += y.first + " = ";
+                    content += y.first + "=";
                 content += y.second + "\n";
             }
             content += "\n";

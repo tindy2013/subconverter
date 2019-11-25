@@ -168,6 +168,8 @@ void explodeVmess(std::string vmess, std::string custom_port, int local_port, no
         return;
     }
     jsondata.Parse(vmess.data());
+    if(jsondata.HasParseError())
+        return;
 
     version = "1"; //link without version will treat as version 1
     GetMember(jsondata, "v", version); //try to get version
@@ -220,6 +222,8 @@ void explodeVmessConf(std::string content, std::string custom_port, int local_po
     std::map<std::string, std::string>::iterator iter;
 
     json.Parse(content.data());
+    if(json.HasParseError())
+        return;
     if(json.HasMember("outbounds")) //single config
     {
         if(json["outbounds"].Size() > 0 && json["outbounds"][0].HasMember("settings") && json["outbounds"][0]["settings"].HasMember("vnext") && json["outbounds"][0]["settings"]["vnext"].Size() > 0)
@@ -389,6 +393,8 @@ void explodeSSD(std::string link, bool libev, std::string custom_port, int local
     std::string plugin, pluginopts;
     link = urlsafe_base64_decode(link.substr(6));
     jsondata.Parse(link.c_str());
+    if(jsondata.HasParseError())
+        return;
     if(!jsondata.HasMember("servers"))
         return;
     GetMember(jsondata, "airport", group);
@@ -444,6 +450,8 @@ void explodeSSAndroid(std::string ss, bool libev, std::string custom_port, int l
     //first add some extra data before parsing
     ss = "{\"nodes\":" + ss + "}";
     json.Parse(ss.data());
+    if(json.HasParseError())
+        return;
 
     for(unsigned int i = 0; i < json["nodes"].Size(); i++)
     {
@@ -487,6 +495,8 @@ void explodeSSConf(std::string content, std::string custom_port, int local_port,
     int index = nodes.size();
 
     json.Parse(content.data());
+    if(json.HasParseError())
+        return;
     if(json.HasMember("local_port") && json.HasMember("local_address")) //single libev config
     {
         server = GetMember(json, "server");
@@ -605,6 +615,8 @@ void explodeSSRConf(std::string content, std::string custom_port, int local_port
     int index = nodes.size();
 
     json.Parse(content.data());
+    if(json.HasParseError())
+        return;
     if(json.HasMember("local_port") && json.HasMember("local_address")) //single libev config
     {
         method = GetMember(json, "method");
@@ -775,6 +787,8 @@ void explodeNetch(std::string netch, bool ss_libev, bool ssr_libev, std::string 
     netch = urlsafe_base64_decode(netch.substr(8));
 
     json.Parse(netch.data());
+    if(json.HasParseError())
+        return;
     json["Type"] >> type;
     json["Remark"] >> remark;
     json["Hostname"] >> address;
@@ -1307,6 +1321,8 @@ void explodeSSTap(std::string sstap, std::string custom_port, int local_port, st
     std::string protocol, protoparam, obfs, obfsparam;
     unsigned int index = nodes.size();
     json.Parse(sstap.data());
+    if(json.HasParseError())
+        return;
 
     for(unsigned int i = 0; i < json["configs"].Size(); i++)
     {
@@ -1372,6 +1388,8 @@ void explodeNetchConf(std::string netch, bool ss_libev, bool ssr_libev, std::str
     unsigned int index = nodes.size();
 
     json.Parse(netch.data());
+    if(json.HasParseError())
+        return;
 
     if(!json.HasMember("Server"))
         return;
@@ -1559,7 +1577,7 @@ void explodeSub(std::string sub, bool sslibev, bool ssrlibev, std::string custom
     sub = urlsafe_base64_decode(sub);
     strstream << sub;
     unsigned int index = nodes.size();
-    char delimiter = split(sub, "\n").size() < 1 ? split(sub, "\r").size() < 1 ? ' ' : '\r' : '\n';
+    char delimiter = count(sub.begin(), sub.end(), '\n') < 1 ? count(sub.begin(), sub.end(), '\r') < 1 ? ' ' : '\r' : '\n';
     while(getline(strstream, strLink, delimiter))
     {
         explode(strLink, sslibev, ssrlibev, custom_port, local_port, node);
