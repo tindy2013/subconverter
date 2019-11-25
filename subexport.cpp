@@ -24,6 +24,8 @@ std::string vmessConstruct(std::string add, std::string port, std::string type, 
         port = "0";
     if(!path.size())
         path = "/";
+    if(!host.size())
+        host = add;
     rapidjson::StringBuffer sb;
     rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
     writer.StartObject();
@@ -336,6 +338,7 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
                     strLine = regReplace(strLine, "^(.*)(,no-resolve)(.*)$", "$1$3$2");
                 else if(strLine.find("DOMAIN-SUFFIX") == 0)
                     strLine = regReplace(strLine, "^(.*)(,force-remote-dns)(.*)$", "$1$3$2");
+                //strLine = regReplace(strLine, "^(.*?)(,.*?)(,.*)(,.*)$", "$1$2$4$3")
                 allRules.emplace_back(strLine);
             }
         }
@@ -599,22 +602,22 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
         method = GetMember(json, "EncryptMethod");
         proxy = "";
 
-        if(type == "SS")
+        if(x.linkType == SPEEDTEST_MESSAGE_FOUNDSS)
         {
             plugin = GetMember(json, "Plugin");
             pluginopts = GetMember(json, "PluginOption");
             if(surge_ver >= 3)
             {
-                proxy = "ss," + hostname + "," + port + ",encrypt-method=" + method + ",password=" + password;
+                proxy = "ss, " + hostname + ", " + port + ", encrypt-method=" + method + ", password=" + password;
             }
             else
             {
-                proxy = "custom,"  + hostname + "," + port + "," + method + "," + password + ",https://github.com/ConnersHua/SSEncrypt/raw/master/SSEncrypt.module";
+                proxy = "custom, "  + hostname + ", " + port + ", " + method + ", " + password + ", https://github.com/ConnersHua/SSEncrypt/raw/master/SSEncrypt.module";
             }
             if(plugin.size() && pluginopts.size())
                 proxy += "," + replace_all_distinct(pluginopts, ";", ",");
         }
-        else if(type == "VMess")
+        else if(x.linkType == SPEEDTEST_MESSAGE_FOUNDVMESS)
         {
             if(surge_ver < 4)
                 continue;
@@ -624,26 +627,26 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
             host = GetMember(json, "Host");
             path = GetMember(json, "Path");
             tlssecure = GetMember(json, "TLSSecure") == "true";
-            proxy = "vmess," + hostname + "," + port + "," + method + ",username=" + id + ",tls=" + (tlssecure ? "true" : "false");
+            proxy = "vmess, " + hostname + ", " + port + ", username=" + id + ", tls=" + (tlssecure ? "true" : "false");
             if(transproto == "ws")
             {
-                proxy += ",ws=true,ws-path=" + path;
+                proxy += ", ws=true, ws-path=" + path + ", ws-headers=Host:" + host;
             }
             else if(transproto == "kcp" || transproto == "h2" || transproto == "quic")
                 continue;
         }
-        else if(type == "Socks5")
+        else if(x.linkType == SPEEDTEST_MESSAGE_FOUNDSOCKS)
         {
-            proxy = "socks5," + hostname + "," + port;
-            if(username != "" && password != "")
-                proxy += "," + username + "," + password;
+            proxy = "socks5, " + hostname + ", " + port;
+            if(username.size() && password.size())
+                proxy += ", " + username + ", " + password;
         }
         else if(type == "HTTP" || type == "HTTPS")
         {
             proxy = "http," + hostname + "," + port;
             if(username != "" && password != "")
-                proxy += "," + username + "," + password;
-            proxy += std::string(",tls=") + (type == "HTTPS" ? "true" : "false");
+                proxy += ", " + username + ", " + password;
+            proxy += std::string(", tls=") + (type == "HTTPS" ? "true" : "false");
         }
         else
             continue;
@@ -1281,13 +1284,6 @@ std::string netchToMellow(std::vector<nodeInfo> &nodes, std::string &base_conf, 
     }
 
     rulesetToSurge(ini, ruleset_content_array, 2);
-
-    string_multimap rules;
-    ini.GetItems("Rules", rules);
-    ini.EraseSection("Rules");
-    ini.SetCurrentSection("RoutingRule");
-    for(auto &x : rules)
-        ini.Set("{NONAME}", x.second);
 
     return ini.ToString();
 }
