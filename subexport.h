@@ -15,6 +15,9 @@ struct extra_settings
     bool add_emoji = false;
     bool remove_emoji = false;
     bool append_proxy_type = true;
+    bool udp = false;
+    bool tfo = false;
+    bool nodelist = false;
     string_array include_remarks;
 };
 

@@ -144,6 +144,11 @@ std::string socksConstruct(std::string remarks, std::string server, std::string 
 {
     return "user=" + username + "&pass=" + password;
 }
+
+std::string httpConstruct(std::string remarks, std::string server, std::string port, std::string username, std::string password)
+{
+    return "user=" + username + "&pass=" + password;
+}
 */
 
 void explodeVmess(std::string vmess, std::string custom_port, int local_port, nodeInfo &node)
@@ -962,6 +967,19 @@ void explodeClash(Node yamlnode, std::string custom_port, int local_port, std::v
             node.linkType = SPEEDTEST_MESSAGE_FOUNDSSR;
             node.proxyStr = ssrConstruct(group, ps, base64_encode(ps), server, port, protocol, cipher, obfs, password, obfsparam, protoparam, local_port, ssr_libev);
         }
+        else if(proxytype == "http")
+        {
+            group = HTTP_DEFAULT_GROUP;
+
+            if(yamlnode["Proxy"][i]["username"].IsDefined() && yamlnode["Proxy"][i]["password"].IsDefined())
+            {
+                yamlnode["Proxy"][i]["username"] >> user;
+                yamlnode["Proxy"][i]["password"] >> password;
+            }
+
+            node.linkType = SPEEDTEST_MESSAGE_FOUNDHTTP;
+            node.proxyStr = httpConstruct(ps, server, port, user, password);
+        }
         else
             continue;
 
@@ -1238,6 +1256,17 @@ bool explodeSurge(std::string surge, std::string custom_port, int local_port, st
             node.linkType = SPEEDTEST_MESSAGE_FOUNDVMESS;
             node.group = V2RAY_DEFAULT_GROUP;
             node.proxyStr = vmessConstruct(server, port, "", id, "0", net, method, path, host, tls, local_port);
+        }
+        else if(configs[0] == "http") //http proxy
+        {
+            node.linkType = SPEEDTEST_MESSAGE_FOUNDHTTP;
+            node.group = HTTP_DEFAULT_GROUP;
+            if(configs.size() >= 5)
+            {
+                username = trim(configs[2]);
+                password = trim(configs[3]);
+            }
+            node.proxyStr = httpConstruct(remarks, server, port, username, password);
         }
         else if(remarks == "shadowsocks") //quantumult style ss/ssr link
         {

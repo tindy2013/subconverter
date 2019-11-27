@@ -57,12 +57,14 @@
 #define SPEEDTEST_MESSAGE_GOTUPD 31
 #define SPEEDTEST_MESSAGE_FOUNDSSTAP 32
 #define SPEEDTEST_MESSAGE_FOUNDNETCH 33
+#define SPEEDTEST_MESSAGE_FOUNDHTTP 34
 #define SPEEDTEST_MESSAGE_EOF 49
 
 #define SS_DEFAULT_GROUP "SSProvider"
 #define SSR_DEFAULT_GROUP "SSRProvider"
 #define V2RAY_DEFAULT_GROUP "V2RayProvider"
 #define SOCKS_DEFAULT_GROUP "SocksProvider"
+#define HTTP_DEFAULT_GROUP "HTTPProvider"
 
 void printMsg(int index, nodeInfo *node, bool rpcmode);
 void printMsgWithDict(int index, bool rpcmode, std::vector<std::string> dict, std::vector<std::string> trans);

@@ -11,6 +11,7 @@ std::string vmessConstruct(std::string add, std::string port, std::string type, 
 std::string ssrConstruct(std::string group, std::string remarks, std::string remarks_base64, std::string server, std::string port, std::string protocol, std::string method, std::string obfs, std::string password, std::string obfsparam, std::string protoparam, int local_port, bool libev);
 std::string ssConstruct(std::string server, std::string port, std::string password, std::string method, std::string plugin, std::string pluginopts, std::string remarks, int local_port, bool libev);
 std::string socksConstruct(std::string remarks, std::string server, std::string port, std::string username, std::string password);
+std::string httpConstruct(std::string remarks, std::string server, std::string port, std::string username, std::string password);
 void explodeVmess(std::string vmess, std::string custom_port, int local_port, nodeInfo &node);
 void explodeSSR(std::string ssr, bool ss_libev, bool libev, std::string custom_port, int local_port, nodeInfo &node);
 void explodeSS(std::string ss, bool libev, std::string custom_port, int local_port, nodeInfo &node);

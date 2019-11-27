@@ -151,6 +151,29 @@ std::string socksConstruct(std::string remarks, std::string server, std::string 
     return sb.GetString();
 }
 
+std::string httpConstruct(std::string remarks, std::string server, std::string port, std::string username, std::string password)
+{
+    if(!port.size())
+        port = "0";
+    rapidjson::StringBuffer sb;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
+    writer.StartObject();
+    writer.Key("Type");
+    writer.String("HTTP");
+    writer.Key("Remark");
+    writer.String(remarks.data());
+    writer.Key("Hostname");
+    writer.String(server.data());
+    writer.Key("Port");
+    writer.Int(stoi(port));
+    writer.Key("Username");
+    writer.String(username.data());
+    writer.Key("Password");
+    writer.String(password.data());
+    writer.EndObject();
+    return sb.GetString();
+}
+
 std::string vmessLinkConstruct(std::string remarks, std::string add, std::string port, std::string type, std::string id, std::string aid, std::string net, std::string path, std::string host, std::string tls)
 {
     if(!port.size())
@@ -461,6 +484,8 @@ std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &base_conf, s
         singleproxy["name"] = remark;
         singleproxy["server"] = hostname;
         singleproxy["port"] = (unsigned short)stoi(port);
+        if(ext.udp)
+            singleproxy["udp"] = true;
         singleproxy.SetStyle(YAML::EmitterStyle::Flow);
         proxies.push_back(singleproxy);
         remarks_list.emplace_back(remark);
@@ -568,6 +593,7 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
     std::string plugin, pluginopts;
     std::string id, aid, transproto, faketype, host, path, quicsecure, quicsecret;
     std::string url, group;
+    std::string output_nodelist;
     std::vector<nodeInfo> nodelist;
     bool tlssecure;
     string_array vArray, remarks_list, filtered_nodelist;
@@ -650,10 +676,22 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
         }
         else
             continue;
-        ini.Set(remark, proxy);
+
+        if(ext.tfo)
+            proxy += ", tfo=true";
+        if(ext.udp)
+            proxy += ", udp-relay=true";
+
+        if(ext.nodelist)
+            output_nodelist += remark + " = " + proxy + "\n";
+        else
+            ini.Set("{NONAME}", remark + " = " + proxy);
         nodelist.emplace_back(x);
         remarks_list.emplace_back(remark);
     }
+
+    if(ext.nodelist)
+        return output_nodelist;
 
     ini.SetCurrentSection("Proxy Group");
     for(std::string &x : extra_proxy_group)
@@ -1017,6 +1055,10 @@ std::string netchToQuanX(std::vector<nodeInfo> &nodes, extra_settings &ext)
         default:
             continue;
         }
+        if(ext.tfo)
+            proxyStr += ", fast-open=true";
+        if(ext.udp)
+            proxyStr += ", udp-relay=true";
         proxyStr += ", tag=" + remark;
         allLinks += proxyStr + "\n";
     }

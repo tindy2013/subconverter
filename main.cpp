@@ -217,7 +217,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
 {
     std::string target = getUrlArg(argument, "target"), url = UrlDecode(getUrlArg(argument, "url")), include = UrlDecode(getUrlArg(argument, "regex")), emoji = getUrlArg(argument, "emoji");
     std::string group = UrlDecode(getUrlArg(argument, "group")), upload = getUrlArg(argument, "upload"), upload_path = getUrlArg(argument, "upload_path"), version = getUrlArg(argument, "ver");
-    std::string append_type = getUrlArg(argument, "append_type");
+    std::string append_type = getUrlArg(argument, "append_type"), tfo = getUrlArg(argument, "tfo"), udp = getUrlArg(argument, "udp"), nodelist = getUrlArg(argument, "list");
     std::string base_content, output_content;
     string_array extra_group;
     std::string groups = urlsafe_base64_decode(getUrlArg(argument, "groups"));
@@ -245,6 +245,10 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         proxy = "";
     else
         proxy = proxy_subscription;
+
+    ext.tfo = tfo == "true";
+    ext.udp = udp == "true";
+    ext.nodelist = nodelist == "true";
 
     if(!url.size())
         url = default_url;
@@ -302,7 +306,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         if(upload == "true")
             uploadGist("surge" + version, upload_path, output_content, true);
 
-        if(write_managed_config && managed_config_prefix.size())
+        if(write_managed_config && managed_config_prefix.size() && !ext.nodelist)
             output_content = "#!MANAGED-CONFIG " + managed_config_prefix + "/sub?" + argument + "\n\n" + output_content;
         return output_content;
     }
