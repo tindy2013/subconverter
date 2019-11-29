@@ -21,7 +21,7 @@ void copyNodes(std::vector<nodeInfo> *source, std::vector<nodeInfo> *dest)
     }
 }
 
-void addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID, std::string proxy)
+void addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID, std::string proxy, string_array &exclude_remarks, string_array &include_remarks)
 {
     int linkType = -1;
     std::vector<nodeInfo> nodes;
@@ -69,7 +69,7 @@ void addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID, st
         if(strSub.size())
         {
             writeLog(LOG_TYPE_INFO, "Parsing subscription data...");
-            explodeConfContent(strSub, override_conf_port, socksport, ss_libev, ssr_libev, nodes);
+            explodeConfContent(strSub, override_conf_port, socksport, ss_libev, ssr_libev, nodes, exclude_remarks, include_remarks);
             for(nodeInfo &x : nodes)
                 x.groupID = groupID;
             copyNodes(&nodes, &allNodes);
@@ -83,7 +83,7 @@ void addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID, st
         if(api_mode)
             break;
         writeLog(LOG_TYPE_INFO, "Parsing configuration file data...");
-        if(explodeConf(link, override_conf_port, socksport, ss_libev, ssr_libev, nodes) == SPEEDTEST_ERROR_UNRECOGFILE)
+        if(explodeConf(link, override_conf_port, socksport, ss_libev, ssr_libev, nodes, exclude_remarks, include_remarks) == SPEEDTEST_ERROR_UNRECOGFILE)
         {
             writeLog(LOG_TYPE_ERROR, "Invalid configuration file!");
         }

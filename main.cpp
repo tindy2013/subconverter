@@ -209,17 +209,17 @@ void readConf()
     if(ini.ItemExist("max_concurrent_threads"))
         max_concurrent_threads = ini.GetInt("max_concurrent_threads");
 
-    remarksInit(def_exclude_remarks, def_include_remarks);
     std::cerr<<"Read preference settings completed."<<std::endl;
 }
 
 std::string subconverter(RESPONSE_CALLBACK_ARGS)
 {
-    std::string target = getUrlArg(argument, "target"), url = UrlDecode(getUrlArg(argument, "url")), include = UrlDecode(getUrlArg(argument, "regex")), emoji = getUrlArg(argument, "emoji");
+    std::string target = getUrlArg(argument, "target"), url = UrlDecode(getUrlArg(argument, "url")), emoji = getUrlArg(argument, "emoji");
     std::string group = UrlDecode(getUrlArg(argument, "group")), upload = getUrlArg(argument, "upload"), upload_path = getUrlArg(argument, "upload_path"), version = getUrlArg(argument, "ver");
     std::string append_type = getUrlArg(argument, "append_type"), tfo = getUrlArg(argument, "tfo"), udp = getUrlArg(argument, "udp"), nodelist = getUrlArg(argument, "list");
+    std::string include = UrlDecode(getUrlArg(argument, "include")), exclude = UrlDecode(getUrlArg(argument, "exclude"));
     std::string base_content, output_content;
-    string_array extra_group;
+    string_array extra_group, include_remarks, exclude_remarks;
     std::string groups = urlsafe_base64_decode(getUrlArg(argument, "groups"));
     extra_group = split(groups, "`");
 
@@ -260,18 +260,23 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     string_array urls = split(url, "|");
     std::vector<nodeInfo> nodes;
     int groupID = 0;
+
     if(include.size())
-    {
-        eraseElements(ext.include_remarks);
-        ext.include_remarks.emplace_back(include);
-    }
+        include_remarks.emplace_back(include);
+    else
+        include_remarks = def_include_remarks;
+    if(exclude.size())
+        exclude_remarks.emplace_back(exclude);
+    else
+        exclude_remarks = def_exclude_remarks;
+
     if(group.size())
         custom_group = group;
     for(std::string &x : urls)
     {
         x = trim(x);
         std::cerr<<"Fetching node data from url '"<<x<<"'."<<std::endl;
-        addNodes(x, nodes, groupID, proxy);
+        addNodes(x, nodes, groupID, proxy, exclude_remarks, include_remarks);
         groupID++;
     }
     if(!nodes.size())

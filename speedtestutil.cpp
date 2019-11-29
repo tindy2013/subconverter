@@ -15,9 +15,6 @@ using namespace std::__cxx11;
 using namespace rapidjson;
 using namespace YAML;
 
-string_array exclude_remarks;
-string_array include_remarks;
-
 std::string base_ss_win = "{\"version\":\"4.1.6\",\"configs\":[?config?],\"strategy\":null,\"index\":0,\"global\":false,\"enabled\":false,\"shareOverLan\":true,\"isDefault\":false,\"localPort\":?localport?,\"portableMode\":true,\"pacUrl\":null,\"useOnlinePac\":false,\"secureLocalPac\":true,\"availabilityStatistics\":false,\"autoCheckUpdate\":true,\"checkPreRelease\":false,\"isVerboseLogging\":false,\"logViewer\":{\"topMost\":false,\"wrapText\":false,\"toolbarShown\":false,\"Font\":\"Consolas, 8pt\",\"BackgroundColor\":\"Black\",\"TextColor\":\"White\"},\"proxy\":{\"useProxy\":false,\"proxyType\":0,\"proxyServer\":\"\",\"proxyPort\":0,\"proxyTimeout\":3,\"useAuth\":false,\"authUser\":\"\",\"authPwd\":\"\"},\"hotkey\":{\"SwitchSystemProxy\":\"\",\"SwitchSystemProxyMode\":\"\",\"SwitchAllowLan\":\"\",\"ShowLogs\":\"\",\"ServerMoveUp\":\"\",\"ServerMoveDown\":\"\",\"RegHotkeysAtStartup\":false}}";
 std::string config_ss_win = "{\"server\":\"?server?\",\"server_port\":?port?,\"password\":\"?password?\",\"method\":\"?method?\",\"plugin\":\"?plugin?\",\"plugin_opts\":\"?plugin_opts?\",\"plugin_args\":\"\",\"remarks\":\"?remarks?\",\"timeout\":5}";
 std::string config_ss_libev = "{\"server\":\"?server?\",\"server_port\":?port?,\"password\":\"?password?\",\"method\":\"?method?\",\"plugin\":\"?plugin?\",\"plugin_opts\":\"?plugin_opts?\",\"plugin_args\":\"\",\"local_address\":\"127.0.0.1\",\"local_port\":?localport?}";
@@ -321,15 +318,6 @@ void explodeVmessConf(std::string content, std::string custom_port, int local_po
 
         node.group = group;
         node.remarks = ps;
-
-        if(chkIgnore(node))
-        {
-            writeLog(LOG_TYPE_INFO, "Node  " + node.group + " - " + node.remarks + "  has been ignored and will not be tested.");
-            continue;
-        }
-        else
-            writeLog(LOG_TYPE_INFO, "Node  " + node.group + " - " + node.remarks + "  has been added.");
-
         node.id = index;
         node.server = add;
         node.port = stoi(port);
@@ -427,15 +415,6 @@ void explodeSSD(std::string link, bool libev, std::string custom_port, int local
         node.linkType = SPEEDTEST_MESSAGE_FOUNDSS;
         node.group = group;
         node.remarks = remarks;
-
-        if(chkIgnore(node))
-        {
-            writeLog(LOG_TYPE_INFO, "Node  " + node.group + " - " + node.remarks + "  has been ignored and will not be tested.");
-            continue;
-        }
-        else
-            writeLog(LOG_TYPE_INFO, "Node  " + node.group + " - " + node.remarks + "  has been added.");
-
         node.server = server;
         node.port = stoi(port);
         node.proxyStr = ssConstruct(server, port, password, method, plugin, pluginopts, remarks, local_port, libev);
@@ -475,15 +454,6 @@ void explodeSSAndroid(std::string ss, bool libev, std::string custom_port, int l
         node.id = index;
         node.group = group;
         node.remarks = ps;
-
-        if(chkIgnore(node))
-        {
-            writeLog(LOG_TYPE_INFO, "Node  " + node.group + " - " + node.remarks + "  has been ignored and will not be tested.");
-            continue;
-        }
-        else
-            writeLog(LOG_TYPE_INFO, "Node  " + node.group + " - " + node.remarks + "  has been added.");
-
         node.server = server;
         node.port = stoi(port);
         node.proxyStr = ssConstruct(server, port, password, method, "", "", ps, local_port, libev);
@@ -538,15 +508,6 @@ void explodeSSConf(std::string content, std::string custom_port, int local_port,
         node.linkType = SPEEDTEST_MESSAGE_FOUNDSS;
         node.group = group;
         node.remarks = ps;
-
-        if(chkIgnore(node))
-        {
-            writeLog(LOG_TYPE_INFO, "Node  " + node.group + " - " + node.remarks + "  has been ignored and will not be tested.");
-            continue;
-        }
-        else
-            writeLog(LOG_TYPE_INFO, "Node  " + node.group + " - " + node.remarks + "  has been added.");
-
         node.id = index;
         node.server = server;
         node.port = stoi(port);
@@ -671,15 +632,6 @@ void explodeSSRConf(std::string content, std::string custom_port, int local_port
         node.linkType = SPEEDTEST_MESSAGE_FOUNDSSR;
         node.group = group;
         node.remarks = remarks;
-
-        if(chkIgnore(node))
-        {
-            writeLog(LOG_TYPE_INFO, "Node  " + node.group + " - " + node.remarks + "  has been ignored and will not be tested.");
-            continue;
-        }
-        else
-            writeLog(LOG_TYPE_INFO, "Node  " + node.group + " - " + node.remarks + "  has been added.");
-
         node.id = index;
         node.server = server;
         node.port = stoi(port);
@@ -985,15 +937,6 @@ void explodeClash(Node yamlnode, std::string custom_port, int local_port, std::v
 
         node.group = group;
         node.remarks = ps;
-
-        if(chkIgnore(node))
-        {
-            writeLog(LOG_TYPE_INFO, "Node  " + node.group + " - " + node.remarks + "  has been ignored and will not be tested.");
-            continue;
-        }
-        else
-            writeLog(LOG_TYPE_INFO, "Node  " + node.group + " - " + node.remarks + "  has been added.");
-
         node.server = server;
         node.port = stoi(port);
         node.id = index;
@@ -1322,15 +1265,6 @@ bool explodeSurge(std::string surge, std::string custom_port, int local_port, st
             continue;
 
         node.remarks = remarks;
-
-        if(chkIgnore(node))
-        {
-            writeLog(LOG_TYPE_INFO, "Node  " + node.group + " - " + node.remarks + "  has been ignored and will not be tested.");
-            continue;
-        }
-        else
-            writeLog(LOG_TYPE_INFO, "Node  " + node.group + " - " + node.remarks + "  has been added.");
-
         node.server = server;
         node.port = stoi(port);
         node.id = index;
@@ -1394,15 +1328,6 @@ void explodeSSTap(std::string sstap, std::string custom_port, int local_port, st
 
         node.group = group;
         node.remarks = remarks;
-
-        if(chkIgnore(node))
-        {
-            writeLog(LOG_TYPE_INFO, "Node  " + node.group + " - " + node.remarks + "  has been ignored and will not be tested.");
-            continue;
-        }
-        else
-            writeLog(LOG_TYPE_INFO, "Node  " + node.group + " - " + node.remarks + "  has been added.");
-
         node.id = index;
         node.server = server;
         node.port = stoi(port);
@@ -1427,21 +1352,13 @@ void explodeNetchConf(std::string netch, bool ss_libev, bool ssr_libev, std::str
     {
         explodeNetch("Netch://" + base64_encode(SerializeObject(json["Server"][i])), ss_libev, ssr_libev, custom_port, local_port, node);
 
-        if(chkIgnore(node))
-        {
-            writeLog(LOG_TYPE_INFO, "Node  " + node.group + " - " + node.remarks + "  has been ignored and will not be tested.");
-            continue;
-        }
-        else
-            writeLog(LOG_TYPE_INFO, "Node  " + node.group + " - " + node.remarks + "  has been added.");
-
         node.id = index;
         nodes.push_back(node);
         index++;
     }
 }
 
-bool chkIgnore(nodeInfo &node)
+bool chkIgnore(nodeInfo &node, string_array &exclude_remarks, string_array &include_remarks)
 {
     bool excluded = false, included = false;
     //std::string remarks = UTF8ToGBK(node.remarks);
@@ -1469,7 +1386,7 @@ bool chkIgnore(nodeInfo &node)
     return excluded || !included;
 }
 
-int explodeConf(std::string filepath, std::string custom_port, int local_port, bool sslibev, bool ssrlibev, std::vector<nodeInfo> &nodes)
+int explodeConf(std::string filepath, std::string custom_port, int local_port, bool sslibev, bool ssrlibev, std::vector<nodeInfo> &nodes, string_array &exclude_remarks, string_array &include_remarks)
 {
     std::ifstream infile;
     std::stringstream contentstrm;
@@ -1478,10 +1395,10 @@ int explodeConf(std::string filepath, std::string custom_port, int local_port, b
     contentstrm << infile.rdbuf();
     infile.close();
 
-    return explodeConfContent(contentstrm.str(), custom_port, local_port, sslibev, ssrlibev, nodes);
+    return explodeConfContent(contentstrm.str(), custom_port, local_port, sslibev, ssrlibev, nodes, exclude_remarks, include_remarks);
 }
 
-int explodeConfContent(std::string content, std::string custom_port, int local_port, bool sslibev, bool ssrlibev, std::vector<nodeInfo> &nodes)
+int explodeConfContent(std::string content, std::string custom_port, int local_port, bool sslibev, bool ssrlibev, std::vector<nodeInfo> &nodes, string_array &exclude_remarks, string_array &include_remarks)
 {
     unsigned int index = 0;
     int filetype = -1;
@@ -1524,7 +1441,7 @@ int explodeConfContent(std::string content, std::string custom_port, int local_p
         break;
     default:
         //try to parse as a local subscription
-        explodeSub(content, sslibev, ssrlibev, custom_port, local_port, nodes);
+        explodeSub(content, sslibev, ssrlibev, custom_port, local_port, nodes, exclude_remarks, include_remarks);
         if(nodes.size() == 0)
             return SPEEDTEST_ERROR_UNRECOGFILE;
         else
@@ -1534,9 +1451,9 @@ int explodeConfContent(std::string content, std::string custom_port, int local_p
     iter = nodes.begin();
     while(iter != nodes.end())
     {
-        if(chkIgnore(*iter))
+        if(chkIgnore(*iter, exclude_remarks, include_remarks))
         {
-            writeLog(LOG_TYPE_INFO, "Node  " + iter->group + " - " + iter->remarks + "  has been ignored and will not be tested.");
+            writeLog(LOG_TYPE_INFO, "Node  " + iter->group + " - " + iter->remarks + "  has been ignored and will not be added.");
             nodes.erase(iter);
         }
         else
@@ -1565,29 +1482,30 @@ void explode(std::string link, bool sslibev, bool ssrlibev, std::string custom_p
         explodeNetch(link, sslibev, ssrlibev, custom_port, local_port, node);
 }
 
-void explodeSub(std::string sub, bool sslibev, bool ssrlibev, std::string custom_port, int local_port, std::vector<nodeInfo> &nodes)
+void explodeSub(std::string sub, bool sslibev, bool ssrlibev, std::string custom_port, int local_port, std::vector<nodeInfo> &nodes, string_array &exclude_remarks, string_array &include_remarks)
 {
     std::stringstream strstream;
     std::string strLink;
+    bool processed = false;
     nodeInfo node;
 
     //try to parse as SSD configuration
     if(strFind(sub, "ssd://"))
     {
         explodeSSD(sub, sslibev, custom_port, local_port, nodes);
-        return;
+        processed = true;
     }
 
     //try to parse as clash configuration
     try
     {
-        if(strFind(sub, "Proxy"))
+        if(!processed && strFind(sub, "Proxy"))
         {
             Node yamlnode = Load(sub);
             if(yamlnode.size() && yamlnode["Proxy"])
             {
                 explodeClash(yamlnode, custom_port, local_port, nodes, sslibev, ssrlibev);
-                return;
+                processed = true;
             }
         }
     }
@@ -1597,38 +1515,43 @@ void explodeSub(std::string sub, bool sslibev, bool ssrlibev, std::string custom
     }
 
     //try to parse as surge configuration
-    if(explodeSurge(sub, custom_port, local_port, nodes, sslibev))
+    if(!processed && explodeSurge(sub, custom_port, local_port, nodes, sslibev))
     {
-        return;
+        processed = true;
     }
 
     //try to parse as normal subscription
-    sub = urlsafe_base64_decode(sub);
-    strstream << sub;
-    unsigned int index = nodes.size();
-    char delimiter = count(sub.begin(), sub.end(), '\n') < 1 ? count(sub.begin(), sub.end(), '\r') < 1 ? ' ' : '\r' : '\n';
-    while(getline(strstream, strLink, delimiter))
+    if(!processed)
     {
-        explode(strLink, sslibev, ssrlibev, custom_port, local_port, node);
-        if(strLink.size() == 0 || node.linkType == -1)
+        sub = urlsafe_base64_decode(sub);
+        strstream << sub;
+        char delimiter = count(sub.begin(), sub.end(), '\n') < 1 ? count(sub.begin(), sub.end(), '\r') < 1 ? ' ' : '\r' : '\n';
+        while(getline(strstream, strLink, delimiter))
         {
-            continue;
+            explode(strLink, sslibev, ssrlibev, custom_port, local_port, node);
+            if(strLink.size() == 0 || node.linkType == -1)
+            {
+                continue;
+            }
+            nodes.push_back(node);
         }
-        if(chkIgnore(node))
+    }
+
+    int index = 0;
+    std::vector<nodeInfo>::iterator iter = nodes.begin();
+    while(iter != nodes.end())
+    {
+        if(chkIgnore(*iter, exclude_remarks, include_remarks))
         {
-            writeLog(LOG_TYPE_INFO, "Node  " + node.group + " - " + node.remarks + "  has been ignored and will not be tested.");
-            continue;
+            writeLog(LOG_TYPE_INFO, "Node  " + iter->group + " - " + iter->remarks + "  has been ignored and will not be added.");
+            nodes.erase(iter);
         }
         else
-            writeLog(LOG_TYPE_INFO, "Node  " + node.group + " - " + node.remarks + "  has been added.");
-        node.id = index;
-        nodes.push_back(node);
-        index++;
+        {
+            writeLog(LOG_TYPE_INFO, "Node  " + iter->group + " - " + iter->remarks + "  has been added.");
+            iter->id = index;
+            index++;
+            iter++;
+        }
     }
-}
-
-void remarksInit(string_array &exclude, string_array &include)
-{
-    exclude_remarks = exclude;
-    include_remarks = include;
 }

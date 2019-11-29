@@ -18,7 +18,6 @@ struct extra_settings
     bool udp = false;
     bool tfo = false;
     bool nodelist = false;
-    string_array include_remarks;
 };
 
 
