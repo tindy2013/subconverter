@@ -36,6 +36,7 @@ std::string proxy_ruleset, proxy_subscription;
 std::string clash_rule_base;
 string_array clash_extra_group;
 std::string surge_rule_base, surfboard_rule_base, mellow_rule_base;
+std::string surge_ssr_path;
 
 void setcd(char *argv[])
 {
@@ -59,11 +60,11 @@ void setcd(char *argv[])
     chdir(path.data());
 }
 
+
 std::string refreshRulesets()
 {
     guarded_mutex guard(on_configuring);
     eraseElements(ruleset_content_array);
-    string_array vArray;
     std::string rule_group, rule_url;
     ruleset_content rc;
 
@@ -137,7 +138,7 @@ void readConf()
     if(ini.ItemPrefixExist("exclude_remarks"))
         ini.GetAll("exclude_remarks", def_exclude_remarks);
     if(ini.ItemPrefixExist("include_remarks"))
-        ini.GetAll("include_remarks", def_exclude_remarks);
+        ini.GetAll("include_remarks", def_include_remarks);
     if(ini.ItemExist("clash_rule_base"))
         clash_rule_base = ini.Get("clash_rule_base");
     if(ini.ItemExist("surge_rule_base"))
@@ -156,6 +157,13 @@ void readConf()
     {
         ini.GetAll("rename_node", renames_temp);
         safe_set_renames(renames_temp);
+    }
+
+    if(ini.SectionExist("surge_external_proxy"))
+    {
+        ini.EnterSection("surge_external_proxy");
+        if(ini.ItemExist("surge_ssr_path"))
+            surge_ssr_path = ini.Get("surge_ssr_path");
     }
 
     ini.EnterSection("managed_config");
@@ -249,6 +257,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     ext.tfo = tfo == "true";
     ext.udp = udp == "true";
     ext.nodelist = nodelist == "true";
+    ext.surge_ssr_path = surge_ssr_path;
 
     if(!url.size())
         url = default_url;

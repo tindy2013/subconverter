@@ -62,7 +62,8 @@ int curlPost(std::string url, std::string data, std::string proxy, std::string a
     struct curl_slist *list = NULL;
     int retVal = 0;
 
-    CURLcode res = curl_global_init(CURL_GLOBAL_ALL);
+    CURLcode res;
+    curl_global_init(CURL_GLOBAL_ALL);
 
     curl_handle = curl_easy_init();
     list = curl_slist_append(list, "Content-Type: application/json;charset='utf-8'");

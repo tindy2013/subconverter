@@ -99,7 +99,7 @@ void StringToWstring(std::wstring& szDst, std::string str)
     memset(wszUtf8, 0, len * 2 + 2);
     MultiByteToWideChar(CP_ACP, 0, (LPCSTR)temp.c_str(), -1, (LPWSTR)wszUtf8, len);
     szDst = wszUtf8;
-    std::wstring r = wszUtf8;
+    //std::wstring r = wszUtf8;
     delete[] wszUtf8;
 }
 #endif // _WIN32
@@ -650,7 +650,7 @@ bool is_str_utf8(std::string data)
 {
     const char *str = data.c_str();
     unsigned int nBytes = 0;
-    unsigned char chr = *str;
+    unsigned char chr;
     bool bAllAscii = true;
     for (unsigned int i = 0; str[i] != '\0'; ++i)
     {
@@ -728,14 +728,14 @@ void shortDisassemble(int source, unsigned short &num_a, unsigned short &num_b)
     num_b = (unsigned short)(source >> 16);
 }
 
-std::string to_string(YAML::Node &node)
+std::string to_string(const YAML::Node &node)
 {
     std::stringstream ss;
     ss << node;
     return ss.str();
 }
 
-std::string getFormData(std::string &raw_data)
+std::string getFormData(const std::string &raw_data)
 {
     std::stringstream strstrm;
     std::string line;

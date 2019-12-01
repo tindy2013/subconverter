@@ -23,6 +23,6 @@ void explodeSSD(std::string link, bool libev, std::string custom_port, int local
 void explodeSub(std::string sub, bool sslibev, bool ssrlibev, std::string custom_port, int local_port, std::vector<nodeInfo> &nodes, string_array &exclude_remarks, string_array &include_remarks);
 int explodeConf(std::string filepath, std::string custom_port, int local_port, bool sslibev, bool ssrlibev, std::vector<nodeInfo> &nodes, string_array &exclude_remarks, string_array &include_remarks);
 int explodeConfContent(std::string content, std::string custom_port, int local_port, bool sslibev, bool ssrlibev, std::vector<nodeInfo> &nodes, string_array &exclude_remarks, string_array &include_remarks);
-bool chkIgnore(nodeInfo &node, string_array &exclude_remarks, string_array &include_remarks);
+bool chkIgnore(const nodeInfo &node, string_array &exclude_remarks, string_array &include_remarks);
 
 #endif // SPEEDTESTUTIL_H_INCLUDED

@@ -1,6 +1,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <algorithm>
 
 #include "nodeinfo.h"
 #include "printout.h"
@@ -13,11 +14,11 @@ int socksport;
 bool ss_libev, ssr_libev;
 extern bool api_mode;
 
-void copyNodes(std::vector<nodeInfo> *source, std::vector<nodeInfo> *dest)
+void copyNodes(std::vector<nodeInfo> &source, std::vector<nodeInfo> &dest)
 {
-    for(auto &x : *source)
+    for(auto &x : source)
     {
-        dest->push_back(x);
+        dest.emplace_back(x);
     }
 }
 
@@ -26,7 +27,7 @@ void addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID, st
     int linkType = -1;
     std::vector<nodeInfo> nodes;
     nodeInfo node;
-    std::string strSub, strInput, fileContent, strProxy;
+    std::string strSub;
 
     link = replace_all_distinct(link, "\"", "");
     writeLog(LOG_TYPE_INFO, "Received Link.");
@@ -72,7 +73,7 @@ void addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID, st
             explodeConfContent(strSub, override_conf_port, socksport, ss_libev, ssr_libev, nodes, exclude_remarks, include_remarks);
             for(nodeInfo &x : nodes)
                 x.groupID = groupID;
-            copyNodes(&nodes, &allNodes);
+            copyNodes(nodes, allNodes);
         }
         else
         {
@@ -91,7 +92,7 @@ void addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID, st
         {
             for(nodeInfo &x : nodes)
                 x.groupID = groupID;
-            copyNodes(&nodes, &allNodes);
+            copyNodes(nodes, allNodes);
         }
         break;
     default:

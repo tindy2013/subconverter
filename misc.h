@@ -37,7 +37,7 @@ std::string trim(const std::string& str);
 std::string getSystemProxy();
 std::string rand_str(const int len);
 bool is_str_utf8(std::string data);
-std::string getFormData(std::string &raw_data);
+std::string getFormData(const std::string &raw_data);
 
 void sleep(int interval);
 bool regFind(std::string src, std::string target);
@@ -51,7 +51,7 @@ void urlParse(std::string url, std::string &host, std::string &path, int &port, 
 void removeUTF8BOM(std::string &data);
 int shortAssemble(unsigned short num_a, unsigned short num_b);
 void shortDisassemble(int source, unsigned short &num_a, unsigned short &num_b);
-std::string to_string(YAML::Node &node);
+std::string to_string(const YAML::Node &node);
 
 std::string fileGet(std::string path, bool binary = true);
 int fileWrite(std::string path, std::string content, bool overwrite);

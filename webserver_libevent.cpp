@@ -151,8 +151,11 @@ int httpserver_bindsocket(std::string listen_address, int listen_port, int backl
     int ret;
     SOCKET nfd;
     nfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (nfd < 0)
+    if (nfd <= 0)
+    {
+        closesocket(nfd);
         return -1;
+    }
 
     int one = 1;
     ret = setsockopt(nfd, SOL_SOCKET, SO_REUSEADDR, (char *)&one, sizeof(int));
@@ -163,12 +166,18 @@ int httpserver_bindsocket(std::string listen_address, int listen_port, int backl
     addr.sin_addr.s_addr = inet_addr(listen_address.data());
     addr.sin_port = htons(listen_port);
 
-    ret = bind(nfd, (struct sockaddr*)&addr, sizeof(addr));
+    ret = ::bind(nfd, (struct sockaddr*)&addr, sizeof(addr));
     if (ret < 0)
+    {
+        closesocket(nfd);
         return -1;
+    }
     ret = listen(nfd, backlog);
     if (ret < 0)
+    {
+        closesocket(nfd);
         return -1;
+    }
 
     unsigned long ul = 1;
     ioctlsocket(nfd, FIONBIO, &ul); //set to non-blocking mode
@@ -178,7 +187,7 @@ int httpserver_bindsocket(std::string listen_address, int listen_port, int backl
 
 int start_web_server_multi(void *argv)
 {
-    struct listener_args *args = (listener_args*)argv;
+    struct listener_args *args = reinterpret_cast<listener_args*>(argv);
     std::string listen_address = args->listen_address;
     int port = args->port, nthreads = args->max_workers;
     int i, ret;

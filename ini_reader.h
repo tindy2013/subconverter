@@ -138,8 +138,7 @@ public:
         if(store_isolated_line)
             curSection = isolated_items_section; //items before any section define will be store in this section
         strStrm<<content;
-        while(getline(strStrm, strLine, delimiter))
-        //while(getline(strStrm, strLine)) //get one line of content
+        while(getline(strStrm, strLine, delimiter)) //get one line of content
         {
             lineSize = strLine.size();
             if(!lineSize || strLine[0] == ';' || strLine[0] == '#') //empty lines and comments are ignored
@@ -251,6 +250,7 @@ public:
         {
             retData.emplace_back(x.first);
         }
+        //std::transform(ini_content.begin(), ini_content.end(), back_inserter(retData), [](auto x) -> std::string {return x.first;});
 
         return retData;
     }
@@ -519,8 +519,6 @@ public:
     */
     int Set(std::string section, std::string itemName, std::string itemVal)
     {
-        std::string value;
-
         if(!section.size())
             return -1;
 

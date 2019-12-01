@@ -249,7 +249,7 @@ void handle_req(std::string request, int client_sock)
         goto end;
     }
 
-    for(std::vector<responseRoute>::iterator iter = responses.begin(); iter != responses.end(); iter++)
+    for(std::vector<responseRoute>::iterator iter = responses.begin(); iter != responses.end(); ++iter)
     {
         if(iter->method.compare(command) == 0 && iter->path == uri)
         {
@@ -306,12 +306,14 @@ void* start_web_server(void *argv)
     {
         //log bind error
         std::cerr<<"socket bind error!"<<std::endl;
+        closesocket(server_socket);
         return NULL;
     }
     if (listen(server_socket, max_conn) == -1 )
     {
         //log listen error
         std::cerr<<"socket listen error!"<<std::endl;
+        closesocket(server_socket);
         return NULL;
     }
     setTimeout(server_socket, 500);

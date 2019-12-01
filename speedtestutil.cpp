@@ -815,7 +815,7 @@ void explodeClash(Node yamlnode, std::string custom_port, int local_port, std::v
 {
     nodeInfo node;
     unsigned int index = nodes.size();
-    std::string proxytype, strTemp, ps, server, port, cipher, group, password; //common
+    std::string proxytype, ps, server, port, cipher, group, password; //common
     std::string type = "none", id, aid = "0", net = "tcp", path, host, tls; //vmess
     std::string plugin, pluginopts, pluginopts_mode, pluginopts_host; //ss
     std::string protocol, protoparam, obfs, obfsparam; //ssr
@@ -948,7 +948,7 @@ void explodeClash(Node yamlnode, std::string custom_port, int local_port, std::v
 
 void explodeShadowrocket(std::string kit, std::string custom_port, int local_port, nodeInfo &node)
 {
-    std::string ps, add, port, type, id, aid, net = "tcp", path, host, tls, cipher, remarks;
+    std::string add, port, type, id, aid, net = "tcp", path, host, tls, cipher, remarks;
     std::string addition;
     string_array userinfo;
     kit = replace_all_distinct(kit, "vmess://", "");
@@ -984,7 +984,7 @@ void explodeShadowrocket(std::string kit, std::string custom_port, int local_por
 
 void explodeKitsunebi(std::string kit, std::string custom_port, int local_port, nodeInfo &node)
 {
-    std::string ps, add, port, type, id, aid = "0", net = "tcp", path, host, tls, cipher = "auto", remarks;
+    std::string add, port, type, id, aid = "0", net = "tcp", path, host, tls, cipher = "auto", remarks;
     std::string addition;
     string_array userinfo;
     kit = replace_all_distinct(kit, "vmess1://", "");
@@ -1027,12 +1027,11 @@ void explodeKitsunebi(std::string kit, std::string custom_port, int local_port, 
 
 bool explodeSurge(std::string surge, std::string custom_port, int local_port, std::vector<nodeInfo> &nodes, bool libev)
 {
-    std::string line, remarks, server, port, method, username, password; //common
+    std::string remarks, server, port, method, username, password; //common
     std::string plugin, pluginopts, pluginopts_mode, pluginopts_host = "cloudfront.net", mod_url, mod_md5; //ss
     std::string id, net, tls, host, path; //v2
     std::string protocol, protoparam; //ssr
     std::string itemName, itemVal;
-    std::stringstream data;
     std::vector<std::string> configs, vArray, headers, header;
     std::multimap<std::string, std::string> proxies;
     nodeInfo node;
@@ -1358,25 +1357,17 @@ void explodeNetchConf(std::string netch, bool ss_libev, bool ssr_libev, std::str
     }
 }
 
-bool chkIgnore(nodeInfo &node, string_array &exclude_remarks, string_array &include_remarks)
+bool chkIgnore(const nodeInfo &node, string_array &exclude_remarks, string_array &include_remarks)
 {
     bool excluded = false, included = false;
     //std::string remarks = UTF8ToGBK(node.remarks);
     std::string remarks = node.remarks;
     writeLog(LOG_TYPE_INFO, "Comparing exclude remarks...");
-    for(auto &x : exclude_remarks)
-    {
-        if(regFind(remarks, x))
-            excluded = true;
-    }
+    excluded = std::any_of(exclude_remarks.cbegin(), exclude_remarks.cend(), [&remarks](auto &x){return regFind(remarks, x);});
     if(include_remarks.size() != 0)
     {
         writeLog(LOG_TYPE_INFO, "Comparing include remarks...");
-        for(auto &x : include_remarks)
-        {
-            if(regFind(remarks, x))
-                included = true;
-        }
+        included = std::any_of(include_remarks.cbegin(), include_remarks.cend(), [&remarks](auto &x){return regFind(remarks, x);});
     }
     else
     {
@@ -1460,8 +1451,8 @@ int explodeConfContent(std::string content, std::string custom_port, int local_p
         {
             writeLog(LOG_TYPE_INFO, "Node  " + iter->group + " - " + iter->remarks + "  has been added.");
             iter->id = index;
-            index++;
-            iter++;
+            ++index;
+            ++iter;
         }
     }
 
@@ -1550,8 +1541,8 @@ void explodeSub(std::string sub, bool sslibev, bool ssrlibev, std::string custom
         {
             writeLog(LOG_TYPE_INFO, "Node  " + iter->group + " - " + iter->remarks + "  has been added.");
             iter->id = index;
-            index++;
-            iter++;
+            ++index;
+            ++iter;
         }
     }
 }

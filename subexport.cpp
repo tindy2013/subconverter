@@ -8,6 +8,7 @@
 #include "multithread.h"
 
 #include <iostream>
+#include <numeric>
 #include <rapidjson/writer.h>
 #include <rapidjson/document.h>
 #include <yaml-cpp/yaml.h>
@@ -266,7 +267,7 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset
 {
     try_config_lock();
     string_array allRules, vArray;
-    std::string rule_group, rule_path, retrived_rules, strLine;
+    std::string rule_group, retrived_rules, strLine;
     std::stringstream strStrm;
     YAML::Node Rules;
 
@@ -293,14 +294,17 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset
                 continue;
             if(strLine.find("USER-AGENT") == 0 || strLine.find("URL-REGEX") == 0 || strLine.find("PROCESS-NAME") == 0) //remove unsupported types
                 continue;
+            /*
             if(strLine.find("IP-CIDR") == 0)
                 strLine = replace_all_distinct(strLine, ",no-resolve", "");
             else if(strLine.find("DOMAIN-SUFFIX") == 0)
                 strLine = replace_all_distinct(strLine, ",force-remote-dns", "");
+            */
             strLine += "," + rule_group;
-            //if(strLine.find("IP-CIDR") == 0)
-            //strLine = regReplace(strLine, "^(.*)(,no-resolve)(.*)$", "$1$3$2");
+            if(std::count(strLine.begin(), strLine.end(), ',') > 2)
+                strLine = regReplace(strLine, "^(.*?,.*?)(,.*)(,.*)$", "$1$3$2");
             allRules.emplace_back(strLine);
+            //Rules.push_back(strLine);
         }
     }
 
@@ -308,13 +312,14 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset
     {
         Rules.push_back(x);
     }
+
     base_rule["Rule"] = Rules;
 }
 
 void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_content_array, int surge_ver)
 {
     try_config_lock();
-    string_array allRules, vArray;
+    string_array allRules;
     std::string rule_group, rule_path, retrived_rules, strLine;
     std::stringstream strStrm;
 
@@ -591,6 +596,7 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
     std::string proxy;
     std::string type, remark, hostname, port, username, password, method;
     std::string plugin, pluginopts;
+    std::string protocol, protoparam, obfs, obfsparam;
     std::string id, aid, transproto, faketype, host, path, quicsecure, quicsecret;
     std::string url, group;
     std::string output_nodelist;
@@ -660,6 +666,32 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
             }
             else if(transproto == "kcp" || transproto == "h2" || transproto == "quic")
                 continue;
+        }
+        else if(x.linkType == SPEEDTEST_MESSAGE_FOUNDSSR && ext.surge_ssr_path.size())
+        {
+            /*
+            if(surge_ver < 4)
+                continue;
+            protocol = GetMember(json, "Protocol");
+            protoparam = GetMember(json, "ProtocolParam");
+            obfs = GetMember(json, "OBFS");
+            obfsparam = GetMember(json, "OBFSParam");
+            proxy = "external,exec=\"" + ext.surge_ssr_path + "\", args=\"";
+            string_array args = {"-l", "1080", "-s", hostname, "-p", port, "-m", method, "-k", password, "-o", obfs, "-O", protocol};
+            if(obfsparam.size())
+            {
+                args.emplace_back("-g");
+                args.emplace_back(obfsparam);
+            }
+            if(protoparam.size())
+            {
+                args.emplace_back("-G");
+                args.emplace_back(protoparam);
+            }
+            proxy += std::accumulate(std::next(args.cbegin()), args.cend(), args[0], [](std::string a, std::string b){return std::move(a) + "\",args=\"" + std::move(b);});
+            std::string ipaddr = (isIPv4(hostname) || isIPv6(hostname)) ? hostname : hostnameToIPAddr(hostname);
+            proxy += "\",local-port=1080,addresses=" + ipaddr;
+            */
         }
         else if(x.linkType == SPEEDTEST_MESSAGE_FOUNDSOCKS)
         {
@@ -756,9 +788,12 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
         if(!filtered_nodelist.size())
             filtered_nodelist.emplace_back("DIRECT");
 
-        proxy = vArray[1];
+        proxy = vArray[1] + ",";
+        /*
         for(std::string &y : filtered_nodelist)
             proxy += "," + y;
+        */
+        proxy += std::accumulate(std::next(filtered_nodelist.cbegin()), filtered_nodelist.cend(), filtered_nodelist[0], [](std::string a, std::string b){return std::move(a) + "," + std::move(b);});
         if(vArray[1] == "url-test" || vArray[1] == "fallback" || vArray[1] == "load-balance")
             proxy += ",url=" + url;
 
@@ -997,7 +1032,7 @@ std::string netchToQuanX(std::vector<nodeInfo> &nodes, extra_settings &ext)
     std::string type;
     std::string remark, hostname, port, method;
     std::string password, plugin, pluginopts;
-    std::string id, aid, transproto, host, path;
+    std::string id, transproto, host, path;
     std::string protocol, protoparam, obfs, obfsparam;
     std::string proxyStr, allLinks;
     for(nodeInfo &x : nodes)
@@ -1074,7 +1109,6 @@ std::string netchToSSD(std::vector<nodeInfo> &nodes, std::string &group, extra_s
     std::string remark, hostname, password, method;
     std::string plugin, pluginopts;
     std::string protocol, protoparam, obfs, obfsparam;
-    std::string proxyStr, allLinks;
     int port, index = 0;
     if(!group.size())
         group = "SSD";
@@ -1317,9 +1351,12 @@ std::string netchToMellow(std::vector<nodeInfo> &nodes, std::string &base_conf, 
         */
 
         proxy = vArray[0] + ", ";
+        /*
         for(std::string &y : filtered_nodelist)
             proxy += y + ":";
         proxy = proxy.substr(0, proxy.size() - 1);
+        */
+        proxy += std::accumulate(std::next(filtered_nodelist.cbegin()), filtered_nodelist.cend(), filtered_nodelist[0], [](std::string a, std::string b){return std::move(a) + ":" + std::move(b);});
         proxy += ", latency, interval=300, timeout=6"; //use hard-coded values for now
 
         ini.Set("{NONAME}", proxy); //insert order
