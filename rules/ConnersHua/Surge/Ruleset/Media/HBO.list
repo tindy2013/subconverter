@@ -1,14 +1,5 @@
-# > HBO NOW & HBO GO
+# > HBO NOW
 USER-AGENT,HBO%20NOW*
-USER-AGENT,HBO%20GO*
-USER-AGENT,HBOAsia*
 DOMAIN-SUFFIX,hbo.com
 DOMAIN-SUFFIX,hbogo.com
-DOMAIN-SUFFIX,hboasia.com
-DOMAIN-SUFFIX,hbogo.com
-DOMAIN-SUFFIX,hbogoasia.hk
-DOMAIN,44wilhpljf.execute-api.ap-southeast-1.amazonaws.com
-DOMAIN,bcbolthboa-a.akamaihd.net
-DOMAIN,cf-images.ap-southeast-1.prod.boltdns.net
-DOMAIN,manifest.prod.boltdns.net
-DOMAIN,s3-ap-southeast-1.amazonaws.com
+DOMAIN-SUFFIX,hbonow.com

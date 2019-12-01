@@ -1,4 +1,4 @@
-# Update > 2019.11.7 Go advertising rule Integration lhie1 and shenji
+# Update > 2019.11.25 Go advertising rule Integration lhie1 and shenji
 DOMAIN-SUFFIX,idealads.net
 DOMAIN-SUFFIX,ironsrc.com
 DOMAIN-SUFFIX,apoll.m.taobao.com
@@ -8253,7 +8253,6 @@ DOMAIN,imgad0.pcauto.com.cn
 DOMAIN,imgad0.pconline.com.cn
 DOMAIN,ivy.pchouse.com.cn
 DOMAIN,adtrack.ucweb.com
-DOMAIN,applogios.uc.cn
 DOMAIN,track.uc.cn
 DOMAIN,alog.umeng.com
 DOMAIN,alogs.umeng.com
@@ -8406,7 +8405,6 @@ DOMAIN-SUFFIX,pubnative.net
 DOMAIN,suggestqueries.google.com
 DOMAIN,www.googleadservices.com
 DOMAIN,www.google-analytics.com
-DOMAIN-SUFFIX,3g.qq.com
 DOMAIN,fusion.qq.com
 DOMAIN,ios.bugly.qq.com
 DOMAIN,wup.imtt.qq.com
@@ -8490,6 +8488,22 @@ DOMAIN-SUFFIX,zbrushcn.com
 DOMAIN-SUFFIX,zhzzx.com
 DOMAIN-SUFFIX,clotfun.mobi
 DOMAIN-SUFFIX,clotfun.online
+DOMAIN-SUFFIX,inmobicdn.net
+DOMAIN-SUFFIX,meetrics.com
+DOMAIN-SUFFIX,meetrics.net
+DOMAIN-SUFFIX,okjhb.xyz
+DOMAIN-SUFFIX,supersonic.com
+DOMAIN-SUFFIX,supersonicads.com
+DOMAIN-SUFFIX,zu08e.cn
+DOMAIN-SUFFIX,ad.daum.net
+DOMAIN-SUFFIX,track.xiachufang.com
+DOMAIN,toots-a.akamaihd.net
+DOMAIN,optimus-ads.amap.com.w.alikunlun.com
+DOMAIN,gorgon.youdao.com
+DOMAIN,yt-adp.ws.126.net
+DOMAIN,pgdt.ugdtimg.com
+DOMAIN,alog.umeng.co
+DOMAIN,adsebs.ximalaya.com
 DOMAIN,ad.360in.com
 DOMAIN,ad.hpplay.cn
 DOMAIN,adeng.hpplay.cn
