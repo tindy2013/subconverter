@@ -52,6 +52,7 @@ void removeUTF8BOM(std::string &data);
 int shortAssemble(unsigned short num_a, unsigned short num_b);
 void shortDisassemble(int source, unsigned short &num_a, unsigned short &num_b);
 std::string to_string(const YAML::Node &node);
+int to_int(std::string &s, int def_vaule = 0);
 
 std::string fileGet(std::string path, bool binary = true);
 int fileWrite(std::string path, std::string content, bool overwrite);
@@ -78,7 +79,7 @@ namespace std
         template <typename T> std::string to_string(const T& n)
         {
             std::ostringstream ss;
-            ss << n ;
+            ss << n;
             return ss.str();
         }
     }

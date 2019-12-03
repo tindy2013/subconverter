@@ -402,6 +402,7 @@ std::string trim(const std::string& str)
 std::string getUrlArg(std::string url, std::string request)
 {
     std::smatch result;
+    /*
     if (regex_search(url.cbegin(), url.cend(), result, std::regex(request + "=(.*?)&")))
     {
         return result[1];
@@ -414,6 +415,15 @@ std::string getUrlArg(std::string url, std::string request)
     {
         return std::string();
     }
+    */
+
+    string_array vArray, arglist = split(url, "&");
+    for(std::string &x : arglist)
+    {
+        if(regex_search(x.cbegin(), x.cend(), result, std::regex("^" + request + "=(.*)$")))
+            return result[1];
+    }
+    return std::string();
 }
 
 std::string replace_all_distinct(std::string str, std::string old_value, std::string new_value)
@@ -430,22 +440,43 @@ std::string replace_all_distinct(std::string str, std::string old_value, std::st
 
 bool regFind(std::string src, std::string target)
 {
-    std::regex reg(target);
-    return regex_search(src, reg);
+    try
+    {
+        std::regex reg(target);
+        return regex_search(src, reg);
+    }
+    catch (std::regex_error &e)
+    {
+        return false;
+    }
 }
 
 std::string regReplace(std::string src, std::string match, std::string rep)
 {
     std::string result = "";
-    std::regex reg(match);
-    regex_replace(back_inserter(result), src.begin(), src.end(), reg, rep);
+    try
+    {
+        std::regex reg(match);
+        regex_replace(back_inserter(result), src.begin(), src.end(), reg, rep);
+    }
+    catch (std::regex_error &e)
+    {
+        result = src;
+    }
     return result;
 }
 
 bool regMatch(std::string src, std::string match)
 {
-    std::regex reg(match);
-    return regex_match(src, reg);
+    try
+    {
+        std::regex reg(match);
+        return regex_match(src, reg);
+    }
+    catch (std::regex_error &e)
+    {
+        return false;
+    }
 }
 
 std::string speedCalc(double speed)
@@ -733,6 +764,19 @@ std::string to_string(const YAML::Node &node)
     std::stringstream ss;
     ss << node;
     return ss.str();
+}
+
+int to_int(std::string &s, int def_vaule)
+{
+    int retval = 0;
+    char c;
+    std::stringstream ss(s);
+    if(!(ss >> retval))
+        return def_vaule;
+    else if(ss >> c)
+        return def_vaule;
+    else
+        return retval;
 }
 
 std::string getFormData(const std::string &raw_data)

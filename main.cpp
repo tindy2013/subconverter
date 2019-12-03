@@ -17,6 +17,7 @@
 #include "multithread.h"
 
 //common settings
+std::string pref_path = "pref.ini";
 string_array def_exclude_remarks, def_include_remarks, rulesets;
 std::vector<ruleset_content> ruleset_content_array;
 std::string listen_address = "127.0.0.1", default_url, managed_config_prefix;
@@ -61,10 +62,9 @@ void setcd(char *argv[])
 }
 
 
-std::string refreshRulesets()
+std::string refreshRulesets(string_array &ruleset_list, std::vector<ruleset_content> &rca)
 {
-    guarded_mutex guard(on_configuring);
-    eraseElements(ruleset_content_array);
+    eraseElements(rca);
     std::string rule_group, rule_url;
     ruleset_content rc;
 
@@ -76,7 +76,7 @@ std::string refreshRulesets()
     else
         proxy = proxy_ruleset;
 
-    for(std::string &x : rulesets)
+    for(std::string &x : ruleset_list)
     {
         /*
         vArray = split(x, ",");
@@ -93,7 +93,7 @@ std::string refreshRulesets()
         {
             std::cerr<<"Adding rule '"<<rule_url.substr(2)<<","<<rule_group<<"'."<<std::endl;
             rc = {rule_group, "", rule_url};
-            ruleset_content_array.emplace_back(rc);
+            rca.emplace_back(rc);
             continue;
         }
         else
@@ -103,13 +103,15 @@ std::string refreshRulesets()
             {
                 rc = {rule_group, rule_url, fileGet(rule_url, false)};
             }
-            else
+            else if(rule_url.find("http://") == 0 || rule_url.find("https://") == 0)
             {
                 rc = {rule_group, rule_url, webGet(rule_url, proxy)};
             }
+            else
+                continue;
         }
         if(rc.rule_content.size())
-            ruleset_content_array.emplace_back(rc);
+            rca.emplace_back(rc);
         else
             std::cerr<<"Warning: No data was fetched from this link. Skipping..."<<std::endl;
     }
@@ -127,8 +129,9 @@ void readConf()
     eraseElements(rulesets);
     string_array emojis_temp, renames_temp;
     INIReader ini;
+    ini.allow_dup_section_titles = true;
     //ini.do_utf8_to_gbk = true;
-    ini.ParseFile("pref.ini");
+    ini.ParseFile(pref_path);
 
     ini.EnterSection("common");
     if(ini.ItemExist("api_mode"))
@@ -227,9 +230,46 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     std::string append_type = getUrlArg(argument, "append_type"), tfo = getUrlArg(argument, "tfo"), udp = getUrlArg(argument, "udp"), nodelist = getUrlArg(argument, "list");
     std::string include = UrlDecode(getUrlArg(argument, "include")), exclude = UrlDecode(getUrlArg(argument, "exclude"));
     std::string base_content, output_content;
-    string_array extra_group, include_remarks, exclude_remarks;
-    std::string groups = urlsafe_base64_decode(getUrlArg(argument, "groups"));
-    extra_group = split(groups, "`");
+    string_array extra_group, extra_ruleset, include_remarks, exclude_remarks;
+    std::string groups = urlsafe_base64_decode(getUrlArg(argument, "groups")), ruleset = urlsafe_base64_decode(getUrlArg(argument, "ruleset"));
+    std::vector<ruleset_content> rca;
+
+    if(!url.size())
+        url = default_url;
+    if(!url.size() || !target.size())
+        return "Invalid request!";
+    if(!api_mode || cfw_child_process)
+        readConf();
+
+    if(groups.size())
+    {
+        extra_group = split(groups, "@");
+        if(!extra_group.size())
+            extra_group = clash_extra_group;
+    }
+    else
+        extra_group = clash_extra_group;
+
+    if(ruleset.size())
+    {
+        extra_ruleset = split(ruleset, "@");
+        if(!extra_ruleset.size())
+        {
+            if(update_ruleset_on_request || cfw_child_process)
+                refreshRulesets(rulesets, ruleset_content_array);
+            rca = ruleset_content_array;
+        }
+        else
+        {
+            refreshRulesets(extra_ruleset, rca);
+        }
+    }
+    else
+    {
+        if(update_ruleset_on_request || cfw_child_process)
+            refreshRulesets(rulesets, ruleset_content_array);
+        rca = ruleset_content_array;
+    }
 
     extra_settings ext;
     if(emoji == "true")
@@ -259,13 +299,6 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     ext.nodelist = nodelist == "true";
     ext.surge_ssr_path = surge_ssr_path;
 
-    if(!url.size())
-        url = default_url;
-    if(!url.size() || !target.size())
-        return "Invalid request!";
-    if(!api_mode || cfw_child_process)
-        readConf();
-
     string_array urls = split(url, "|");
     std::vector<nodeInfo> nodes;
     int groupID = 0;
@@ -290,8 +323,6 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     }
     if(!nodes.size())
         return "No nodes were found!";
-    if(update_ruleset_on_request || cfw_child_process)
-        refreshRulesets();
 
     std::cerr<<"Generate target: ";
     if(target == "clash" || target == "clashr")
@@ -302,21 +333,22 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         else
             base_content = webGet(clash_rule_base, getSystemProxy());
 
-        output_content = netchToClash(nodes, base_content, ruleset_content_array, clash_extra_group, target == "clashr", ext);
+        output_content = netchToClash(nodes, base_content, rca, extra_group, target == "clashr", ext);
         if(upload == "true")
             uploadGist("clash", upload_path, output_content, false);
         return output_content;
     }
     else if(target == "surge")
     {
-        std::cerr<<"Surge "<<version<<std::endl;
-        int surge_ver = version.size() ? stoi(version) : 3;
+        int surge_ver = version.size() ? to_int(version, 3) : 3;
+        std::cerr<<"Surge "<<surge_ver<<std::endl;
+
         if(fileExist(surge_rule_base))
             base_content = fileGet(surge_rule_base, false);
         else
             base_content = webGet(surge_rule_base, getSystemProxy());
 
-        output_content = netchToSurge(nodes, base_content, ruleset_content_array, clash_extra_group, surge_ver, ext);
+        output_content = netchToSurge(nodes, base_content, rca, extra_group, surge_ver, ext);
         if(upload == "true")
             uploadGist("surge" + version, upload_path, output_content, true);
 
@@ -332,7 +364,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         else
             base_content = webGet(surfboard_rule_base, getSystemProxy());
 
-        output_content = netchToSurge(nodes, base_content, ruleset_content_array, clash_extra_group, 2, ext);
+        output_content = netchToSurge(nodes, base_content, rca, extra_group, 2, ext);
         if(upload == "true")
             uploadGist("surfboard", upload_path, output_content, true);
 
@@ -348,7 +380,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         else
             base_content = webGet(mellow_rule_base, getSystemProxy());
 
-        output_content = netchToMellow(nodes, base_content, ruleset_content_array, clash_extra_group, ext);
+        output_content = netchToMellow(nodes, base_content, rca, extra_group, ext);
         if(upload == "true")
             uploadGist("mellow", upload_path, output_content, true);
 
@@ -415,6 +447,8 @@ void chkArg(int argc, char *argv[])
     {
         if(strcmp(argv[i], "-cfw") == 0)
             cfw_child_process = true;
+        else if(strcmp(argv[i], "-f") == 0 || strcmp(argv[i], "--file") == 0)
+            pref_path.assign(argv[++i]);
     }
 }
 
@@ -433,13 +467,14 @@ int main(int argc, char *argv[])
 #ifndef _DEBUG
     setcd(argv);
 #endif // _DEBUG
+    chkArg(argc, argv);
     readConf();
     if(!update_ruleset_on_request)
-        refreshRulesets();
+        refreshRulesets(rulesets, ruleset_content_array);
 
     append_response("GET", "/refreshrules", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
-        return refreshRulesets();
+        return refreshRulesets(rulesets, ruleset_content_array);
     });
 
     append_response("GET", "/readconf", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string

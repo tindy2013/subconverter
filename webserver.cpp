@@ -10,6 +10,7 @@
 #include "webserver.h"
 
 typedef std::vector<std::string> string_array;
+int def_timeout = 5;
 
 struct responseRoute
 {
@@ -21,7 +22,7 @@ struct responseRoute
 
 std::vector<responseRoute> responses;
 
-//for use of multi-thread socket test
+//for use of multi-thread
 typedef std::lock_guard<std::mutex> guarded_mutex;
 int working_thread = 0, max_send_failure = 10;
 bool SERVER_EXIT_FLAG = false;
@@ -206,6 +207,21 @@ void send_file(std::string arguments, int sock)
     sendall(sock, "0\r\n\r\n");
 }
 
+int setTimeout(SOCKET s, int timeout)
+{
+    int ret = -1;
+#ifdef _WIN32
+    ret = setsockopt(s, SOL_SOCKET, SO_SNDTIMEO, (char*)&timeout, sizeof(int));
+    ret = setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, (char*)&timeout, sizeof(int));
+#else
+    struct timeval timeo = {0, timeout * 1000};
+    ret = setsockopt(s, SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeo, sizeof(timeo));
+    ret = setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeo, sizeof(timeo));
+#endif
+    def_timeout = timeout;
+    return ret;
+}
+
 void handle_req(std::string request, int client_sock)
 {
     working_acc();
@@ -220,8 +236,7 @@ void handle_req(std::string request, int client_sock)
         goto end;
     }
 
-    printf("handle_cmd:    %s\n", command);
-    printf("handle_path:   %s\n", arguments);
+    std::cerr<<"handle_cmd:    "<<command<<"\n"<<"handle_path:   "<<arguments<<"\n";
 
     vArray = split(arguments, "?");
 
@@ -277,7 +292,7 @@ void append_response(std::string type, std::string request, std::string content_
     responses.push_back(rr);
 }
 
-void* start_web_server(void *argv)
+int start_web_server_multi(void *argv)
 {
     //log startup
     struct listener_args *args = (listener_args*)argv;
@@ -295,7 +310,7 @@ void* start_web_server(void *argv)
     {
         //log socket error
         std::cerr<<"socket build error!"<<std::endl;
-        return NULL;
+        return 0;
     }
 
     ZeroMemory(&server_addr, sizeof(server_addr));
@@ -307,14 +322,14 @@ void* start_web_server(void *argv)
         //log bind error
         std::cerr<<"socket bind error!"<<std::endl;
         closesocket(server_socket);
-        return NULL;
+        return 0;
     }
     if (listen(server_socket, max_conn) == -1 )
     {
         //log listen error
         std::cerr<<"socket listen error!"<<std::endl;
         closesocket(server_socket);
-        return NULL;
+        return 0;
     }
     setTimeout(server_socket, 500);
 

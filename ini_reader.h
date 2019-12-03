@@ -7,6 +7,7 @@
 
 typedef std::map<std::string, std::multimap<std::string, std::string>> ini_data_struct;
 typedef std::multimap<std::string, std::string> string_multimap;
+typedef std::vector<std::string> string_array;
 
 class INIReader
 {
@@ -31,13 +32,9 @@ private:
     bool chkIgnore(std::string section)
     {
         bool excluded = false, included = false;
-        if(count(exclude_sections.begin(), exclude_sections.end(), section) > 0)
-            excluded = true;
-        if(include_sections.size() != 0)
-        {
-            if(count(include_sections.begin(), include_sections.end(), section) > 0)
-                included = true;
-        }
+        excluded = std::find(exclude_sections.cbegin(), exclude_sections.cend(), section) != exclude_sections.cend();
+        if(include_sections.size())
+            included = std::find(include_sections.cbegin(), include_sections.cend(), section) != include_sections.cend();
         else
             included = true;
 

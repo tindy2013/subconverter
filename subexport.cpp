@@ -610,7 +610,7 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
 
     ini.SetCurrentSection("Proxy");
     ini.EraseSection();
-    ini.Set("DIRECT", "direct");
+    ini.Set("{NONAME}", "DIRECT = direct");
     for(nodeInfo &x : nodes)
     {
         json.Parse(x.proxyStr.data());

@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <iostream>
 #include <evhttp.h>
+#include <malloc.h>
 
 #include <string>
 #include <vector>
@@ -22,10 +23,18 @@ struct responseRoute
 
 std::vector<responseRoute> responses;
 
+static inline void buffer_cleanup(struct evbuffer *eb)
+{
+    evbuffer_free(eb);
+    #ifdef MALLOC_TRIM
+    malloc_trim(0);
+    #endif // MALLOC_TRIM
+}
+
 static inline int process_request(const char *method_str, std::string uri, std::string &postdata, std::string &content_type, std::string &return_data)
 {
     std::string path, arguments;
-    //std::cerr << "handle_cmd:    " << method_str << std::endl << "handle_uri:    " << uri << std::endl;
+    std::cerr << "handle_cmd:    " << method_str << std::endl << "handle_uri:    " << uri << std::endl;
 
     if(strFind(uri, "?"))
     {
@@ -56,7 +65,7 @@ static inline int process_request(const char *method_str, std::string uri, std::
 void OnReq(evhttp_request *req, void *args)
 {
     const char *req_content_type = evhttp_find_header(req->input_headers, "Content-Type"), *req_ac_method = evhttp_find_header(req->input_headers, "Access-Control-Request-Method");
-    const char *req_method = req_ac_method == NULL ? EVBUFFER_LENGTH(req->input_buffer) == 0 ? "GET" : "POST" : "OPTIONS", *uri = evhttp_request_get_uri(req);
+    const char *req_method = req_ac_method == NULL ? EVBUFFER_LENGTH(req->input_buffer) == 0 ? "GET" : "POST" : "OPTIONS", *uri = req->uri;
     int retVal;
     std::string postdata, content_type, return_data;
 
@@ -73,7 +82,8 @@ void OnReq(evhttp_request *req, void *args)
 
     retVal = process_request(req_method, uri, postdata, content_type, return_data);
 
-    auto *OutBuf = evhttp_request_get_output_buffer(req);
+    //auto *OutBuf = evhttp_request_get_output_buffer(req);
+    struct evbuffer *OutBuf = evbuffer_new();
     if (!OutBuf)
         return;
 
@@ -83,7 +93,6 @@ void OnReq(evhttp_request *req, void *args)
         evhttp_add_header(req->output_headers, "Access-Control-Allow-Origin", "*");
         evhttp_add_header(req->output_headers, "Access-Control-Allow-Headers", "*");
         evhttp_send_reply(req, HTTP_OK, "", NULL);
-        return;
         break;
     case 0: //found normal
         if(content_type.size())
@@ -92,6 +101,7 @@ void OnReq(evhttp_request *req, void *args)
             {
                 evhttp_add_header(req->output_headers, "Location", return_data.c_str());
                 evhttp_send_reply(req, HTTP_MOVETEMP, "", NULL);
+                buffer_cleanup(OutBuf);
                 return;
             }
             else
@@ -108,6 +118,7 @@ void OnReq(evhttp_request *req, void *args)
     default: //undefined behavior
         evhttp_send_error(req, HTTP_INTERNAL, "");
     }
+    buffer_cleanup(OutBuf);
 }
 
 int start_web_server(void *argv)
