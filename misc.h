@@ -40,6 +40,7 @@ bool is_str_utf8(std::string data);
 std::string getFormData(const std::string &raw_data);
 
 void sleep(int interval);
+bool regValid(std::string &reg);
 bool regFind(std::string src, std::string target);
 std::string regReplace(std::string src, std::string match, std::string rep);
 bool regMatch(std::string src, std::string match);

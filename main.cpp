@@ -303,11 +303,11 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     std::vector<nodeInfo> nodes;
     int groupID = 0;
 
-    if(include.size())
+    if(include.size() && regValid(include))
         include_remarks.emplace_back(include);
     else
         include_remarks = def_include_remarks;
-    if(exclude.size())
+    if(exclude.size() && regValid(exclude))
         exclude_remarks.emplace_back(exclude);
     else
         exclude_remarks = def_exclude_remarks;

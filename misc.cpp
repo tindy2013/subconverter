@@ -438,6 +438,19 @@ std::string replace_all_distinct(std::string str, std::string old_value, std::st
     return str;
 }
 
+bool regValid(std::string &reg)
+{
+    try
+    {
+        std::regex r(reg);
+        return true;
+    }
+    catch (std::regex_error &e)
+    {
+        return false;
+    }
+}
+
 bool regFind(std::string src, std::string target)
 {
     try
