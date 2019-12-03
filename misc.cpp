@@ -759,13 +759,6 @@ void shortDisassemble(int source, unsigned short &num_a, unsigned short &num_b)
     num_b = (unsigned short)(source >> 16);
 }
 
-std::string to_string(const YAML::Node &node)
-{
-    std::stringstream ss;
-    ss << node;
-    return ss.str();
-}
-
 int to_int(std::string &s, int def_vaule)
 {
     int retval = 0;

@@ -2,7 +2,9 @@
 #include <cstdint>
 #include <iostream>
 #include <evhttp.h>
+#ifdef MALLOC_TRIM
 #include <malloc.h>
+#endif // MALLOC_TRIM
 
 #include <string>
 #include <vector>

@@ -585,7 +585,7 @@ std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &base_conf, s
 
     rulesetToClash(yamlnode, ruleset_content_array);
 
-    return to_string(yamlnode);
+    return YAML::Dump(yamlnode);
 }
 
 std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, int surge_ver, extra_settings &ext)
