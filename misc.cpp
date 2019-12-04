@@ -401,7 +401,7 @@ std::string trim(const std::string& str)
 
 std::string getUrlArg(std::string url, std::string request)
 {
-    std::smatch result;
+    //std::smatch result;
     /*
     if (regex_search(url.cbegin(), url.cend(), result, std::regex(request + "=(.*?)&")))
     {
@@ -420,8 +420,16 @@ std::string getUrlArg(std::string url, std::string request)
     string_array vArray, arglist = split(url, "&");
     for(std::string &x : arglist)
     {
+        /*
         if(regex_search(x.cbegin(), x.cend(), result, std::regex("^" + request + "=(.*)$")))
             return result[1];
+        */
+        std::string::size_type epos = x.find("=");
+        if(epos != x.npos)
+        {
+            if(x.substr(0, epos) == request)
+                return x.substr(epos + 1);
+        }
     }
     return std::string();
 }
