@@ -1010,7 +1010,7 @@ std::string netchToQuan(std::vector<nodeInfo> &nodes, extra_settings &ext)
         case SPEEDTEST_MESSAGE_FOUNDSS:
             plugin = GetMember(json, "Plugin");
             pluginopts = GetMember(json, "PluginOption");
-            proxyStr = "ss://" + urlsafe_base64_encode(method + ":" + password + "@" + hostname + ":" + port);
+            proxyStr = "ss://" + urlsafe_base64_encode(method + ":" + password) + "@" + hostname + ":" + port;
             if(plugin.size() & pluginopts.size())
             {
                 proxyStr += "/?plugin=" + UrlEncode(plugin + ";" +pluginopts);
@@ -1023,7 +1023,7 @@ std::string netchToQuan(std::vector<nodeInfo> &nodes, extra_settings &ext)
         allLinks += proxyStr + "\n";
     }
 
-    return allLinks;
+    return base64_encode(allLinks);
 }
 
 std::string netchToQuanX(std::vector<nodeInfo> &nodes, extra_settings &ext)
