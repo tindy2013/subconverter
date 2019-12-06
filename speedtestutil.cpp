@@ -854,9 +854,9 @@ void explodeClash(Node yamlnode, std::string custom_port, int local_port, std::v
 
             yamlnode["Proxy"][i]["cipher"] >> cipher;
             yamlnode["Proxy"][i]["password"] >> password;
-            if(yamlnode["Proxy"][i]["plugin"].IsDefined())
+            if(yamlnode["Proxy"][i]["plugin"].IsDefined() && yamlnode["Proxy"][i]["plugin"].as<std::string>() == "obfs")
             {
-                yamlnode["Proxy"][i]["plugin"] >> plugin;
+                plugin = "simple-obfs";
                 if(yamlnode["Proxy"][i]["plugin-opts"].IsDefined())
                 {
                     yamlnode["Proxy"][i]["plugin-opts"]["mode"] >> pluginopts_mode;
