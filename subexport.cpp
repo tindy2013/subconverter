@@ -295,7 +295,7 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset
             strLine = replace_all_distinct(strLine, "\r", ""); //remove line break
             if(!strLine.size() || strLine.find("#") == 0 || strLine.find(";") == 0) //remove comments
                 continue;
-            if(strLine.find("USER-AGENT") == 0 || strLine.find("URL-REGEX") == 0 || strLine.find("PROCESS-NAME") == 0 || strLine.find("AND") == 0) //remove unsupported types
+            if(strLine.find("USER-AGENT") == 0 || strLine.find("URL-REGEX") == 0 || strLine.find("PROCESS-NAME") == 0 || strLine.find("AND") == 0 || strLine.find("OR") == 0) //remove unsupported types
                 continue;
             /*
             if(strLine.find("IP-CIDR") == 0)
