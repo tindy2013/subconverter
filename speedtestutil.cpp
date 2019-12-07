@@ -816,7 +816,7 @@ void explodeClash(Node yamlnode, std::string custom_port, int local_port, std::v
     nodeInfo node;
     unsigned int index = nodes.size();
     std::string proxytype, ps, server, port, cipher, group, password; //common
-    std::string type = "none", id, aid = "0", net = "tcp", path, host, tls; //vmess
+    std::string type = "none", id, aid = "0", net = "tcp", path, host, edge, tls; //vmess
     std::string plugin, pluginopts, pluginopts_mode, pluginopts_host; //ss
     std::string protocol, protoparam, obfs, obfsparam; //ssr
     std::string user; //socks
@@ -844,9 +844,13 @@ void explodeClash(Node yamlnode, std::string custom_port, int local_port, std::v
             else
                 host = "";
 
+            if(yamlnode["Proxy"][i]["ws-headers"].IsDefined())
+                yamlnode["Proxy"][i]["ws-headers"]["Edge"] >> edge;
+            else
+                edge = "";
 
             node.linkType = SPEEDTEST_MESSAGE_FOUNDVMESS;
-            node.proxyStr = vmessConstruct(server, port, type, id, aid, net, cipher, path, host, tls, local_port);
+            node.proxyStr = vmessConstruct(server, port, type, id, aid, net, cipher, path, host, tls, local_port, edge);
         }
         else if(proxytype == "ss")
         {

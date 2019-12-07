@@ -19,7 +19,7 @@ extern bool add_emoji, remove_old_emoji;
 extern bool api_mode;
 extern string_array ss_ciphers, ssr_ciphers;
 
-std::string vmessConstruct(std::string add, std::string port, std::string type, std::string id, std::string aid, std::string net, std::string cipher, std::string path, std::string host, std::string tls, int local_port)
+std::string vmessConstruct(std::string add, std::string port, std::string type, std::string id, std::string aid, std::string net, std::string cipher, std::string path, std::string host, std::string tls, int local_port, std::string edge)
 {
     if(!port.size())
         port = "0";
@@ -50,6 +50,11 @@ std::string vmessConstruct(std::string add, std::string port, std::string type, 
     {
         writer.Key("Host");
         writer.String(host.data());
+        if(edge.size())
+        {
+          writer.Key("Edge");
+          writer.String(edge.data());
+        }
         writer.Key("Path");
         writer.String(path.data());
     }
@@ -386,7 +391,7 @@ std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &base_conf, s
     std::string type, remark, hostname, port, username, password, method;
     std::string plugin, pluginopts;
     std::string protocol, protoparam, obfs, obfsparam;
-    std::string id, aid, transproto, faketype, host, path, quicsecure, quicsecret;
+    std::string id, aid, transproto, faketype, host, edge, path, quicsecure, quicsecret;
     std::vector<nodeInfo> nodelist;
     std::string group;
     bool tlssecure, replace_flag;
@@ -443,6 +448,7 @@ std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &base_conf, s
             aid = GetMember(json, "AlterID");
             transproto = GetMember(json, "TransferProtocol");
             host = GetMember(json, "Host");
+            edge = GetMember(json, "Edge");
             path = GetMember(json, "Path");
             tlssecure = GetMember(json, "TLSSecure") == "true";
             singleproxy["type"] = "vmess";
@@ -455,6 +461,9 @@ std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &base_conf, s
                 singleproxy["network"] = transproto;
                 singleproxy["ws-path"] = path;
                 singleproxy["ws-headers"]["Host"] = host;
+                singleproxy["ws-headers"]["Edge"] = edge;
+                singleproxy["headers"]["Host"] = host;
+                singleproxy["headers"]["Edge"] = edge;
             }
             else if(transproto == "kcp" || transproto == "h2" || transproto == "quic")
                 continue;
