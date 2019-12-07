@@ -112,13 +112,14 @@ url encode后: <br>
 
 #### default_url
 
-> 无url参数时默认链接. 如果有多个链接, 使用 "|" 分隔, 支持`文件`/`url`.
+> 无url参数时默认链接,不需要encode. 如果有多个链接, 使用 "|" 分隔, 支持`文件`/`url`.
 
-这种用法:
+e.g.
 ```ini
 default_url=https://dler.cloud/subscribe/ABCDE?clash=vmess
 ```
 
+此时订阅
 `http://127.0.0.1:25500/clash`
 
 相当于:
@@ -174,6 +175,12 @@ clash_rule_base=https://raw.githubusercontent.com/ConnersHua/Profiles/master/Cla
 
 
 
+#### mellow_rule_base
+
+> 生成的mellow配置文件基础. 用法同上.
+
+
+
 #### rename_node
 
 > 重命名节点, 支持正则.
@@ -194,7 +201,7 @@ rename_node=深圳@深
 
 ### emojis
 
-> 添加识别到的第一个国家国旗在节点名称前, 支持正则.
+> 在匹配到的节点前添加自定义emojis, 支持正则.
 
 e.g.
 ```ini
@@ -205,19 +212,30 @@ rule=(美|美国|United States),🇺🇸
 
 
 ### ruleset
+> 如果你对原本订阅自带的规则不满意可以使用如下配置
 
-> 规则片段.
+> 启用自定义规则集
+`enabled=true`
+> 覆盖原有规则
+`overwrite_original_rules=true`
+> 当其他程序更新订阅时更新规则集
+`update_ruleset_on_request=false`
+
+> 从本地或url获取规则片段.
+> []前缀后的文字将被当作规则而不是链接或路径
 
 e.g.
 <img src="./doc/imgs/Snipaste_2019-11-18_14-11-52.png">
 
 ```ini
-ruleset=🌹 YouTube,https://raw.githubusercontent.com/ConnersHua/Profiles/master/Surge/Media/YouTube.list
+surge_ruleset=🍎 苹果服务,https://raw.githubusercontent.com/ConnersHua/Profiles/master/Surge/Ruleset/Apple.list
+surge_ruleset=🎯 全球直连,rules/NobyDa/Surge/Download.list
+surge_ruleset=🎯 全球直连,[]GEOIP,CN
 ```
 
 效果图:
 
-<img src="./doc/imgs/Snipaste_2019-11-18_14-15-54.png">
+<img src="./doc/imgs/ruleset.png">
 
 
 
@@ -229,6 +247,8 @@ e.g.
 ```ini
 custom_proxy_group=🇺🇸US`url-test`(美|美国|United States)`http://www.gstatic.com/generate_204`300
 ```
+表示创建一个叫 usUS的url-test策略组,并向其中添加名字包含'美','美国','United States'的节点~每隔300秒测试一次~(目前硬编码固定为300)
+
 
 效果图:
 
@@ -249,11 +269,12 @@ custom_proxy_group=v2ray`select`!!GROUP=V2RayProvider
 #### listen
 
 > 绑定到Web服务器的地址, 将地址设为0.0.0.0, 则局域网内设备均可使用.
+`listen=0.0.0.0`
 
 #### port
 
 > 绑定到Web服务器地址的端口.
-
+`port=25500`
 
 ### advanced
 
