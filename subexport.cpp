@@ -400,6 +400,13 @@ std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &base_conf, s
     try
     {
         yamlnode = YAML::Load(base_conf);
+        if(yamlnode["Proxy"].IsDefined())
+        {
+            for(unsigned int i = 0; i < yamlnode["Proxy"].size(); i++)
+            {
+                proxies.push_back(yamlnode["Proxy"][i]);
+            }
+        }
     }
     catch (std::exception &e)
     {
