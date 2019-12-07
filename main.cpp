@@ -15,6 +15,7 @@
 #include "webserver.h"
 #include "subexport.h"
 #include "multithread.h"
+#include "version.h"
 
 //common settings
 std::string pref_path = "pref.ini";
@@ -39,6 +40,13 @@ string_array clash_extra_group;
 std::string surge_rule_base, surfboard_rule_base, mellow_rule_base;
 std::string surge_ssr_path;
 
+#ifndef _WIN32
+void SetConsoleTitle(std::string title)
+{
+    system(std::string("echo \"\\033]0;" + title + "\\007\\c\"").data());
+}
+#endif // _WIN32
+
 void setcd(char *argv[])
 {
     std::string path;
@@ -60,7 +68,6 @@ void setcd(char *argv[])
 #endif // _WIN32
     chdir(path.data());
 }
-
 
 std::string refreshRulesets(string_array &ruleset_list, std::vector<ruleset_content> &rca)
 {
@@ -228,7 +235,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     std::string target = getUrlArg(argument, "target"), url = UrlDecode(getUrlArg(argument, "url")), emoji = getUrlArg(argument, "emoji");
     std::string group = UrlDecode(getUrlArg(argument, "group")), upload = getUrlArg(argument, "upload"), upload_path = getUrlArg(argument, "upload_path"), version = getUrlArg(argument, "ver");
     std::string append_type = getUrlArg(argument, "append_type"), tfo = getUrlArg(argument, "tfo"), udp = getUrlArg(argument, "udp"), nodelist = getUrlArg(argument, "list");
-    std::string include = UrlDecode(getUrlArg(argument, "include")), exclude = UrlDecode(getUrlArg(argument, "exclude"));
+    std::string include = UrlDecode(getUrlArg(argument, "include")), exclude = UrlDecode(getUrlArg(argument, "exclude")), sort_flag = getUrlArg(argument, "sort");
     std::string base_content, output_content;
     string_array extra_group, extra_ruleset, include_remarks, exclude_remarks;
     std::string groups = urlsafe_base64_decode(getUrlArg(argument, "groups")), ruleset = urlsafe_base64_decode(getUrlArg(argument, "ruleset"));
@@ -297,6 +304,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     ext.tfo = tfo == "true";
     ext.udp = udp == "true";
     ext.nodelist = nodelist == "true";
+    ext.sort_flag = sort_flag == "true";
     ext.surge_ssr_path = surge_ssr_path;
 
     string_array urls = split(url, "|");
@@ -467,6 +475,7 @@ int main(int argc, char *argv[])
 #ifndef _DEBUG
     setcd(argv);
 #endif // _DEBUG
+    SetConsoleTitle("subconverter " VERSION);
     chkArg(argc, argv);
     readConf();
     if(!update_ruleset_on_request)

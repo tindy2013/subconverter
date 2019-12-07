@@ -18,6 +18,7 @@ struct extra_settings
     bool udp = false;
     bool tfo = false;
     bool nodelist = false;
+    bool sort_flag = false;
     std::string surge_ssr_path;
 };
 
