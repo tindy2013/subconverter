@@ -135,8 +135,8 @@ std::string UrlEncode(const std::string& str)
             (str[i] == '.') ||
             (str[i] == '~'))
             strTemp += str[i];
-        else if (str[i] == ' ')
-            strTemp += "+";
+        //else if (str[i] == ' ')
+        //    strTemp += "+";
         else
         {
             strTemp += '%';

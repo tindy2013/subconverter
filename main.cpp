@@ -279,9 +279,9 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     }
 
     extra_settings ext;
-    if(emoji == "true")
+    if(emoji.size())
     {
-        ext.add_emoji = ext.remove_emoji = true;
+        ext.add_emoji = ext.remove_emoji = emoji == "true";
     }
     else
     {

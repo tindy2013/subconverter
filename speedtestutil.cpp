@@ -14,7 +14,7 @@
 using namespace std::__cxx11;
 using namespace rapidjson;
 using namespace YAML;
-
+/*
 std::string base_ss_win = "{\"version\":\"4.1.6\",\"configs\":[?config?],\"strategy\":null,\"index\":0,\"global\":false,\"enabled\":false,\"shareOverLan\":true,\"isDefault\":false,\"localPort\":?localport?,\"portableMode\":true,\"pacUrl\":null,\"useOnlinePac\":false,\"secureLocalPac\":true,\"availabilityStatistics\":false,\"autoCheckUpdate\":true,\"checkPreRelease\":false,\"isVerboseLogging\":false,\"logViewer\":{\"topMost\":false,\"wrapText\":false,\"toolbarShown\":false,\"Font\":\"Consolas, 8pt\",\"BackgroundColor\":\"Black\",\"TextColor\":\"White\"},\"proxy\":{\"useProxy\":false,\"proxyType\":0,\"proxyServer\":\"\",\"proxyPort\":0,\"proxyTimeout\":3,\"useAuth\":false,\"authUser\":\"\",\"authPwd\":\"\"},\"hotkey\":{\"SwitchSystemProxy\":\"\",\"SwitchSystemProxyMode\":\"\",\"SwitchAllowLan\":\"\",\"ShowLogs\":\"\",\"ServerMoveUp\":\"\",\"ServerMoveDown\":\"\",\"RegHotkeysAtStartup\":false}}";
 std::string config_ss_win = "{\"server\":\"?server?\",\"server_port\":?port?,\"password\":\"?password?\",\"method\":\"?method?\",\"plugin\":\"?plugin?\",\"plugin_opts\":\"?plugin_opts?\",\"plugin_args\":\"\",\"remarks\":\"?remarks?\",\"timeout\":5}";
 std::string config_ss_libev = "{\"server\":\"?server?\",\"server_port\":?port?,\"password\":\"?password?\",\"method\":\"?method?\",\"plugin\":\"?plugin?\",\"plugin_opts\":\"?plugin_opts?\",\"plugin_args\":\"\",\"local_address\":\"127.0.0.1\",\"local_port\":?localport?}";
@@ -25,7 +25,7 @@ std::string base_vmess = "{\"inbounds\":[{\"port\":?localport?,\"listen\":\"127.
 std::string wsset_vmess = "{\"connectionReuse\":true,\"path\":\"?path?\",\"headers\":{\"Host\":\"?host?\"}}";
 std::string tcpset_vmess = "{\"connectionReuse\":true,\"header\":{\"type\":\"?type?\",\"request\":{\"version\":\"1.1\",\"method\":\"GET\",\"path\":[\"?path?\"],\"headers\":{\"Host\":[\"?host?\"],\"User-Agent\":[\"Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.75 Safari/537.36\",\"Mozilla/5.0 (iPhone; CPU iPhone OS 10_0_2 like Mac OS X) AppleWebKit/601.1 (KHTML, like Gecko) CriOS/53.0.2785.109 Mobile/14A456 Safari/601.1.46\"],\"Accept-Encoding\":[\"gzip, deflate\"],\"Connection\":[\"keep-alive\"],\"Pragma\":\"no-cache\"}}}}";
 std::string tlsset_vmess = "{\"serverName\":\"?serverName?\",\"allowInsecure\":false,\"allowInsecureCiphers\":false}";
-
+*/
 string_array ss_ciphers = {"rc4-md5", "aes-128-gcm", "aes-192-gcm", "aes-256-gcm", "aes-128-cfb", "aes-192-cfb", "aes-256-cfb", "aes-128-ctr", "aes-192-ctr", "aes-256-ctr", "camellia-128-cfb", "camellia-192-cfb", "camellia-256-cfb", "bf-cfb", "chacha20-ietf-poly1305", "xchacha20-ietf-poly1305", "salsa20", "chacha20", "chacha20-ietf"};
 string_array ssr_ciphers = {"none", "table", "rc4", "rc4-md5", "aes-128-cfb", "aes-192-cfb", "aes-256-cfb", "aes-128-ctr", "aes-192-ctr", "aes-256-ctr", "bf-cfb", "camellia-128-cfb", "camellia-192-cfb", "camellia-256-cfb", "cast5-cfb", "des-cfb", "idea-cfb", "rc2-cfb", "seed-cfb", "salsa20", "chacha20", "chacha20-ietf"};
 
@@ -153,12 +153,12 @@ void explodeVmess(std::string vmess, std::string custom_port, int local_port, no
     std::string version, ps, add, port, type, id, aid, net, path, host, tls;
     Document jsondata;
     std::vector<std::string> vArray;
-    if(regMatch(vmess, "vmess://(.*?)\\?(.*)")) //kitsunebi style link
+    if(regMatch(vmess, "vmess://(.*?)\\?(.*)")) //shadowrocket style link
     {
         explodeShadowrocket(vmess, custom_port, local_port, node);
         return;
     }
-    else if(regMatch(vmess, "vmess1://(.*?)\\?(.*)")) // new kitsunebi style link
+    else if(regMatch(vmess, "vmess1://(.*?)\\?(.*)")) //kitsunebi style link
     {
         explodeKitsunebi(vmess, custom_port, local_port, node);
         return;
@@ -1061,6 +1061,8 @@ bool explodeSurge(std::string surge, std::string custom_port, int local_port, st
             continue;
         else if(configs[0] == "custom") //surge 2 style custom proxy
         {
+            //remove module detection to speed up parsing and compatible with broken module
+            /*
             mod_url = trim(configs[5]);
             if(parsedMD5.count(mod_url) > 0)
             {
@@ -1071,8 +1073,9 @@ bool explodeSurge(std::string surge, std::string custom_port, int local_port, st
                 mod_md5 = getMD5(webGet(mod_url)); //retrieve module and calculate MD5
                 parsedMD5.insert(std::pair<std::string, std::string>(mod_url, mod_md5)); //save unrecognized module MD5 to map
             }
+            */
 
-            if(mod_md5 == modSSMD5) //is SSEncrypt module
+            //if(mod_md5 == modSSMD5) //is SSEncrypt module
             {
                 server = trim(configs[1]);
                 port = custom_port == "" ? trim(configs[2]) : custom_port;
@@ -1105,8 +1108,8 @@ bool explodeSurge(std::string surge, std::string custom_port, int local_port, st
                 node.group = SS_DEFAULT_GROUP;
                 node.proxyStr = ssConstruct(server, port, password, method, plugin, pluginopts, remarks, local_port, libev);
             }
-            else
-                continue;
+            //else
+            //    continue;
         }
         else if(configs[0] == "ss") //surge 3 style ss proxy
         {
