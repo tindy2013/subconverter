@@ -414,10 +414,13 @@ std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &base_conf, s
             x.remarks = addEmoji(x.remarks);
     });
 
-    std::sort(nodes.begin(), nodes.end(), [](const nodeInfo &a, const nodeInfo &b)
+    if(ext.sort_flag)
     {
-        return a.remarks < b.remarks;
-    });
+        std::sort(nodes.begin(), nodes.end(), [](const nodeInfo &a, const nodeInfo &b)
+        {
+            return a.remarks < b.remarks;
+        });
+    }
 
     for(nodeInfo &x : nodes)
     {
@@ -636,10 +639,13 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
             x.remarks = addEmoji(x.remarks);
     });
 
-    std::sort(nodes.begin(), nodes.end(), [](const nodeInfo &a, const nodeInfo &b)
+    if(ext.sort_flag)
     {
-        return a.remarks < b.remarks;
-    });
+        std::sort(nodes.begin(), nodes.end(), [](const nodeInfo &a, const nodeInfo &b)
+        {
+            return a.remarks < b.remarks;
+        });
+    }
 
     for(nodeInfo &x : nodes)
     {
@@ -851,10 +857,13 @@ std::string netchToSS(std::vector<nodeInfo> &nodes, extra_settings &ext)
             x.remarks = addEmoji(x.remarks);
     });
 
-    std::sort(nodes.begin(), nodes.end(), [](const nodeInfo &a, const nodeInfo &b)
+    if(ext.sort_flag)
     {
-        return a.remarks < b.remarks;
-    });
+        std::sort(nodes.begin(), nodes.end(), [](const nodeInfo &a, const nodeInfo &b)
+        {
+            return a.remarks < b.remarks;
+        });
+    }
 
     for(nodeInfo &x : nodes)
     {
@@ -912,10 +921,13 @@ std::string netchToSSR(std::vector<nodeInfo> &nodes, extra_settings &ext)
             x.remarks = addEmoji(x.remarks);
     });
 
-    std::sort(nodes.begin(), nodes.end(), [](const nodeInfo &a, const nodeInfo &b)
+    if(ext.sort_flag)
     {
-        return a.remarks < b.remarks;
-    });
+        std::sort(nodes.begin(), nodes.end(), [](const nodeInfo &a, const nodeInfo &b)
+        {
+            return a.remarks < b.remarks;
+        });
+    }
 
     for(nodeInfo &x : nodes)
     {
@@ -970,10 +982,13 @@ std::string netchToVMess(std::vector<nodeInfo> &nodes, extra_settings &ext)
             x.remarks = addEmoji(x.remarks);
     });
 
-    std::sort(nodes.begin(), nodes.end(), [](const nodeInfo &a, const nodeInfo &b)
+    if(ext.sort_flag)
     {
-        return a.remarks < b.remarks;
-    });
+        std::sort(nodes.begin(), nodes.end(), [](const nodeInfo &a, const nodeInfo &b)
+        {
+            return a.remarks < b.remarks;
+        });
+    }
 
     for(nodeInfo &x : nodes)
     {
@@ -1026,10 +1041,13 @@ std::string netchToQuan(std::vector<nodeInfo> &nodes, extra_settings &ext)
             x.remarks = addEmoji(x.remarks);
     });
 
-    std::sort(nodes.begin(), nodes.end(), [](const nodeInfo &a, const nodeInfo &b)
+    if(ext.sort_flag)
     {
-        return a.remarks < b.remarks;
-    });
+        std::sort(nodes.begin(), nodes.end(), [](const nodeInfo &a, const nodeInfo &b)
+        {
+            return a.remarks < b.remarks;
+        });
+    }
 
     for(nodeInfo &x : nodes)
     {
@@ -1114,10 +1132,13 @@ std::string netchToQuanX(std::vector<nodeInfo> &nodes, extra_settings &ext)
             x.remarks = addEmoji(x.remarks);
     });
 
-    std::sort(nodes.begin(), nodes.end(), [](const nodeInfo &a, const nodeInfo &b)
+    if(ext.sort_flag)
     {
-        return a.remarks < b.remarks;
-    });
+        std::sort(nodes.begin(), nodes.end(), [](const nodeInfo &a, const nodeInfo &b)
+        {
+            return a.remarks < b.remarks;
+        });
+    }
 
     for(nodeInfo &x : nodes)
     {
@@ -1214,10 +1235,13 @@ std::string netchToSSD(std::vector<nodeInfo> &nodes, std::string &group, extra_s
             x.remarks = addEmoji(x.remarks);
     });
 
-    std::sort(nodes.begin(), nodes.end(), [](const nodeInfo &a, const nodeInfo &b)
+    if(ext.sort_flag)
     {
-        return a.remarks < b.remarks;
-    });
+        std::sort(nodes.begin(), nodes.end(), [](const nodeInfo &a, const nodeInfo &b)
+        {
+            return a.remarks < b.remarks;
+        });
+    }
 
     for(nodeInfo &x : nodes)
     {
@@ -1318,10 +1342,13 @@ std::string netchToMellow(std::vector<nodeInfo> &nodes, std::string &base_conf, 
             x.remarks = addEmoji(x.remarks);
     });
 
-    std::sort(nodes.begin(), nodes.end(), [](const nodeInfo &a, const nodeInfo &b)
+    if(ext.sort_flag)
     {
-        return a.remarks < b.remarks;
-    });
+        std::sort(nodes.begin(), nodes.end(), [](const nodeInfo &a, const nodeInfo &b)
+        {
+            return a.remarks < b.remarks;
+        });
+    }
 
     for(nodeInfo &x : nodes)
     {
