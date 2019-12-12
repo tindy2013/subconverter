@@ -700,14 +700,13 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
         }
         else if(x.linkType == SPEEDTEST_MESSAGE_FOUNDSSR && ext.surge_ssr_path.size())
         {
-            /*
             if(surge_ver < 4)
                 continue;
             protocol = GetMember(json, "Protocol");
             protoparam = GetMember(json, "ProtocolParam");
             obfs = GetMember(json, "OBFS");
             obfsparam = GetMember(json, "OBFSParam");
-            proxy = "external,exec=\"" + ext.surge_ssr_path + "\", args=\"";
+            proxy = "external, exec=\"" + ext.surge_ssr_path + "\", args=\"";
             string_array args = {"-l", "1080", "-s", hostname, "-p", port, "-m", method, "-k", password, "-o", obfs, "-O", protocol};
             if(obfsparam.size())
             {
@@ -719,10 +718,9 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
                 args.emplace_back("-G");
                 args.emplace_back(protoparam);
             }
-            proxy += std::accumulate(std::next(args.cbegin()), args.cend(), args[0], [](std::string a, std::string b){return std::move(a) + "\",args=\"" + std::move(b);});
-            std::string ipaddr = (isIPv4(hostname) || isIPv6(hostname)) ? hostname : hostnameToIPAddr(hostname);
-            proxy += "\",local-port=1080,addresses=" + ipaddr;
-            */
+            proxy += std::accumulate(std::next(args.cbegin()), args.cend(), args[0], [](std::string a, std::string b){return std::move(a) + "\", args=\"" + std::move(b);});
+            //std::string ipaddr = (isIPv4(hostname) || isIPv6(hostname)) ? hostname : hostnameToIPAddr(hostname);
+            proxy += "\", local-port=1080";
         }
         else if(x.linkType == SPEEDTEST_MESSAGE_FOUNDSOCKS)
         {
