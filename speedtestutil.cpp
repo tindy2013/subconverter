@@ -1517,7 +1517,7 @@ void explodeSub(std::string sub, bool sslibev, bool ssrlibev, std::string custom
     //try to parse as normal subscription
     if(!processed)
     {
-        sub = urlsafe_base64_decode(sub);
+        sub = urlsafe_base64_decode(trim(sub));
         strstream << sub;
         char delimiter = count(sub.begin(), sub.end(), '\n') < 1 ? count(sub.begin(), sub.end(), '\r') < 1 ? ' ' : '\r' : '\n';
         while(getline(strstream, strLink, delimiter))

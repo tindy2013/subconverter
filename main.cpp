@@ -33,6 +33,7 @@ extern std::mutex on_configuring;
 //preferences
 string_array renames, emojis;
 bool add_emoji = false, remove_old_emoji = false, append_proxy_type = true;
+bool udp_flag = false, tfo_flag = false, do_sort = false;
 std::string proxy_ruleset, proxy_subscription;
 
 std::string clash_rule_base;
@@ -176,6 +177,17 @@ void readConf()
             surge_ssr_path = ini.Get("surge_ssr_path");
     }
 
+    if(ini.SectionExist("node_pref"))
+    {
+        ini.EnterSection("node_pref");
+        if(ini.ItemExist("udp_flag"))
+            udp_flag = ini.GetBool("udp_flag");
+        if(ini.ItemExist("tcp_fast_open_flag"))
+            tfo_flag = ini.GetBool("tcp_fast_open_flag");
+        if(ini.ItemExist("sort_flag"))
+            do_sort = ini.GetBool("sort_flag");
+    }
+
     ini.EnterSection("managed_config");
     if(ini.ItemExist("write_managed_config"))
         write_managed_config = ini.GetBool("write_managed_config");
@@ -301,10 +313,11 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     else
         proxy = proxy_subscription;
 
-    ext.tfo = tfo == "true";
-    ext.udp = udp == "true";
+    ext.tfo = tfo.size() ? tfo == "true" : tfo_flag;
+    ext.udp = udp.size() ? udp == "true" : udp_flag;
+    ext.sort_flag = sort_flag.size() ? sort_flag == "true" : do_sort;
+
     ext.nodelist = nodelist == "true";
-    ext.sort_flag = sort_flag == "true";
     ext.surge_ssr_path = surge_ssr_path;
 
     string_array urls = split(url, "|");

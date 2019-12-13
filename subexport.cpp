@@ -6,6 +6,7 @@
 #include "subexport.h"
 #include "printout.h"
 #include "multithread.h"
+#include "socket.h"
 
 #include <iostream>
 #include <numeric>
@@ -18,6 +19,43 @@ extern string_array renames, emojis;
 extern bool add_emoji, remove_old_emoji;
 extern bool api_mode;
 extern string_array ss_ciphers, ssr_ciphers;
+
+/*
+std::string hostnameToIPAddr(std::string host)
+{
+    int retVal;
+    std::string retAddr;
+    char cAddr[128] = {};
+    struct sockaddr_in *target;
+    struct sockaddr_in6 *target6;
+    struct addrinfo hint = {}, *retAddrInfo, *cur;
+    retVal = getaddrinfo(host.data(), NULL, &hint, &retAddrInfo);
+    if(retVal != 0)
+    {
+        freeaddrinfo(retAddrInfo);
+        return std::string();
+    }
+
+    for(cur = retAddrInfo; cur != NULL; cur=cur->ai_next)
+    {
+        if(cur->ai_family == AF_INET)
+        {
+            target = reinterpret_cast<struct sockaddr_in *>(cur->ai_addr);
+            inet_ntop(AF_INET, &target->sin_addr, cAddr, sizeof(cAddr));
+            break;
+        }
+        else if(cur->ai_family == AF_INET6)
+        {
+            target6 = reinterpret_cast<struct sockaddr_in6 *>(cur->ai_addr);
+            inet_ntop(AF_INET6, &target6->sin6_addr, cAddr, sizeof(cAddr));
+            break;
+        }
+    }
+    retAddr.assign(cAddr);
+    freeaddrinfo(retAddrInfo);
+    return retAddr;
+}
+*/
 
 std::string vmessConstruct(std::string add, std::string port, std::string type, std::string id, std::string aid, std::string net, std::string cipher, std::string path, std::string host, std::string tls, int local_port)
 {
@@ -618,6 +656,7 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
     std::string url, group;
     std::string output_nodelist;
     std::vector<nodeInfo> nodelist;
+    unsigned short local_port = 1080;
     bool tlssecure;
     string_array vArray, remarks_list, filtered_nodelist;
 
@@ -700,14 +739,14 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
         }
         else if(x.linkType == SPEEDTEST_MESSAGE_FOUNDSSR && ext.surge_ssr_path.size())
         {
-            if(surge_ver < 4)
+            if(surge_ver < 2)
                 continue;
             protocol = GetMember(json, "Protocol");
             protoparam = GetMember(json, "ProtocolParam");
             obfs = GetMember(json, "OBFS");
             obfsparam = GetMember(json, "OBFSParam");
             proxy = "external, exec=\"" + ext.surge_ssr_path + "\", args=\"";
-            string_array args = {"-l", "1080", "-s", hostname, "-p", port, "-m", method, "-k", password, "-o", obfs, "-O", protocol};
+            string_array args = {"-l", std::__cxx11::to_string(local_port), "-s", hostname, "-p", port, "-m", method, "-k", password, "-o", obfs, "-O", protocol};
             if(obfsparam.size())
             {
                 args.emplace_back("-g");
@@ -720,7 +759,9 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
             }
             proxy += std::accumulate(std::next(args.cbegin()), args.cend(), args[0], [](std::string a, std::string b){return std::move(a) + "\", args=\"" + std::move(b);});
             //std::string ipaddr = (isIPv4(hostname) || isIPv6(hostname)) ? hostname : hostnameToIPAddr(hostname);
-            proxy += "\", local-port=1080";
+            //proxy += "\", local-port=" + std::__cxx11::to_string(local_port) + ", addresses=" + ipaddr;
+            proxy += "\", local-port=" + std::__cxx11::to_string(local_port);
+            local_port++;
         }
         else if(x.linkType == SPEEDTEST_MESSAGE_FOUNDSOCKS)
         {
