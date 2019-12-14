@@ -210,7 +210,7 @@ void explodeVmess(std::string vmess, std::string custom_port, int local_port, no
     node.group = V2RAY_DEFAULT_GROUP;
     node.remarks = ps;
     node.server = add;
-    node.port = stoi(port);
+    node.port = to_int(port, 0);
     node.proxyStr = vmessConstruct(add, port, type, id, aid, net, "auto", path, host, tls, local_port);
 }
 
@@ -373,7 +373,7 @@ void explodeSS(std::string ss, bool libev, std::string custom_port, int local_po
     node.group = group;
     node.remarks = ps;
     node.server = server;
-    node.port = stoi(port);
+    node.port = to_int(port, 0);
     node.proxyStr = ssConstruct(server, port, password, method, plugin, pluginopts, ps, local_port, libev);
 }
 
@@ -560,7 +560,7 @@ void explodeSSR(std::string ssr, bool ss_libev, bool ssr_libev, std::string cust
     node.group = group;
     node.remarks = remarks;
     node.server = server;
-    node.port = stoi(port);
+    node.port = to_int(port, 0);
     if(find(ss_ciphers.begin(), ss_ciphers.end(), method) != ss_ciphers.end() && (obfs == "" || obfs == "plain") && (protocol == "" || protocol == "origin"))
     {
         node.linkType = SPEEDTEST_MESSAGE_FOUNDSS;
@@ -678,7 +678,7 @@ void explodeSocks(std::string link, std::string custom_port, nodeInfo &node)
     node.group = SOCKS_DEFAULT_GROUP;
     node.remarks = remarks;
     node.server = server;
-    node.port = stoi(port);
+    node.port = to_int(port, 0);
     node.proxyStr = socksConstruct(remarks, server, port, username, password);
 }
 
@@ -732,7 +732,7 @@ void explodeQuan(std::string quan, std::string custom_port, int local_port, node
         node.group = group;
         node.remarks = ps;
         node.server = add;
-        node.port = stoi(port);
+        node.port = to_int(port, 0);
         node.proxyStr = vmessConstruct(add, port, type, id, aid, net, cipher, path, host, tls, local_port);
     }
 }
@@ -808,7 +808,7 @@ void explodeNetch(std::string netch, bool ss_libev, bool ssr_libev, std::string 
 
     node.remarks = remark;
     node.server = address;
-    node.port = (unsigned short)stoi(port);
+    node.port = (unsigned short)to_int(port, 0);;
 }
 
 void explodeClash(Node yamlnode, std::string custom_port, int local_port, std::vector<nodeInfo> &nodes, bool ss_libev, bool ssr_libev)
@@ -978,7 +978,7 @@ void explodeShadowrocket(std::string kit, std::string custom_port, int local_por
     node.group = V2RAY_DEFAULT_GROUP;
     node.remarks = remarks;
     node.server = add;
-    node.port = stoi(port);
+    node.port = to_int(port, 0);
     node.proxyStr = vmessConstruct(add, port, type, id, aid, net, cipher, path, host, tls, local_port);
 }
 
@@ -1021,7 +1021,7 @@ void explodeKitsunebi(std::string kit, std::string custom_port, int local_port, 
     node.group = V2RAY_DEFAULT_GROUP;
     node.remarks = remarks;
     node.server = add;
-    node.port = stoi(port);
+    node.port = to_int(port, 0);
     node.proxyStr = vmessConstruct(add, port, type, id, aid, net, cipher, path, host, tls, local_port);
 }
 

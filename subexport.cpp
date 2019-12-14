@@ -576,7 +576,7 @@ std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &base_conf, s
                 continue;
             rules_upper_bound = vArray.size() - 2;
             singlegroup["url"] = vArray[vArray.size() - 2];
-            singlegroup["interval"] = stoi(vArray[vArray.size() - 1]);
+            singlegroup["interval"] = to_int(vArray[vArray.size() - 1]);
         }
         else
             continue;
@@ -1489,7 +1489,7 @@ std::string netchToMellow(std::vector<nodeInfo> &nodes, std::string &base_conf, 
                 group = vArray[i].substr(10);
                 for(nodeInfo &y : nodelist)
                 {
-                    if(y.groupID == stoi(group) && std::find(filtered_nodelist.begin(), filtered_nodelist.end(), y.remarks) == filtered_nodelist.end())
+                    if(y.groupID == to_int(group, -1) && std::find(filtered_nodelist.begin(), filtered_nodelist.end(), y.remarks) == filtered_nodelist.end())
                         filtered_nodelist.emplace_back(y.remarks);
                 }
             }
