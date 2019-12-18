@@ -494,6 +494,11 @@ int main(int argc, char *argv[])
     if(!update_ruleset_on_request)
         refreshRulesets(rulesets, ruleset_content_array);
 
+    append_response("GET", "/", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
+    {
+        return std::string("subconverter " VERSION " backend");
+    });
+
     append_response("GET", "/refreshrules", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
         return refreshRulesets(rulesets, ruleset_content_array);

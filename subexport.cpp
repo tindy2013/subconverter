@@ -552,6 +552,13 @@ std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &base_conf, s
         nodelist.emplace_back(x);
     }
 
+    if(ext.nodelist)
+    {
+        YAML::Node provider;
+        provider["proxies"] = proxies;
+        return YAML::Dump(provider);
+    }
+
     yamlnode["Proxy"] = proxies;
     std::string groupname;
 
@@ -1504,7 +1511,12 @@ std::string netchToMellow(std::vector<nodeInfo> &nodes, std::string &base_conf, 
         }
 
         if(!filtered_nodelist.size())
-            filtered_nodelist = remarks_list;
+        {
+            if(!remarks_list.size())
+                filtered_nodelist.emplace_back("DIRECT");
+            else
+                filtered_nodelist = remarks_list;
+        }
 
         //don't process these for now
         /*
