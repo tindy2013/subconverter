@@ -11,6 +11,7 @@
 #include <winsock2.h>
 #else
 //translate windows functions to linux functions
+#include <unistd.h>
 #include <string.h>
 #define SOCKET int
 #define INVALID_SOCKET (SOCKET)(~0)
