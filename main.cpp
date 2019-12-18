@@ -25,6 +25,7 @@ std::string listen_address = "127.0.0.1", default_url, managed_config_prefix;
 int listen_port = 25500, max_pending_connections = 10, max_concurrent_threads = 4;
 bool api_mode = true, write_managed_config = false, update_ruleset_on_request = false, overwrite_original_rules = true;
 bool print_debug_info = false, cfw_child_process = false;
+std::string access_token;
 extern std::string custom_group;
 
 //multi-thread lock
@@ -144,6 +145,8 @@ void readConf()
     ini.EnterSection("common");
     if(ini.ItemExist("api_mode"))
         api_mode = ini.GetBool("api_mode");
+    if(ini.ItemExist("api_access_token"))
+        access_token = ini.Get("api_access_token");
     if(ini.ItemExist("default_url"))
         default_url = ini.Get("default_url");
     if(ini.ItemPrefixExist("exclude_remarks"))
@@ -501,11 +504,23 @@ int main(int argc, char *argv[])
 
     append_response("GET", "/refreshrules", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
+        if(access_token.size())
+        {
+            std::string token = getUrlArg(argument, "token");
+            if(token != access_token)
+                return "Unauthorized";
+        }
         return refreshRulesets(rulesets, ruleset_content_array);
     });
 
     append_response("GET", "/readconf", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
+        if(access_token.size())
+        {
+            std::string token = getUrlArg(argument, "token");
+            if(token != access_token)
+                return "Unauthorized";
+        }
         readConf();
         return "done";
     });
