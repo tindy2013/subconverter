@@ -525,6 +525,27 @@ int main(int argc, char *argv[])
         return "done";
     });
 
+    append_response("POST", "/updateconf", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
+    {
+        if(access_token.size())
+        {
+            std::string token = getUrlArg(argument, "token");
+            if(token != access_token)
+                return "Unauthorized";
+        }
+        std::string type = getUrlArg(argument, "type");
+        if(type == "form")
+            fileWrite(pref_path, getFormData(postdata), true);
+        else if(type == "direct")
+            fileWrite(pref_path, postdata, true);
+        else
+            return "Not implemented";
+        readConf();
+        if(!update_ruleset_on_request)
+            refreshRulesets(rulesets, ruleset_content_array);
+        return "done";
+    });
+
     append_response("GET", "/sub", "text/plain;charset=utf-8", subconverter);
 
     append_response("GET", "/clash", "text/plain;charset=utf-8", [](RESPONSE_CALLBACK_ARGS) -> std::string
