@@ -3,7 +3,7 @@ mkdir obj
 set -xe
 
 apk add gcc g++ build-base linux-headers cmake make autoconf automake libtool
-apk add libressl-dev zlib-dev rapidjson-dev libevent-dev libevent-static
+apk add libressl-dev zlib-dev rapidjson-dev libevent-dev libevent-static zlib-static
 
 git clone https://github.com/curl/curl
 cd curl
