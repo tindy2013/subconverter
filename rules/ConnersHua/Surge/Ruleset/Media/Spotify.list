@@ -4,4 +4,5 @@ DOMAIN-SUFFIX,pscdn.co
 DOMAIN-SUFFIX,scdn.co
 DOMAIN-SUFFIX,spotify.com
 DOMAIN-SUFFIX,spoti.fi
-IP-CIDR,35.186.224.47/32,no-resolve
+DOMAIN-KEYWORD,spotify.com
+DOMAIN-KEYWORD,-spotify-com
