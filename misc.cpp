@@ -1,5 +1,5 @@
 #include <chrono>
-#include <regex>
+//#include <regex>
 #include <fstream>
 #include <thread>
 #include <sstream>
@@ -7,6 +7,7 @@
 //#include <filesystem>
 #include <unistd.h>
 
+#include <pcrecpp.h>
 #include <rapidjson/document.h>
 #include <openssl/md5.h>
 
@@ -446,6 +447,7 @@ std::string replace_all_distinct(std::string str, std::string old_value, std::st
     return str;
 }
 
+/*
 bool regValid(std::string &reg)
 {
     try
@@ -495,6 +497,65 @@ bool regMatch(std::string src, std::string match)
         return regex_match(src, reg);
     }
     catch (std::regex_error &e)
+    {
+        return false;
+    }
+}
+*/
+
+bool regValid(std::string &reg)
+{
+    try
+    {
+        pcrecpp::RE r(reg);
+        return true;
+    }
+    catch (std::exception &e)
+    {
+        return false;
+    }
+}
+
+bool regFind(std::string src, std::string target)
+{
+    try
+    {
+        pcrecpp::RE reg(target);
+        return reg.PartialMatch(src);
+    }
+    catch (std::exception &e)
+    {
+        return false;
+    }
+}
+
+std::string regReplace(std::string src, std::string match, std::string rep)
+{
+    std::string result = src;
+    try
+    {
+        if(rep.find("$") != rep.npos)
+            rep = replace_all_distinct(rep, "$", "\\");
+        pcrecpp::RE reg(match);
+        if(TRUE == reg.Replace(rep, &result))
+            return result;
+        else
+            return src;
+    }
+    catch (std::exception &e)
+    {
+        return src;
+    }
+}
+
+bool regMatch(std::string src, std::string match)
+{
+    try
+    {
+        pcrecpp::RE reg(match);
+        return reg.FullMatch(src);
+    }
+    catch (std::exception &e)
     {
         return false;
     }

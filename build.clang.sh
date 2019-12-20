@@ -13,6 +13,6 @@ c++ -std=c++17 -D_MACOS -Wall -fexceptions -c speedtestutil.cpp -o obj/speedtest
 c++ -std=c++17 -D_MACOS -Wall -fexceptions -c subexport.cpp -o obj/subexport.o
 c++ -std=c++17 -D_MACOS -Wall -fexceptions -c webget.cpp -o obj/webget.o
 c++ -std=c++17 -D_MACOS -Wall -fexceptions -c webserver_libevent.cpp -o obj/webserver_libevent.o
-c++ -o subconverter obj/logger.o obj/main.o obj/misc.o obj/multithread.o obj/nodemanip.o obj/rapidjson_extra.o obj/speedtestutil.o obj/subexport.o obj/webget.o obj/webserver_libevent.o  -levent -lpthread -lyaml-cpp -lcurl -lssl -lcrypto -lz -O3 -s 
+c++ -o subconverter obj/logger.o obj/main.o obj/misc.o obj/multithread.o obj/nodemanip.o obj/rapidjson_extra.o obj/speedtestutil.o obj/subexport.o obj/webget.o obj/webserver_libevent.o -lpcrecpp -lpcre -levent -lpthread -lyaml-cpp -lcurl -lssl -lcrypto -lz -O3 -s 
 
 chmod +x subconverter
