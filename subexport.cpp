@@ -1308,6 +1308,8 @@ std::string netchToSSD(std::vector<nodeInfo> &nodes, std::string &group, extra_s
         switch(x.linkType)
         {
         case SPEEDTEST_MESSAGE_FOUNDSS:
+            if(plugin == "obfs-local")
+                plugin = "simple-obfs";
             writer.StartObject();
             writer.Key("server");
             writer.String(hostname.data());

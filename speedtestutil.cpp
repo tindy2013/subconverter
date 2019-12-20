@@ -1522,6 +1522,7 @@ void explodeSub(std::string sub, bool sslibev, bool ssrlibev, std::string custom
         char delimiter = count(sub.begin(), sub.end(), '\n') < 1 ? count(sub.begin(), sub.end(), '\r') < 1 ? ' ' : '\r' : '\n';
         while(getline(strstream, strLink, delimiter))
         {
+            node.linkType = -1;
             explode(strLink, sslibev, ssrlibev, custom_port, local_port, node);
             if(strLink.size() == 0 || node.linkType == -1)
             {
