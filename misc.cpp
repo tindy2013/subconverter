@@ -537,7 +537,7 @@ std::string regReplace(std::string src, std::string match, std::string rep)
         if(rep.find("$") != rep.npos)
             rep = replace_all_distinct(rep, "$", "\\");
         pcrecpp::RE reg(match);
-        if(reg.Replace(rep, &result))
+        if(reg.GlobalReplace(rep, &result))
             return result;
         else
             return src;
