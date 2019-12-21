@@ -359,7 +359,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
 
         output_content = netchToClash(nodes, base_content, rca, extra_group, target == "clashr", ext);
         if(upload == "true")
-            uploadGist("clash", upload_path, output_content, false);
+            uploadGist(target, upload_path, output_content, false);
         return output_content;
     }
     else if(target == "surge")

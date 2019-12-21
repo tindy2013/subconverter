@@ -1,9 +1,13 @@
 #ifndef INI_READER_H_INCLUDED
 #define INI_READER_H_INCLUDED
 
+#include <string>
+#include <sstream>
 #include <map>
 #include <vector>
 #include <algorithm>
+
+#include "misc.h"
 
 typedef std::map<std::string, std::multimap<std::string, std::string>> ini_data_struct;
 typedef std::multimap<std::string, std::string> string_multimap;
@@ -119,7 +123,8 @@ public:
             return -1;
 
         //remove UTF-8 BOM
-        removeUTF8BOM(content);
+        if(content.compare(0, 3, "\xEF\xBB\xBF") == 0)
+            content = content.substr(3);
 
         bool inExcludedSection = false;
         std::string strLine, thisSection, curSection, itemName, itemVal;
@@ -613,6 +618,16 @@ public:
     template <typename T> int SetArray(std::string itemName, std::string separator, T &Array)
     {
         return current_section.size() ? SetArray(current_section, itemName, separator, Array) : -1;
+    }
+
+    int RenameSection(std::string oldName, std::string newName)
+    {
+        if(!SectionExist(oldName))
+            return -1;
+        auto nodeHandler = ini_content.extract(oldName);
+        nodeHandler.key() = newName;
+        ini_content.insert(std::move(nodeHandler));
+        return 0;
     }
 
     /**

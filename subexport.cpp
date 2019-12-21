@@ -1545,6 +1545,7 @@ std::string netchToMellow(std::vector<nodeInfo> &nodes, std::string &base_conf, 
     }
 
     rulesetToSurge(ini, ruleset_content_array, 2);
+    ini.RenameSection("Rule", "RoutingRule");
 
     return ini.ToString();
 }

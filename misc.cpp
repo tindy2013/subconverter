@@ -825,8 +825,7 @@ bool is_str_utf8(std::string data)
 
 void removeUTF8BOM(std::string &data)
 {
-    int BOM[3] = {0xef, 0xbb, 0xbf};
-    if(data.compare(0, 3, (char*)BOM) == 0)
+    if(data.compare(0, 3, "\xEF\xBB\xBF") == 0)
         data = data.substr(3);
 }
 
