@@ -2,7 +2,7 @@
 mkdir obj
 set -xe
 
-brew reinstall yaml-cpp rapidjson libevent zlib pcre bzip2
+brew reinstall yaml-cpp rapidjson libevent zlib pcre bzip2 pkgconfig
 
 git clone https://github.com/curl/curl
 cd curl
