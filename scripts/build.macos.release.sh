@@ -2,7 +2,7 @@
 mkdir obj
 set -xe
 
-brew reinstall yaml-cpp rapidjson libevent zlib pcre
+brew reinstall yaml-cpp rapidjson libevent zlib pcre bzip2 pkgconfig
 
 git clone https://github.com/curl/curl
 cd curl
@@ -11,12 +11,7 @@ cd curl
 make -j8 > /dev/null
 cd ..
 
-curl -L -o bzip2-1.0.6.tar.gz https://sourceforge.net/projects/bzip2/files/bzip2-1.0.6.tar.gz/download
-tar xvf bzip2-1.0.6.tar.gz
-cd bzip2-1.0.6
-make -j8 > /dev/null
-cd ..
-
+cp curl/lib/.libs/libcurl.a .
 cp /usr/local/lib/libevent.a .
 cp /usr/local/opt/zlib/lib/libz.a .
 cp /usr/local/opt/openssl@1.1/lib/libssl.a .
@@ -24,11 +19,12 @@ cp /usr/local/opt/openssl@1.1/lib/libcrypto.a .
 cp /usr/local/lib/libyaml-cpp.a .
 cp /usr/local/lib/libpcre.a .
 cp /usr/local/lib/libpcrecpp.a .
+cp /usr/local/opt/bzip2/lib/libbz2.a .
 
-export CMAKE_CXX_FLAGS=-D_MACOS -I/usr/local/include -I/usr/local/opt/openssl@1.1/include -I/usr/local/opt/curl/include
-cmake .
+export CMAKE_CXX_FLAGS="-I/usr/local/include -I/usr/local/opt/openssl@1.1/include -I/usr/local/opt/curl/include"
+cmake -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl@1.1 -DMACOS=on .
 make -j8
-c++ -Xlinker -unexported_symbol -Xlinker "*" -o base/subconverter obj/logger.o obj/main.o obj/misc.o obj/multithread.o obj/nodemanip.o obj/rapidjson_extra.o obj/speedtestutil.o obj/subexport.o obj/webget.o obj/webserver_libevent.o libpcrecpp.a libpcre.a libevent.a curl/lib/.libs/libcurl.a libz.a libssl.a libcrypto.a libyaml-cpp.a bzip2-1.0.6/libbz2.a -ldl -lpthread -O3
+c++ -Xlinker -unexported_symbol -Xlinker "*" -o base/subconverter CMakeFiles/subconverter.dir/src/*.o libpcrecpp.a libpcre.a libevent.a libcurl.a libz.a libssl.a libcrypto.a libyaml-cpp.a libbz2.a -ldl -lpthread -O3
 
 cd base
 chmod +rx subconverter
