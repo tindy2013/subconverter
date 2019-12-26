@@ -22,7 +22,7 @@ cp /usr/local/lib/libpcrecpp.a .
 cp /usr/local/opt/bzip2/lib/libbz2.a .
 
 export CMAKE_CXX_FLAGS="-D_MACOS -I/usr/local/include -I/usr/local/opt/openssl@1.1/include -I/usr/local/opt/curl/include"
-cmake .
+cmake -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl@1.1 .
 make -j8
 c++ -Xlinker -unexported_symbol -Xlinker "*" -o base/subconverter CMakeFiles/subconverter.dir/src/*.o libpcrecpp.a libpcre.a libevent.a libcurl.a libz.a libssl.a libcrypto.a libyaml-cpp.a libbz2.a -ldl -lpthread -O3
 
