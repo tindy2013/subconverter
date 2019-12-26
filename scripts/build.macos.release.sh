@@ -19,7 +19,7 @@ cp /usr/local/opt/openssl@1.1/lib/libcrypto.a .
 cp /usr/local/lib/libyaml-cpp.a .
 cp /usr/local/lib/libpcre.a .
 cp /usr/local/lib/libpcrecpp.a .
-cp /usr/local/opt/bzip2/lib/libbz2.a
+cp /usr/local/opt/bzip2/lib/libbz2.a .
 
 export CMAKE_CXX_FLAGS="-D_MACOS -I/usr/local/include -I/usr/local/opt/openssl@1.1/include -I/usr/local/opt/curl/include"
 cmake .
