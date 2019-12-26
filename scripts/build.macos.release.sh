@@ -25,7 +25,7 @@ cp /usr/local/lib/libyaml-cpp.a .
 cp /usr/local/lib/libpcre.a .
 cp /usr/local/lib/libpcrecpp.a .
 
-export CMAKE_CXX_FLAGS=-D_MACOS -I/usr/local/include -I/usr/local/opt/openssl@1.1/include -I/usr/local/opt/curl/include
+export CMAKE_CXX_FLAGS="-D_MACOS -I/usr/local/include -I/usr/local/opt/openssl@1.1/include -I/usr/local/opt/curl/include"
 cmake .
 make -j8
 c++ -Xlinker -unexported_symbol -Xlinker "*" -o base/subconverter obj/logger.o obj/main.o obj/misc.o obj/multithread.o obj/nodemanip.o obj/rapidjson_extra.o obj/speedtestutil.o obj/subexport.o obj/webget.o obj/webserver_libevent.o libpcrecpp.a libpcre.a libevent.a curl/lib/.libs/libcurl.a libz.a libssl.a libcrypto.a libyaml-cpp.a bzip2-1.0.6/libbz2.a -ldl -lpthread -O3

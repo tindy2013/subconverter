@@ -3,7 +3,7 @@ mkdir obj
 set -xe
 
 apk add gcc g++ build-base linux-headers cmake make autoconf automake libtool
-apk add libressl-dev zlib-dev rapidjson-dev libevent-dev libevent-static zlib-static pcre-dev
+apk add libressl-dev zlib-dev rapidjson-dev libevent-dev libevent-static zlib-static pcre-dev bzip2-static
 
 git clone https://github.com/curl/curl
 cd curl
@@ -15,11 +15,6 @@ cd ..
 git clone https://github.com/jbeder/yaml-cpp
 cd yaml-cpp
 cmake . > /dev/null
-make install -j4 > /dev/null
-cd ..
-
-git clone git://sourceware.org/git/bzip2.git
-cd bzip2
 make install -j4 > /dev/null
 cd ..
 
