@@ -8,7 +8,7 @@ SET(CMAKE_CXX_STANDARD 17)
 ADD_DEFINITIONS(-Wall -Wextra -Wno-unused-parameter -Wno-unused-result)
 
 IF(MACOS)
-	ADD_DEFINITIONS(_MACOS)
+	ADD_DEFINITIONS(-D_MACOS)
 ENDIF()
 
 ADD_EXECUTABLE(subconverter 
