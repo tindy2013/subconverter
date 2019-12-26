@@ -27,6 +27,7 @@ private:
     std::string current_section;
     ini_data_struct ini_content;
     string_array exclude_sections, include_sections, read_sections;
+    string_array section_order;
 
     std::string cached_section;
     string_multimap cached_section_content;
@@ -110,6 +111,25 @@ public:
     void SetIsolatedItemsSection(std::string section)
     {
         isolated_items_section = section;
+    }
+
+    INIReader& operator=(const INIReader& src)
+    {
+        //copy contents
+        ini_content = src.ini_content;
+        //copy status
+        parsed = src.parsed;
+        current_section = src.current_section;
+        exclude_sections = src.exclude_sections;
+        include_sections = src.include_sections;
+        read_sections = src.read_sections;
+        isolated_items_section = src.isolated_items_section;
+        //copy preferences
+        do_utf8_to_gbk = src.do_utf8_to_gbk;
+        store_any_line = src.store_any_line;
+        store_isolated_line = src.store_isolated_line;
+        allow_dup_section_titles = src.allow_dup_section_titles;
+        return *this;
     }
 
     /**

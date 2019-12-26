@@ -11,8 +11,7 @@ matrix:
       compiler: clang
       osx_image: xcode10.3
       script:
-      - chmod +x build.macos.release.sh
-      - ./build.macos.release.sh
+      - bash scripts/build.macos.release.sh
       deploy:
         provider: releases
         api_key: "$GITHUB_OAUTH_TOKEN"
@@ -24,7 +23,7 @@ matrix:
     - services: docker
       script:
       - docker pull alpine:latest
-      - docker run -v $TRAVIS_BUILD_DIR:/root/workdir alpine:latest /bin/sh -c "apk add bash git && cd /root/workdir && chmod +x build.alpine.release.sh && bash build.alpine.release.sh"
+      - docker run -v $TRAVIS_BUILD_DIR:/root/workdir alpine:latest /bin/sh -c "apk add bash git && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
       deploy:
         provider: releases
         api_key: "$GITHUB_OAUTH_TOKEN"
