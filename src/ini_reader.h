@@ -642,11 +642,15 @@ public:
 
     int RenameSection(std::string oldName, std::string newName)
     {
-        if(!SectionExist(oldName))
+        if(!SectionExist(oldName) || SectionExist(newName))
             return -1;
+        /*
         auto nodeHandler = ini_content.extract(oldName);
         nodeHandler.key() = newName;
         ini_content.insert(std::move(nodeHandler));
+        */
+        ini_content[newName] = std::move(ini_content[oldName]);
+        ini_content.erase(oldName);
         return 0;
     }
 
