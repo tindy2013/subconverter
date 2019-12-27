@@ -1,0 +1,33 @@
+# - Find PCRECPP
+# Find the native PCRECPP headers and libraries.
+#
+#  PCRECPP_INCLUDE_DIRS - where to find pcre.h, etc.
+#  PCRECPP_LIBRARIES    - List of libraries when using pcrecpp
+#  PCRECPP_FOUND        - True if pcrecpp found.
+
+# Look for the header file.
+FIND_PATH(PCRECPP_INCLUDE_DIR NAMES pcrecpp.h)
+MARK_AS_ADVANCED(PCRECPP_INCLUDE_DIR)
+
+# Look for the library.
+FIND_LIBRARY(PCRECPP_LIBRARY NAMES 
+    pcrecpp
+    pcrecppd
+)
+MARK_AS_ADVANCED(PCRECPP_LIBRARY)
+
+FIND_LIBRARY(PCRE_LIBRARY NAMES
+    pcre
+    pcred
+)
+MARK_AS_ADVANCED(PCRE_LIBRARY)
+
+# handle the QUIETLY and REQUIRED arguments and set PCRECPP_FOUND to TRUE if 
+# all listed variables are TRUE
+INCLUDE(FindPackageHandleStandardArgs)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(PCRECPP DEFAULT_MSG PCRECPP_LIBRARY PCRECPP_INCLUDE_DIR PCRE_LIBRARY)
+
+IF(PCRECPP_FOUND)
+  SET(PCRECPP_LIBRARIES ${PCRECPP_LIBRARY} ${PCRE_LIBRARY})
+  SET(PCRECPP_INCLUDE_DIRS ${PCRECPP_INCLUDE_DIR})
+ENDIF(PCRECPP_FOUND)
