@@ -7,7 +7,12 @@
 //#include <filesystem>
 #include <unistd.h>
 
+#ifdef USE_STD_REGEX
+#include <regex>
+#else
 #include <pcrecpp.h>
+#endif // USE_STD_REGEX
+
 #include <rapidjson/document.h>
 #include <openssl/md5.h>
 
@@ -447,7 +452,7 @@ std::string replace_all_distinct(std::string str, std::string old_value, std::st
     return str;
 }
 
-/*
+#ifdef USE_STD_REGEX
 bool regValid(std::string &reg)
 {
     try
@@ -501,7 +506,8 @@ bool regMatch(std::string src, std::string match)
         return false;
     }
 }
-*/
+
+#else
 
 bool regValid(std::string &reg)
 {
@@ -560,6 +566,7 @@ bool regMatch(std::string src, std::string match)
         return false;
     }
 }
+#endif // USE_STD_REGEX
 
 std::string speedCalc(double speed)
 {
