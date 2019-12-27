@@ -14,7 +14,7 @@ cd ..
 
 git clone https://github.com/jbeder/yaml-cpp
 cd yaml-cpp
-cmake . > /dev/null
+cmake -DYAML_CPP_BUILD_TESTS=OFF -DYAML_CPP_BUILD_TOOLS=OFF . > /dev/null
 make install -j4 > /dev/null
 cd ..
 

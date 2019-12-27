@@ -2,12 +2,12 @@
 set -xe
 
 apt update
-apt install git cmake clang pkg-config
-apt install libevent libcurl openssl pcre
+apt install -y git cmake clang pkg-config
+apt install -y libevent libcurl openssl pcre
 
 git clone https://github.com/jbeder/yaml-cpp
 cd yaml-cpp
-cmake -DCMAKE_INSTALL_PREFIX=/data/data/com.termux/files/usr .
+cmake -DCMAKE_INSTALL_PREFIX=/data/data/com.termux/files/usr -DYAML_CPP_BUILD_TESTS=OFF -DYAML_CPP_BUILD_TOOLS=OFF .
 make install -j3
 cd ..
 
