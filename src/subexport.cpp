@@ -482,7 +482,7 @@ void groupGenerate(std::string &rule, std::vector<nodeInfo> &nodelist, std::vect
     }
 }
 
-YAML::Node netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, bool clashR, extra_settings &ext)
+YAML::Node netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_array &extra_proxy_group, bool clashR, extra_settings &ext)
 {
     try_config_lock();
     YAML::Node proxies, singleproxy, singlegroup, original_groups;
@@ -692,7 +692,7 @@ std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &base_conf, s
         return std::string();
     }
 
-    yamlnode = netchToClash(nodes, yamlnode, ruleset_content_array, extra_proxy_group, clashR, ext);
+    yamlnode = netchToClash(nodes, yamlnode, extra_proxy_group, clashR, ext);
 
     if(ext.nodelist)
         return YAML::Dump(yamlnode);

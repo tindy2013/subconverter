@@ -385,7 +385,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
             output_content = netchToClash(nodes, base_content, rca, extra_group, target == "clashr", ext);
         }
         else
-            output_content = YAML::Dump(netchToClash(nodes, clash_base, rca, extra_group, target == "clashr", ext));
+            output_content = YAML::Dump(netchToClash(nodes, clash_base, extra_group, target == "clashr", ext));
 
         if(upload == "true")
             uploadGist(target, upload_path, output_content, false);
@@ -439,7 +439,8 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         }
         else
         {
-            INIReader ini = mellow_base;
+            INIReader ini;
+            ini = mellow_base;
             netchToMellow(nodes, ini, rca, extra_group, ext);
             output_content = ini.ToString();
         }
@@ -548,7 +549,7 @@ std::string simpleToClashR(RESPONSE_CALLBACK_ARGS)
 
     std::cerr<<"Generate target: ClashR\n";
 
-    return YAML::Dump(netchToClash(nodes, clash_base, rca, extra_group, true, ext));
+    return YAML::Dump(netchToClash(nodes, clash_base, extra_group, true, ext));
 }
 
 void chkArg(int argc, char *argv[])

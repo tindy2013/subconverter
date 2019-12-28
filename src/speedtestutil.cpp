@@ -183,7 +183,7 @@ void explodeVmess(std::string vmess, std::string custom_port, int local_port, no
     GetMember(jsondata, "aid", aid);
     GetMember(jsondata, "net", net);
     GetMember(jsondata, "tls", tls);
-    if(custom_port != "")
+    if(custom_port.size())
         port = custom_port;
     else
         GetMember(jsondata, "port", port);
@@ -265,7 +265,7 @@ void explodeVmessConf(std::string content, std::string custom_port, int local_po
         //common info
         json["vmess"][i]["remarks"] >> ps;
         json["vmess"][i]["address"] >> add;
-        if(custom_port != "")
+        if(custom_port.size())
             port = custom_port;
         else
             json["vmess"][i]["port"] >>port;
@@ -305,7 +305,7 @@ void explodeVmessConf(std::string content, std::string custom_port, int local_po
             json["vmess"][i]["security"] >> cipher;
             group = SS_DEFAULT_GROUP;
             node.linkType = SPEEDTEST_MESSAGE_FOUNDSS;
-            node.proxyStr = ssConstruct(add, port, id, cipher, "", "", ps, local_port, true);
+            node.proxyStr = ssConstruct(add, port, id, cipher, "", "", ps, local_port, libev);
             break;
         case 4: //socks config
             group = SOCKS_DEFAULT_GROUP;
@@ -409,7 +409,7 @@ void explodeSSD(std::string link, bool libev, std::string custom_port, int local
         GetMember(jsondata["servers"][i], "plugin", plugin);
         GetMember(jsondata["servers"][i], "plugin_options", pluginopts);
 
-        if(custom_port != "")
+        if(custom_port.size())
             port = custom_port;
 
         node.linkType = SPEEDTEST_MESSAGE_FOUNDSS;
@@ -441,7 +441,7 @@ void explodeSSAndroid(std::string ss, bool libev, std::string custom_port, int l
     {
         json["nodes"][i]["remarks"] >> ps;
         json["nodes"][i]["server"] >> server;
-        if(custom_port != "")
+        if(custom_port.size())
             port = custom_port;
         else
             json["nodes"][i]["server_port"] >> port;
@@ -490,7 +490,7 @@ void explodeSSConf(std::string content, std::string custom_port, int local_port,
     for(unsigned int i = 0; i < json["configs"].Size(); i++)
     {
         json["configs"][i]["remarks"] >> ps;
-        if(custom_port != "")
+        if(custom_port.size())
             port = custom_port;
         else
             json["configs"][i]["server_port"] >> port;
@@ -613,7 +613,7 @@ void explodeSSRConf(std::string content, std::string custom_port, int local_port
             group = SSR_DEFAULT_GROUP;
         json["configs"][i]["remarks"] >> remarks;
         json["configs"][i]["server"] >> server;
-        if(custom_port != "")
+        if(custom_port.size())
             port = custom_port;
         else
             json["configs"][i]["server_port"] >> port;
@@ -669,7 +669,7 @@ void explodeSocks(std::string link, std::string custom_port, nodeInfo &node)
     {
         remarks = server + ":" + port;
     }
-    if(custom_port != "")
+    if(custom_port.size())
     {
         port = custom_port;
     }
@@ -693,7 +693,7 @@ void explodeQuan(std::string quan, std::string custom_port, int local_port, node
     {
         ps = trim(configs[0]);
         add = trim(configs[2]);
-        port = trim(configs[3]);
+        port = custom_port.size() ? custom_port : trim(configs[3]);
         cipher = trim(configs[4]);
         id = trim(replace_all_distinct(configs[5], "\"", ""));
 
@@ -749,7 +749,7 @@ void explodeNetch(std::string netch, bool ss_libev, bool ssr_libev, std::string 
     json["Type"] >> type;
     json["Remark"] >> remark;
     json["Hostname"] >> address;
-    json["Port"] >> port;
+    port = custom_port.size() ? custom_port : GetMember(json, "Port");
     method = GetMember(json, "EncryptMethod");
     password = GetMember(json, "Password");
     if(remark == "")
@@ -1004,7 +1004,7 @@ void explodeShadowrocket(std::string rocket, std::string custom_port, int local_
     cipher = userinfo[0];
     id = userinfo[1];
     add = userinfo[2];
-    port = userinfo[3];
+    port = custom_port.size() ? custom_port : userinfo[3];
     remarks = UrlDecode(getUrlArg(addition, "remark"));
     obfs = getUrlArg(addition, "obfs");
     if(obfs.size())
@@ -1067,6 +1067,8 @@ void explodeKitsunebi(std::string kit, std::string custom_port, int local_port, 
     {
         port = userinfo[2];
     }
+    if(custom_port.size())
+        port = custom_port;
     net = getUrlArg(addition, "network");
     tls = getUrlArg(addition, "tls") == "true" ? "tls" : "";
     host = getUrlArg(addition, "ws.host");
@@ -1354,7 +1356,7 @@ void explodeSSTap(std::string sstap, std::string custom_port, int local_port, st
         json["configs"][i]["group"] >> group;
         json["configs"][i]["remarks"] >> remarks;
         json["configs"][i]["server"] >> server;
-        json["configs"][i]["server_port"] >> port;
+        port = custom_port.size() ? custom_port : GetMember(json["configs"][i], "server_port");
 
         if(remarks == "")
             remarks = server + ":" + port;

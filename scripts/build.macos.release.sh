@@ -29,7 +29,7 @@ c++ -Xlinker -unexported_symbol -Xlinker "*" -o base/subconverter CMakeFiles/sub
 cd base
 chmod +rx subconverter
 chmod +r *
-tar czf subconverter_darwin64.tar.gz *
+tar czf ../subconverter_darwin64.tar.gz *
 cd ..
 
 set +xe

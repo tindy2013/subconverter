@@ -84,10 +84,7 @@ public:
         ParseFile(filePath);
     }
 
-    ~INIReader()
-    {
-        //nothing to do
-    }
+    ~INIReader() = default;
 
     /**
     *  @brief Exclude a section with the given name.
