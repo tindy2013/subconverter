@@ -42,6 +42,10 @@ string_array clash_extra_group;
 std::string surge_rule_base, surfboard_rule_base, mellow_rule_base;
 std::string surge_ssr_path;
 
+//pre-compiled rule bases
+YAML::Node clash_base;
+INIReader surge_base, mellow_base;
+
 #ifndef _WIN32
 void SetConsoleTitle(std::string title)
 {
@@ -245,6 +249,25 @@ void readConf()
     std::cerr<<"Read preference settings completed."<<std::endl;
 }
 
+void generateBase()
+{
+    std::string base_content;
+    std::cerr<<"Generating base content for Clash/R...\n";
+    if(fileExist(clash_rule_base))
+        base_content = fileGet(clash_rule_base, false);
+    else
+        base_content = webGet(clash_rule_base, getSystemProxy());
+    clash_base = YAML::Load(base_content);
+    rulesetToClash(clash_base, ruleset_content_array);
+    std::cerr<<"Generating base content for Mellow...\n";
+    if(fileExist(mellow_rule_base))
+        base_content = fileGet(mellow_rule_base, false);
+    else
+        base_content = webGet(mellow_rule_base, getSystemProxy());
+    mellow_base.Parse(base_content);
+    rulesetToSurge(mellow_base, ruleset_content_array, 2);
+}
+
 std::string subconverter(RESPONSE_CALLBACK_ARGS)
 {
     std::string target = getUrlArg(argument, "target"), url = UrlDecode(getUrlArg(argument, "url")), emoji = getUrlArg(argument, "emoji");
@@ -352,12 +375,18 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     if(target == "clash" || target == "clashr")
     {
         std::cerr<<"Clash"<<((target == "clashr") ? "R" : "")<<std::endl;
-        if(fileExist(clash_rule_base))
-            base_content = fileGet(clash_rule_base, false);
-        else
-            base_content = webGet(clash_rule_base, getSystemProxy());
+        if(!ruleset.size() && !groups.size())
+        {
+            if(fileExist(clash_rule_base))
+                base_content = fileGet(clash_rule_base, false);
+            else
+                base_content = webGet(clash_rule_base, getSystemProxy());
 
-        output_content = netchToClash(nodes, base_content, rca, extra_group, target == "clashr", ext);
+            output_content = netchToClash(nodes, base_content, rca, extra_group, target == "clashr", ext);
+        }
+        else
+            output_content = YAML::Dump(netchToClash(nodes, clash_base, rca, extra_group, target == "clashr", ext));
+
         if(upload == "true")
             uploadGist(target, upload_path, output_content, false);
         return output_content;
@@ -399,12 +428,22 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     else if(target == "mellow")
     {
         std::cerr<<"Mellow"<<std::endl;
-        if(fileExist(mellow_rule_base))
-            base_content = fileGet(mellow_rule_base, false);
-        else
-            base_content = webGet(mellow_rule_base, getSystemProxy());
+        if(!ruleset.size() && !groups.size())
+        {
+            if(fileExist(mellow_rule_base))
+                base_content = fileGet(mellow_rule_base, false);
+            else
+                base_content = webGet(mellow_rule_base, getSystemProxy());
 
-        output_content = netchToMellow(nodes, base_content, rca, extra_group, ext);
+            output_content = netchToMellow(nodes, base_content, rca, extra_group, ext);
+        }
+        else
+        {
+            INIReader ini = mellow_base;
+            netchToMellow(nodes, ini, rca, extra_group, ext);
+            output_content = ini.ToString();
+        }
+
         if(upload == "true")
             uploadGist("mellow", upload_path, output_content, true);
 
@@ -465,6 +504,53 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     }
 }
 
+std::string simpleToClashR(RESPONSE_CALLBACK_ARGS)
+{
+    std::string url = argument.size() <= 8 ? "" : argument.substr(8);
+    std::string base_content, output_content;
+    std::vector<nodeInfo> nodes;
+    string_array extra_group, extra_ruleset, include_remarks, exclude_remarks;
+    std::vector<ruleset_content> rca;
+
+    if(!url.size())
+        url = default_url;
+    if(!url.size() || argument.substr(0, 8) != "sublink=")
+        return "Invalid request!";
+    if(url == "sublink")
+        return "Please insert your subscription link instead of clicking the default link.";
+    if(!api_mode || cfw_child_process)
+        readConf();
+
+    extra_group = clash_extra_group;
+
+    if(update_ruleset_on_request || cfw_child_process)
+        refreshRulesets(rulesets, ruleset_content_array);
+    rca = ruleset_content_array;
+
+    extra_settings ext = {add_emoji, remove_old_emoji, append_proxy_type, udp_flag, tfo_flag, false, do_sort, ""};
+
+    std::string proxy;
+    if(proxy_subscription == "SYSTEM")
+        proxy = getSystemProxy();
+    else if(proxy_subscription == "NONE")
+        proxy = "";
+    else
+        proxy = proxy_subscription;
+
+    include_remarks = def_include_remarks;
+    exclude_remarks = def_exclude_remarks;
+
+    std::cerr<<"Fetching node data from url '"<<url<<"'.\n";
+    addNodes(url, nodes, 0, proxy, exclude_remarks, include_remarks);
+
+    if(!nodes.size())
+        return "No nodes were found!";
+
+    std::cerr<<"Generate target: ClashR\n";
+
+    return YAML::Dump(netchToClash(nodes, clash_base, rca, extra_group, true, ext));
+}
+
 void chkArg(int argc, char *argv[])
 {
     for(int i = 1; i < argc; i++)
@@ -496,6 +582,7 @@ int main(int argc, char *argv[])
     readConf();
     if(!update_ruleset_on_request)
         refreshRulesets(rulesets, ruleset_content_array);
+    generateBase();
 
     append_response("GET", "/", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
@@ -547,6 +634,8 @@ int main(int argc, char *argv[])
     });
 
     append_response("GET", "/sub", "text/plain;charset=utf-8", subconverter);
+
+    append_response("GET", "/sub2clashr", "text/plain;charset=utf-8", simpleToClashR);
 
     append_response("GET", "/clash", "text/plain;charset=utf-8", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {

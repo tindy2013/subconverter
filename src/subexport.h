@@ -22,10 +22,13 @@ struct extra_settings
     std::string surge_ssr_path;
 };
 
-
+void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset_content_array);
+void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_content_array, int surge_ver);
 std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, bool clashR, extra_settings &ext);
+YAML::Node netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &base, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, bool clashR, extra_settings &ext);
 std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, int surge_ver, extra_settings &ext);
 std::string netchToMellow(std::vector<nodeInfo> &nodes, std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, extra_settings &ext);
+void netchToMellow(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, extra_settings &ext);
 std::string netchToSS(std::vector<nodeInfo> &nodes, extra_settings &ext);
 std::string netchToSSR(std::vector<nodeInfo> &nodes, extra_settings &ext);
 std::string netchToVMess(std::vector<nodeInfo> &nodes, extra_settings &ext);

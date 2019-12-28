@@ -309,7 +309,7 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset
     std::stringstream strStrm;
     YAML::Node Rules;
 
-    if(!overwrite_original_rules)
+    if(!overwrite_original_rules && base_rule["Rule"].IsDefined())
         Rules = base_rule["Rule"];
 
     for(ruleset_content &x : ruleset_content_array)
@@ -403,11 +403,8 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
                 if(!strLine.size() || strLine.find("#") == 0 || strLine.find(";") == 0) //remove comments
                     continue;
                 strLine += "," + rule_group;
-                if(strLine.find("IP-CIDR") == 0)
-                    strLine = regReplace(strLine, "^(.*)(,no-resolve)(.*)$", "$1$3$2");
-                else if(strLine.find("DOMAIN-SUFFIX") == 0)
-                    strLine = regReplace(strLine, "^(.*)(,force-remote-dns)(.*)$", "$1$3$2");
-                //strLine = regReplace(strLine, "^(.*?)(,.*?)(,.*)(,.*)$", "$1$2$4$3")
+                if(std::count(strLine.begin(), strLine.end(), ',') > 2)
+                    strLine = regReplace(strLine, "^(.*?,.*?)(,.*)(,.*)$", "$1$3$2");
                 allRules.emplace_back(strLine);
             }
         }
@@ -419,10 +416,10 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
     }
 }
 
-std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, bool clashR, extra_settings &ext)
+YAML::Node netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, bool clashR, extra_settings &ext)
 {
     try_config_lock();
-    YAML::Node yamlnode, proxies, singleproxy, singlegroup, original_groups;
+    YAML::Node proxies, singleproxy, singlegroup, original_groups;
     rapidjson::Document json;
     std::string type, remark, hostname, port, username, password, method;
     std::string plugin, pluginopts;
@@ -432,15 +429,6 @@ std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &base_conf, s
     std::string group;
     bool tlssecure, replace_flag;
     string_array vArray, remarks_list, filtered_nodelist;
-
-    try
-    {
-        yamlnode = YAML::Load(base_conf);
-    }
-    catch (std::exception &e)
-    {
-        return std::string();
-    }
 
     std::for_each(nodes.begin(), nodes.end(), [ext](nodeInfo &x)
     {
@@ -490,6 +478,15 @@ std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &base_conf, s
                 singleproxy["plugin"] = "obfs";
                 singleproxy["plugin-opts"]["mode"] = UrlDecode(getUrlArg(pluginopts, "obfs"));
                 singleproxy["plugin-opts"]["host"] = UrlDecode(getUrlArg(pluginopts, "obfs-host"));
+            }
+            else if(plugin == "v2ray-plugin")
+            {
+                singleproxy["plugin"] = "v2ray-plugin";
+                singleproxy["plugin-opts"]["mode"] = getUrlArg(pluginopts, "mode");
+                singleproxy["plugin-opts"]["host"] = getUrlArg(pluginopts, "host");
+                singleproxy["plugin-opts"]["path"] = getUrlArg(pluginopts, "path");
+                singleproxy["plugin-opts"]["tls"] = pluginopts.find("tls") != pluginopts.npos;
+                singleproxy["plugin-opts"]["mux"] = pluginopts.find("mux") != pluginopts.npos;
             }
         }
         else if(x.linkType == SPEEDTEST_MESSAGE_FOUNDVMESS)
@@ -556,7 +553,7 @@ std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &base_conf, s
     {
         YAML::Node provider;
         provider["proxies"] = proxies;
-        return YAML::Dump(provider);
+        return provider;
     }
 
     yamlnode["Proxy"] = proxies;
@@ -644,6 +641,27 @@ std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &base_conf, s
     }
 
     yamlnode["Proxy Group"] = original_groups;
+
+    return yamlnode;
+}
+
+std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, bool clashR, extra_settings &ext)
+{
+    YAML::Node yamlnode;
+
+    try
+    {
+        yamlnode = YAML::Load(base_conf);
+    }
+    catch (std::exception &e)
+    {
+        return std::string();
+    }
+
+    yamlnode = netchToClash(nodes, yamlnode, ruleset_content_array, extra_proxy_group, clashR, ext);
+
+    if(ext.nodelist)
+        return YAML::Dump(yamlnode);
 
     rulesetToClash(yamlnode, ruleset_content_array);
 
@@ -1363,9 +1381,20 @@ std::string netchToSSD(std::vector<nodeInfo> &nodes, std::string &group, extra_s
 
 std::string netchToMellow(std::vector<nodeInfo> &nodes, std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, extra_settings &ext)
 {
+    INIReader ini;
+    ini.store_any_line = true;
+    if(ini.Parse(base_conf) != 0)
+        return std::string();
+
+    netchToMellow(nodes, ini, ruleset_content_array, extra_proxy_group, ext);
+
+    return ini.ToString();
+}
+
+void netchToMellow(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, extra_settings &ext)
+{
     try_config_lock();
     rapidjson::Document json;
-    INIReader ini;
     std::string proxy;
     std::string type, remark, hostname, port, username, password, method;
     std::string plugin, pluginopts;
@@ -1373,10 +1402,6 @@ std::string netchToMellow(std::vector<nodeInfo> &nodes, std::string &base_conf, 
     std::string url, group;
     std::vector<nodeInfo> nodelist;
     string_array vArray, remarks_list, filtered_nodelist;
-
-    ini.store_any_line = true;
-    if(ini.Parse(base_conf) != 0)
-        return std::string();
 
     ini.SetCurrentSection("Endpoint");
 
@@ -1546,8 +1571,6 @@ std::string netchToMellow(std::vector<nodeInfo> &nodes, std::string &base_conf, 
 
     rulesetToSurge(ini, ruleset_content_array, 2);
     ini.RenameSection("Rule", "RoutingRule");
-
-    return ini.ToString();
 }
 
 std::string buildGistData(std::string name, std::string content)
@@ -1623,7 +1646,7 @@ int uploadGist(std::string name, std::string path, std::string content, bool wri
         url = "https://gist.githubusercontent.com/" + username + "/" + id + "/raw/" + path;
         std::cerr<<"Gist id provided. Modifying gist...\n";
         if(writeManageURL)
-            content = "#!MANAGED-CONFIG "+ url + "\n" + content;
+            content = "#!MANAGED-CONFIG " + url + "\n" + content;
         retVal = curlPatch("https://api.github.com/gists/" + id, buildGistData(path, content), getSystemProxy(), token, &retData);
         if(retVal != 200)
         {
