@@ -4,6 +4,7 @@
 #include <thread>
 #include <sstream>
 #include <iosfwd>
+#include <iostream>
 //#include <filesystem>
 #include <unistd.h>
 
@@ -136,10 +137,10 @@ std::string UrlEncode(const std::string& str)
     for (size_t i = 0; i < length; i++)
     {
         if (isalnum((unsigned char)str[i]) ||
-            (str[i] == '-') ||
-            (str[i] == '_') ||
-            (str[i] == '.') ||
-            (str[i] == '~'))
+                (str[i] == '-') ||
+                (str[i] == '_') ||
+                (str[i] == '.') ||
+                (str[i] == '~'))
             strTemp += str[i];
         //else if (str[i] == ' ')
         //    strTemp += "+";

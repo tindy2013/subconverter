@@ -28,9 +28,9 @@ std::vector<responseRoute> responses;
 static inline void buffer_cleanup(struct evbuffer *eb)
 {
     evbuffer_free(eb);
-    #ifdef MALLOC_TRIM
+#ifdef MALLOC_TRIM
     malloc_trim(0);
-    #endif // MALLOC_TRIM
+#endif // MALLOC_TRIM
 }
 
 static inline int process_request(const char *method_str, std::string uri, std::string &postdata, std::string &content_type, std::string &return_data)

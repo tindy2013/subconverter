@@ -8,6 +8,7 @@
 #include "multithread.h"
 #include "socket.h"
 
+#include <algorithm>
 #include <iostream>
 #include <numeric>
 #include <rapidjson/writer.h>
@@ -416,6 +417,71 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
     }
 }
 
+void groupGenerate(std::string &rule, std::vector<nodeInfo> &nodelist, std::vector<std::string> &filtered_nodelist, bool add_direct)
+{
+    std::string group;
+    if(rule.find("[]") == 0 && add_direct)
+    {
+        filtered_nodelist.emplace_back(rule.substr(2));
+    }
+    else if(rule.find("!!GROUP=") == 0)
+    {
+        if(rule.find("!!", rule.find("!!") + 2) != rule.npos)
+        {
+            group = rule.substr(8, rule.find("!!", rule.find("!!") + 2));
+            rule = rule.substr(rule.find("!!", rule.find("!!") + 2) + 2);
+
+            for(nodeInfo &y : nodelist)
+            {
+                if(regFind(y.group, group) && regFind(y.remarks, rule) && std::find(filtered_nodelist.begin(), filtered_nodelist.end(), y.remarks) == filtered_nodelist.end())
+                    filtered_nodelist.emplace_back(y.remarks);
+            }
+        }
+        else
+        {
+            group = rule.substr(8);
+
+            for(nodeInfo &y : nodelist)
+            {
+                if(regFind(y.group, group) && std::find(filtered_nodelist.begin(), filtered_nodelist.end(), y.remarks) == filtered_nodelist.end())
+                    filtered_nodelist.emplace_back(y.remarks);
+            }
+        }
+    }
+    else if(rule.find("!!GROUPID=") == 0)
+    {
+        if(rule.find("!!", rule.find("!!") + 2) != rule.npos)
+        {
+            group = rule.substr(10, rule.find("!!", rule.find("!!") + 2) - 10);
+            rule = rule.substr(rule.find("!!", rule.find("!!") + 2) + 2);
+
+            for(nodeInfo &y : nodelist)
+            {
+                if(y.groupID == to_int(group) && regFind(y.remarks, rule) && std::find(filtered_nodelist.begin(), filtered_nodelist.end(), y.remarks) == filtered_nodelist.end())
+                    filtered_nodelist.emplace_back(y.remarks);
+            }
+        }
+        else
+        {
+            group = rule.substr(10);
+
+            for(nodeInfo &y : nodelist)
+            {
+                if(y.groupID == to_int(group) && std::find(filtered_nodelist.begin(), filtered_nodelist.end(), y.remarks) == filtered_nodelist.end())
+                    filtered_nodelist.emplace_back(y.remarks);
+            }
+        }
+    }
+    else
+    {
+        for(nodeInfo &y : nodelist)
+        {
+            if(regFind(y.remarks, rule) && std::find(filtered_nodelist.begin(), filtered_nodelist.end(), y.remarks) == filtered_nodelist.end())
+                filtered_nodelist.emplace_back(y.remarks);
+        }
+    }
+}
+
 YAML::Node netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, bool clashR, extra_settings &ext)
 {
     try_config_lock();
@@ -426,7 +492,6 @@ YAML::Node netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, std:
     std::string protocol, protoparam, obfs, obfsparam;
     std::string id, aid, transproto, faketype, host, path, quicsecure, quicsecret;
     std::vector<nodeInfo> nodelist;
-    std::string group;
     bool tlssecure, replace_flag;
     string_array vArray, remarks_list, filtered_nodelist;
 
@@ -586,38 +651,7 @@ YAML::Node netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, std:
             continue;
 
         for(unsigned int i = 2; i < rules_upper_bound; i++)
-        {
-            if(vArray[i].find("[]") == 0)
-            {
-                filtered_nodelist.emplace_back(vArray[i].substr(2));
-            }
-            else if(vArray[i].find("!!GROUP=") == 0)
-            {
-                group = vArray[i].substr(8);
-                for(nodeInfo &y : nodelist)
-                {
-                    if(regFind(y.group, group) && std::find(filtered_nodelist.begin(), filtered_nodelist.end(), y.remarks) == filtered_nodelist.end())
-                        filtered_nodelist.emplace_back(y.remarks);
-                }
-            }
-            else if(vArray[i].find("!!GROUPID=") == 0)
-            {
-                group = vArray[i].substr(10);
-                for(nodeInfo &y : nodelist)
-                {
-                    if(y.groupID == stoi(group) && std::find(filtered_nodelist.begin(), filtered_nodelist.end(), y.remarks) == filtered_nodelist.end())
-                        filtered_nodelist.emplace_back(y.remarks);
-                }
-            }
-            else
-            {
-                for(nodeInfo &y : nodelist)
-                {
-                    if(regFind(y.remarks, vArray[i]) && std::find(filtered_nodelist.begin(), filtered_nodelist.end(), y.remarks) == filtered_nodelist.end())
-                        filtered_nodelist.emplace_back(y.remarks);
-                }
-            }
-        }
+            groupGenerate(vArray[i], nodelist, filtered_nodelist, true);
 
         if(!filtered_nodelist.size())
             filtered_nodelist.emplace_back("DIRECT");
@@ -678,7 +712,7 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
     std::string plugin, pluginopts;
     std::string protocol, protoparam, obfs, obfsparam;
     std::string id, aid, transproto, faketype, host, path, quicsecure, quicsecret;
-    std::string url, group;
+    std::string url;
     std::string output_nodelist;
     std::vector<nodeInfo> nodelist;
     unsigned short local_port = 1080;
@@ -782,7 +816,10 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
                 args.emplace_back("-G");
                 args.emplace_back(protoparam);
             }
-            proxy += std::accumulate(std::next(args.cbegin()), args.cend(), args[0], [](std::string a, std::string b){return std::move(a) + "\", args=\"" + std::move(b);});
+            proxy += std::accumulate(std::next(args.cbegin()), args.cend(), args[0], [](std::string a, std::string b)
+            {
+                return std::move(a) + "\", args=\"" + std::move(b);
+            });
             //std::string ipaddr = (isIPv4(hostname) || isIPv6(hostname)) ? hostname : hostnameToIPAddr(hostname);
             //proxy += "\", local-port=" + std::__cxx11::to_string(local_port) + ", addresses=" + ipaddr;
             proxy += "\", local-port=" + std::__cxx11::to_string(local_port);
@@ -847,38 +884,7 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
             continue;
 
         for(unsigned int i = 2; i < rules_upper_bound; i++)
-        {
-            if(vArray[i].find("[]") == 0)
-            {
-                filtered_nodelist.emplace_back(vArray[i].substr(2));
-            }
-            else if(vArray[i].find("!!GROUP=") == 0)
-            {
-                group = vArray[i].substr(8);
-                for(nodeInfo &y : nodelist)
-                {
-                    if(regFind(y.group, group) && std::find(filtered_nodelist.begin(), filtered_nodelist.end(), y.remarks) == filtered_nodelist.end())
-                        filtered_nodelist.emplace_back(y.remarks);
-                }
-            }
-            else if(vArray[i].find("!!GROUPID=") == 0)
-            {
-                group = vArray[i].substr(10);
-                for(nodeInfo &y : nodelist)
-                {
-                    if(y.groupID == stoi(group) && std::find(filtered_nodelist.begin(), filtered_nodelist.end(), y.remarks) == filtered_nodelist.end())
-                        filtered_nodelist.emplace_back(y.remarks);
-                }
-            }
-            else
-            {
-                for(nodeInfo &y : nodelist)
-                {
-                    if(regFind(y.remarks, vArray[i]) && std::find(filtered_nodelist.begin(), filtered_nodelist.end(), y.remarks) == filtered_nodelist.end())
-                        filtered_nodelist.emplace_back(y.remarks);
-                }
-            }
-        }
+            groupGenerate(vArray[i], nodelist, filtered_nodelist, true);
 
         if(!filtered_nodelist.size())
             filtered_nodelist.emplace_back("DIRECT");
@@ -1399,7 +1405,7 @@ void netchToMellow(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rul
     std::string type, remark, hostname, port, username, password, method;
     std::string plugin, pluginopts;
     std::string id, aid, transproto, faketype, host, path, quicsecure, quicsecret, tlssecure;
-    std::string url, group;
+    std::string url;
     std::vector<nodeInfo> nodelist;
     string_array vArray, remarks_list, filtered_nodelist;
 
@@ -1508,34 +1514,7 @@ void netchToMellow(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rul
             continue;
 
         for(unsigned int i = 2; i < rules_upper_bound; i++)
-        {
-            if(vArray[i].find("!!GROUP=") == 0)
-            {
-                group = vArray[i].substr(8);
-                for(nodeInfo &y : nodelist)
-                {
-                    if(regFind(y.group, group) && std::find(filtered_nodelist.begin(), filtered_nodelist.end(), y.remarks) == filtered_nodelist.end())
-                        filtered_nodelist.emplace_back(y.remarks);
-                }
-            }
-            else if(vArray[i].find("!!GROUPID=") == 0)
-            {
-                group = vArray[i].substr(10);
-                for(nodeInfo &y : nodelist)
-                {
-                    if(y.groupID == to_int(group, -1) && std::find(filtered_nodelist.begin(), filtered_nodelist.end(), y.remarks) == filtered_nodelist.end())
-                        filtered_nodelist.emplace_back(y.remarks);
-                }
-            }
-            else
-            {
-                for(nodeInfo &y : nodelist)
-                {
-                    if(regFind(y.remarks, vArray[i]) && std::find(filtered_nodelist.begin(), filtered_nodelist.end(), y.remarks) == filtered_nodelist.end())
-                        filtered_nodelist.emplace_back(y.remarks);
-                }
-            }
-        }
+            groupGenerate(vArray[i], nodelist, filtered_nodelist, false);
 
         if(!filtered_nodelist.size())
         {

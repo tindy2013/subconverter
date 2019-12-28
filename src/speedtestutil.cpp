@@ -1426,11 +1426,17 @@ bool chkIgnore(const nodeInfo &node, string_array &exclude_remarks, string_array
     //std::string remarks = UTF8ToGBK(node.remarks);
     std::string remarks = node.remarks;
     writeLog(LOG_TYPE_INFO, "Comparing exclude remarks...");
-    excluded = std::any_of(exclude_remarks.cbegin(), exclude_remarks.cend(), [&remarks](auto &x){return regFind(remarks, x);});
+    excluded = std::any_of(exclude_remarks.cbegin(), exclude_remarks.cend(), [&remarks](auto &x)
+    {
+        return regFind(remarks, x);
+    });
     if(include_remarks.size() != 0)
     {
         writeLog(LOG_TYPE_INFO, "Comparing include remarks...");
-        included = std::any_of(include_remarks.cbegin(), include_remarks.cend(), [&remarks](auto &x){return regFind(remarks, x);});
+        included = std::any_of(include_remarks.cbegin(), include_remarks.cend(), [&remarks](auto &x)
+        {
+            return regFind(remarks, x);
+        });
     }
     else
     {

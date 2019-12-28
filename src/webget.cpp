@@ -82,8 +82,8 @@ int curlPost(std::string url, std::string data, std::string proxy, std::string a
     curl_easy_setopt(curl_handle, CURLOPT_TIMEOUT, 15L);
     curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 1L);
     curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYPEER, 0L);
-	curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, writer);
-	curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, retData);
+    curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, writer);
+    curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, retData);
     curl_easy_setopt(curl_handle, CURLOPT_HTTPHEADER, list);
     curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, user_agent_str.data());
     if(proxy != "")
@@ -126,8 +126,8 @@ int curlPatch(std::string url, std::string data, std::string proxy, std::string 
     curl_easy_setopt(curl_handle, CURLOPT_TIMEOUT, 15L);
     curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 1L);
     curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYPEER, 0L);
-	curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, writer);
-	curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, retData);
+    curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, writer);
+    curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, retData);
     curl_easy_setopt(curl_handle, CURLOPT_HTTPHEADER, list);
     curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, user_agent_str.data());
     if(proxy != "")
