@@ -1142,7 +1142,7 @@ bool explodeSurge(std::string surge, std::string custom_port, int local_port, st
 
                 for(i = 6; i < configs.size(); i++)
                 {
-                    vArray = split(trim(configs[i]), "=");
+                    vArray = split(configs[i], "=");
                     if(vArray.size() < 2)
                         continue;
                     itemName = trim(vArray[0]);
@@ -1176,7 +1176,7 @@ bool explodeSurge(std::string surge, std::string custom_port, int local_port, st
 
             for(i = 3; i < configs.size(); i++)
             {
-                vArray = split(trim(configs[i]), "=");
+                vArray = split(configs[i], "=");
                 if(vArray.size() < 2)
                     continue;
                 itemName = trim(vArray[0]);
@@ -1223,33 +1223,34 @@ bool explodeSurge(std::string surge, std::string custom_port, int local_port, st
 
             for(i = 3; i < configs.size(); i++)
             {
-                vArray = split(trim(configs[i]), "=");
+                vArray = split(configs[i], "=");
                 if(vArray.size() != 2)
                     continue;
-                else if(vArray[0] == "username")
-                    id = vArray[1];
-                else if(vArray[0] == "ws")
+                itemName = trim(vArray[0]);
+                itemVal = trim(vArray[1]);
+                if(itemName == "username")
+                    id = itemVal;
+                else if(itemName == "ws")
                 {
-                    if(vArray[1] == "true")
+                    if(itemVal == "true")
                         net = "ws";
                 }
-                else if(vArray[0] == "tls")
+                else if(itemName == "tls")
                 {
-                    if(vArray[1] == "true")
+                    if(itemVal == "true")
                         tls = "tls";
                 }
-                else if(vArray[0] == "ws-path")
-                    path = vArray[1];
-                else if(vArray[0] == "ws-headers")
+                else if(itemName == "ws-path")
+                    path = itemVal;
+                else if(itemName == "ws-headers")
                 {
-                    headers = split(trim(vArray[1]), "|");
+                    headers = split(itemVal, "|");
                     for(auto &y : headers)
                     {
                         header = split(trim(y), ":");
                         if(header[0] == "Host")
                             host = header[1];
                     }
-
                 }
             }
             if(host == "" && !isIPv4(server) && !isIPv6(server))
@@ -1281,23 +1282,25 @@ bool explodeSurge(std::string surge, std::string custom_port, int local_port, st
                 vArray = split(trim(configs[i]), "=");
                 if(vArray.size() != 2)
                     continue;
-                else if(vArray[0] == "method")
-                    method = vArray[1];
-                else if(vArray[0] == "password")
-                    password = vArray[1];
-                else if(vArray[0] == "tag")
-                    remarks = vArray[1];
-                else if(vArray[0] == "ssr-protocol")
-                    protocol = vArray[1];
-                else if(vArray[0] == "ssr-protocol-param")
-                    protoparam = vArray[1];
-                else if(vArray[0] == "obfs")
+                itemName = trim(vArray[0]);
+                itemVal = trim(vArray[1]);
+                if(itemName == "method")
+                    method = itemVal;
+                else if(itemName == "password")
+                    password = itemVal;
+                else if(itemName == "tag")
+                    remarks = itemVal;
+                else if(itemName == "ssr-protocol")
+                    protocol = itemVal;
+                else if(itemName == "ssr-protocol-param")
+                    protoparam = itemVal;
+                else if(itemName == "obfs")
                 {
                     plugin = "simple-obfs";
-                    pluginopts_mode = vArray[1];
+                    pluginopts_mode = itemVal;
                 }
-                else if(vArray[0] == "obfs-host")
-                    pluginopts_host = vArray[1];
+                else if(itemName == "obfs-host")
+                    pluginopts_host = itemVal;
             }
             if(remarks == "")
                 remarks = server + ":" + port;
