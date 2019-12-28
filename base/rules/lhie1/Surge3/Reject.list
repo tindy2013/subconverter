@@ -8311,7 +8311,6 @@ URL-REGEX,https?://\w+.beacon.qq.com
 URL-REGEX,https?://\w+.cloudfront.net/banner
 URL-REGEX,https?://\w+.gdt.qq.com
 URL-REGEX,https?://\w+.kingsoft-office-service.com
-URL-REGEX,https?://\w+.l.qq.com
 URL-REGEX,https?://9377\w{2}.com
 URL-REGEX,https?://a0b\w{2}.com
 URL-REGEX,https?://(a?d|sax)\d.sina.com
