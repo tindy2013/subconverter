@@ -989,27 +989,41 @@ void explodeClash(Node yamlnode, std::string custom_port, int local_port, std::v
     return;
 }
 
-void explodeShadowrocket(std::string kit, std::string custom_port, int local_port, nodeInfo &node)
+void explodeShadowrocket(std::string rocket, std::string custom_port, int local_port, nodeInfo &node)
 {
     std::string add, port, type, id, aid, net = "tcp", path, host, tls, cipher, remarks;
+    std::string obfs; //for other style of link
     std::string addition;
     string_array userinfo;
-    kit = replace_all_distinct(kit, "vmess://", "");
+    rocket = rocket.substr(8);
 
-    addition = kit.substr(kit.find("?") + 1);
-    kit = kit.substr(0, kit.find("?"));
+    addition = rocket.substr(rocket.find("?") + 1);
+    rocket = rocket.substr(0, rocket.find("?"));
 
-    userinfo = split(regReplace(urlsafe_base64_decode(kit), "(.*?):(.*?)@(.*):(.*)", "$1,$2,$3,$4"), ",");
+    userinfo = split(regReplace(urlsafe_base64_decode(rocket), "(.*?):(.*?)@(.*):(.*)", "$1,$2,$3,$4"), ",");
     cipher = userinfo[0];
     id = userinfo[1];
     add = userinfo[2];
     port = userinfo[3];
     remarks = UrlDecode(getUrlArg(addition, "remark"));
-    net = getUrlArg(addition, "network");
-    aid = getUrlArg(addition, "aid");
+    obfs = getUrlArg(addition, "obfs");
+    if(obfs.size())
+    {
+        if(obfs == "websocket")
+        {
+            net = "ws";
+            host = getUrlArg(addition, "obfsParam");
+            path = getUrlArg(addition, "path");
+        }
+    }
+    else
+    {
+        net = getUrlArg(addition, "network");
+        host = getUrlArg(addition, "wsHost");
+        path = getUrlArg(addition, "wspath");
+    }
     tls = getUrlArg(addition, "tls") == "1" ? "tls" : "";
-    host = getUrlArg(addition, "wsHost");
-    path = getUrlArg(addition, "wspath");
+    aid = getUrlArg(addition, "aid");
 
     if(aid == "")
         aid = "0";
@@ -1030,7 +1044,7 @@ void explodeKitsunebi(std::string kit, std::string custom_port, int local_port, 
     std::string add, port, type, id, aid = "0", net = "tcp", path, host, tls, cipher = "auto", remarks;
     std::string addition;
     string_array userinfo;
-    kit = replace_all_distinct(kit, "vmess1://", "");
+    kit = kit.substr(9);
 
     if(strFind(kit, "#"))
     {
