@@ -7,10 +7,14 @@ ENDIF()
 SET(CMAKE_CXX_STANDARD 17)
 ADD_DEFINITIONS(-Wall -Wextra -Wno-unused-parameter -Wno-unused-result)
 
-OPTION(USING_STD_REGEX "Use std::regex from C++ library instead of PCRECPP" OFF)
+OPTION(USING_STD_REGEX "Use std::regex from C++ library instead of PCRECPP." OFF)
+OPTION(USING_MALLOC_TRIM "Call malloc_trim after processing request to lower memory usage (Your system must support malloc_trim)." OFF)
 
 IF(MACOS)
 	ADD_DEFINITIONS(-D_MACOS)
+ENDIF()
+IF(USING_MALLOC_TRIM)
+	ADD_DEFINITIONS(-DMALLOC_TRIM)
 ENDIF()
 
 ADD_EXECUTABLE(subconverter 
