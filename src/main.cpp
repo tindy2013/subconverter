@@ -75,7 +75,7 @@ void setcd(char *argv[])
     chdir(path.data());
 }
 
-std::string refreshRulesets(string_array &ruleset_list, std::vector<ruleset_content> &rca)
+void refreshRulesets(string_array &ruleset_list, std::vector<ruleset_content> &rca)
 {
     eraseElements(rca);
     std::string rule_group, rule_url;
@@ -128,8 +128,6 @@ std::string refreshRulesets(string_array &ruleset_list, std::vector<ruleset_cont
         else
             std::cerr<<"Warning: No data was fetched from this link. Skipping..."<<std::endl;
     }
-
-    return "done";
 }
 
 void readConf()
@@ -375,7 +373,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     if(target == "clash" || target == "clashr")
     {
         std::cerr<<"Clash"<<((target == "clashr") ? "R" : "")<<std::endl;
-        if(!ruleset.size() && !groups.size())
+        if(ruleset.size() || groups.size())
         {
             if(fileExist(clash_rule_base))
                 base_content = fileGet(clash_rule_base, false);
@@ -428,7 +426,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     else if(target == "mellow")
     {
         std::cerr<<"Mellow"<<std::endl;
-        if(!ruleset.size() && !groups.size())
+        if(ruleset.size() || groups.size())
         {
             if(fileExist(mellow_rule_base))
                 base_content = fileGet(mellow_rule_base, false);
@@ -598,7 +596,9 @@ int main(int argc, char *argv[])
             if(token != access_token)
                 return "Unauthorized";
         }
-        return refreshRulesets(rulesets, ruleset_content_array);
+        refreshRulesets(rulesets, ruleset_content_array);
+        generateBase();
+        return "done";
     });
 
     append_response("GET", "/readconf", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
@@ -610,6 +610,7 @@ int main(int argc, char *argv[])
                 return "Unauthorized";
         }
         readConf();
+        generateBase();
         return "done";
     });
 
@@ -631,6 +632,7 @@ int main(int argc, char *argv[])
         readConf();
         if(!update_ruleset_on_request)
             refreshRulesets(rulesets, ruleset_content_array);
+        generateBase();
         return "done";
     });
 
