@@ -954,7 +954,7 @@ std::string netchToSS(std::vector<nodeInfo> &nodes, extra_settings &ext)
         switch(x.linkType)
         {
         case SPEEDTEST_MESSAGE_FOUNDSS:
-            proxyStr = "ss://" + urlsafe_base64_encode(method + ":" + password + "@" + hostname + ":" + port);
+            proxyStr = "ss://" + urlsafe_base64_encode(method + ":" + password) + "@" + hostname + ":" + port;
             if(plugin.size() && pluginopts.size())
             {
                 proxyStr += "/?plugin=" + UrlEncode(plugin + ";" +pluginopts);
@@ -963,7 +963,7 @@ std::string netchToSS(std::vector<nodeInfo> &nodes, extra_settings &ext)
             break;
         case SPEEDTEST_MESSAGE_FOUNDSSR:
             if(std::count(ss_ciphers.begin(), ss_ciphers.end(), method) > 0 && protocol == "origin" && obfs == "plain")
-                proxyStr = "ss://" + urlsafe_base64_encode(method + ":" + password + "@" + hostname + ":" + port) + "#" + UrlEncode(remark);
+                proxyStr = "ss://" + urlsafe_base64_encode(method + ":" + password) + "@" + hostname + ":" + port + "#" + UrlEncode(remark);
             break;
         default:
             continue;
@@ -1317,7 +1317,7 @@ std::string netchToSSD(std::vector<nodeInfo> &nodes, std::string &group, extra_s
     {
         json.Parse(x.proxyStr.data());
 
-        remark = x.remarks;
+        remark = "\"" + replace_all_distinct(UTF8ToCodePoint(x.remarks), "\\u1f1", "\\ud83c\\udd") + "\"";
         hostname = GetMember(json, "Hostname");
         port = (unsigned short)stoi(GetMember(json, "Port"));
         password = GetMember(json, "Password");
@@ -1348,7 +1348,7 @@ std::string netchToSSD(std::vector<nodeInfo> &nodes, std::string &group, extra_s
             writer.Key("plugin_options");
             writer.String(pluginopts.data());
             writer.Key("remarks");
-            writer.String(remark.data());
+            writer.RawValue(remark.data(), remark.size(), rapidjson::Type::kStringType);
             writer.Key("id");
             writer.Int(index);
             writer.EndObject();
@@ -1367,7 +1367,7 @@ std::string netchToSSD(std::vector<nodeInfo> &nodes, std::string &group, extra_s
                 writer.String(password.data());
                 writer.String(pluginopts.data());
                 writer.Key("remarks");
-                writer.String(remark.data());
+                writer.RawValue(remark.data(), remark.size(), rapidjson::Type::kStringType);
                 writer.Key("id");
                 writer.Int(index);
                 writer.EndObject();

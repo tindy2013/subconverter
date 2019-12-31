@@ -935,3 +935,33 @@ std::string getFormData(const std::string &raw_data)
     }
     return file;
 }
+
+std::string UTF8ToCodePoint(std::string data)
+{
+    std::stringstream ss;
+    int charcode = 0;
+    for(std::string::size_type i = 0; i < data.size(); i++)
+    {
+        charcode = data[i] & 0xff;
+        if((charcode >> 7) == 0)
+        {
+            ss<<data[i];
+        }
+        else if((charcode >> 5) == 6)
+        {
+            ss<<"\\u"<<std::hex<<((data[i + 1] & 0x3f) | (data[i] & 0x1f) << 6);
+            i++;
+        }
+        else if((charcode >> 4) == 14)
+        {
+            ss<<"\\u"<<std::hex<<((data[i + 2] & 0x3f) | (data[i + 1] & 0x3f) << 6 | (data[i] & 0xf) << 12);
+            i += 2;
+        }
+        else if((charcode >> 3) == 30)
+        {
+            ss<<"\\u"<<std::hex<<((data[i + 3] & 0x3f) | (data[i + 2] & 0x3f) << 6 | (data[i + 1] & 0x3f) << 12 | (data[i] & 0x7) << 18);
+            i += 3;
+        }
+    }
+    return ss.str();
+}

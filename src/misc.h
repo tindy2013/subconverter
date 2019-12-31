@@ -53,6 +53,7 @@ void removeUTF8BOM(std::string &data);
 int shortAssemble(unsigned short num_a, unsigned short num_b);
 void shortDisassemble(int source, unsigned short &num_a, unsigned short &num_b);
 int to_int(std::string &s, int def_vaule = 0);
+std::string UTF8ToCodePoint(std::string data);
 
 std::string fileGet(std::string path, bool binary = true);
 int fileWrite(std::string path, std::string content, bool overwrite);
