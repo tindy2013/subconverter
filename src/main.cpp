@@ -373,7 +373,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     if(target == "clash" || target == "clashr")
     {
         std::cerr<<"Clash"<<((target == "clashr") ? "R" : "")<<std::endl;
-        if(ruleset.size() || groups.size())
+        if(ruleset.size() || groups.size() || update_ruleset_on_request)
         {
             if(fileExist(clash_rule_base))
                 base_content = fileGet(clash_rule_base, false);
@@ -426,7 +426,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     else if(target == "mellow")
     {
         std::cerr<<"Mellow"<<std::endl;
-        if(ruleset.size() || groups.size())
+        if(ruleset.size() || groups.size() || update_ruleset_on_request)
         {
             if(fileExist(mellow_rule_base))
                 base_content = fileGet(mellow_rule_base, false);
