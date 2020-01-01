@@ -18,7 +18,6 @@ DOMAIN-SUFFIX,cupid.iqiyi.com
 DOMAIN-SUFFIX,emoticon.sns.iqiyi.com
 DOMAIN-SUFFIX,game.pps.tv
 DOMAIN-SUFFIX,gamecenter.iqiyi.com
-DOMAIN-SUFFIX,hotchat-im.iqiyi.com
 DOMAIN-SUFFIX,mbdlog.iqiyi.com
 DOMAIN-SUFFIX,msg.iqiyi.com
 DOMAIN-SUFFIX,msg.video.qiyi.com
@@ -8396,7 +8395,6 @@ DOMAIN,api.whizzone.com
 DOMAIN-KEYWORD,traffic
 DOMAIN-SUFFIX,mmstat.com
 DOMAIN-KEYWORD,umeng
-DOMAIN-KEYWORD,track
 DOMAIN-SUFFIX,4paradigm.com
 DOMAIN-KEYWORD,talkingdata
 DOMAIN-SUFFIX,catch.gift
