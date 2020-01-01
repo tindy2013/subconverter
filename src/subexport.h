@@ -19,6 +19,7 @@ struct extra_settings
     bool tfo = false;
     bool nodelist = false;
     bool sort_flag = false;
+    bool skip_cert_verify = false;
     std::string surge_ssr_path;
 };
 

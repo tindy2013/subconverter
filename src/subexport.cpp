@@ -552,6 +552,8 @@ YAML::Node netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, stri
                 singleproxy["plugin-opts"]["path"] = getUrlArg(pluginopts, "path");
                 singleproxy["plugin-opts"]["tls"] = pluginopts.find("tls") != pluginopts.npos;
                 singleproxy["plugin-opts"]["mux"] = pluginopts.find("mux") != pluginopts.npos;
+                if(ext.skip_cert_verify)
+                    singleproxy["plugin-opts"]["skip-cert-verify"] = true;
             }
         }
         else if(x.linkType == SPEEDTEST_MESSAGE_FOUNDVMESS)
@@ -567,6 +569,8 @@ YAML::Node netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, stri
             singleproxy["alterId"] = stoi(aid);
             singleproxy["cipher"] = method;
             singleproxy["tls"] = tlssecure;
+            if(ext.skip_cert_verify)
+                singleproxy["skip-cert-verify"] = true;
             if(transproto == "ws")
             {
                 singleproxy["network"] = transproto;
