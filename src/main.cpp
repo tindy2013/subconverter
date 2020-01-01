@@ -134,15 +134,21 @@ void readConf()
 {
     guarded_mutex guard(on_configuring);
     std::cerr<<"Reading preference settings..."<<std::endl;
+    INIReader ini;
+    ini.allow_dup_section_titles = true;
+    //ini.do_utf8_to_gbk = true;
+    int retVal = ini.ParseFile(pref_path);
+    if(retVal != INIREADER_EXCEPTION_NONE)
+    {
+        std::cerr<<"Unable to load preference settings. Reason: "<<ini.GetLastError()<<"\n";
+        return;
+    }
+
     eraseElements(def_exclude_remarks);
     eraseElements(def_include_remarks);
     eraseElements(clash_extra_group);
     eraseElements(rulesets);
     string_array emojis_temp, renames_temp;
-    INIReader ini;
-    ini.allow_dup_section_titles = true;
-    //ini.do_utf8_to_gbk = true;
-    ini.ParseFile(pref_path);
 
     ini.EnterSection("common");
     if(ini.ItemExist("api_mode"))
@@ -250,20 +256,31 @@ void readConf()
 void generateBase()
 {
     std::string base_content;
+    int retVal = 0;
     std::cerr<<"Generating base content for Clash/R...\n";
     if(fileExist(clash_rule_base))
         base_content = fileGet(clash_rule_base, false);
     else
         base_content = webGet(clash_rule_base, getSystemProxy());
-    clash_base = YAML::Load(base_content);
-    rulesetToClash(clash_base, ruleset_content_array);
+    try
+    {
+        clash_base = YAML::Load(base_content);
+        rulesetToClash(clash_base, ruleset_content_array);
+    }
+    catch (YAML::Exception &e)
+    {
+        std::cerr<<"Unable to load Clash base content. Reason: "<<e.msg<<"\n";
+    }
     std::cerr<<"Generating base content for Mellow...\n";
     if(fileExist(mellow_rule_base))
         base_content = fileGet(mellow_rule_base, false);
     else
         base_content = webGet(mellow_rule_base, getSystemProxy());
-    mellow_base.Parse(base_content);
-    rulesetToSurge(mellow_base, ruleset_content_array, 2);
+    retVal = mellow_base.Parse(base_content);
+    if(retVal != INIREADER_EXCEPTION_NONE)
+        std::cerr<<"Unable to load Mellow base content. Reason: "<<mellow_base.GetLastError()<<"\n";
+    else
+        rulesetToSurge(mellow_base, ruleset_content_array, 2);
 }
 
 std::string subconverter(RESPONSE_CALLBACK_ARGS)

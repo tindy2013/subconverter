@@ -9,6 +9,15 @@
 
 #include "misc.h"
 
+#define INIREADER_EXCEPTION_NONE 0
+#define INIREADER_EXCEPTION_EMPTY -1
+#define INIREADER_EXCEPTION_DUPLICATE -2
+#define INIREADER_EXCEPTION_OUTOFBOUND -3
+#define INIREADER_EXCEPTION_NOTEXIST -4
+#define INIREADER_EXCEPTION_NOTPARSED -5
+
+#define __SAVE_ERROR_AND_RETURN(x) {last_error = x; return last_error;}
+
 typedef std::map<std::string, std::multimap<std::string, std::string>> ini_data_struct;
 typedef std::multimap<std::string, std::string> string_multimap;
 typedef std::vector<std::string> string_array;
@@ -33,6 +42,10 @@ private:
     string_multimap cached_section_content;
 
     std::string isolated_items_section;
+
+    //error flags
+    int last_error = INIREADER_EXCEPTION_NONE;
+    unsigned int last_error_index = 0;
 
     bool chkIgnore(std::string section)
     {
@@ -86,6 +99,33 @@ public:
 
     ~INIReader() = default;
 
+    std::string GetErrorString(int error)
+    {
+        switch(error)
+        {
+        case INIREADER_EXCEPTION_EMPTY:
+            return "Empty document";
+        case INIREADER_EXCEPTION_DUPLICATE:
+            return "Duplicate section";
+        case INIREADER_EXCEPTION_NOTEXIST:
+            return "Target does not exist";
+        case INIREADER_EXCEPTION_OUTOFBOUND:
+            return "Item exists outside of any section";
+        case INIREADER_EXCEPTION_NOTPARSED:
+            return "Parse error";
+        default:
+            return "Undefined";
+        }
+    }
+
+    std::string GetLastError()
+    {
+        if(parsed)
+            return GetErrorString(last_error);
+        else
+            return "line " + std::__cxx11::to_string(last_error_index) + ": " + GetErrorString(last_error);
+    }
+
     /**
     *  @brief Exclude a section with the given name.
     */
@@ -137,7 +177,7 @@ public:
     int Parse(std::string content) //parse content into mapped data
     {
         if(!content.size()) //empty content
-            return -1;
+            __SAVE_ERROR_AND_RETURN(INIREADER_EXCEPTION_EMPTY);
 
         //remove UTF-8 BOM
         if(content.compare(0, 3, "\xEF\xBB\xBF") == 0)
@@ -157,8 +197,10 @@ public:
         if(store_isolated_line)
             curSection = isolated_items_section; //items before any section define will be store in this section
         strStrm<<content;
+        last_error_index = 0; //reset error index
         while(getline(strStrm, strLine, delimiter)) //get one line of content
         {
+            last_error_index++;
             lineSize = strLine.size();
             if(!lineSize || strLine[0] == ';' || strLine[0] == '#') //empty lines and comments are ignored
                 continue;
@@ -172,7 +214,7 @@ public:
                 if(inExcludedSection) //this section is excluded
                     continue;
                 if(!curSection.size()) //not in any section
-                    return -1;
+                    __SAVE_ERROR_AND_RETURN(INIREADER_EXCEPTION_OUTOFBOUND);
                 itemName = trim(strLine.substr(0, strLine.find("=")));
                 itemVal = trim(strLine.substr(strLine.find("=") + 1));
                 itemGroup.emplace(itemName, itemVal); //insert to current section
@@ -195,7 +237,7 @@ public:
                             ini_content.erase(curSection); //remove the old section
                         }
                         else
-                            return -1; //not allowed, stop
+                            __SAVE_ERROR_AND_RETURN(INIREADER_EXCEPTION_DUPLICATE); //not allowed, stop
                     }
                     ini_content.emplace(curSection, itemGroup); //insert previous section to content map
                     read_sections.emplace_back(curSection); //add to read sections list
@@ -223,13 +265,13 @@ public:
                     ini_content.erase(curSection); //remove the old section
                 }
                 else
-                    return -1; //not allowed, stop
+                    __SAVE_ERROR_AND_RETURN(INIREADER_EXCEPTION_DUPLICATE); //not allowed, stop
             }
             ini_content.emplace(curSection, itemGroup); //insert this section to content map
             read_sections.emplace_back(curSection); //add to read sections list
         }
         parsed = true;
-        return 0; //all done
+        __SAVE_ERROR_AND_RETURN(INIREADER_EXCEPTION_NONE); //all done
     }
 
     /**
@@ -238,7 +280,7 @@ public:
     int ParseFile(std::string filePath)
     {
         if(!fileExist(filePath))
-            return -1;
+            __SAVE_ERROR_AND_RETURN(INIREADER_EXCEPTION_NOTEXIST);
         return Parse(fileGet(filePath, false));
     }
 
@@ -280,10 +322,10 @@ public:
     int EnterSection(std::string section)
     {
         if(!SectionExist(section))
-            return -1;
+            __SAVE_ERROR_AND_RETURN(INIREADER_EXCEPTION_NOTEXIST);
         current_section = cached_section = section;
         cached_section_content = ini_content.at(section);
-        return 0;
+        __SAVE_ERROR_AND_RETURN(INIREADER_EXCEPTION_NONE);
     }
 
     /**
@@ -356,7 +398,7 @@ public:
     unsigned int ItemCount(std::string section)
     {
         if(!parsed || !SectionExist(section))
-            return 0;
+            __SAVE_ERROR_AND_RETURN(INIREADER_EXCEPTION_NOTPARSED);
 
         return ini_content.at(section).size();
     }
@@ -376,7 +418,7 @@ public:
     int GetItems(std::string section, string_multimap &data)
     {
         if(!parsed || !SectionExist(section))
-            return -1;
+            __SAVE_ERROR_AND_RETURN(INIREADER_EXCEPTION_NOTEXIST);
 
         if(cached_section != section)
         {
@@ -385,7 +427,7 @@ public:
         }
 
         data = cached_section_content;
-        return 0;
+        __SAVE_ERROR_AND_RETURN(INIREADER_EXCEPTION_NONE);
     }
 
     /**
@@ -402,12 +444,12 @@ public:
     int GetAll(std::string section, std::string itemName, string_array &results) //retrieve item(s) with the same itemName prefix
     {
         if(!parsed)
-            return -1;
+            __SAVE_ERROR_AND_RETURN(INIREADER_EXCEPTION_NOTPARSED);
 
         string_multimap mapTemp;
 
         if(GetItems(section, mapTemp) != 0)
-            return -1;
+            __SAVE_ERROR_AND_RETURN(INIREADER_EXCEPTION_NOTEXIST);
 
         for(auto &x : mapTemp)
         {
@@ -415,7 +457,7 @@ public:
                 results.emplace_back(x.second);
         }
 
-        return 0;
+        __SAVE_ERROR_AND_RETURN(INIREADER_EXCEPTION_NONE);
     }
 
     /**
@@ -539,7 +581,7 @@ public:
     int Set(std::string section, std::string itemName, std::string itemVal)
     {
         if(!section.size())
-            return -1;
+            __SAVE_ERROR_AND_RETURN(INIREADER_EXCEPTION_NOTEXIST);
 
         if(!parsed)
             parsed = true;
@@ -556,7 +598,7 @@ public:
             ini_content.insert(std::pair<std::string, std::multimap<std::string, std::string>>(section, mapTemp));
         }
 
-        return 0;
+        __SAVE_ERROR_AND_RETURN(INIREADER_EXCEPTION_NONE);
     }
 
     /**
@@ -565,7 +607,7 @@ public:
     int Set(std::string itemName, std::string itemVal)
     {
         if(!current_section.size())
-            return -1;
+            __SAVE_ERROR_AND_RETURN(INIREADER_EXCEPTION_NOTEXIST);
         return Set(current_section, itemName, itemVal);
     }
 
@@ -640,7 +682,7 @@ public:
     int RenameSection(std::string oldName, std::string newName)
     {
         if(!SectionExist(oldName) || SectionExist(newName))
-            return -1;
+            __SAVE_ERROR_AND_RETURN(INIREADER_EXCEPTION_DUPLICATE);
         /*
         auto nodeHandler = ini_content.extract(oldName);
         nodeHandler.key() = newName;
@@ -648,7 +690,7 @@ public:
         */
         ini_content[newName] = std::move(ini_content[oldName]);
         ini_content.erase(oldName);
-        return 0;
+        __SAVE_ERROR_AND_RETURN(INIREADER_EXCEPTION_NONE);
     }
 
     /**
@@ -658,7 +700,7 @@ public:
     {
         int retVal;
         if(!SectionExist(section))
-            return -1;
+            __SAVE_ERROR_AND_RETURN(INIREADER_EXCEPTION_NOTEXIST);
 
         retVal = ini_content.at(section).erase(itemName);
         if(retVal && cached_section == section)
@@ -690,11 +732,11 @@ public:
             {
                 cached_section_content = mapTemp;
             }
-            return 0;
+            __SAVE_ERROR_AND_RETURN(INIREADER_EXCEPTION_NONE);
         }
         else
         {
-            return -1;
+            __SAVE_ERROR_AND_RETURN(INIREADER_EXCEPTION_NOTEXIST);
         }
     }
 
