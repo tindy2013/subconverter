@@ -253,6 +253,38 @@ void readConf()
     std::cerr<<"Read preference settings completed."<<std::endl;
 }
 
+int loadExternalConfig(std::string &path, string_array &custom_proxy_group, string_array &surge_ruleset, std::string proxy)
+{
+    std::string base_content;
+    if(fileExist(path))
+        base_content = fileGet(path, false);
+    else
+        base_content = webGet(path, proxy);
+
+    INIReader ini;
+    ini.store_isolated_line = true;
+    ini.SetIsolatedItemsSection("custom");
+    if(ini.Parse(base_content) != INIREADER_EXCEPTION_NONE)
+    {
+        std::cerr<<"Load external configuration failed. Reason: "<<ini.GetLastError()<<"\n";
+        return -1;
+    }
+
+    ini.EnterSection("custom");
+    if(ini.ItemPrefixExist("custom_proxy_group"))
+    {
+        eraseElements(custom_proxy_group);
+        ini.GetAll("custom_proxy_group", custom_proxy_group);
+    }
+    if(ini.ItemPrefixExist("surge_ruleset"))
+    {
+        eraseElements(surge_ruleset);
+        ini.GetAll("surge_ruleset", surge_ruleset);
+    }
+
+    return 0;
+}
+
 void generateBase()
 {
     std::string base_content;
@@ -291,7 +323,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     std::string include = UrlDecode(getUrlArg(argument, "include")), exclude = UrlDecode(getUrlArg(argument, "exclude")), sort_flag = getUrlArg(argument, "sort");
     std::string base_content, output_content;
     string_array extra_group, extra_ruleset, include_remarks, exclude_remarks;
-    std::string groups = urlsafe_base64_decode(getUrlArg(argument, "groups")), ruleset = urlsafe_base64_decode(getUrlArg(argument, "ruleset"));
+    std::string groups = urlsafe_base64_decode(getUrlArg(argument, "groups")), ruleset = urlsafe_base64_decode(getUrlArg(argument, "ruleset")), config = UrlDecode(getUrlArg(argument, "config"));
     std::vector<ruleset_content> rca;
 
     if(!url.size())
@@ -301,34 +333,53 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     if(!api_mode || cfw_child_process)
         readConf();
 
-    if(groups.size())
+    std::string proxy;
+    if(proxy_subscription == "SYSTEM")
+        proxy = getSystemProxy();
+    else if(proxy_subscription == "NONE")
+        proxy = "";
+    else
+        proxy = proxy_subscription;
+
+    if(config.size())
     {
-        extra_group = split(groups, "@");
-        if(!extra_group.size())
-            extra_group = clash_extra_group;
+        std::cerr<<"External configuration file provided. Loading...\n";
+        extra_group = clash_extra_group;
+        extra_ruleset = rulesets;
+        loadExternalConfig(config, extra_group, extra_ruleset, proxy);
+        refreshRulesets(extra_ruleset, rca);
     }
     else
-        extra_group = clash_extra_group;
-
-    if(ruleset.size())
     {
-        extra_ruleset = split(ruleset, "@");
-        if(!extra_ruleset.size())
+        if(groups.size())
+        {
+            extra_group = split(groups, "@");
+            if(!extra_group.size())
+                extra_group = clash_extra_group;
+        }
+        else
+            extra_group = clash_extra_group;
+
+        if(ruleset.size())
+        {
+            extra_ruleset = split(ruleset, "@");
+            if(!extra_ruleset.size())
+            {
+                if(update_ruleset_on_request || cfw_child_process)
+                    refreshRulesets(rulesets, ruleset_content_array);
+                rca = ruleset_content_array;
+            }
+            else
+            {
+                refreshRulesets(extra_ruleset, rca);
+            }
+        }
+        else
         {
             if(update_ruleset_on_request || cfw_child_process)
                 refreshRulesets(rulesets, ruleset_content_array);
             rca = ruleset_content_array;
         }
-        else
-        {
-            refreshRulesets(extra_ruleset, rca);
-        }
-    }
-    else
-    {
-        if(update_ruleset_on_request || cfw_child_process)
-            refreshRulesets(rulesets, ruleset_content_array);
-        rca = ruleset_content_array;
     }
 
     extra_settings ext;
@@ -345,14 +396,6 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         ext.append_proxy_type = append_type == "true";
     else
         ext.append_proxy_type = append_proxy_type;
-
-    std::string proxy;
-    if(proxy_subscription == "SYSTEM")
-        proxy = getSystemProxy();
-    else if(proxy_subscription == "NONE")
-        proxy = "";
-    else
-        proxy = proxy_subscription;
 
     ext.tfo = tfo.size() ? tfo == "true" : tfo_flag;
     ext.udp = udp.size() ? udp == "true" : udp_flag;
@@ -390,7 +433,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     if(target == "clash" || target == "clashr")
     {
         std::cerr<<"Clash"<<((target == "clashr") ? "R" : "")<<std::endl;
-        if(ruleset.size() || groups.size() || update_ruleset_on_request)
+        if(rca.size() || extra_group.size() || update_ruleset_on_request)
         {
             if(fileExist(clash_rule_base))
                 base_content = fileGet(clash_rule_base, false);
@@ -443,7 +486,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     else if(target == "mellow")
     {
         std::cerr<<"Mellow"<<std::endl;
-        if(ruleset.size() || groups.size() || update_ruleset_on_request)
+        if(rca.size() || extra_group.size() || update_ruleset_on_request)
         {
             if(fileExist(mellow_rule_base))
                 base_content = fileGet(mellow_rule_base, false);

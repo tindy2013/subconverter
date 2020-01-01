@@ -67,6 +67,12 @@ static inline bool strFind(std::string str, std::string target)
     return str.find(target) != str.npos;
 }
 
+template <typename T> static inline void eraseElements(std::vector<T> &target)
+{
+    target.clear();
+    target.shrink_to_fit();
+}
+
 template <typename T> static inline void eraseElements(T &target)
 {
     T().swap(target);
