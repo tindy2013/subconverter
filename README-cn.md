@@ -26,12 +26,12 @@
 | SSD          |     ✔      |      ✔       | ssd         |
 | SSR          |     ✔      |      ✔       | ssr         |
 | Surfboard    |     ✔      |      ✔       | surfboard   |
-| Surge2       |     ✔      |      ✔       | surge&ver=2 |
-| Surge3       |     ✔      |      ✔       | surge&ver=3 |
-| Surge4       |     ✔      |      ✔       | surge&ver=4 |
+| Surge 2      |     ✔      |      ✔       | surge&ver=2 |
+| Surge 3      |     ✔      |      ✔       | surge&ver=3 |
+| Surge 4      |     ✔      |      ✔       | surge&ver=4 |
 | V2Ray        |     ✔      |      ✔       | v2ray       |
 
-**注意**：ShdowRocket 用户可以使用 `SS` 以及 `V2Ray`
+**注意**：Shadowrocket 用户可以使用 `ss`、`ssr`以及 `v2ray`参数
 
 ---
 
@@ -98,17 +98,25 @@ http://127.0.0.1:25500/sub?target=clash&url=https%3A%2F%2Fdler.cloud%2Fsubscribe
 #### 调用地址 (进阶)
 
 ```txt
-http://127.0.0.1:25500/sub?target=%TARGET%&url=%URL%&config=%CONFIG%&upload=%UPLOAD%
+http://127.0.0.1:25500/sub?target=%TARGET%&url=%URL%&emoji=%EMOJI%····
 ```
 
 #### 调用说明 (进阶)
 
 | 调用参数 | 必要性 | 示例  | 解释   |
 | -------- | :----: | :--------------- | :------------------------ |
-| %TARGET% |  必要  | surge&ver=4   | 指想要生成的配置类型，详见上方 [支持类型](#支持类型) 中的参数   |
-| %URL%    |  必要  | https%3A%2F%2Fwww.xxx.com | 指机场所提供的订阅链接，需要经过 [URLEncode](https://www.urlencoder.org/) 处理     |
-| %CONFIG% |  可选  | https%3A%2F%2Fwww.xxx.com | 指远程 `pref.ini` (包含分组和规则部分)，需要经过 [URLEncode](https://www.urlencoder.org/) 处理，查看 [示例仓库](https://github.com/lzdnico/subconverteriniexample)，默认加载本地设置文件 |
-| %UPLOAD% |  可选  | true / false  | 指将生成的订阅文件上传至 `Gist`，需要填写`gistconf.ini`，默认为 false (即不上传)    |
+| target |  必要  | surge&ver=4   | 指想要生成的配置类型，详见上方 [支持类型](#支持类型) 中的参数   |
+| url   |  必要  | https%3A%2F%2Fwww.xxx.com | 指机场所提供的订阅链接，需要经过 [URLEncode](https://www.urlencoder.org/) 处理     |
+| config |  可选  | https%3A%2F%2Fwww.xxx.com | 指远程 `pref.ini` (包含分组和规则部分)，需要经过 [URLEncode](https://www.urlencoder.org/) 处理，可查看 [示例仓库](https://github.com/lzdnico/subconverteriniexample) 寻找灵感，默认加载本地设置文件 |
+| upload |  可选  | true / false  | 指将生成的订阅文件上传至 `Gist`，需要填写`gistconf.ini`，默认为 false (即不上传)    |
+| emoji |  可选  | true / false  | 指在节点名称前加入 Emoji，默认为 true  |
+| group |  可选  | MySS  | 指设置该订阅的组名，多用于 SS/SSD/SSR/V2Ray  |
+| tfo |  可选  | true / false  | 指开启该订阅链接的 TCP Fast Open，默认为 false  |
+| udp |  可选  | true / false  | 指开启该订阅链接的 UDP，默认为 false  |
+| list |  可选  | true / false  | 指输出 Surge nodelist 或者 Clash proxy provider  |
+| sort |  可选  | true / false  | 指对输出的节点或策略组进行再次排序，默认为 true  |
+| include |  可选  | 详见下文中 `include_remarks`  | 指仅保留匹配到的节点，支持正则匹配，需要经过 [URLEncode](https://www.urlencoder.org/) 处理，会覆盖配置文件里的设置  |
+| exclude |  可选  | 详见下文中 `exclude_remarks`  | 指排除匹配到的节点，支持正则匹配，需要经过 [URLEncode](https://www.urlencoder.org/) 处理，会覆盖配置文件里的设置  |
 
 ### pref.ini的说明
 
@@ -130,7 +138,7 @@ http://127.0.0.1:25500/sub?target=%TARGET%&url=%URL%&config=%CONFIG%&upload=%UPL
     - 例如:
 
      ```ini
-     default_url=https://dler.cloud/subscribe/ABCDE?clash=vmess
+     default_url='https://dler.cloud/subscribe/ABCDE?clash=vmess'
      ```
 
     - 解释：
@@ -139,7 +147,7 @@ http://127.0.0.1:25500/sub?target=%TARGET%&url=%URL%&config=%CONFIG%&upload=%UPL
      此时订阅链接:
      http://127.0.0.1:25500/sub?target=%clash
      等同于:
-     http://127.0.0.1:25500/sub?target=clash&   url=https%3A%2F%2Fdler.   cloud%2Fsubscribe%2FABCDE%3Fclash%3Dvmess
+     http://127.0.0.1:25500/sub?target=clash&url=https%3A%2F%2Fdler.cloud%2Fsubscribe%2FABCDE%3Fclash%3Dvmess
      ```
 
 1. **exclude_remarks**
@@ -170,7 +178,7 @@ http://127.0.0.1:25500/sub?target=%TARGET%&url=%URL%&config=%CONFIG%&upload=%UPL
 
      ```ini
      clash_rule_base=clash.yaml # 加载本地的 clash.yaml 文件作为基础
-     或者
+     # 或者
      clash_rule_base=https://raw.githubusercontent.com/ConnersHua/Profiles/master/Clash/Pro.yaml
      # 加载神机的 Github 中相关文件作为基础
      ```
@@ -197,7 +205,7 @@ http://127.0.0.1:25500/sub?target=%TARGET%&url=%URL%&config=%CONFIG%&upload=%UPL
 
      ```ini
      proxy_ruleset=SYSTEM # 使用系统代理
-     或者
+     # 或者
      proxy_ruleset=socks5://127.0.0.1:1080 # 使用本地的 1080 端口进行 SOCKS5 代理
      ```
 
@@ -280,15 +288,15 @@ http://127.0.0.1:25500/sub?target=%TARGET%&url=%URL%&config=%CONFIG%&upload=%UPL
 
 #### [emojis] 部分
 
-1. **add_emoji**
+1. add_emoji
 
    > 是否在节点名称前加入下面自定义的 Emoji，设置为 true 时打开，默认为 true
 
-1. **remove_old_emoji**
+1. remove_old_emoji
 
    > 是否移除原有订阅中存在的 Emoji，设置为 true 时打开，默认为 true
 
-1. **rule**
+1. rule
 
    > 在匹配到的节点前添加自定义 emojis，支持正则
 
@@ -326,25 +334,25 @@ http://127.0.0.1:25500/sub?target=%TARGET%&url=%URL%&config=%CONFIG%&upload=%UPL
 
     ```ini
     surge_ruleset=🍎 苹果服务,https://raw.githubusercontent.com/ConnersHua/Profiles/master/Surge/Ruleset/Apple.list
-    ; 表示引用 https://raw.githubusercontent.com/ConnersHua/Profiles/master/Surge/Ruleset/Apple.list 规则
-    ; 且将此规则指向 [clash_proxy_group] 所设置 🍎 苹果服务 策略组
+    # 表示引用 https://raw.githubusercontent.com/ConnersHua/Profiles/master/Surge/Ruleset/Apple.list 规则
+    # 且将此规则指向 [clash_proxy_group] 所设置 🍎 苹果服务 策略组
     surge_ruleset=🎯 全球直连,rules/NobyDa/Surge/Download.list
-    ; 表示引用本地 rules/NobyDa/Surge/Download.list 规则
-    ; 且将此规则指向 [clash_proxy_group] 所设置 🎯 全球直连 策略组
+    # 表示引用本地 rules/NobyDa/Surge/Download.list 规则
+    # 且将此规则指向 [clash_proxy_group] 所设置 🎯 全球直连 策略组
     surge_ruleset=🎯 全球直连,[]GEOIP,CN
-    ; 表示引用 GEOIP 中关于中国的所有 IP
-    ; 且将此规则指向 [clash_proxy_group] 所设置 🎯 全球直连 策略组
+    # 表示引用 GEOIP 中关于中国的所有 IP
+    # 且将此规则指向 [clash_proxy_group] 所设置 🎯 全球直连 策略组
     ```
 
 #### [clash_proxy_group] 部分
 
-> Clash 或 Surge 的策略组, 可用正则来筛选节点
+> 为 Clash 及 Surge 等程序创建策略组, 可用正则来筛选节点
 
 ```ini
-custom_proxy_group=🍎 苹果服务`url-test`(美|美国|United States`http://www.gstatic.com/generate_204`300
-; 表示创建一个叫 🍎 苹果服务 的 url-tes t策略组,并向其中添加名字包'美','美国','United States'的节点，每隔300秒测试一次
+custom_proxy_group=🍎 苹果服务`url-test`(美国|US)`http://www.gstatic.com/generate_204`300
+# 表示创建一个叫 🍎 苹果服务 的 url-tes t策略组,并向其中添加名字含'美国','US'的节点，每隔300秒测试一次
 custom_proxy_group=🇯🇵JP`select`沪日`日本
-; 表示创建一个叫 🇯🇵JP 的 select 策略组,并向其中**依次**添加名字含'沪日','日本'的节点
+# 表示创建一个叫 🇯🇵JP 的 select 策略组,并向其中**依次**添加名字含'沪日','日本'的节点
 ```
 
 - ssr/v2 订阅默认没有组名, 可以使用这个方法来添加组名
@@ -391,8 +399,7 @@ custom_proxy_group=g1hk`select`!!GROUPID=0!!(HGC|HKBN|PCCW|HKT|hk|港)
 > 自动上传 gist ，可以用于 Clash For Android / Surge 等进行远程订阅
 
 在程序目录内的 [gistconf.ini](./gistconf.ini) 中添加 [Personal Access Token](https://github.com/settings/tokens/new)，在链接后加上 `upload=true` 就会在更新好后自动上传 gist。
-
-- 例如：
+例如：
 
 ```ini
 [common]
