@@ -37,7 +37,7 @@
 
 ## 简易用法
 
-       - 即生成的配置文件默认套用 **神机规则**
+> 即生成的配置文件默认套用 **神机规则**
 
 ### 调用地址
 
@@ -280,15 +280,15 @@ http://127.0.0.1:25500/sub?target=%TARGET%&url=%URL%&config=%CONFIG%&upload=%UPL
 
 #### [emojis] 部分
 
-1. add_emoji
+1. **add_emoji**
 
    > 是否在节点名称前加入下面自定义的 Emoji，设置为 true 时打开，默认为 true
 
-1. remove_old_emoji
+1. **remove_old_emoji**
 
    > 是否移除原有订阅中存在的 Emoji，设置为 true 时打开，默认为 true
 
-1. rule
+1. **rule**
 
    > 在匹配到的节点前添加自定义 emojis，支持正则
 
