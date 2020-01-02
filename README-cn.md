@@ -111,10 +111,10 @@ http://127.0.0.1:25500/sub?target=%TARGET%&url=%URL%&emoji=%EMOJI%····
 | config |  可选  | https%3A%2F%2Fwww.xxx.com | 指远程 `pref.ini` (包含分组和规则部分)，需要经过 [URLEncode](https://www.urlencoder.org/) 处理，可查看 [示例仓库](https://github.com/lzdnico/subconverteriniexample) 寻找灵感，默认加载本地设置文件 |
 | upload |  可选  | true / false  | 指将生成的订阅文件上传至 `Gist`，需要填写`gistconf.ini`，默认为 false (即不上传)    |
 | emoji |  可选  | true / false  | 指在节点名称前加入 Emoji，默认为 true  |
-| group |  可选  | MySS  | 指设置该订阅的组名，多用于 SS/SSD/SSR/V2Ray  |
+| group |  可选  | MySS  | 指设置该订阅的组名，多用于 SSD/SSR  |
 | tfo |  可选  | true / false  | 指开启该订阅链接的 TCP Fast Open，默认为 false  |
 | udp |  可选  | true / false  | 指开启该订阅链接的 UDP，默认为 false  |
-| scv |  可选  | true / false  | 指跳过原始订阅的证书验证，默认为 true  |
+| scv |  可选  | true / false  | 指关闭 TLS 节点的证书检查，默认为 false  |
 | list |  可选  | true / false  | 指输出 Surge nodelist 或者 Clash proxy provider  |
 | sort |  可选  | true / false  | 指对输出的节点或策略组进行再次排序，默认为 false  |
 | include |  可选  | 详见下文中 `include_remarks`  | 指仅保留匹配到的节点，支持正则匹配，需要经过 [URLEncode](https://www.urlencoder.org/) 处理，会覆盖配置文件里的设置  |
@@ -284,7 +284,8 @@ http://127.0.0.1:25500/sub?surge&ver=4&tfo=true&udp=true&emoji=true&exclude=%28%
 
 1. **skip_cert_verify_flag**
 
-   > 跳过原始订阅链接的证书检查，设置为 true 时打开，默认为 true
+   > 关闭 TLS 节点的证书检查。设置为 true 时打开，默认为 false
+   > **请勿随意将此设置修改为 true**
 
 #### [managed_config] 部分
 
