@@ -380,11 +380,11 @@ custom_proxy_group=g1hk`select`!!GROUPID=0!!(HGC|HKBN|PCCW|HKT|hk|港)
 
    > 绑定到 Web 服务器的地址，将地址设为 0.0.0.0，则局域网内设备均可使用。
 
-  -例如：
+   - 例如：
 
-  ```ini
-  listen=0.0.0.0
-  ```
+   ```ini
+   listen=0.0.0.0
+   ```
 
 1. **port**
 
