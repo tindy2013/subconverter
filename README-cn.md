@@ -274,18 +274,19 @@ http://127.0.0.1:25500/sub?surge&ver=4&tfo=true&udp=true&emoji=true&exclude=%28%
 
 1. **tcp_fast_open_flag**
 
-   > 为节点打开 TFO (TCP Fast Open) 模式，设置为 true 时打开，默认为 false。
+   > 为节点打开 TFO (TCP Fast Open) 模式，设置为 true 时打开，默认为 false
 
     - 当不清楚机场的设置时**请勿调整此项**。
 
 1. **sort_flag**
 
-   > 对生成的订阅中的节点进行 A-Z 的排序，设置为 true 时打开，默认为 false。
+   > 对生成的订阅中的节点进行 A-Z 的排序，设置为 true 时打开，默认为 false
 
 1. **skip_cert_verify_flag**
 
    > 关闭 TLS 节点的证书检查。设置为 true 时打开，默认为 false
-   > **请勿随意将此设置修改为 true**
+
+    - **请勿随意将此设置修改为 true**
 
 #### [managed_config] 部分
 
