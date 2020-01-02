@@ -590,7 +590,7 @@ std::string simpleToClashR(RESPONSE_CALLBACK_ARGS)
         refreshRulesets(rulesets, ruleset_content_array);
     rca = ruleset_content_array;
 
-    extra_settings ext = {add_emoji, remove_old_emoji, append_proxy_type, udp_flag, tfo_flag, false, do_sort, ""};
+    extra_settings ext = {add_emoji, remove_old_emoji, append_proxy_type, udp_flag, tfo_flag, false, do_sort, scv_flag, ""};
 
     std::string proxy;
     if(proxy_subscription == "SYSTEM")

@@ -716,11 +716,15 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
     std::string plugin, pluginopts;
     std::string protocol, protoparam, obfs, obfsparam;
     std::string id, aid, transproto, faketype, host, path, quicsecure, quicsecret;
-    std::string url;
     std::string output_nodelist;
     std::vector<nodeInfo> nodelist;
     unsigned short local_port = 1080;
     bool tlssecure;
+    //group pref
+    std::string url;
+    int interval = 0;
+    std::string ssid_default;
+
     string_array vArray, remarks_list, filtered_nodelist;
 
     ini.store_any_line = true;
@@ -877,12 +881,25 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
         {
             rules_upper_bound = vArray.size();
         }
-        else if(vArray[1] == "url-test" || vArray[1] == "fallback" || vArray[1] == "load-balance")
+        else if(vArray[1] == "url-test" || vArray[1] == "fallback")
         {
             if(vArray.size() < 5)
                 continue;
             rules_upper_bound = vArray.size() - 2;
             url = vArray[vArray.size() - 2];
+            interval = to_int(vArray[vArray.size() - 1]);
+        }
+        else if(vArray[1] == "ssid")
+        {
+            if(vArray.size() < 4)
+                continue;
+            proxy = vArray[1] + ",default=" + vArray[2];
+            proxy += std::accumulate(vArray.begin() + 3, vArray.end(), vArray[3], [](std::string a, std::string b)
+            {
+                return std::move(a) + "," + std::move(b);
+            });
+            ini.Set("{NONAME}", vArray[0] + " = " + proxy); //insert order
+            continue;
         }
         else
             continue;
@@ -902,8 +919,8 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
         {
             return std::move(a) + "," + std::move(b);
         });
-        if(vArray[1] == "url-test" || vArray[1] == "fallback" || vArray[1] == "load-balance")
-            proxy += ",url=" + url;
+        if(vArray[1] == "url-test" || vArray[1] == "fallback")
+            proxy += ",url=" + url + ",interval=" + std::__cxx11::to_string(interval);
 
         ini.Set("{NONAME}", vArray[0] + " = " + proxy); //insert order
     }
@@ -1321,7 +1338,7 @@ std::string netchToSSD(std::vector<nodeInfo> &nodes, std::string &group, extra_s
     {
         json.Parse(x.proxyStr.data());
 
-        remark = "\"" + replace_all_distinct(UTF8ToCodePoint(x.remarks), "\\u1f1", "\\ud83c\\udd") + "\"";
+        remark = "\"" + replace_all_distinct(UTF8ToCodePoint(x.remarks), "\\u1f1", "\\ud83c\\udd") + "\""; //convert UTF-8 characters to code points
         hostname = GetMember(json, "Hostname");
         port = (unsigned short)stoi(GetMember(json, "Port"));
         password = GetMember(json, "Password");
