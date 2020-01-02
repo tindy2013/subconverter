@@ -92,7 +92,7 @@ http://127.0.0.1:25500/sub?target=clash&url=https%3A%2F%2Fdler.cloud%2Fsubscribe
 1. 会经常涉及到的： [正则表达式入门](https://github.com/ziishaned/learn-regex/blob/master/translations/README-cn.md)
 1. 当遇到问题需要提交 ISSUE 时的： [提问的智慧](https://github.com/ryanhanwu/How-To-Ask-Questions-The-Smart-Way/blob/master/README-zh_CN.md)
 
-当您尝试进行进阶操作时，即默认您有相关的操作能力，本程序仅能保证程序能够正常运行。
+当您尝试进行进阶操作时，即默认您有相关的操作能力，本程序仅保证在默认配置文件下能够正常运行。
 
 ### 进阶地址
 
