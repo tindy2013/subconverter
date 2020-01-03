@@ -12,6 +12,7 @@ struct ruleset_content
 
 struct extra_settings
 {
+    bool enable_rule_generator = true;
     bool add_emoji = false;
     bool remove_emoji = false;
     bool append_proxy_type = true;

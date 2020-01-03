@@ -202,7 +202,7 @@ public:
         {
             last_error_index++;
             lineSize = strLine.size();
-            if(!lineSize || strLine[0] == ';' || strLine[0] == '#') //empty lines and comments are ignored
+            if(!lineSize || strLine[0] == ';' || strLine[0] == '#' || (lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')) //empty lines and comments are ignored
                 continue;
             if(strLine[lineSize - 1] == '\r') //remove line break
             {
@@ -240,8 +240,11 @@ public:
                             __SAVE_ERROR_AND_RETURN(INIREADER_EXCEPTION_DUPLICATE); //not allowed, stop
                     }
                     ini_content.emplace(curSection, itemGroup); //insert previous section to content map
-                    read_sections.emplace_back(curSection); //add to read sections list
+                    read_sections.push_back(curSection); //add to read sections list
+                    if(std::count(section_order.cbegin(), section_order.cend(), curSection) == 0)
+                        section_order.emplace_back(curSection);
                 }
+
                 eraseElements(itemGroup); //reset section storage
                 curSection = thisSection; //start a new section
             }
@@ -269,6 +272,8 @@ public:
             }
             ini_content.emplace(curSection, itemGroup); //insert this section to content map
             read_sections.emplace_back(curSection); //add to read sections list
+            if(std::count(section_order.cbegin(), section_order.cend(), curSection) == 0)
+                section_order.emplace_back(curSection);
         }
         parsed = true;
         __SAVE_ERROR_AND_RETURN(INIREADER_EXCEPTION_NONE); //all done
@@ -409,6 +414,7 @@ public:
     void EraseAll()
     {
         eraseElements(ini_content);
+        eraseElements(section_order);
         parsed = false;
     }
 
@@ -596,6 +602,7 @@ public:
             string_multimap mapTemp;
             mapTemp.insert(std::pair<std::string, std::string>(itemName, itemVal));
             ini_content.insert(std::pair<std::string, std::multimap<std::string, std::string>>(section, mapTemp));
+            section_order.emplace_back(section);
         }
 
         __SAVE_ERROR_AND_RETURN(INIREADER_EXCEPTION_NONE);
@@ -690,6 +697,7 @@ public:
         */
         ini_content[newName] = std::move(ini_content[oldName]);
         ini_content.erase(oldName);
+        std::replace(section_order.begin(), section_order.end(), oldName, newName);
         __SAVE_ERROR_AND_RETURN(INIREADER_EXCEPTION_NONE);
     }
 
@@ -758,6 +766,7 @@ public:
         eraseElements(ini_content.at(section));
         if(cached_section == section)
             eraseElements(cached_section_content);
+        //section_order.erase(std::find(section_order.begin(), section_order.end(), section));
     }
 
     /**
@@ -779,14 +788,17 @@ public:
         if(!parsed)
             return std::string();
 
-        for(auto &x : ini_content)
+        for(auto &x : section_order)
         {
-            content += "[" + x.first + "]\n";
-            for(auto &y : x.second)
+            content += "[" + x + "]\n";
+            if(ini_content.find(x) != ini_content.end())
             {
-                if(y.first != "{NONAME}")
-                    content += y.first + "=";
-                content += y.second + "\n";
+                for(auto &y : ini_content.at(x))
+                {
+                    if(y.first != "{NONAME}")
+                        content += y.first + "=";
+                    content += y.second + "\n";
+                }
             }
             content += "\n";
         }

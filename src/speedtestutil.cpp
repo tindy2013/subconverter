@@ -245,7 +245,7 @@ void explodeVmessConf(std::string content, std::string custom_port, int local_po
             node.group = V2RAY_DEFAULT_GROUP;
             node.remarks = add + ":" + port;
             node.server = add;
-            node.port = stoi(port);
+            node.port = to_int(port);
             nodes.push_back(node);
         }
         return;
@@ -320,7 +320,7 @@ void explodeVmessConf(std::string content, std::string custom_port, int local_po
         node.remarks = ps;
         node.id = index;
         node.server = add;
-        node.port = stoi(port);
+        node.port = to_int(port);
         nodes.push_back(node);
     }
     return;
@@ -416,7 +416,7 @@ void explodeSSD(std::string link, bool libev, std::string custom_port, int local
         node.group = group;
         node.remarks = remarks;
         node.server = server;
-        node.port = stoi(port);
+        node.port = to_int(port);
         node.proxyStr = ssConstruct(server, port, password, method, plugin, pluginopts, remarks, local_port, libev);
         node.id = index;
         nodes.push_back(node);
@@ -455,7 +455,7 @@ void explodeSSAndroid(std::string ss, bool libev, std::string custom_port, int l
         node.group = group;
         node.remarks = ps;
         node.server = server;
-        node.port = stoi(port);
+        node.port = to_int(port);
         node.proxyStr = ssConstruct(server, port, password, method, "", "", ps, local_port, libev);
         nodes.push_back(node);
         index++;
@@ -482,7 +482,7 @@ void explodeSSConf(std::string content, std::string custom_port, int local_port,
         node.group = SS_DEFAULT_GROUP;
         node.remarks = server + ":" + port;
         node.server = server;
-        node.port = stoi(port);
+        node.port = to_int(port);
         node.proxyStr = SerializeObject(json);
         nodes.push_back(node);
         return;
@@ -510,7 +510,7 @@ void explodeSSConf(std::string content, std::string custom_port, int local_port,
         node.remarks = ps;
         node.id = index;
         node.server = server;
-        node.port = stoi(port);
+        node.port = to_int(port);
         node.proxyStr = ssConstruct(server, port, password, method, plugin, pluginopts, ps, local_port, libev);
         nodes.push_back(node);
         index++;
@@ -601,7 +601,7 @@ void explodeSSRConf(std::string content, std::string custom_port, int local_port
         node.group = SSR_DEFAULT_GROUP;
         node.remarks = server + ":" + port;
         node.server = server;
-        node.port = stoi(port);
+        node.port = to_int(port);
         node.proxyStr = SerializeObject(json);
         nodes.push_back(node);
         return;
@@ -634,7 +634,7 @@ void explodeSSRConf(std::string content, std::string custom_port, int local_port
         node.remarks = remarks;
         node.id = index;
         node.server = server;
-        node.port = stoi(port);
+        node.port = to_int(port);
         node.proxyStr = ssrConstruct(group, remarks, remarks_base64, server, port, protocol, method, obfs, password, obfsparam, protoparam, local_port, ssr_libev);
         nodes.push_back(node);
         index++;
@@ -981,7 +981,7 @@ void explodeClash(Node yamlnode, std::string custom_port, int local_port, std::v
         node.group = group;
         node.remarks = ps;
         node.server = server;
-        node.port = stoi(port);
+        node.port = to_int(port);
         node.id = index;
         nodes.push_back(node);
         index++;
@@ -1209,6 +1209,8 @@ bool explodeSurge(std::string surge, std::string custom_port, int local_port, st
         {
             node.linkType = SPEEDTEST_MESSAGE_FOUNDSOCKS;
             node.group = SOCKS_DEFAULT_GROUP;
+            server = trim(configs[1]);
+            port = custom_port == "" ? trim(configs[2]) : custom_port;
             if(configs.size() >= 5)
             {
                 username = trim(configs[2]);
@@ -1266,6 +1268,8 @@ bool explodeSurge(std::string surge, std::string custom_port, int local_port, st
         {
             node.linkType = SPEEDTEST_MESSAGE_FOUNDHTTP;
             node.group = HTTP_DEFAULT_GROUP;
+            server = trim(configs[1]);
+            port = custom_port == "" ? trim(configs[2]) : custom_port;
             if(configs.size() >= 5)
             {
                 username = trim(configs[2]);
@@ -1330,7 +1334,7 @@ bool explodeSurge(std::string surge, std::string custom_port, int local_port, st
 
         node.remarks = remarks;
         node.server = server;
-        node.port = stoi(port);
+        node.port = to_int(port);
         node.id = index;
         nodes.push_back(node);
         index++;
@@ -1394,7 +1398,7 @@ void explodeSSTap(std::string sstap, std::string custom_port, int local_port, st
         node.remarks = remarks;
         node.id = index;
         node.server = server;
-        node.port = stoi(port);
+        node.port = to_int(port);
         nodes.push_back(node);
     }
 }

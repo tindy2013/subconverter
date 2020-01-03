@@ -53,7 +53,7 @@ http://127.0.0.1:25500/sub?target=%TARGET%&url=%URL%&config=%CONFIG%
 | url  |  必要  | https%3A%2F%2Fwww.xxx.com | 指机场所提供的订阅链接，需要经过 [URLEncode](https://www.urlencoder.org/) 处理 |
 | config |  可选  | https%3A%2F%2Fwww.xxx.com | 指远程 `pref.ini` (包含分组和规则部分)，需要经过 [URLEncode](https://www.urlencoder.org/) 处理，可查看 [示例仓库](https://github.com/lzdnico/subconverteriniexample) 寻找灵感，默认加载本地设置文件 |
 
-运行 `subconverter.exe` 后，按照 [调用说明](###调用说明) 的对应内容替换即可得到一份使用**神机规则**的配置文件。
+运行 subconverter 主程序后，按照 [调用说明](###调用说明) 的对应内容替换即可得到一份使用**神机规则**的配置文件。
 
 此外，如果你需要将多个订阅合成一份, 则要在上方所提及的 URLEncode 之前使用 '|' 来分隔链接。
 
@@ -70,7 +70,7 @@ https://dler.cloud/subscribe/ABCDE?clash=vmess|https://rich.cloud/subscribe/ABCD
 接着通过 URLEncode 后可以得到:
 https%3A%2F%2Fdler.cloud%2Fsubscribe%2FABCDE%3Fclash%3Dvmess%7Chttps%3A%2F%2Frich.cloud%2Fsubscribe%2FABCDE%3Fclash%3Dvmess
 
-然后将想要的 %TARGET% (即 clash)和上一步所得到的 %URL% 填入调用地址中:
+然后将想要的 %TARGET% (即 clash) 和上一步所得到的 %URL% 填入调用地址中:
 http://127.0.0.1:25500/sub?target=clash&url=https%3A%2F%2Fdler.cloud%2Fsubscribe%2FABCDE%3Fclash%3Dvmess%7Chttps%3A%2F%2Frich.cloud%2Fsubscribe%2FABCDE%3Fclash%3Dvmess
 
 最后将该链接填写至 Clash 的订阅处就大功告成了。
@@ -135,7 +135,7 @@ exclude=%28%E6%B5%81%E9%87%8F%7C%E5%AE%98%E7%BD%91%29
 url=https%3A%2F%2Fdler.cloud%2Fsubscribe%2FABCDE%3Fclash%3Dvmess
 
 接着将所有元素进行拼接：
-http://127.0.0.1:25500/sub?surge&ver=4&tfo=true&udp=true&emoji=true&exclude=%28%E6%B5%81%E9%87%8F%7C%E5%AE%98%E7%BD%91%29&url=https%3A%2F%2Fdler.cloud%2Fsubscribe%2FABCDE%3Fclash%3Dvmess
+http://127.0.0.1:25500/sub?target=surge&ver=4&tfo=true&udp=true&emoji=true&exclude=%28%E6%B5%81%E9%87%8F%7C%E5%AE%98%E7%BD%91%29&url=https%3A%2F%2Fdler.cloud%2Fsubscribe%2FABCDE%3Fclash%3Dvmess
 
 最后将该链接填写至 Surge 的订阅处就大功告成了。
 ```
@@ -418,7 +418,7 @@ custom_proxy_group=🇯🇵 JP`select`沪日`日本
 
 > 自动上传 gist ，可以用于 Clash For Android / Surge 等进行远程订阅
 
-在程序目录内的 [gistconf.ini](./gistconf.ini) 中添加 [Personal Access Token](https://github.com/settings/tokens/new)，在链接后加上 `upload=true` 就会在更新好后自动上传 gist。
+在程序目录内的 [gistconf.ini](./base/gistconf.ini) 中添加 [Personal Access Token](https://github.com/settings/tokens/new)，在链接后加上 `&upload=true` 就会在更新好后自动上传 gist。
 例如：
 
 ```ini

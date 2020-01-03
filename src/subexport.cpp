@@ -701,7 +701,8 @@ std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &base_conf, s
     if(ext.nodelist)
         return YAML::Dump(yamlnode);
 
-    rulesetToClash(yamlnode, ruleset_content_array);
+    if(ext.enable_rule_generator)
+        rulesetToClash(yamlnode, ruleset_content_array);
 
     return YAML::Dump(yamlnode);
 }
@@ -866,6 +867,7 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
         return output_nodelist;
 
     ini.SetCurrentSection("Proxy Group");
+    ini.EraseSection();
     for(std::string &x : extra_proxy_group)
     {
         eraseElements(filtered_nodelist);
@@ -925,7 +927,8 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
         ini.Set("{NONAME}", vArray[0] + " = " + proxy); //insert order
     }
 
-    rulesetToSurge(ini, ruleset_content_array, surge_ver);
+    if(ext.enable_rule_generator)
+        rulesetToSurge(ini, ruleset_content_array, surge_ver);
 
     return ini.ToString();
 }
@@ -1569,7 +1572,8 @@ void netchToMellow(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rul
         ini.Set("{NONAME}", proxy); //insert order
     }
 
-    rulesetToSurge(ini, ruleset_content_array, 2);
+    if(ext.enable_rule_generator)
+        rulesetToSurge(ini, ruleset_content_array, 2);
     ini.RenameSection("Rule", "RoutingRule");
 }
 

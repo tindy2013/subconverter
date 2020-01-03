@@ -255,7 +255,19 @@ void readConf()
     std::cerr<<"Read preference settings completed."<<std::endl;
 }
 
-int loadExternalConfig(std::string &path, string_array &custom_proxy_group, string_array &surge_ruleset, std::string proxy)
+struct ExternalConfig
+{
+    string_array custom_proxy_group;
+    string_array surge_ruleset;
+    std::string clash_rule_base;
+    std::string surge_rule_base;
+    std::string surfboard_rule_base;
+    std::string mellow_rule_base;
+    bool overwrite_original_rules = true;
+    bool enable_rule_generator = true;
+};
+
+int loadExternalConfig(std::string &path, ExternalConfig &ext, std::string proxy)
 {
     std::string base_content;
     if(fileExist(path))
@@ -274,15 +286,23 @@ int loadExternalConfig(std::string &path, string_array &custom_proxy_group, stri
 
     ini.EnterSection("custom");
     if(ini.ItemPrefixExist("custom_proxy_group"))
-    {
-        eraseElements(custom_proxy_group);
-        ini.GetAll("custom_proxy_group", custom_proxy_group);
-    }
+        ini.GetAll("custom_proxy_group", ext.custom_proxy_group);
     if(ini.ItemPrefixExist("surge_ruleset"))
-    {
-        eraseElements(surge_ruleset);
-        ini.GetAll("surge_ruleset", surge_ruleset);
-    }
+        ini.GetAll("surge_ruleset", ext.surge_ruleset);
+
+    if(ini.ItemExist("clash_rule_base"))
+        ext.clash_rule_base = ini.Get("clash_rule_base");
+    if(ini.ItemExist("surge_rule_base"))
+        ext.surge_rule_base = ini.Get("surge_rule_base");
+    if(ini.ItemExist("surfboard_rule_base"))
+        ext.surfboard_rule_base = ini.Get("surfboard_rule_base");
+    if(ini.ItemExist("mellow_rule_base"))
+        ext.mellow_rule_base = ini.Get("mellow_rule_base");
+
+    if(ini.ItemExist("overwrite_original_rules"))
+        ext.overwrite_original_rules = ini.GetBool("overwrite_original_rules");
+    if(ini.ItemExist("enable_rule_generator"))
+        ext.enable_rule_generator = ini.GetBool("enable_rule_generator");
 
     return 0;
 }
@@ -328,6 +348,10 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     string_array extra_group, extra_ruleset, include_remarks, exclude_remarks;
     std::string groups = urlsafe_base64_decode(getUrlArg(argument, "groups")), ruleset = urlsafe_base64_decode(getUrlArg(argument, "ruleset")), config = UrlDecode(getUrlArg(argument, "config"));
     std::vector<ruleset_content> rca;
+    extra_settings ext;
+
+    //for external configuration
+    std::string ext_clash_base = clash_rule_base, ext_surge_base = surge_rule_base, ext_mellow_base = mellow_rule_base, ext_surfboard_base = surfboard_rule_base;
 
     if(!url.size())
         url = default_url;
@@ -347,10 +371,30 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     if(config.size())
     {
         std::cerr<<"External configuration file provided. Loading...\n";
+        //read predefined data first
         extra_group = clash_extra_group;
         extra_ruleset = rulesets;
-        loadExternalConfig(config, extra_group, extra_ruleset, proxy);
-        refreshRulesets(extra_ruleset, rca);
+        //then load external configuration
+        ExternalConfig extconf;
+        loadExternalConfig(config, extconf, proxy);
+        if(extconf.clash_rule_base.size())
+            ext_clash_base = extconf.clash_rule_base;
+        if(extconf.surge_rule_base.size())
+            ext_surge_base = extconf.surge_rule_base;
+        if(extconf.surfboard_rule_base.size())
+            ext_surfboard_base = extconf.surfboard_rule_base;
+        if(extconf.mellow_rule_base.size())
+            ext_mellow_base = extconf.mellow_rule_base;
+        ext.enable_rule_generator = extconf.enable_rule_generator;
+        //load custom group
+        if(extconf.custom_proxy_group.size())
+            extra_group = extconf.custom_proxy_group;
+        //load custom rules
+        if(extconf.overwrite_original_rules)
+        {
+            extra_ruleset = extconf.surge_ruleset;
+            refreshRulesets(extra_ruleset, rca);
+        }
     }
     else
     {
@@ -385,7 +429,6 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         }
     }
 
-    extra_settings ext;
     if(emoji.size())
     {
         ext.add_emoji = ext.remove_emoji = emoji == "true";
@@ -437,12 +480,12 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     if(target == "clash" || target == "clashr")
     {
         std::cerr<<"Clash"<<((target == "clashr") ? "R" : "")<<std::endl;
-        if(rca.size() || extra_group.size() || update_ruleset_on_request)
+        if(rca.size() || extra_group.size() || update_ruleset_on_request || ext_clash_base != clash_rule_base)
         {
-            if(fileExist(clash_rule_base))
-                base_content = fileGet(clash_rule_base, false);
+            if(fileExist(ext_clash_base))
+                base_content = fileGet(ext_clash_base, false);
             else
-                base_content = webGet(clash_rule_base, getSystemProxy());
+                base_content = webGet(ext_clash_base, getSystemProxy());
 
             output_content = netchToClash(nodes, base_content, rca, extra_group, target == "clashr", ext);
         }
@@ -458,10 +501,10 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         int surge_ver = version.size() ? to_int(version, 3) : 3;
         std::cerr<<"Surge "<<surge_ver<<std::endl;
 
-        if(fileExist(surge_rule_base))
-            base_content = fileGet(surge_rule_base, false);
+        if(fileExist(ext_surge_base))
+            base_content = fileGet(ext_surge_base, false);
         else
-            base_content = webGet(surge_rule_base, getSystemProxy());
+            base_content = webGet(ext_surge_base, getSystemProxy());
 
         output_content = netchToSurge(nodes, base_content, rca, extra_group, surge_ver, ext);
         if(upload == "true")
@@ -474,10 +517,10 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     else if(target == "surfboard")
     {
         std::cerr<<"Surfboard"<<std::endl;
-        if(fileExist(surfboard_rule_base))
-            base_content = fileGet(surfboard_rule_base, false);
+        if(fileExist(ext_surfboard_base))
+            base_content = fileGet(ext_surfboard_base, false);
         else
-            base_content = webGet(surfboard_rule_base, getSystemProxy());
+            base_content = webGet(ext_surfboard_base, getSystemProxy());
 
         output_content = netchToSurge(nodes, base_content, rca, extra_group, 2, ext);
         if(upload == "true")
@@ -490,12 +533,12 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     else if(target == "mellow")
     {
         std::cerr<<"Mellow"<<std::endl;
-        if(rca.size() || extra_group.size() || update_ruleset_on_request)
+        if(rca.size() || extra_group.size() || update_ruleset_on_request || ext_mellow_base != mellow_rule_base)
         {
-            if(fileExist(mellow_rule_base))
-                base_content = fileGet(mellow_rule_base, false);
+            if(fileExist(ext_mellow_base))
+                base_content = fileGet(ext_mellow_base, false);
             else
-                base_content = webGet(mellow_rule_base, getSystemProxy());
+                base_content = webGet(ext_mellow_base, getSystemProxy());
 
             output_content = netchToMellow(nodes, base_content, rca, extra_group, ext);
         }
