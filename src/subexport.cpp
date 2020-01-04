@@ -21,6 +21,9 @@ extern bool add_emoji, remove_old_emoji;
 extern bool api_mode;
 extern string_array ss_ciphers, ssr_ciphers;
 
+string_array clashr_protocols = {"auth_aes128_md5", "auth_aes128_sha1"};
+string_array clashr_obfs = {"plain", "http_simple", "http_post", "tls1.2_ticket_auth"};
+
 /*
 std::string hostnameToIPAddr(std::string host)
 {
@@ -482,7 +485,7 @@ void groupGenerate(std::string &rule, std::vector<nodeInfo> &nodelist, std::vect
     }
 }
 
-YAML::Node netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_array &extra_proxy_group, bool clashR, extra_settings &ext)
+void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_array &extra_proxy_group, bool clashR, extra_settings &ext)
 {
     try_config_lock();
     YAML::Node proxies, singleproxy, singlegroup, original_groups;
@@ -534,6 +537,9 @@ YAML::Node netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, stri
 
         if(x.linkType == SPEEDTEST_MESSAGE_FOUNDSS)
         {
+            //latest clash core removed support for chacha20 encryption
+            if(method == "chacha20")
+                continue;
             plugin = GetMember(json, "Plugin");
             pluginopts = replace_all_distinct(GetMember(json, "PluginOption"), ";", "&");
             singleproxy["type"] = "ss";
@@ -582,9 +588,17 @@ YAML::Node netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, stri
         }
         else if(x.linkType == SPEEDTEST_MESSAGE_FOUNDSSR && clashR)
         {
+            //latest clash core removed support for chacha20 encryption
+            if(method == "chacha20")
+                continue;
+            //ignoring all nodes with unsupported obfs and protocols
             protocol = GetMember(json, "Protocol");
-            protoparam = GetMember(json, "ProtocolParam");
+            if(std::find(clashr_protocols.cbegin(), clashr_protocols.cend(), protocol) == clashr_protocols.cend())
+                continue;
             obfs = GetMember(json, "OBFS");
+            if(std::find(clashr_obfs.cbegin(), clashr_obfs.cend(), obfs) == clashr_obfs.cend())
+                continue;
+            protoparam = GetMember(json, "ProtocolParam");
             obfsparam = GetMember(json, "OBFSParam");
             singleproxy["type"] = "ssr";
             singleproxy["cipher"] = method;
@@ -622,7 +636,8 @@ YAML::Node netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, stri
     {
         YAML::Node provider;
         provider["proxies"] = proxies;
-        return provider;
+        yamlnode = provider;
+        return;
     }
 
     yamlnode["Proxy"] = proxies;
@@ -679,8 +694,6 @@ YAML::Node netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, stri
     }
 
     yamlnode["Proxy Group"] = original_groups;
-
-    return yamlnode;
 }
 
 std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, bool clashR, extra_settings &ext)
@@ -696,7 +709,7 @@ std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &base_conf, s
         return std::string();
     }
 
-    yamlnode = netchToClash(nodes, yamlnode, extra_proxy_group, clashR, ext);
+    netchToClash(nodes, yamlnode, extra_proxy_group, clashR, ext);
 
     if(ext.nodelist)
         return YAML::Dump(yamlnode);
@@ -802,6 +815,8 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
             {
                 proxy += ", ws=true, ws-path=" + path + ", ws-headers=Host:" + host;
             }
+            if(ext.skip_cert_verify)
+                proxy += ", skip-cert-verify=1";
             else if(transproto == "kcp" || transproto == "h2" || transproto == "quic")
                 continue;
         }
@@ -995,7 +1010,10 @@ std::string netchToSS(std::vector<nodeInfo> &nodes, extra_settings &ext)
         allLinks += proxyStr + "\n";
     }
 
-    return base64_encode(allLinks);
+    if(ext.nodelist)
+        return allLinks;
+    else
+        return base64_encode(allLinks);
 }
 
 std::string netchToSSR(std::vector<nodeInfo> &nodes, extra_settings &ext)
@@ -1175,6 +1193,8 @@ std::string netchToQuan(std::vector<nodeInfo> &nodes, extra_settings &ext)
                 proxyStr += ", obfs=ws, obfs-path=" + path + ", obfs-header=\"Host: " + host + "\"";
             if(tlssecure)
                 proxyStr += ", over-tls=true, tls-host=" + host;
+            if(ext.skip_cert_verify)
+                proxyStr += ", certificate=0";
             proxyStr = "vmess://" + urlsafe_base64_encode(proxyStr);
             break;
         case SPEEDTEST_MESSAGE_FOUNDSSR:
@@ -1259,6 +1279,8 @@ std::string netchToQuanX(std::vector<nodeInfo> &nodes, extra_settings &ext)
             proxyStr = "vmess = " + hostname + ":" + port + ", method=" + method + ", password=" + id;
             if(transproto == "ws")
                 proxyStr += ", obfs=ws, obfs-host=" + host + ", obfs-uri=" + path;
+            if(ext.skip_cert_verify)
+                proxyStr += ", certificate=0";
             break;
         case SPEEDTEST_MESSAGE_FOUNDSS:
             password = GetMember(json, "Password");
@@ -1304,6 +1326,7 @@ std::string netchToSSD(std::vector<nodeInfo> &nodes, std::string &group, extra_s
     std::string plugin, pluginopts;
     std::string protocol, protoparam, obfs, obfsparam;
     int port, index = 0;
+
     if(!group.size())
         group = "SSD";
 

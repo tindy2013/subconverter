@@ -689,12 +689,12 @@ int fileWrite(std::string path, std::string content, bool overwrite)
     return 0;
 }
 
-bool isIPv4(std::string address)
+bool isIPv4(std::string &address)
 {
     return regMatch(address, "^(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}$");
 }
 
-bool isIPv6(std::string address)
+bool isIPv6(std::string &address)
 {
     std::vector<std::string> regLists = {"^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$", "^((?:[0-9A-Fa-f]{1,4}(:[0-9A-Fa-f]{1,4})*)?)::((?:([0-9A-Fa-f]{1,4}:)*[0-9A-Fa-f]{1,4})?)$", "^(::(?:[0-9A-Fa-f]{1,4})(?::[0-9A-Fa-f]{1,4}){5})|((?:[0-9A-Fa-f]{1,4})(?::[0-9A-Fa-f]{1,4}){5}::)$"};
     for(unsigned int i = 0; i < regLists.size(); i++)

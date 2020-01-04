@@ -353,13 +353,17 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     //for external configuration
     std::string ext_clash_base = clash_rule_base, ext_surge_base = surge_rule_base, ext_mellow_base = mellow_rule_base, ext_surfboard_base = surfboard_rule_base;
 
+    //validate urls
     if(!url.size())
         url = default_url;
     if(!url.size() || !target.size())
         return "Invalid request!";
+
+    //check if we need to read configuration
     if(!api_mode || cfw_child_process)
         readConf();
 
+    //check for proxy settings
     std::string proxy;
     if(proxy_subscription == "SYSTEM")
         proxy = getSystemProxy();
@@ -368,6 +372,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     else
         proxy = proxy_subscription;
 
+    //load external configuration
     if(config.size())
     {
         std::cerr<<"External configuration file provided. Loading...\n";
@@ -398,6 +403,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     }
     else
     {
+        //loading custom groups
         if(groups.size())
         {
             extra_group = split(groups, "@");
@@ -407,6 +413,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         else
             extra_group = clash_extra_group;
 
+        //loading custom rulesets
         if(ruleset.size())
         {
             extra_ruleset = split(ruleset, "@");
@@ -429,6 +436,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         }
     }
 
+    //check other flags
     if(emoji.size())
     {
         ext.add_emoji = ext.remove_emoji = emoji == "true";
@@ -451,10 +459,12 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     ext.nodelist = nodelist == "true";
     ext.surge_ssr_path = surge_ssr_path;
 
+    //loading urls
     string_array urls = split(url, "|");
     std::vector<nodeInfo> nodes;
     int groupID = 0;
 
+    //check custom include/exclude settings
     if(include.size() && regValid(include))
         include_remarks.emplace_back(include);
     else
@@ -464,8 +474,11 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     else
         exclude_remarks = def_exclude_remarks;
 
+    //check custom group name
     if(group.size())
         custom_group = group;
+
+    //start parsing urls
     for(std::string &x : urls)
     {
         x = trim(x);
@@ -473,6 +486,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         addNodes(x, nodes, groupID, proxy, exclude_remarks, include_remarks);
         groupID++;
     }
+    //exit if found nothing
     if(!nodes.size())
         return "No nodes were found!";
 
@@ -490,7 +504,11 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
             output_content = netchToClash(nodes, base_content, rca, extra_group, target == "clashr", ext);
         }
         else
-            output_content = YAML::Dump(netchToClash(nodes, clash_base, extra_group, target == "clashr", ext));
+        {
+            YAML::Node yamlnode = clash_base;
+            netchToClash(nodes, yamlnode, extra_group, target == "clashr", ext);
+            output_content = YAML::Dump(yamlnode);
+        }
 
         if(upload == "true")
             uploadGist(target, upload_path, output_content, false);
@@ -654,7 +672,9 @@ std::string simpleToClashR(RESPONSE_CALLBACK_ARGS)
 
     std::cerr<<"Generate target: ClashR\n";
 
-    return YAML::Dump(netchToClash(nodes, clash_base, extra_group, true, ext));
+    YAML::Node yamlnode = clash_base;
+    netchToClash(nodes, yamlnode, extra_group, true, ext);
+    return YAML::Dump(yamlnode);
 }
 
 void chkArg(int argc, char *argv[])
