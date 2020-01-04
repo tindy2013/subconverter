@@ -535,6 +535,10 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
         password = GetMember(json, "Password");
         method = GetMember(json, "EncryptMethod");
 
+        singleproxy["name"] = remark;
+        singleproxy["server"] = hostname;
+        singleproxy["port"] = (unsigned short)stoi(port);
+
         if(x.linkType == SPEEDTEST_MESSAGE_FOUNDSS)
         {
             //latest clash core removed support for chacha20 encryption
@@ -544,6 +548,7 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
             pluginopts = replace_all_distinct(GetMember(json, "PluginOption"), ";", "&");
             singleproxy["type"] = "ss";
             singleproxy["cipher"] = method;
+            singleproxy["password"] = password;
             if(plugin == "simple-obfs" || plugin == "obfs-local")
             {
                 singleproxy["plugin"] = "obfs";
@@ -602,6 +607,7 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
             obfsparam = GetMember(json, "OBFSParam");
             singleproxy["type"] = "ssr";
             singleproxy["cipher"] = method;
+            singleproxy["password"] = password;
             singleproxy["protocol"] = protocol;
             singleproxy["protocolparam"] = protoparam;
             singleproxy["obfs"] = obfs;
@@ -611,19 +617,22 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
         {
             singleproxy["type"] = "socks5";
             singleproxy["username"] = username;
+            singleproxy["password"] = password;
+            if(ext.skip_cert_verify)
+                singleproxy["skip-cert-verify"] = true;
         }
         else if(x.linkType == SPEEDTEST_MESSAGE_FOUNDHTTP)
         {
             singleproxy["type"] = "http";
             singleproxy["username"] = username;
+            singleproxy["password"] = password;
             singleproxy["tls"] = type == "HTTPS";
+            if(ext.skip_cert_verify)
+                singleproxy["skip-cert-verify"] = true;
         }
         else
             continue;
-        singleproxy["password"] = password;
-        singleproxy["name"] = remark;
-        singleproxy["server"] = hostname;
-        singleproxy["port"] = (unsigned short)stoi(port);
+
         if(ext.udp)
             singleproxy["udp"] = true;
         singleproxy.SetStyle(YAML::EmitterStyle::Flow);
@@ -654,6 +663,9 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
         if(vArray.size() < 3)
             continue;
 
+        singlegroup["name"] = vArray[0];
+        singlegroup["type"] = vArray[1];
+
         if(vArray[1] == "select")
         {
             rules_upper_bound = vArray.size();
@@ -675,8 +687,6 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
         if(!filtered_nodelist.size())
             filtered_nodelist.emplace_back("DIRECT");
 
-        singlegroup["name"] = vArray[0];
-        singlegroup["type"] = vArray[1];
         singlegroup["proxies"] = filtered_nodelist;
         //singlegroup.SetStyle(YAML::EmitterStyle::Flow);
 
@@ -783,7 +793,7 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
         username = GetMember(json, "Username");
         password = GetMember(json, "Password");
         method = GetMember(json, "EncryptMethod");
-        proxy = "";
+        proxy.clear();
 
         if(x.linkType == SPEEDTEST_MESSAGE_FOUNDSS)
         {
@@ -851,16 +861,16 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
         }
         else if(x.linkType == SPEEDTEST_MESSAGE_FOUNDSOCKS)
         {
-            proxy = "socks5, " + hostname + ", " + port;
-            if(username.size() && password.size())
-                proxy += ", " + username + ", " + password;
+            proxy = "socks5, " + hostname + ", " + port + ", " + username + ", " + password;
+            if(ext.skip_cert_verify)
+                proxy += ", skip-cert-verify=1";
         }
         else if(type == "HTTP" || type == "HTTPS")
         {
-            proxy = "http," + hostname + "," + port;
-            if(username != "" && password != "")
-                proxy += ", " + username + ", " + password;
+            proxy = "http," + hostname + "," + port + ", " + username + ", " + password;
             proxy += std::string(", tls=") + (type == "HTTPS" ? "true" : "false");
+            if(ext.skip_cert_verify)
+                proxy += ", skip-cert-verify=1";
         }
         else
             continue;
@@ -887,8 +897,8 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
     {
         eraseElements(filtered_nodelist);
         unsigned int rules_upper_bound = 0;
-        url = "";
-        proxy = "";
+        url.clear();
+        proxy.clear();
 
         vArray = split(x, "`");
         if(vArray.size() < 3)
@@ -1539,8 +1549,8 @@ void netchToMellow(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rul
     {
         eraseElements(filtered_nodelist);
         unsigned int rules_upper_bound = 0;
-        url = "";
-        proxy = "";
+        url.clear();
+        proxy.clear();
 
         vArray = split(x, "`");
         if(vArray.size() < 3)

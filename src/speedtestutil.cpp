@@ -840,11 +840,11 @@ void explodeClash(Node yamlnode, std::string custom_port, int local_port, std::v
             if(singleproxy["tls"].IsDefined())
                 tls = singleproxy["tls"].as<std::string>() == "true" ? "tls" : "";
             else
-                tls = "";
+                tls.clear();
             if(singleproxy["ws-headers"].IsDefined())
                 singleproxy["ws-headers"]["Host"] >> host;
             else
-                host = "";
+                host.clear();
 
 
             node.linkType = SPEEDTEST_MESSAGE_FOUNDVMESS;
@@ -867,7 +867,7 @@ void explodeClash(Node yamlnode, std::string custom_port, int local_port, std::v
                         if(singleproxy["plugin-opts"]["host"].IsDefined())
                             singleproxy["plugin-opts"]["host"] >> pluginopts_host;
                         else
-                            pluginopts_host = "";
+                            pluginopts_host.clear();
                     }
                 }
                 else if(singleproxy["plugin"].as<std::string>() == "v2ray-plugin")
@@ -879,19 +879,19 @@ void explodeClash(Node yamlnode, std::string custom_port, int local_port, std::v
                         if(singleproxy["plugin-opts"]["host"].IsDefined())
                             singleproxy["plugin-opts"]["host"] >> pluginopts_host;
                         else
-                            pluginopts_host = "";
+                            pluginopts_host.clear();
                         if(singleproxy["plugin-opts"]["tls"].IsDefined())
                             tls = singleproxy["plugin-opts"]["tls"].as<bool>() ? "tls;" : "";
                         else
-                            tls = "";
+                            tls.clear();
                         if(singleproxy["plugin-opts"]["path"].IsDefined())
                             singleproxy["plugin-opts"]["path"] >> path;
                         else
-                            path = "";
+                            path.clear();
                         if(singleproxy["plugin-opts"]["mux"].IsDefined())
                             pluginopts_mux = singleproxy["plugin-opts"]["mux"].as<bool>() ? "mux=4;" : "";
                         else
-                            pluginopts_mux = "";
+                            pluginopts_mux.clear();
                     }
                 }
             }
@@ -903,7 +903,7 @@ void explodeClash(Node yamlnode, std::string custom_port, int local_port, std::v
                     singleproxy["obfs-host"] >> pluginopts_host;
             }
             else
-                plugin = "";
+                plugin.clear();
 
             if(plugin == "simple-obfs")
             {
@@ -921,7 +921,7 @@ void explodeClash(Node yamlnode, std::string custom_port, int local_port, std::v
                     pluginopts += "mux=" + pluginopts_mux + ";";
             }
             else
-                pluginopts = "";
+                pluginopts.clear();
 
             //support for go-shadowsocks2
             if(cipher == "AEAD_CHACHA20_POLY1305")
@@ -943,6 +943,11 @@ void explodeClash(Node yamlnode, std::string custom_port, int local_port, std::v
             {
                 singleproxy["username"] >> user;
                 singleproxy["password"] >> password;
+            }
+            else
+            {
+                user.clear();
+                password.clear();
             }
 
             node.linkType = SPEEDTEST_MESSAGE_FOUNDSOCKS;
@@ -970,6 +975,11 @@ void explodeClash(Node yamlnode, std::string custom_port, int local_port, std::v
             {
                 singleproxy["username"] >> user;
                 singleproxy["password"] >> password;
+            }
+            else
+            {
+                user.clear();
+                password.clear();
             }
 
             node.linkType = SPEEDTEST_MESSAGE_FOUNDHTTP;
@@ -1140,7 +1150,7 @@ bool explodeSurge(std::string surge, std::string custom_port, int local_port, st
                 port = custom_port == "" ? trim(configs[2]) : custom_port;
                 method = trim(configs[3]);
                 password = trim(configs[4]);
-                plugin = "";
+                plugin.clear();
 
                 for(i = 6; i < configs.size(); i++)
                 {
@@ -1174,7 +1184,7 @@ bool explodeSurge(std::string surge, std::string custom_port, int local_port, st
         {
             server = trim(configs[1]);
             port = custom_port == "" ? trim(configs[2]) : custom_port;
-            plugin = "";
+            plugin.clear();
 
             for(i = 3; i < configs.size(); i++)
             {
