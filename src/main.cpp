@@ -33,7 +33,7 @@ extern std::mutex on_configuring;
 
 //preferences
 string_array renames, emojis;
-bool add_emoji = false, remove_old_emoji = false, append_proxy_type = true;
+bool add_emoji = false, remove_old_emoji = false, append_proxy_type = false, filter_deprecated = true;
 bool udp_flag = false, tfo_flag = false, scv_flag = false, do_sort = false;
 std::string proxy_ruleset, proxy_subscription;
 
@@ -199,6 +199,8 @@ void readConf()
             do_sort = ini.GetBool("sort_flag");
         if(ini.ItemExist("skip_cert_verify_flag"))
             scv_flag = ini.GetBool("skip_cert_verify_flag");
+        if(ini.ItemExist("filter_deprecated_nodes"))
+            filter_deprecated = ini.GetBool("filter_deprecated_nodes");
     }
 
     ini.EnterSection("managed_config");
@@ -343,7 +345,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     std::string group = UrlDecode(getUrlArg(argument, "group")), upload = getUrlArg(argument, "upload"), upload_path = getUrlArg(argument, "upload_path"), version = getUrlArg(argument, "ver");
     std::string append_type = getUrlArg(argument, "append_type"), tfo = getUrlArg(argument, "tfo"), udp = getUrlArg(argument, "udp"), nodelist = getUrlArg(argument, "list");
     std::string include = UrlDecode(getUrlArg(argument, "include")), exclude = UrlDecode(getUrlArg(argument, "exclude")), sort_flag = getUrlArg(argument, "sort");
-    std::string scv = getUrlArg(argument, "scv");
+    std::string scv = getUrlArg(argument, "scv"), fdn = getUrlArg(argument, "fdn");
     std::string base_content, output_content;
     string_array extra_group, extra_ruleset, include_remarks, exclude_remarks;
     std::string groups = urlsafe_base64_decode(getUrlArg(argument, "groups")), ruleset = urlsafe_base64_decode(getUrlArg(argument, "ruleset")), config = UrlDecode(getUrlArg(argument, "config"));
@@ -455,6 +457,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     ext.udp = udp.size() ? udp == "true" : udp_flag;
     ext.sort_flag = sort_flag.size() ? sort_flag == "true" : do_sort;
     ext.skip_cert_verify = scv.size() ? scv == "true" : scv_flag;
+    ext.filter_deprecated = fdn.size() ? fdn == "true" : filter_deprecated;
 
     ext.nodelist = nodelist == "true";
     ext.surge_ssr_path = surge_ssr_path;
@@ -651,7 +654,7 @@ std::string simpleToClashR(RESPONSE_CALLBACK_ARGS)
         refreshRulesets(rulesets, ruleset_content_array);
     rca = ruleset_content_array;
 
-    extra_settings ext = {add_emoji, remove_old_emoji, append_proxy_type, udp_flag, tfo_flag, false, do_sort, scv_flag, ""};
+    extra_settings ext = {true, add_emoji, remove_old_emoji, append_proxy_type, udp_flag, tfo_flag, false, do_sort, scv_flag, filter_deprecated, ""};
 
     std::string proxy;
     if(proxy_subscription == "SYSTEM")

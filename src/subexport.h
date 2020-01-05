@@ -15,12 +15,13 @@ struct extra_settings
     bool enable_rule_generator = true;
     bool add_emoji = false;
     bool remove_emoji = false;
-    bool append_proxy_type = true;
+    bool append_proxy_type = false;
     bool udp = false;
     bool tfo = false;
     bool nodelist = false;
     bool sort_flag = false;
     bool skip_cert_verify = false;
+    bool filter_deprecated = false;
     std::string surge_ssr_path;
 };
 

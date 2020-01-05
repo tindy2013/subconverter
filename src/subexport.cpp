@@ -542,7 +542,7 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
         if(x.linkType == SPEEDTEST_MESSAGE_FOUNDSS)
         {
             //latest clash core removed support for chacha20 encryption
-            if(method == "chacha20")
+            if(ext.filter_deprecated && method == "chacha20")
                 continue;
             plugin = GetMember(json, "Plugin");
             pluginopts = replace_all_distinct(GetMember(json, "PluginOption"), ";", "&");
@@ -594,7 +594,7 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
         else if(x.linkType == SPEEDTEST_MESSAGE_FOUNDSSR && clashR)
         {
             //latest clash core removed support for chacha20 encryption
-            if(method == "chacha20")
+            if(ext.filter_deprecated && method == "chacha20")
                 continue;
             //ignoring all nodes with unsupported obfs and protocols
             protocol = GetMember(json, "Protocol");
