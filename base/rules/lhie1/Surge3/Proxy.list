@@ -1,14 +1,3 @@
-# > Client
-PROCESS-NAME,Backup and Sync
-PROCESS-NAME,Day One
-PROCESS-NAME,Dropbox
-PROCESS-NAME,LINE
-PROCESS-NAME,node-webkit
-PROCESS-NAME,Resilio Sync
-PROCESS-NAME,Tweetbot
-PROCESS-NAME,Twitter
-PROCESS-NAME,Twitterrific
-
 # > UA
 USER-AGENT,%E7%BA%BD%E7%BA%A6%E6%97%B6%E6%8A%A5*
 USER-AGENT,AwemeI18n*
@@ -455,7 +444,6 @@ DOMAIN-SUFFIX,sydneytoday.com
 DOMAIN-SUFFIX,symauth.com
 DOMAIN-SUFFIX,symcb.com
 DOMAIN-SUFFIX,symcd.com
-DOMAIN-SUFFIX,t.me
 DOMAIN-SUFFIX,t66y.com
 DOMAIN-SUFFIX,tablesgenerator.com
 DOMAIN-SUFFIX,tabtter.jp
@@ -464,12 +452,10 @@ DOMAIN-SUFFIX,talkboxapp.com
 DOMAIN-SUFFIX,talkonly.net
 DOMAIN-SUFFIX,tapbots.com
 DOMAIN-SUFFIX,tapbots.net
-DOMAIN-SUFFIX,tdesktop.com
 DOMAIN-SUFFIX,techcrunch.com
 DOMAIN-SUFFIX,technorati.com
 DOMAIN-SUFFIX,techsmith.com
 DOMAIN-SUFFIX,teddysun.com
-DOMAIN-SUFFIX,telegra.ph
 DOMAIN-SUFFIX,textnow.me
 DOMAIN-SUFFIX,thebobs.com
 DOMAIN-SUFFIX,theinitium.com
@@ -639,7 +625,6 @@ DOMAIN-KEYWORD,facebook
 DOMAIN-KEYWORD,github
 DOMAIN-KEYWORD,instagram
 DOMAIN-KEYWORD,porn
-DOMAIN-KEYWORD,telegram
 DOMAIN-KEYWORD,twitter
 DOMAIN-KEYWORD,whatsapp
 DOMAIN-KEYWORD,google
@@ -767,10 +752,3 @@ IP-CIDR,74.86.0.0/16,no-resolve
 IP-CIDR,75.126.0.0/16,no-resolve
 IP-CIDR,174.37.0.0/16,no-resolve
 IP-CIDR,208.43.0.0/16,no-resolve
-
-# > Telegram
-IP-CIDR,91.108.4.0/22,no-resolve
-IP-CIDR,91.108.8.0/22,no-resolve
-IP-CIDR,91.108.56.0/22,no-resolve
-IP-CIDR,149.154.160.0/20,no-resolve
-IP-CIDR,149.154.164.0/22,no-resolve

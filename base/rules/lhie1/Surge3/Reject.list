@@ -262,8 +262,6 @@ DOMAIN-SUFFIX,bfshan.cn
 # REJECT
 
 # > Client
-PROCESS-NAME,Jietu
-
 DOMAIN-KEYWORD,admaster
 DOMAIN-KEYWORD,admdfs
 DOMAIN-KEYWORD,adnewnc
@@ -4802,7 +4800,6 @@ DOMAIN-SUFFIX,liangao.com
 DOMAIN-SUFFIX,liangziweixg.com
 DOMAIN-SUFFIX,lib.haotv8.com
 DOMAIN-SUFFIX,liba.haotv8.com
-DOMAIN-SUFFIX,libs.baidu.com
 DOMAIN-SUFFIX,libs.tvmao.cn
 DOMAIN-SUFFIX,license.lumion3d.com
 DOMAIN-SUFFIX,license.lumion3d.net
