@@ -33,8 +33,6 @@
 #include <sys/socket.h>
 #endif // _WIN32
 
-using namespace std::__cxx11;
-
 void sleep(int interval)
 {
     /*

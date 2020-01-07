@@ -11,7 +11,6 @@
 #include "rapidjson_extra.h"
 #include "ini_reader.h"
 
-using namespace std::__cxx11;
 using namespace rapidjson;
 using namespace YAML;
 /*
