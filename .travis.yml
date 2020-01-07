@@ -7,7 +7,8 @@ stages:
       if: branch = master
 matrix:
     include:
-    - os: osx
+    - name: "macOS Build"
+      os: osx
       compiler: clang
       osx_image: xcode10.3
       script:
@@ -20,9 +21,9 @@ matrix:
         draft: true
         on:
           tags: true
-    - services: docker
+    - name: "Linux x86_64 Build"
+      services: docker
       script:
-      - docker pull alpine:latest
       - docker run -v $TRAVIS_BUILD_DIR:/root/workdir alpine:latest /bin/sh -c "apk add bash git && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
       deploy:
         provider: releases
@@ -32,12 +33,30 @@ matrix:
         draft: true
         on:
           tags: true
-    - services: docker
+    - name: "Linux ARMHF Build"
+      services: docker
+      script:
+      - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+      - docker run --rm -v $TRAVIS_BUILD_DIR:/root/workdir multiarch/alpine:armhf-edge /bin/sh -c "apk add bash git && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
+      before_deploy:
+        script:
+        - mv subconverter_linux64.tar.gz subconverter_armhf.tar.gz
+      deploy:
+        provider: releases
+        api_key: "$GITHUB_OAUTH_TOKEN"
+        file: "subconverter_armhf.tar.gz"
+        skip_cleanup: true
+        draft: true
+        on:
+          tags: true
+    - name: "Linux ARM64 Build"
+      services: docker
       arch: arm64
       script:
-      - docker pull alpine:latest
       - docker run -v $TRAVIS_BUILD_DIR:/root/workdir alpine:latest /bin/sh -c "apk add bash git && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
-      - mv subconverter_linux64.tar.gz subconverter_aarch64.tar.gz
+      before_deploy:
+        script:
+        - mv subconverter_linux64.tar.gz subconverter_aarch64.tar.gz
       deploy:
         provider: releases
         api_key: "$GITHUB_OAUTH_TOKEN"
