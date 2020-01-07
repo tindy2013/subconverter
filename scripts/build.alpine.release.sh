@@ -13,7 +13,7 @@ cd ..
 
 cmake .
 make -j4
-g++ -o base/subconverter CMakeFiles/subconverter.dir/src/*.o  -static -lpcrecpp -lpcre -levent -lyaml-cpp -lcurl -lssl -lcrypto -lz -lbz2 -ldl -lpthread -O3 -s  
+g++ -o base/subconverter CMakeFiles/subconverter.dir/src/*.o  -static -lpcrecpp -lpcre -levent -lyaml-cpp -lcurl -lnghttp2 -lssl -lcrypto -lz -lbz2 -ldl -lpthread -O3 -s  
 
 cd base
 chmod +rx subconverter
