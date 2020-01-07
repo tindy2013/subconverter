@@ -82,14 +82,11 @@ template <typename T> static inline void eraseElements(T &target)
 #ifndef HAVE_TO_STRING
 namespace std
 {
-    namespace __cxx11
+    template <typename T> std::string to_string(const T& n)
     {
-        template <typename T> std::string to_string(const T& n)
-        {
-            std::ostringstream ss;
-            ss << n;
-            return ss.str();
-        }
+        std::ostringstream ss;
+        ss << n;
+        return ss.str();
     }
 }
 #endif // HAVE_TO_STRING

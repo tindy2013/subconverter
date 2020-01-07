@@ -789,7 +789,7 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
         while(std::count(remarks_list.begin(), remarks_list.end(), remark) > 0)
             remark = x.remarks = x.remarks + "$";
         hostname = GetMember(json, "Hostname");
-        port = std::__cxx11::to_string((unsigned short)stoi(GetMember(json, "Port")));
+        port = std::to_string((unsigned short)stoi(GetMember(json, "Port")));
         username = GetMember(json, "Username");
         password = GetMember(json, "Password");
         method = GetMember(json, "EncryptMethod");
@@ -839,7 +839,7 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
             obfs = GetMember(json, "OBFS");
             obfsparam = GetMember(json, "OBFSParam");
             proxy = "external, exec=\"" + ext.surge_ssr_path + "\", args=\"";
-            string_array args = {"-l", std::__cxx11::to_string(local_port), "-s", hostname, "-p", port, "-m", method, "-k", password, "-o", obfs, "-O", protocol};
+            string_array args = {"-l", std::to_string(local_port), "-s", hostname, "-p", port, "-m", method, "-k", password, "-o", obfs, "-O", protocol};
             if(obfsparam.size())
             {
                 args.emplace_back("-g");
@@ -855,8 +855,8 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
                 return std::move(a) + "\", args=\"" + std::move(b);
             });
             //std::string ipaddr = (isIPv4(hostname) || isIPv6(hostname)) ? hostname : hostnameToIPAddr(hostname);
-            //proxy += "\", local-port=" + std::__cxx11::to_string(local_port) + ", addresses=" + ipaddr;
-            proxy += "\", local-port=" + std::__cxx11::to_string(local_port);
+            //proxy += "\", local-port=" + std::to_string(local_port) + ", addresses=" + ipaddr;
+            proxy += "\", local-port=" + std::to_string(local_port);
             local_port++;
         }
         else if(x.linkType == SPEEDTEST_MESSAGE_FOUNDSOCKS)
@@ -947,7 +947,7 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
             return std::move(a) + "," + std::move(b);
         });
         if(vArray[1] == "url-test" || vArray[1] == "fallback")
-            proxy += ",url=" + url + ",interval=" + std::__cxx11::to_string(interval);
+            proxy += ",url=" + url + ",interval=" + std::to_string(interval);
 
         ini.Set("{NONAME}", vArray[0] + " = " + proxy); //insert order
     }
@@ -990,7 +990,7 @@ std::string netchToSS(std::vector<nodeInfo> &nodes, extra_settings &ext)
 
         remark = x.remarks;
         hostname = GetMember(json, "Hostname");
-        port = std::__cxx11::to_string((unsigned short)stoi(GetMember(json, "Port")));
+        port = std::to_string((unsigned short)stoi(GetMember(json, "Port")));
         password = GetMember(json, "Password");
         method = GetMember(json, "EncryptMethod");
         plugin = GetMember(json, "Plugin");
@@ -1057,7 +1057,7 @@ std::string netchToSSR(std::vector<nodeInfo> &nodes, extra_settings &ext)
 
         remark = x.remarks;
         hostname = GetMember(json, "Hostname");
-        port = std::__cxx11::to_string((unsigned short)stoi(GetMember(json, "Port")));
+        port = std::to_string((unsigned short)stoi(GetMember(json, "Port")));
         password = GetMember(json, "Password");
         method = GetMember(json, "EncryptMethod");
         protocol = GetMember(json, "Protocol");
@@ -1118,7 +1118,7 @@ std::string netchToVMess(std::vector<nodeInfo> &nodes, extra_settings &ext)
 
         remark = x.remarks;
         hostname = GetMember(json, "Hostname");
-        port = std::__cxx11::to_string((unsigned short)stoi(GetMember(json, "Port")));
+        port = std::to_string((unsigned short)stoi(GetMember(json, "Port")));
         method = GetMember(json, "EncryptMethod");
         id = GetMember(json, "UserID");
         aid = GetMember(json, "AlterID");
@@ -1181,7 +1181,7 @@ std::string netchToQuan(std::vector<nodeInfo> &nodes, extra_settings &ext)
         remark = x.remarks;
 
         hostname = GetMember(json, "Hostname");
-        port = std::__cxx11::to_string((unsigned short)stoi(GetMember(json, "Port")));
+        port = std::to_string((unsigned short)stoi(GetMember(json, "Port")));
         method = GetMember(json, "EncryptMethod");
         password = GetMember(json, "Password");
 
@@ -1274,7 +1274,7 @@ std::string netchToQuanX(std::vector<nodeInfo> &nodes, extra_settings &ext)
         remark = x.remarks;
 
         hostname = GetMember(json, "Hostname");
-        port = std::__cxx11::to_string((unsigned short)stoi(GetMember(json, "Port")));
+        port = std::to_string((unsigned short)stoi(GetMember(json, "Port")));
         method = GetMember(json, "EncryptMethod");
 
         switch(x.linkType)
@@ -1498,7 +1498,7 @@ void netchToMellow(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rul
         while(std::count(remarks_list.begin(), remarks_list.end(), remark) > 0)
             remark = x.remarks = x.remarks + "$";
         hostname = GetMember(json, "Hostname");
-        port = std::__cxx11::to_string((unsigned short)stoi(GetMember(json, "Port")));
+        port = std::to_string((unsigned short)stoi(GetMember(json, "Port")));
         username = GetMember(json, "Username");
         password = GetMember(json, "Password");
         method = GetMember(json, "EncryptMethod");

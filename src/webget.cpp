@@ -49,7 +49,7 @@ std::string curlGet(std::string url, std::string proxy)
 std::string buildSocks5ProxyString(std::string addr, int port, std::string username, std::string password)
 {
     std::string authstr = username != "" && password != "" ? username + ":" + password + "@" : "";
-    std::string proxystr = "socks5://" + authstr + addr + ":" + std::__cxx11::to_string(port);
+    std::string proxystr = "socks5://" + authstr + addr + ":" + std::to_string(port);
     return proxystr;
 }
 

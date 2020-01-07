@@ -19,6 +19,7 @@
 
 //common settings
 std::string pref_path = "pref.ini";
+bool generator_mode = false;
 string_array def_exclude_remarks, def_include_remarks, rulesets;
 std::vector<ruleset_content> ruleset_content_array;
 std::string listen_address = "127.0.0.1", default_url, managed_config_prefix;

@@ -123,7 +123,7 @@ public:
         if(parsed)
             return GetErrorString(last_error);
         else
-            return "line " + std::__cxx11::to_string(last_error_index) + ": " + GetErrorString(last_error);
+            return "line " + std::to_string(last_error_index) + ": " + GetErrorString(last_error);
     }
 
     /**
@@ -639,7 +639,7 @@ public:
     */
     int SetDouble(std::string section, std::string itemName, double itemVal)
     {
-        return Set(section, itemName, std::__cxx11::to_string(itemVal));
+        return Set(section, itemName, std::to_string(itemVal));
     }
 
     /**
@@ -655,7 +655,7 @@ public:
     */
     int SetLong(std::string section, std::string itemName, long itemVal)
     {
-        return Set(section, itemName, std::__cxx11::to_string(itemVal));
+        return Set(section, itemName, std::to_string(itemVal));
     }
 
     /**
@@ -673,7 +673,7 @@ public:
     {
         std::string data;
         for(auto &x : Array)
-            data += std::__cxx11::to_string(x) + separator;
+            data += std::to_string(x) + separator;
         data = data.substr(0, data.size() - separator.size());
         return Set(section, itemName, data);
     }
