@@ -839,6 +839,9 @@ int main(int argc, char *argv[])
         });
     }
 
+    std::string env_port = GetEnv("PORT");
+    if(env_port.size())
+        listen_port = to_int(env_port, listen_port);
     listener_args args = {listen_address, listen_port, max_pending_connections, max_concurrent_threads};
     std::cout<<"Serving HTTP @ http://"<<listen_address<<":"<<listen_port<<std::endl;
     start_web_server_multi(&args);

@@ -1,0 +1,75 @@
+# (Video)
+# AcFun
+USER-AGENT,AcFun*
+DOMAIN-SUFFIX,acfun.cn
+DOMAIN-SUFFIX,acfun.com
+DOMAIN-SUFFIX,aixifan.com
+# > bilibili
+USER-AGENT,bili-universal
+USER-AGENT,Bilibili*
+DOMAIN-SUFFIX,acgvideo.com
+DOMAIN-SUFFIX,bilibili.com
+DOMAIN-SUFFIX,hdslb.com
+# > HunanTV
+USER-AGENT,MGTV*
+DOMAIN-SUFFIX,hitv.com
+DOMAIN-SUFFIX,hunantv.com
+DOMAIN-SUFFIX,mgtv.com
+# > Migu
+USER-AGENT,MiguVideo*
+USER-AGENT,%E5%92%AA%E5%92%95%E8%A7%86%E9%A2%91
+DOMAIN-SUFFIX,cmvideo.cn
+DOMAIN-SUFFIX,migu.cn
+DOMAIN-SUFFIX,miguvideo.com
+# > iQiyi
+USER-AGENT,iQiYi*
+USER-AGENT,PPStream*
+USER-AGENT,QIYI*
+USER-AGENT,QYPlayer*
+DOMAIN-SUFFIX,iqiyi.com
+DOMAIN-SUFFIX,iqiyipic.com
+DOMAIN-SUFFIX,qy.net
+DOMAIN-SUFFIX,71.am
+# > Sohu
+DOMAIN-SUFFIX,56.com
+DOMAIN-SUFFIX,sohu.com
+DOMAIN-SUFFIX,sohu.com.cn
+DOMAIN-SUFFIX,itc.cn
+DOMAIN-SUFFIX,v-56.com
+# > Tencent
+USER-AGENT,live4iphone*
+USER-AGENT,qqlive4iphone*
+USER-AGENT,TencentMidasConnect*
+DOMAIN-SUFFIX,video.qq.com
+# > Youku
+USER-AGENT,Youku*
+USER-AGENT,%E4%BC%98%E9%85%B7*
+DOMAIN-SUFFIX,soku.com
+DOMAIN-SUFFIX,youku.com
+DOMAIN-SUFFIX,ykimg.com
+
+# (Music)
+# > Alibaba
+USER-AGENT,walkman*
+USER-AGENT,xiami*
+DOMAIN-SUFFIX,xiami.com
+DOMAIN-SUFFIX,xiami.net
+# > Netease
+USER-AGENT,NeteaseMusic*
+USER-AGENT,%E7%BD%91%E6%98%93%E4%BA%91%E9%9F%B3%E4%B9%90*
+DOMAIN-SUFFIX,music.126.net
+DOMAIN-SUFFIX,music.163.com
+# > Tencent
+USER-AGENT,MOO%E9%9F%B3%E4%B9%90*
+USER-AGENT,QQ%E9%9F%B3%E4%B9%90
+DOMAIN-SUFFIX,qqmusic.qq.com
+DOMAIN-SUFFIX,y.qq.com
+DOMAIN,aqqmusic.tc.qq.com
+# Kugou and Kuwo
+DOMAIN-SUFFIX,kugou.com
+USER-AGENT,%E9%85%B7%E6%88%91%E9%9F%B3%E4%B9%90*
+DOMAIN-SUFFIX,kuwo.cn
+DOMAIN-SUFFIX,koowo.com
+# > Baidu
+USER-AGENT,baiduyinyue
+DOMAIN-SUFFIX,qianqian.com

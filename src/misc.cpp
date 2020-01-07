@@ -320,6 +320,21 @@ std::vector<std::string> split(const std::string &s, const std::string &seperato
     return result;
 }
 
+std::string GetEnv(std::string name)
+{
+    std::string retVal;
+#ifdef _WIN32
+    char chrData[1024] = {};
+    if(GetEnvironmentVariable(name.c_str(), chrData, 1023))
+        retVal.assign(chrData);
+#else
+    char *env = getenv(name.c_str());
+    if(env != NULL)
+        retVal.assign(env);
+#endif // _WIN32
+    return retVal;
+}
+
 std::string getSystemProxy()
 {
 #ifdef _WIN32

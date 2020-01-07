@@ -54,6 +54,7 @@ int shortAssemble(unsigned short num_a, unsigned short num_b);
 void shortDisassemble(int source, unsigned short &num_a, unsigned short &num_b);
 int to_int(std::string &s, int def_vaule = 0);
 std::string UTF8ToCodePoint(std::string data);
+std::string GetEnv(std::string name);
 
 std::string fileGet(std::string path, bool binary = true);
 int fileWrite(std::string path, std::string content, bool overwrite);
@@ -78,7 +79,7 @@ template <typename T> static inline void eraseElements(T &target)
     T().swap(target);
 }
 
-#ifdef _MACOS
+#ifndef HAVE_TO_STRING
 namespace std
 {
     namespace __cxx11
@@ -91,7 +92,7 @@ namespace std
         }
     }
 }
-#endif // _MACOS
+#endif // HAVE_TO_STRING
 
 #ifdef _WIN32
 void StringToWstring(std::wstring& szDst, std::string str);
