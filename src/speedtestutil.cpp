@@ -349,8 +349,8 @@ void explodeSS(std::string ss, bool libev, std::string custom_port, int local_po
     }
     if(strFind(ss, "@"))
     {
-        ss = regReplace(ss, "(.*?)@(.*):(.*)", "$1,$2,$3");
-        args = split(ss, ",");
+        ss = regReplace(ss, "(.*?)@(.*):(.*)", "$1|$2|$3");
+        args = split(ss, "|");
         secret = split(urlsafe_base64_decode(args[0]), ":");
         method = secret[0];
         password = secret[1];
@@ -359,8 +359,8 @@ void explodeSS(std::string ss, bool libev, std::string custom_port, int local_po
     }
     else
     {
-        ss = regReplace(urlsafe_base64_decode(ss), "(.*?):(.*?)@(.*):(.*)", "$1,$2,$3,$4");
-        args = split(ss, ",");
+        ss = regReplace(urlsafe_base64_decode(ss), "(.*?):(.*?)@(.*):(.*)", "$1|$2|$3|$4");
+        args = split(ss, "|");
         method = args[0];
         password = args[1];
         server = args[2];
@@ -536,8 +536,8 @@ void explodeSSR(std::string ssr, bool ss_libev, bool ssr_libev, std::string cust
         protoparam = regReplace(urlsafe_base64_decode(getUrlArg(strobfs, "protoparam")), "\\s", "");
     }
 
-    ssr = regReplace(ssr, "(.*):(.*?):(.*?):(.*?):(.*?):(.*)", "$1,$2,$3,$4,$5,$6");
-    strcfg = split(ssr, ",");
+    ssr = regReplace(ssr, "(.*):(.*?):(.*?):(.*?):(.*?):(.*)", "$1|$2|$3|$4|$5|$6");
+    strcfg = split(ssr, "|");
 
     if(strcfg.size() != 6)
         return;
