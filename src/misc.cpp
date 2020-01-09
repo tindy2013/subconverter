@@ -763,12 +763,12 @@ void urlParse(std::string url, std::string &host, std::string &path, int &port, 
     {
         args = split(regReplace(host, "\\[(.*)\\](.*)", "$1,$2"), ",");
         if(args.size() == 2) //with port
-            port = stoi(args[1].substr(1));
+            port = to_int(args[1].substr(1));
         host = args[0];
     }
     else if(strFind(host, ":"))
     {
-        port = stoi(host.substr(host.rfind(":") + 1));
+        port = to_int(host.substr(host.rfind(":") + 1));
         host = host.substr(0, host.rfind(":"));
     }
     if(port == 0)

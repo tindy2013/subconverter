@@ -63,8 +63,6 @@ std::string hostnameToIPAddr(std::string host)
 
 std::string vmessConstruct(std::string add, std::string port, std::string type, std::string id, std::string aid, std::string net, std::string cipher, std::string path, std::string host, std::string tls, int local_port)
 {
-    if(!port.size())
-        port = "0";
     if(!path.size())
         path = "/";
     if(!host.size())
@@ -79,11 +77,11 @@ std::string vmessConstruct(std::string add, std::string port, std::string type, 
     writer.Key("Hostname");
     writer.String(add.data());
     writer.Key("Port");
-    writer.Int(shortAssemble((unsigned short)stoi(port), (unsigned short)local_port));
+    writer.Int(shortAssemble((unsigned short)to_int(port), (unsigned short)local_port));
     writer.Key("UserID");
     writer.String(id.data());
     writer.Key("AlterID");
-    writer.Int(stoi(aid));
+    writer.Int(to_int(aid));
     writer.Key("EncryptMethod");
     writer.String(cipher.data());
     writer.Key("TransferProtocol");
@@ -115,8 +113,6 @@ std::string vmessConstruct(std::string add, std::string port, std::string type, 
 
 std::string ssrConstruct(std::string group, std::string remarks, std::string remarks_base64, std::string server, std::string port, std::string protocol, std::string method, std::string obfs, std::string password, std::string obfsparam, std::string protoparam, int local_port, bool libev)
 {
-    if(!port.size())
-        port = "0";
     rapidjson::StringBuffer sb;
     rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
     writer.StartObject();
@@ -127,7 +123,7 @@ std::string ssrConstruct(std::string group, std::string remarks, std::string rem
     writer.Key("Hostname");
     writer.String(server.data());
     writer.Key("Port");
-    writer.Int(shortAssemble((unsigned short)stoi(port), (unsigned short)local_port));
+    writer.Int(shortAssemble((unsigned short)to_int(port), (unsigned short)local_port));
     writer.Key("Password");
     writer.String(password.data());
     writer.Key("EncryptMethod");
@@ -146,8 +142,6 @@ std::string ssrConstruct(std::string group, std::string remarks, std::string rem
 
 std::string ssConstruct(std::string server, std::string port, std::string password, std::string method, std::string plugin, std::string pluginopts, std::string remarks, int local_port, bool libev)
 {
-    if(!port.size())
-        port = "0";
     rapidjson::StringBuffer sb;
     rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
     writer.StartObject();
@@ -158,7 +152,7 @@ std::string ssConstruct(std::string server, std::string port, std::string passwo
     writer.Key("Hostname");
     writer.String(server.data());
     writer.Key("Port");
-    writer.Int(shortAssemble((unsigned short)stoi(port), (unsigned short)local_port));
+    writer.Int(shortAssemble((unsigned short)to_int(port), (unsigned short)local_port));
     writer.Key("Password");
     writer.String(password.data());
     writer.Key("EncryptMethod");
@@ -173,8 +167,6 @@ std::string ssConstruct(std::string server, std::string port, std::string passwo
 
 std::string socksConstruct(std::string remarks, std::string server, std::string port, std::string username, std::string password)
 {
-    if(!port.size())
-        port = "0";
     rapidjson::StringBuffer sb;
     rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
     writer.StartObject();
@@ -185,7 +177,7 @@ std::string socksConstruct(std::string remarks, std::string server, std::string 
     writer.Key("Hostname");
     writer.String(server.data());
     writer.Key("Port");
-    writer.Int(stoi(port));
+    writer.Int(to_int(port));
     writer.Key("Username");
     writer.String(username.data());
     writer.Key("Password");
@@ -196,8 +188,6 @@ std::string socksConstruct(std::string remarks, std::string server, std::string 
 
 std::string httpConstruct(std::string remarks, std::string server, std::string port, std::string username, std::string password)
 {
-    if(!port.size())
-        port = "0";
     rapidjson::StringBuffer sb;
     rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
     writer.StartObject();
@@ -208,7 +198,7 @@ std::string httpConstruct(std::string remarks, std::string server, std::string p
     writer.Key("Hostname");
     writer.String(server.data());
     writer.Key("Port");
-    writer.Int(stoi(port));
+    writer.Int(to_int(port));
     writer.Key("Username");
     writer.String(username.data());
     writer.Key("Password");
@@ -219,8 +209,6 @@ std::string httpConstruct(std::string remarks, std::string server, std::string p
 
 std::string vmessLinkConstruct(std::string remarks, std::string add, std::string port, std::string type, std::string id, std::string aid, std::string net, std::string path, std::string host, std::string tls)
 {
-    if(!port.size())
-        port = "0";
     rapidjson::StringBuffer sb;
     rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
     writer.StartObject();
@@ -231,13 +219,13 @@ std::string vmessLinkConstruct(std::string remarks, std::string add, std::string
     writer.Key("add");
     writer.String(add.data());
     writer.Key("port");
-    writer.Int(stoi(port));
+    writer.Int(to_int(port));
     writer.Key("type");
     writer.String(type.data());
     writer.Key("id");
     writer.String(id.data());
     writer.Key("aid");
-    writer.Int(stoi(aid));
+    writer.Int(to_int(port));
     writer.Key("net");
     writer.String(net.data());
     writer.Key("path");
@@ -850,7 +838,7 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
                 args.emplace_back("-G");
                 args.emplace_back(protoparam);
             }
-            proxy += std::accumulate(std::next(args.cbegin()), args.cend(), args[0], [](std::string a, std::string b)
+            proxy += std::accumulate(std::next(args.begin()), args.end(), args[0], [](std::string a, std::string b)
             {
                 return std::move(a) + "\", args=\"" + std::move(b);
             });
