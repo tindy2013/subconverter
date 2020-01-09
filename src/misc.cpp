@@ -861,11 +861,11 @@ void shortDisassemble(int source, unsigned short &num_a, unsigned short &num_b)
     num_b = (unsigned short)(source >> 16);
 }
 
-int to_int(std::string &s, int def_vaule)
+int to_int(std::string str, int def_vaule)
 {
     int retval = 0;
     char c;
-    std::stringstream ss(s);
+    std::stringstream ss(str);
     if(!(ss >> retval))
         return def_vaule;
     else if(ss >> c)

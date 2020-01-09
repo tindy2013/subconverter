@@ -52,7 +52,7 @@ void urlParse(std::string url, std::string &host, std::string &path, int &port, 
 void removeUTF8BOM(std::string &data);
 int shortAssemble(unsigned short num_a, unsigned short num_b);
 void shortDisassemble(int source, unsigned short &num_a, unsigned short &num_b);
-int to_int(std::string &s, int def_vaule = 0);
+int to_int(std::string str, int def_vaule = 0);
 std::string UTF8ToCodePoint(std::string data);
 std::string GetEnv(std::string name);
 
