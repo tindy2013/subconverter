@@ -581,16 +581,19 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
         }
         else if(x.linkType == SPEEDTEST_MESSAGE_FOUNDSSR && clashR)
         {
-            //latest clash core removed support for chacha20 encryption
-            if(ext.filter_deprecated && method == "chacha20")
-                continue;
-            //ignoring all nodes with unsupported obfs and protocols
+            //ignoring all nodes with unsupported obfs, protocols and encryption
             protocol = GetMember(json, "Protocol");
-            if(std::find(clashr_protocols.cbegin(), clashr_protocols.cend(), protocol) == clashr_protocols.cend())
-                continue;
             obfs = GetMember(json, "OBFS");
-            if(std::find(clashr_obfs.cbegin(), clashr_obfs.cend(), obfs) == clashr_obfs.cend())
-                continue;
+            if(ext.filter_deprecated)
+            {
+                if(method == "chacha20")
+                    continue;
+                if(std::find(clashr_protocols.cbegin(), clashr_protocols.cend(), protocol) == clashr_protocols.cend())
+                    continue;
+                if(std::find(clashr_obfs.cbegin(), clashr_obfs.cend(), obfs) == clashr_obfs.cend())
+                    continue;
+            }
+
             protoparam = GetMember(json, "ProtocolParam");
             obfsparam = GetMember(json, "OBFSParam");
             singleproxy["type"] = "ssr";
