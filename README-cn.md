@@ -41,7 +41,7 @@
 
 ### 调用地址
 
-```TXT
+```txt
 http://127.0.0.1:25500/sub?target=%TARGET%&url=%URL%&config=%CONFIG%
 ```
 
@@ -59,7 +59,7 @@ http://127.0.0.1:25500/sub?target=%TARGET%&url=%URL%&config=%CONFIG%
 
 举个例子：
 
-```TXT
+```txt
 有以下两个订阅，且想合并转换成 Clash 的订阅:
 1. https://dler.cloud/subscribe/ABCDE?clash=vmess
 2. https://rich.cloud/subscribe/ABCDE?clash=vmess
@@ -116,14 +116,14 @@ http://127.0.0.1:25500/sub?target=%TARGET%&url=%URL%&emoji=%EMOJI%····
 | tfo |  可选  | true / false  | 指开启该订阅链接的 TCP Fast Open，默认为 false  |
 | udp |  可选  | true / false  | 指开启该订阅链接的 UDP，默认为 false  |
 | scv |  可选  | true / false  | 指关闭 TLS 节点的证书检查，默认为 false  |
-| list |  可选  | true / false  | 指输出 Surge nodelist 或者 Clash proxy provider  |
+| list |  可选  | true / false  | 指输出 Surge Node List 或者 Clash Proxy Provider  |
 | sort |  可选  | true / false  | 指对输出的节点或策略组进行再次排序，默认为 false  |
 | include |  可选  | 详见下文中 `include_remarks`  | 指仅保留匹配到的节点，支持正则匹配，需要经过 [URLEncode](https://www.urlencoder.org/) 处理，会覆盖配置文件里的设置  |
 | exclude |  可选  | 详见下文中 `exclude_remarks`  | 指排除匹配到的节点，支持正则匹配，需要经过 [URLEncode](https://www.urlencoder.org/) 处理，会覆盖配置文件里的设置  |
 
 举个例子：
 
-```TXT
+```txt
 有订阅 `https://dler.cloud/subscribe/ABCDE?clash=vmess`，想转换成 Surge 4 的订阅，且需要开启 TFO 和 UDP
 顺便再给节点名加上 EMOJI 同时排除掉订阅中显示流量和官网的节点（节点名为"剩余流量：1024G"，"官网地址：dler.cloud"）
 
@@ -169,7 +169,7 @@ http://127.0.0.1:25500/sub?target=surge&ver=4&tfo=true&udp=true&emoji=true&exclu
 
     - 解释：
 
-     ```TXT
+     ```txt
      此时订阅链接:
      http://127.0.0.1:25500/sub?target=clash
      等同于:
@@ -269,7 +269,7 @@ http://127.0.0.1:25500/sub?target=surge&ver=4&tfo=true&udp=true&emoji=true&exclu
 
 #### [node_pref] 部分
 
-> 该部分主要涉及到的内容为 **开启节点的UDP及TCP** 、**重命名节点后的排序**
+> 该部分主要涉及到的内容为 **开启节点的 UDP 及 TCP Fast Open** 、**重命名节点后的排序**
 > 
 > 相关设置项目建议保持默认或者在知晓作用的前提下进行修改
 
@@ -301,13 +301,13 @@ http://127.0.0.1:25500/sub?target=surge&ver=4&tfo=true&udp=true&emoji=true&exclu
 
 1. **write_managed_config**
 
-   > 是否将'＃!MANAGED-CONFIG'信息附加到 Surge 或 Surfboard 配置，设置为 true 时打开，默认为 true
+   > 是否将 '#!MANAGED-CONFIG' 信息附加到 Surge 或 Surfboard 配置，设置为 true 时打开，默认为 true
 
 1. **managed_config_prefix**
 
    > 具体的 '#!MANAGED-CONFIG' 信息，地址前缀不用添加 "/"。Surge 或 Surfboard 会向此地址发出更新请求
    >
-   > 局域网用户需要将此处改为本程序运行设备的局域网 ip
+   > 局域网用户需要将此处改为本程序运行设备的局域网 IP
 
     - 例如:
 
@@ -391,7 +391,7 @@ custom_proxy_group=🇯🇵 JP`select`沪日`日本`[]🇯🇵 日本延迟最�
 # 表示创建一个叫 🇯🇵 JP 的 select 策略组,并向其中**依次**添加名字含'沪日','日本'的节点，以及引用上述所创建的 🇯🇵 日本延迟最低 策略组
 ```
 
-- ssr/v2 订阅默认没有组名, 可以使用这个方法来添加组名
+- 还可使用一些特殊筛选条件
 
   ```ini
   custom_proxy_group=g1`select`!!GROUPID=0
@@ -399,6 +399,7 @@ custom_proxy_group=🇯🇵 JP`select`沪日`日本`[]🇯🇵 日本延迟最�
   custom_proxy_group=g2`select`!!GROUPID=1
   # 指订阅链接中的第二条订阅
   custom_proxy_group=v2ray`select`!!GROUP=V2RayProvider
+  # 指订阅链接中组名为 V2RayProvider 的节点
   ```
 
 - 现在也可以使用双条件进行筛选
