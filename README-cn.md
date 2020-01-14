@@ -144,12 +144,12 @@ http://127.0.0.1:25500/sub?target=surge&ver=4&tfo=true&udp=true&emoji=true&exclu
 
 ### 配置文件
 
-> 关于 subconverter.exe 目录中 `pref.ini` 文件的解释
+> 关于 subconverter 主程序目录中 `pref.ini` 文件的解释
 
 由于此部分篇幅较长，点击下方条目即可展开详解：
 
 <details>
-<summary> <b>[common] 部分</b></summary>
+<summary><b>[common] 部分</b></summary>
 
 > 该部分主要涉及到的内容为 **全局的节点排除或保留** 、**各配置文件的基础**
 >
@@ -260,7 +260,7 @@ http://127.0.0.1:25500/sub?target=surge&ver=4&tfo=true&udp=true&emoji=true&exclu
 
 </details>
 <details>
-<summary> <b>[node_pref] 部分</b></summary>
+<summary><b>[node_pref] 部分</b></summary>
 
 > 该部分主要涉及到的内容为 **开启节点的 UDP 及 TCP Fast Open** 、**节点的重命名** 、**重命名节点后的排序**
 >
@@ -303,7 +303,7 @@ http://127.0.0.1:25500/sub?target=surge&ver=4&tfo=true&udp=true&emoji=true&exclu
 
 </details>
 <details>
-<summary> <b>[managed_config] 部分</b></summary>
+<summary><b>[managed_config] 部分</b></summary>
 
 > 该部分主要涉及到的内容为 **订阅文件的更新地址**
 
@@ -325,13 +325,13 @@ http://127.0.0.1:25500/sub?target=surge&ver=4&tfo=true&udp=true&emoji=true&exclu
 
 </details>
 <details>
-<summary> <b>[surge_external_proxy] 部分</b></summary>
+<summary><b>[surge_external_proxy] 部分</b></summary>
 
 > 为 Surge 添加 SSR 的支持路径
 
 </details>
 <details>
-<summary> <b>[emojis] 部分</b></summary>
+<summary><b>[emojis] 部分</b></summary>
 
 1. **add_emoji**
 
@@ -354,7 +354,7 @@ http://127.0.0.1:25500/sub?target=surge&ver=4&tfo=true&udp=true&emoji=true&exclu
 
 </details>
 <details>
-<summary> <b>[ruleset] 部分</b></summary>
+<summary><b>[ruleset] 部分</b></summary>
 
 > 如果你对原本订阅自带的规则不满意时，可以使用如下配置
 
@@ -392,7 +392,7 @@ http://127.0.0.1:25500/sub?target=surge&ver=4&tfo=true&udp=true&emoji=true&exclu
 
 </details>
 <details>
-<summary> <b>[clash_proxy_group] 部分</b></summary>
+<summary><b>[clash_proxy_group] 部分</b></summary>
 
 > 为 Clash 、Mellow 、Surge 以及 Surfboard 等程序创建策略组, 可用正则来筛选节点
 >
@@ -427,7 +427,7 @@ custom_proxy_group=🇯🇵 JP`select`沪日`日本`[]🇯🇵 日本延迟最�
 
 </details>
 <details>
-<summary> <b>[server] 部分</b></summary>
+<summary><b>[server] 部分</b></summary>
 
 > 此部分通常**保持默认**即可
 
@@ -443,7 +443,7 @@ custom_proxy_group=🇯🇵 JP`select`沪日`日本`[]🇯🇵 日本延迟最�
 
 <details>
 
-<summary> <b>[advanced] 部分</b></summary>
+<summary><b>[advanced] 部分</b></summary>
 
 > 此部分通常**保持默认**即可
 
