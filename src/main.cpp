@@ -47,6 +47,8 @@ std::string surge_ssr_path;
 YAML::Node clash_base;
 INIReader surge_base, mellow_base;
 
+string_array regex_blacklist = {"(.*)*"};
+
 #ifndef _WIN32
 void SetConsoleTitle(std::string title)
 {
@@ -176,11 +178,6 @@ void readConf()
         proxy_ruleset = ini.Get("proxy_ruleset");
     if(ini.ItemExist("proxy_subscription"))
         proxy_subscription = ini.Get("proxy_subscription");
-    if(ini.ItemPrefixExist("rename_node"))
-    {
-        ini.GetAll("rename_node", renames_temp);
-        safe_set_renames(renames_temp);
-    }
 
     if(ini.SectionExist("surge_external_proxy"))
     {
@@ -202,6 +199,11 @@ void readConf()
             scv_flag = ini.GetBool("skip_cert_verify_flag");
         if(ini.ItemExist("filter_deprecated_nodes"))
             filter_deprecated = ini.GetBool("filter_deprecated_nodes");
+        if(ini.ItemPrefixExist("rename_node"))
+        {
+            ini.GetAll("rename_node", renames_temp);
+            safe_set_renames(renames_temp);
+        }
     }
 
     ini.EnterSection("managed_config");
@@ -352,6 +354,9 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     std::string groups = urlsafe_base64_decode(getUrlArg(argument, "groups")), ruleset = urlsafe_base64_decode(getUrlArg(argument, "ruleset")), config = UrlDecode(getUrlArg(argument, "config"));
     std::vector<ruleset_content> rca;
     extra_settings ext;
+
+    if(std::find(regex_blacklist.cbegin(), regex_blacklist.cend(), include) != regex_blacklist.cend() || std::find(regex_blacklist.cbegin(), regex_blacklist.cend(), exclude) != regex_blacklist.cend())
+        return "Invalid request!";
 
     //for external configuration
     std::string ext_clash_base = clash_rule_base, ext_surge_base = surge_rule_base, ext_mellow_base = mellow_rule_base, ext_surfboard_base = surfboard_rule_base;
@@ -516,7 +521,6 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
 
         if(upload == "true")
             uploadGist(target, upload_path, output_content, false);
-        return output_content;
     }
     else if(target == "surge")
     {
@@ -534,7 +538,6 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
 
         if(write_managed_config && managed_config_prefix.size() && !ext.nodelist)
             output_content = "#!MANAGED-CONFIG " + managed_config_prefix + "/sub?" + argument + "\n\n" + output_content;
-        return output_content;
     }
     else if(target == "surfboard")
     {
@@ -550,7 +553,6 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
 
         if(write_managed_config && managed_config_prefix.size())
             output_content = "#!MANAGED-CONFIG " + managed_config_prefix + "/sub?" + argument + "\n\n" + output_content;
-        return output_content;
     }
     else if(target == "mellow")
     {
@@ -574,8 +576,6 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
 
         if(upload == "true")
             uploadGist("mellow", upload_path, output_content, true);
-
-        return output_content;
     }
     else if(target == "ss")
     {
@@ -585,13 +585,19 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
             uploadGist("ss", upload_path, output_content, false);
         return output_content;
     }
+    else if(target == "sssub")
+    {
+        std::cerr<<"SS Subscription"<<std::endl;
+        output_content = netchToSSSub(nodes, ext);
+        if(upload == "true")
+            uploadGist("sssub", upload_path, output_content, false);
+    }
     else if(target == "ssr")
     {
         std::cerr<<"SSR"<<std::endl;
         output_content = netchToSSR(nodes, ext);
         if(upload == "true")
             uploadGist("ssr", upload_path, output_content, false);
-        return output_content;
     }
     else if(target == "v2ray")
     {
@@ -599,7 +605,6 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         output_content = netchToVMess(nodes, ext);
         if(upload == "true")
             uploadGist("v2ray", upload_path, output_content, false);
-        return output_content;
     }
     else if(target == "quan")
     {
@@ -607,7 +612,6 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         output_content = netchToQuan(nodes, ext);
         if(upload == "true")
             uploadGist("quan", upload_path, output_content, false);
-        return output_content;
     }
     else if(target == "quanx")
     {
@@ -615,7 +619,6 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         output_content = netchToQuanX(nodes, ext);
         if(upload == "true")
             uploadGist("quanx", upload_path, output_content, false);
-        return output_content;
     }
     else if(target == "ssd")
     {
@@ -623,13 +626,12 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         output_content = netchToSSD(nodes, group, ext);
         if(upload == "true")
             uploadGist("ssd", upload_path, output_content, false);
-        return output_content;
     }
     else
     {
         std::cerr<<"Unspecified"<<std::endl;
-        return std::string();
     }
+    return output_content;
 }
 
 std::string simpleToClashR(RESPONSE_CALLBACK_ARGS)
@@ -799,6 +801,11 @@ int main(int argc, char *argv[])
     append_response("GET", "/ss", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
         return subconverter(argument + "&target=ss", postdata);
+    });
+
+    append_response("GET", "/sssub", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
+    {
+        return subconverter(argument + "&target=sssub", postdata);
     });
 
     append_response("GET", "/ssr", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string

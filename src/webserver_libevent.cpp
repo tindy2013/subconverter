@@ -68,6 +68,10 @@ void OnReq(evhttp_request *req, void *args)
 {
     const char *req_content_type = evhttp_find_header(req->input_headers, "Content-Type"), *req_ac_method = evhttp_find_header(req->input_headers, "Access-Control-Request-Method");
     const char *req_method = req_ac_method == NULL ? EVBUFFER_LENGTH(req->input_buffer) == 0 ? "GET" : "POST" : "OPTIONS", *uri = req->uri;
+    char *client_ip;
+    u_short client_port;
+    evhttp_connection_get_peer(evhttp_request_get_connection(req), &client_ip, &client_port);
+    std::cerr<<"Accept connection from client "<<client_ip<<":"<<client_port<<"\n";
     int retVal;
     std::string postdata, content_type, return_data;
 
@@ -115,7 +119,10 @@ void OnReq(evhttp_request *req, void *args)
         evhttp_send_reply(req, HTTP_OK, "", OutBuf);
         break;
     case -1: //not found
-        evhttp_send_error(req, HTTP_NOTFOUND, "Resource not found");
+        return_data = "File not found.";
+        evbuffer_add(OutBuf, return_data.data(), return_data.size());
+        evhttp_send_reply(req, HTTP_NOTFOUND, "", OutBuf);
+        //evhttp_send_error(req, HTTP_NOTFOUND, "Resource not found");
         break;
     default: //undefined behavior
         evhttp_send_error(req, HTTP_INTERNAL, "");

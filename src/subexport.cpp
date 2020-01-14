@@ -1017,6 +1017,84 @@ std::string netchToSS(std::vector<nodeInfo> &nodes, extra_settings &ext)
         return base64_encode(allLinks);
 }
 
+std::string netchToSSSub(std::vector<nodeInfo> &nodes, extra_settings &ext)
+{
+    rapidjson::Document json;
+    rapidjson::StringBuffer sb;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
+    std::string remark, hostname, password, method;
+    std::string plugin, pluginopts;
+    std::string protocol, obfs;
+    int port;
+
+    writer.StartArray();
+
+    std::for_each(nodes.begin(), nodes.end(), [ext](nodeInfo &x)
+    {
+        x.remarks = nodeRename(x.remarks);
+        if(ext.remove_emoji)
+            x.remarks = trim(removeEmoji(x.remarks));
+
+        if(ext.add_emoji)
+            x.remarks = addEmoji(x.remarks);
+    });
+
+    if(ext.sort_flag)
+    {
+        std::sort(nodes.begin(), nodes.end(), [](const nodeInfo &a, const nodeInfo &b)
+        {
+            return a.remarks < b.remarks;
+        });
+    }
+
+    for(nodeInfo &x : nodes)
+    {
+        json.Parse(x.proxyStr.data());
+
+        remark = x.remarks;
+        hostname = x.server;
+        port = (unsigned short)stoi(GetMember(json, "Port"));
+        password = GetMember(json, "Password");
+        method = GetMember(json, "EncryptMethod");
+        plugin = GetMember(json, "Plugin");
+        pluginopts = GetMember(json, "PluginOption");
+        protocol = GetMember(json, "Protocol");
+        obfs = GetMember(json, "OBFS");
+
+        switch(x.linkType)
+        {
+        case SPEEDTEST_MESSAGE_FOUNDSS:
+            if(plugin == "simple-obfs")
+                plugin = "obfs-local";
+            break;
+        case SPEEDTEST_MESSAGE_FOUNDSSR:
+            if(std::count(ss_ciphers.begin(), ss_ciphers.end(), method) > 0 && protocol == "origin" && obfs == "plain")
+                continue;
+            break;
+        default:
+            continue;
+        }
+        writer.StartObject();
+        writer.Key("server");
+        writer.String(hostname.data());
+        writer.Key("server_port");
+        writer.Int(port);
+        writer.Key("method");
+        writer.String(method.data());
+        writer.Key("password");
+        writer.String(password.data());
+        writer.Key("remarks");
+        writer.String(remark.data());
+        writer.Key("plugin");
+        writer.String(plugin.data());
+        writer.Key("plugin_opts");
+        writer.String(pluginopts.data());
+        writer.EndObject();
+    }
+    writer.EndArray();
+    return sb.GetString();
+}
+
 std::string netchToSSR(std::vector<nodeInfo> &nodes, extra_settings &ext)
 {
     rapidjson::Document json;

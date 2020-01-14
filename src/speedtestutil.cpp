@@ -429,6 +429,7 @@ void explodeSSAndroid(std::string ss, bool libev, std::string custom_port, int l
     Document json;
     nodeInfo node;
     std::string ps, password, method, server, port, group = SS_DEFAULT_GROUP;
+    std::string plugin, pluginopts;
     int index = nodes.size();
     //first add some extra data before parsing
     ss = "{\"nodes\":" + ss + "}";
@@ -448,6 +449,8 @@ void explodeSSAndroid(std::string ss, bool libev, std::string custom_port, int l
             ps = server + ":" + port;
         json["nodes"][i]["password"] >> password;
         json["nodes"][i]["method"] >> method;
+        plugin = GetMember(json["nodes"][i], "plugin");
+        pluginopts = GetMember(json["nodes"][i], "plugin_opts");
 
         node.linkType = SPEEDTEST_MESSAGE_FOUNDSS;
         node.id = index;
@@ -455,7 +458,7 @@ void explodeSSAndroid(std::string ss, bool libev, std::string custom_port, int l
         node.remarks = ps;
         node.server = server;
         node.port = to_int(port);
-        node.proxyStr = ssConstruct(server, port, password, method, "", "", ps, local_port, libev);
+        node.proxyStr = ssConstruct(server, port, password, method, plugin, pluginopts, ps, local_port, libev);
         nodes.push_back(node);
         index++;
     }
@@ -1245,13 +1248,11 @@ bool explodeSurge(std::string surge, std::string custom_port, int local_port, st
                     id = itemVal;
                 else if(itemName == "ws")
                 {
-                    if(itemVal == "true")
-                        net = "ws";
+                    net = itemVal == "true" ? "ws" : "tcp";
                 }
                 else if(itemName == "tls")
                 {
-                    if(itemVal == "true")
-                        tls = "tls";
+                    tls = itemVal == "true" ? "tls" : "";
                 }
                 else if(itemName == "ws-path")
                     path = itemVal;
@@ -1286,7 +1287,7 @@ bool explodeSurge(std::string surge, std::string custom_port, int local_port, st
             }
             node.proxyStr = httpConstruct(remarks, server, port, username, password);
         }
-        else if(remarks == "shadowsocks") //quantumult style ss/ssr link
+        else if(remarks == "shadowsocks") //quantumult x style ss/ssr link
         {
             server = trim(configs[0].substr(0, configs[0].rfind(":")));
             port = custom_port == "" ? trim(configs[0].substr(configs[0].rfind(":") + 1)) : custom_port;
@@ -1337,6 +1338,46 @@ bool explodeSurge(std::string surge, std::string custom_port, int local_port, st
                 node.group = SS_DEFAULT_GROUP;
                 node.proxyStr = ssConstruct(server, port, password, method, plugin, pluginopts, remarks, local_port, libev);
             }
+        }
+        else if(remarks == "vmess") //quantumult x style vmess link
+        {
+            server = trim(configs[0].substr(0, configs[0].rfind(":")));
+            port = custom_port == "" ? trim(configs[0].substr(configs[0].rfind(":") + 1)) : custom_port;
+            plugin = protocol = remarks = "";
+            net = "tcp";
+
+            for(i = 1; i < configs.size(); i++)
+            {
+                vArray = split(trim(configs[i]), "=");
+                if(vArray.size() != 2)
+                    continue;
+                itemName = trim(vArray[0]);
+                itemVal = trim(vArray[1]);
+                if(itemName == "method")
+                    method = itemVal;
+                else if(itemName == "password")
+                    id = itemVal;
+                else if(itemName == "tag")
+                    remarks = itemVal;
+                else if(itemName == "obfs")
+                {
+                    if(itemVal == "ws")
+                        net = "ws";
+                }
+                else if(itemName == "obfs-host")
+                    host = itemVal;
+                else if(itemName == "over-tls")
+                    tls = itemVal == "true" ? "tls" : "";
+            }
+            if(remarks == "")
+                remarks = server + ":" + port;
+
+            if(host == "" && !isIPv4(server) && !isIPv6(server))
+                host = server;
+
+            node.linkType = SPEEDTEST_MESSAGE_FOUNDVMESS;
+            node.group = V2RAY_DEFAULT_GROUP;
+            node.proxyStr = vmessConstruct(server, port, "", id, "0", net, method, path, host, tls, local_port);
         }
         else
             continue;

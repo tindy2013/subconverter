@@ -33,6 +33,7 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
 std::string netchToMellow(std::vector<nodeInfo> &nodes, std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, extra_settings &ext);
 void netchToMellow(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, extra_settings &ext);
 std::string netchToSS(std::vector<nodeInfo> &nodes, extra_settings &ext);
+std::string netchToSSSub(std::vector<nodeInfo> &nodes, extra_settings &ext);
 std::string netchToSSR(std::vector<nodeInfo> &nodes, extra_settings &ext);
 std::string netchToVMess(std::vector<nodeInfo> &nodes, extra_settings &ext);
 std::string netchToQuanX(std::vector<nodeInfo> &nodes, extra_settings &ext);
