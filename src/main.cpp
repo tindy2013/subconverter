@@ -718,7 +718,7 @@ int main(int argc, char *argv[])
 
     append_response("GET", "/", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
-        return std::string("subconverter " VERSION " backend");
+        return std::string("subconverter " VERSION " backend\n");
     });
 
     append_response("GET", "/refreshrules", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
@@ -727,11 +727,11 @@ int main(int argc, char *argv[])
         {
             std::string token = getUrlArg(argument, "token");
             if(token != access_token)
-                return "Unauthorized";
+                return "Unauthorized\n";
         }
         refreshRulesets(rulesets, ruleset_content_array);
         generateBase();
-        return "done";
+        return "done\n";
     });
 
     append_response("GET", "/readconf", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
@@ -740,11 +740,11 @@ int main(int argc, char *argv[])
         {
             std::string token = getUrlArg(argument, "token");
             if(token != access_token)
-                return "Unauthorized";
+                return "Unauthorized\n";
         }
         readConf();
         generateBase();
-        return "done";
+        return "done\n";
     });
 
     append_response("POST", "/updateconf", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
@@ -753,7 +753,7 @@ int main(int argc, char *argv[])
         {
             std::string token = getUrlArg(argument, "token");
             if(token != access_token)
-                return "Unauthorized";
+                return "Unauthorized\n";
         }
         std::string type = getUrlArg(argument, "type");
         if(type == "form")
@@ -761,12 +761,12 @@ int main(int argc, char *argv[])
         else if(type == "direct")
             fileWrite(pref_path, postdata, true);
         else
-            return "Not implemented";
+            return "Not implemented\n";
         readConf();
         if(!update_ruleset_on_request)
             refreshRulesets(rulesets, ruleset_content_array);
         generateBase();
-        return "done";
+        return "done\n";
     });
 
     append_response("GET", "/sub", "text/plain;charset=utf-8", subconverter);
