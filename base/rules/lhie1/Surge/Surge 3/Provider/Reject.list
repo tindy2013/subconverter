@@ -1551,7 +1551,6 @@ DOMAIN-SUFFIX,api.push.daoyoudao.com
 DOMAIN-SUFFIX,api.ra2.xlmc.sec.miui.com
 DOMAIN-SUFFIX,api.rees46.com
 DOMAIN-SUFFIX,api.rideraid.net
-DOMAIN-SUFFIX,api.sec.miui.com
 DOMAIN-SUFFIX,api.share.mob.com
 DOMAIN-SUFFIX,api.shuzilm.cn
 DOMAIN-SUFFIX,api.similarweb.com
@@ -1827,7 +1826,6 @@ DOMAIN-SUFFIX,bbdm.051661.com
 DOMAIN-SUFFIX,bbsimages.zkxf119.com
 DOMAIN-SUFFIX,bc.geocities.yahoo.co.jp
 DOMAIN-SUFFIX,bccyyc.com
-DOMAIN-SUFFIX,bce.baidu.com
 DOMAIN-SUFFIX,bcjjg.bugsevent.com
 DOMAIN-SUFFIX,bcjxf.bugsevent.com
 DOMAIN-SUFFIX,bd.ershenghuo.com
@@ -1984,7 +1982,6 @@ DOMAIN-SUFFIX,breeze.olclient.baofeng.com
 DOMAIN-SUFFIX,breezily168.com
 DOMAIN-SUFFIX,brizads.com
 DOMAIN-SUFFIX,bro.flyme.cn
-DOMAIN-SUFFIX,browser.gwdang.com
 DOMAIN-SUFFIX,bryonypie.com
 DOMAIN-SUFFIX,bs.5442.com
 DOMAIN-SUFFIX,bs.serving-sys.com
@@ -2420,7 +2417,6 @@ DOMAIN-SUFFIX,co.dtech.baofeng.com
 DOMAIN-SUFFIX,cocounion.com
 DOMAIN-SUFFIX,cod.southmoney.com
 DOMAIN-SUFFIX,code.3shangyou.com
-DOMAIN-SUFFIX,code.createjs.com
 DOMAIN-SUFFIX,code.fastclick.net
 DOMAIN-SUFFIX,code.hajuwang.cn
 DOMAIN-SUFFIX,code.hot-mob.com
@@ -3440,7 +3436,6 @@ DOMAIN-SUFFIX,fancyapi.com
 DOMAIN-SUFFIX,fanqianbb.com
 DOMAIN-SUFFIX,fans.bestvogue.com
 DOMAIN-SUFFIX,fansi365.com
-DOMAIN-SUFFIX,fanxing.kugou.com
 DOMAIN-SUFFIX,fan-yong.com
 DOMAIN-SUFFIX,farm-cn.plista.com
 DOMAIN-SUFFIX,fastable.com
@@ -5937,7 +5932,6 @@ DOMAIN-SUFFIX,pcmzn.com
 DOMAIN-SUFFIX,pcsoftwords.dftoutiao.com
 DOMAIN-SUFFIX,pcxzo.pluto.sogou.com
 DOMAIN-SUFFIX,pd7-imp.revsci.net
-DOMAIN-SUFFIX,pdc.micloud.xiaomi.net
 DOMAIN-SUFFIX,pdfexpert.cc
 DOMAIN-SUFFIX,pdl.gionee.com
 DOMAIN-SUFFIX,pdsjycm.com
@@ -6414,7 +6408,6 @@ DOMAIN-SUFFIX,rotabanner.kulichki.net
 DOMAIN-SUFFIX,rotate.ymtracking.com
 DOMAIN-SUFFIX,rotator.tradetracker.net
 DOMAIN-SUFFIX,router.bittorrent.com
-DOMAIN-SUFFIX,router.gwdang.com
 DOMAIN-SUFFIX,rovio-news-app.angrybirdsgame.com
 DOMAIN-SUFFIX,rp.crasheye.cn
 DOMAIN-SUFFIX,rp.gwallet.com
@@ -8303,7 +8296,6 @@ URL-REGEX,https?://[^bbs].tianya\.cn
 URL-REGEX,https?://\w.?up.qingdaonews.com
 URL-REGEX,https?://\w{6}.com1.z0.glb.clouddn.com
 URL-REGEX,https?://\w{8}.logic.cpm.cm.kankan.com
-URL-REGEX,https?://\w+.beacon.qq.com
 URL-REGEX,https?://\w+.cloudfront.net/banner
 URL-REGEX,https?://\w+.gdt.qq.com
 URL-REGEX,https?://\w+.kingsoft-office-service.com

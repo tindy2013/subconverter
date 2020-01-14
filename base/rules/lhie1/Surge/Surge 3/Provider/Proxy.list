@@ -15,17 +15,6 @@ DOMAIN-SUFFIX,line-cdn.net
 DOMAIN-SUFFIX,line-scdn.net
 DOMAIN-SUFFIX,nhncorp.jp
 
-# > Microsoft
-USER-AGENT,OneDrive*
-DOMAIN-KEYWORD,microsoft
-DOMAIN-SUFFIX,hotmail.com
-DOMAIN-SUFFIX,live.com
-DOMAIN-SUFFIX,live.net
-DOMAIN-SUFFIX,msn.com
-DOMAIN-SUFFIX,office.com
-DOMAIN-SUFFIX,office.net
-DOMAIN-SUFFIX,outlook.com
-
 # > Spark
 DOMAIN-SUFFIX,api.amplitude.com
 DOMAIN-SUFFIX,app.smartmailcloud.com
@@ -399,6 +388,7 @@ DOMAIN-SUFFIX,sciencemag.org
 DOMAIN-SUFFIX,scribd.com
 DOMAIN-SUFFIX,search.com
 DOMAIN-SUFFIX,servebom.com
+DOMAIN-SUFFIX,sexinsex.net
 DOMAIN-SUFFIX,sfx.ms
 DOMAIN-SUFFIX,shadowsocks.org
 DOMAIN-SUFFIX,shadowverse.jp
@@ -576,8 +566,6 @@ DOMAIN-SUFFIX,wikileaks-forum.com
 DOMAIN-SUFFIX,wikimedia.org
 DOMAIN-SUFFIX,wikipedia.com
 DOMAIN-SUFFIX,wikipedia.org
-DOMAIN-SUFFIX,windows.com
-DOMAIN-SUFFIX,windows.net
 DOMAIN-SUFFIX,wn.com
 DOMAIN-SUFFIX,wordpress.com
 DOMAIN-SUFFIX,workflow.is

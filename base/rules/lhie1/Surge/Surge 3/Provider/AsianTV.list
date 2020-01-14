@@ -1,4 +1,5 @@
 # > Bilibili
+USER-AGENT,*bili*
 DOMAIN-KEYWORD,bilibili
 DOMAIN-SUFFIX,acg.tv
 DOMAIN-SUFFIX,acgvideo.com
@@ -8,9 +9,9 @@ DOMAIN-SUFFIX,biliapi.net
 DOMAIN-SUFFIX,bilibili.com
 DOMAIN-SUFFIX,biligame.com
 DOMAIN-SUFFIX,biligame.net
+DOMAIN-SUFFIX,bilivideo.com
 DOMAIN-SUFFIX,hdslb.com
 DOMAIN-SUFFIX,im9.com
-USER-AGENT,*bili*
 
 # > IQIYI
 USER-AGENT,QIYI*
