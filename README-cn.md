@@ -23,6 +23,7 @@
 | Quantumult   |     ✔      |      ✔       | quan        |
 | Quantumult X |     ✔      |      ✔       | quanx       |
 | SS (SIP002)  |     ✔      |      ✔       | ss          |
+| SS (软件订阅)|     ✔      |      ✔       | sssub       |
 | SSD          |     ✔      |      ✔       | ssd         |
 | SSR          |     ✔      |      ✔       | ssr         |
 | Surfboard    |     ✔      |      ✔       | surfboard   |
@@ -53,7 +54,7 @@ http://127.0.0.1:25500/sub?target=%TARGET%&url=%URL%&config=%CONFIG%
 | url  |  必要  | https%3A%2F%2Fwww.xxx.com | 指机场所提供的订阅链接，需要经过 [URLEncode](https://www.urlencoder.org/) 处理 |
 | config |  可选  | https%3A%2F%2Fwww.xxx.com | 指远程 `pref.ini` (包含分组和规则部分)，需要经过 [URLEncode](https://www.urlencoder.org/) 处理，可查看 [示例仓库](https://github.com/lzdnico/subconverteriniexample) 寻找灵感，默认加载本地设置文件 |
 
-运行 subconverter 主程序后，按照 [调用说明](###调用说明) 的对应内容替换即可得到一份使用**神机规则**的配置文件。
+运行 subconverter 主程序后，按照 [调用说明](#调用说明) 的对应内容替换即可得到一份使用**神机规则**的配置文件。
 
 此外，如果你需要将多个订阅合成一份, 则要在上方所提及的 URLEncode 之前使用 '|' 来分隔链接。
 
@@ -116,7 +117,7 @@ http://127.0.0.1:25500/sub?target=%TARGET%&url=%URL%&emoji=%EMOJI%····
 | tfo |  可选  | true / false  | 指开启该订阅链接的 TCP Fast Open，默认为 false  |
 | udp |  可选  | true / false  | 指开启该订阅链接的 UDP，默认为 false  |
 | scv |  可选  | true / false  | 指关闭 TLS 节点的证书检查，默认为 false  |
-| list |  可选  | true / false  | 指输出 Surge Node List 或者 Clash Proxy Provider  |
+| list |  可选  | true / false  | 指输出 Surge Node List 或者 Clash Proxy Provider 或者 解码后的 SIP002 |
 | sort |  可选  | true / false  | 指对输出的节点或策略组进行再次排序，默认为 false  |
 | include |  可选  | 详见下文中 `include_remarks`  | 指仅保留匹配到的节点，支持正则匹配，需要经过 [URLEncode](https://www.urlencoder.org/) 处理，会覆盖配置文件里的设置  |
 | exclude |  可选  | 详见下文中 `exclude_remarks`  | 指排除匹配到的节点，支持正则匹配，需要经过 [URLEncode](https://www.urlencoder.org/) 处理，会覆盖配置文件里的设置  |
@@ -143,11 +144,14 @@ http://127.0.0.1:25500/sub?target=surge&ver=4&tfo=true&udp=true&emoji=true&exclu
 
 ### 配置文件
 
-> 关于 subconverter.exe 目录中 `pref.ini` 文件的解释
+> 关于 subconverter 主程序目录中 `pref.ini` 文件的解释
 
-#### [common] 部分
+由于此部分篇幅较长，点击下方条目即可展开详解：
 
-> 该部分主要涉及到的内容为 **全局的节点排除或保留** 、**节点的重命名**
+<details>
+<summary><b>[common] 部分</b></summary>
+
+> 该部分主要涉及到的内容为 **全局的节点排除或保留** 、**各配置文件的基础**
 >
 > 其他设置项目可以保持默认或者在知晓作用的前提下进行修改
 
@@ -254,23 +258,12 @@ http://127.0.0.1:25500/sub?target=surge&ver=4&tfo=true&udp=true&emoji=true&exclu
      [VMess] 美国 GIA
      ```
 
-1. **rename_node**
+</details>
+<details>
+<summary><b>[node_pref] 部分</b></summary>
 
-   > 重命名节点，支持正则匹配
-   >
-   > 使用方式：原始命名@重命名
-
-    - 例如:
-
-     ```ini
-     rename_node=中国@中
-     rename_node=\(?((x|X)?(\d+)(\.?\d+)?)((\s?倍率?:?)|(x|X))\)?@(倍率:$1)
-     ```
-
-#### [node_pref] 部分
-
-> 该部分主要涉及到的内容为 **开启节点的 UDP 及 TCP Fast Open** 、**重命名节点后的排序**
-> 
+> 该部分主要涉及到的内容为 **开启节点的 UDP 及 TCP Fast Open** 、**节点的重命名** 、**重命名节点后的排序**
+>
 > 相关设置项目建议保持默认或者在知晓作用的前提下进行修改
 
 1. **udp_flag**
@@ -295,7 +288,22 @@ http://127.0.0.1:25500/sub?target=surge&ver=4&tfo=true&udp=true&emoji=true&exclu
 
     - **请勿随意将此设置修改为 true**
 
-#### [managed_config] 部分
+1. **rename_node**
+
+   > 重命名节点，支持正则匹配
+   >
+   > 使用方式：原始命名@重命名
+
+    - 例如:
+
+     ```ini
+     rename_node=中国@中
+     rename_node=\(?((x|X)?(\d+)(\.?\d+)?)((\s?倍率?:?)|(x|X))\)?@(倍率:$1)
+     ```
+
+</details>
+<details>
+<summary><b>[managed_config] 部分</b></summary>
 
 > 该部分主要涉及到的内容为 **订阅文件的更新地址**
 
@@ -315,21 +323,25 @@ http://127.0.0.1:25500/sub?target=surge&ver=4&tfo=true&udp=true&emoji=true&exclu
     managed_config_prefix = http://192.168.1.5:25500
     ```
 
-#### [surge_external_proxy] 部分
+</details>
+<details>
+<summary><b>[surge_external_proxy] 部分</b></summary>
 
 > 为 Surge 添加 SSR 的支持路径
 
-#### [emojis] 部分
+</details>
+<details>
+<summary><b>[emojis] 部分</b></summary>
 
-1. add_emoji
+1. **add_emoji**
 
    > 是否在节点名称前加入下面自定义的 Emoji，设置为 true 时打开，默认为 true
 
-1. remove_old_emoji
+1. **remove_old_emoji**
 
    > 是否移除原有订阅中存在的 Emoji，设置为 true 时打开，默认为 true
 
-1. rule
+1. **rule**
 
    > 在匹配到的节点前添加自定义 emojis，支持正则匹配
 
@@ -340,7 +352,9 @@ http://127.0.0.1:25500/sub?target=surge&ver=4&tfo=true&udp=true&emoji=true&exclu
     rule=(美|美国|United States),🇺🇸
     ```
 
-#### [ruleset] 部分
+</details>
+<details>
+<summary><b>[ruleset] 部分</b></summary>
 
 > 如果你对原本订阅自带的规则不满意时，可以使用如下配置
 
@@ -376,7 +390,9 @@ http://127.0.0.1:25500/sub?target=surge&ver=4&tfo=true&udp=true&emoji=true&exclu
     # 且将此规则指向 [clash_proxy_group] 所设置 🎯 全球直连 策略组
     ```
 
-#### [clash_proxy_group] 部分
+</details>
+<details>
+<summary><b>[clash_proxy_group] 部分</b></summary>
 
 > 为 Clash 、Mellow 、Surge 以及 Surfboard 等程序创建策略组, 可用正则来筛选节点
 >
@@ -409,7 +425,9 @@ custom_proxy_group=🇯🇵 JP`select`沪日`日本`[]🇯🇵 日本延迟最�
   # 订阅链接中的第一条订阅内名字含 HGC、HKBN、PCCW、HKT、hk、港 的节点
   ```
 
-#### [server] 部分
+</details>
+<details>
+<summary><b>[server] 部分</b></summary>
 
 > 此部分通常**保持默认**即可
 
@@ -421,19 +439,51 @@ custom_proxy_group=🇯🇵 JP`select`沪日`日本`[]🇯🇵 日本延迟最�
 
    > 绑定到 Web 服务器地址的端口，默认为 25500
 
-#### [advanced] 部分
+</details>
+
+<details>
+
+<summary><b>[advanced] 部分</b></summary>
 
 > 此部分通常**保持默认**即可
+
+</details>
 
 ## 自动上传
 
 > 自动上传 gist ，可以用于 Clash For Android / Surge 等进行远程订阅
 
-在程序目录内的 [gistconf.ini](./base/gistconf.ini) 中添加 `Personal Access Token`（[在此创建](https://github.com/settings/tokens/new?scopes=gist&description=Subconverter)），在链接后加上 `&upload=true` 就会在更新好后自动上传 gist。
-例如：
+在程序目录内的 [gistconf.ini](./base/gistconf.ini) 中添加 `Personal Access Token`（[在此创建](https://github.com/settings/tokens/new?scopes=gist&description=Subconverter)）例如：
 
 ```ini
 [common]
 ;uncomment the following line and enter your token to enable upload function
 token = xxxxxxxxxxxxxxxxxxxxxxxx(所生成的 Personal Access Token)
 ```
+
+在 [调用地址](#调用地址) 或 [调用地址 (进阶)](#调用地址-进阶) 所生成的链接后加上 `&upload=true` 就会在更新好后自动上传 gist
+此时，subconverter 程序窗口内会出现如下所示的**神秘代码**：
+
+```cmd
+No gist id is provided. Creating new gist...
+Writing to Gist success!
+Generator: surge4
+Path: surge4
+Raw URL: https://gist.githubusercontent.com/xxxx/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/raw/surge4
+Gist owner: xxxx
+```
+
+上方所提到的 `Raw URL: https://gist.githubusercontent.com/xxxx/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/raw/surge4`
+中的 `https://gist.githubusercontent.com/xxxx/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/raw/surge4` 即是你的在线订阅链接。
+
+注意，本程序默认会将此链接设为**秘密状态**
+
+根据 [`官方手册 - 创建 Gist`](https://help.github.com/cn/github/writing-on-github/creating-gists) 的解释为：
+
+> 秘密 gists 不会显示在 Discover 中，也不可搜索。
+>
+> 秘密 gists 不是私人的。 如果将秘密 gist 的 URL 发送给朋友，他们可以查看。
+>
+> 但是，如果您不认识的人发现该 URL，也能看到您的 gist。
+
+所以请务必保管好所生成的 `Raw URL` 链接。
