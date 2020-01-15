@@ -21,6 +21,20 @@ matrix:
         draft: true
         on:
           tags: true
+    - name: "Linux x86 Build"
+      services: docker
+      script:
+      - docker run --rm -v $TRAVIS_BUILD_DIR:/root/workdir multiarch/alpine:x86-edge /bin/sh -c "apk add bash git && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
+      before_deploy:
+        - mv subconverter_linux64.tar.gz subconverter_linux32.tar.gz
+      deploy:
+        provider: releases
+        api_key: "$GITHUB_OAUTH_TOKEN"
+        file: "subconverter_linux32.tar.gz"
+        skip_cleanup: true
+        draft: true
+        on:
+          tags: true
     - name: "Linux x86_64 Build"
       services: docker
       script:
