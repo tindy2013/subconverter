@@ -268,7 +268,7 @@ struct ExternalConfig
     std::string surge_rule_base;
     std::string surfboard_rule_base;
     std::string mellow_rule_base;
-    bool overwrite_original_rules = true;
+    bool overwrite_original_rules = false;
     bool enable_rule_generator = true;
 };
 
@@ -407,6 +407,12 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         {
             extra_ruleset = extconf.surge_ruleset;
             refreshRulesets(extra_ruleset, rca);
+        }
+        else
+        {
+            if(update_ruleset_on_request || cfw_child_process)
+                refreshRulesets(rulesets, ruleset_content_array);
+            rca = ruleset_content_array;
         }
     }
     else

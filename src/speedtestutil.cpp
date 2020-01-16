@@ -1366,6 +1366,8 @@ bool explodeSurge(std::string surge, std::string custom_port, int local_port, st
                 }
                 else if(itemName == "obfs-host")
                     host = itemVal;
+                else if(itemName == "obfs-uri")
+                    path = itemVal;
                 else if(itemName == "over-tls")
                     tls = itemVal == "true" ? "tls" : "";
             }

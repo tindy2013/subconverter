@@ -67,6 +67,8 @@ std::string vmessConstruct(std::string add, std::string port, std::string type, 
         path = "/";
     if(!host.size())
         host = add;
+    if(!id.size())
+        id = "00000000-0000-0000-0000-000000000000"; //fill this field for node with empty id
     rapidjson::StringBuffer sb;
     rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
     writer.StartObject();
