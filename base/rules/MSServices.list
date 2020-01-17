@@ -3,6 +3,7 @@
 # source: https://docs.microsoft.com/en-us/office365/enterprise/urls-and-ip-address-ranges
 
 DOMAIN-KEYWORD,1drv
+DOMAIN-KEYWORD,microsoft
 DOMAIN-SUFFIX,aadrm.com
 DOMAIN-SUFFIX,acompli.com
 DOMAIN-SUFFIX,acompli.net
@@ -14,20 +15,15 @@ DOMAIN-SUFFIX,azure.com
 DOMAIN-SUFFIX,azure.net
 DOMAIN-SUFFIX,azureedge.net
 DOMAIN-SUFFIX,azurerms.com
+DOMAIN-SUFFIX,bing.com
 DOMAIN-SUFFIX,cloudapp.net
 DOMAIN-SUFFIX,cloudappsecurity.com
 DOMAIN-SUFFIX,edgesuite.net
-DOMAIN-SUFFIX,getmicrosoftkey.com
 DOMAIN-SUFFIX,gfx.ms
+DOMAIN-SUFFIX,hotmail.com
 DOMAIN-SUFFIX,live.com
 DOMAIN-SUFFIX,live.net
 DOMAIN-SUFFIX,lync.com
-DOMAIN-SUFFIX,microsoft.com
-DOMAIN-SUFFIX,microsoftazuread-sso.com
-DOMAIN-SUFFIX,microsoftonline-p.com
-DOMAIN-SUFFIX,microsoftonline-p.net
-DOMAIN-SUFFIX,microsoftonline.com
-DOMAIN-SUFFIX,microsoftstream.com
 DOMAIN-SUFFIX,msappproxy.net
 DOMAIN-SUFFIX,msauth.net
 DOMAIN-SUFFIX,msauthimages.net
@@ -47,12 +43,12 @@ DOMAIN-SUFFIX,oaspapps.com
 DOMAIN-SUFFIX,office.com
 DOMAIN-SUFFIX,office.net
 DOMAIN-SUFFIX,office365.com
+DOMAIN-SUFFIX,officeppe.net
 DOMAIN-SUFFIX,omniroot.com
 DOMAIN-SUFFIX,onedrive.com
 DOMAIN-SUFFIX,onenote.com
 DOMAIN-SUFFIX,onenote.net
 DOMAIN-SUFFIX,onestore.ms
-DOMAIN-SUFFIX,onmicrosoft.com
 DOMAIN-SUFFIX,outlook.com
 DOMAIN-SUFFIX,outlookmobile.com
 DOMAIN-SUFFIX,phonefactor.net
@@ -77,6 +73,7 @@ DOMAIN-SUFFIX,windows-ppe.net
 DOMAIN-SUFFIX,windows.com
 DOMAIN-SUFFIX,windows.net
 DOMAIN-SUFFIX,windowsazure.com
+DOMAIN-SUFFIX,windowsupdate.com
 DOMAIN-SUFFIX,wunderlist.com
 DOMAIN-SUFFIX,yammer.com
 DOMAIN-SUFFIX,yammerusercontent.com
