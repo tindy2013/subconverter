@@ -1,0 +1,25 @@
+# 本地/局域网地址
+# 参考：https://en.wikipedia.org/wiki/Reserved_IP_addresses
+DOMAIN-SUFFIX,ip6-localhost
+DOMAIN-SUFFIX,ip6-loopback
+DOMAIN-SUFFIX,local
+DOMAIN-SUFFIX,localhost
+IP-CIDR,0.0.0.0/8,no-resolve
+IP-CIDR,10.0.0.0/8,no-resolve
+IP-CIDR,100.64.0.0/10,no-resolve
+IP-CIDR,127.0.0.0/8,no-resolve
+IP-CIDR,169.254.0.0/16,no-resolve
+IP-CIDR,172.16.0.0/12,no-resolve
+IP-CIDR,192.0.0.0/29,no-resolve
+IP-CIDR,192.0.2.0/24,no-resolve
+IP-CIDR,192.88.99.0/24,no-resolve
+IP-CIDR,192.168.0.0/16,no-resolve
+IP-CIDR,198.18.0.0/15,no-resolve
+IP-CIDR,198.51.100.0/24,no-resolve
+IP-CIDR,203.0.113.0/24,no-resolve
+IP-CIDR,224.0.0.0/3,no-resolve
+IP-CIDR,255.255.255.255/32,no-resolve
+IP-CIDR6,::1/128
+IP-CIDR6,fc00::/7
+IP-CIDR6,fe80::/10
+IP-CIDR6,fd00::/8
