@@ -1442,11 +1442,12 @@ int explodeConfContent(std::string content, std::string custom_port, int local_p
     default:
         //try to parse as a local subscription
         explodeSub(content, sslibev, ssrlibev, custom_port, local_port, nodes, exclude_remarks, include_remarks);
-        if(nodes.size() == 0)
-            return SPEEDTEST_ERROR_UNRECOGFILE;
-        else
-            return SPEEDTEST_ERROR_NONE;
     }
+
+    if(nodes.size() == 0)
+        return SPEEDTEST_ERROR_UNRECOGFILE;
+    else
+        return SPEEDTEST_ERROR_NONE;
 
     iter = nodes.begin();
     while(iter != nodes.end())

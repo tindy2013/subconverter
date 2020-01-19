@@ -365,7 +365,10 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     if(!url.size())
         url = default_url;
     if(!url.size() || !target.size())
+    {
+        *status_code = 400;
         return "Invalid request!";
+    }
 
     //check if we need to read configuration
     if(!api_mode || cfw_child_process)
@@ -498,12 +501,19 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     {
         x = trim(x);
         std::cerr<<"Fetching node data from url '"<<x<<"'."<<std::endl;
-        addNodes(x, nodes, groupID, proxy, exclude_remarks, include_remarks);
+        if(addNodes(x, nodes, groupID, proxy, exclude_remarks, include_remarks) == -1)
+        {
+            *status_code = 400;
+            return std::string("The following link doesn't contain any valid node info: " + x);
+        }
         groupID++;
     }
     //exit if found nothing
     if(!nodes.size())
+    {
+        *status_code = 400;
         return "No nodes were found!";
+    }
 
     std::cerr<<"Generate target: ";
     if(target == "clash" || target == "clashr")
@@ -651,9 +661,15 @@ std::string simpleToClashR(RESPONSE_CALLBACK_ARGS)
     if(!url.size())
         url = default_url;
     if(!url.size() || argument.substr(0, 8) != "sublink=")
+    {
+        *status_code = 400;
         return "Invalid request!";
+    }
     if(url == "sublink")
+    {
+        *status_code = 400;
         return "Please insert your subscription link instead of clicking the default link.";
+    }
     if(!api_mode || cfw_child_process)
         readConf();
 
@@ -680,7 +696,10 @@ std::string simpleToClashR(RESPONSE_CALLBACK_ARGS)
     addNodes(url, nodes, 0, proxy, exclude_remarks, include_remarks);
 
     if(!nodes.size())
+    {
+        *status_code = 400;
         return "No nodes were found!";
+    }
 
     std::cerr<<"Generate target: ClashR\n";
 
@@ -781,62 +800,62 @@ int main(int argc, char *argv[])
 
     append_response("GET", "/clash", "text/plain;charset=utf-8", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
-        return subconverter(argument + "&target=clash", postdata);
+        return subconverter(argument + "&target=clash", postdata, status_code, extra_headers);
     });
 
     append_response("GET", "/clashr", "text/plain;charset=utf-8", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
-        return subconverter(argument + "&target=clashr", postdata);
+        return subconverter(argument + "&target=clashr", postdata, status_code, extra_headers);
     });
 
     append_response("GET", "/surge", "text/plain;charset=utf-8", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
-        return subconverter(argument + "&target=surge", postdata);
+        return subconverter(argument + "&target=surge", postdata, status_code, extra_headers);
     });
 
     append_response("GET", "/surfboard", "text/plain;charset=utf-8", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
-        return subconverter(argument + "&target=surfboard", postdata);
+        return subconverter(argument + "&target=surfboard", postdata, status_code, extra_headers);
     });
 
     append_response("GET", "/mellow", "text/plain;charset=utf-8", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
-        return subconverter(argument + "&target=mellow", postdata);
+        return subconverter(argument + "&target=mellow", postdata, status_code, extra_headers);
     });
 
     append_response("GET", "/ss", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
-        return subconverter(argument + "&target=ss", postdata);
+        return subconverter(argument + "&target=ss", postdata, status_code, extra_headers);
     });
 
     append_response("GET", "/sssub", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
-        return subconverter(argument + "&target=sssub", postdata);
+        return subconverter(argument + "&target=sssub", postdata, status_code, extra_headers);
     });
 
     append_response("GET", "/ssr", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
-        return subconverter(argument + "&target=ssr", postdata);
+        return subconverter(argument + "&target=ssr", postdata, status_code, extra_headers);
     });
 
     append_response("GET", "/v2ray", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
-        return subconverter(argument + "&target=v2ray", postdata);
+        return subconverter(argument + "&target=v2ray", postdata, status_code, extra_headers);
     });
 
     append_response("GET", "/quan", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
-        return subconverter(argument + "&target=quan", postdata);
+        return subconverter(argument + "&target=quan", postdata, status_code, extra_headers);
     });
 
     append_response("GET", "/quanx", "text/plain;charset=utf-8", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
-        return subconverter(argument + "&target=quanx", postdata);
+        return subconverter(argument + "&target=quanx", postdata, status_code, extra_headers);
     });
 
     append_response("GET", "/ssd", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
-        return subconverter(argument + "&target=ssd", postdata);
+        return subconverter(argument + "&target=ssd", postdata, status_code, extra_headers);
     });
 
     if(!api_mode)
