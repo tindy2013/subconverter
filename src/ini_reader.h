@@ -181,7 +181,7 @@ public:
 
         //remove UTF-8 BOM
         if(content.compare(0, 3, "\xEF\xBB\xBF") == 0)
-            content = content.substr(3);
+            content.erase(0, 3);
 
         bool inExcludedSection = false;
         std::string strLine, thisSection, curSection, itemName, itemVal;

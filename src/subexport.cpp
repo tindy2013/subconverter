@@ -313,9 +313,12 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset
         if(retrived_rules.find("[]") == 0)
         {
             strLine = retrived_rules.substr(2);
-            if(strLine == "FINAL")
-                strLine = "MATCH";
-            allRules.emplace_back(strLine + "," + rule_group);
+            if(strLine.find("FINAL") == 0)
+                strLine.replace(0, 5, "MATCH");
+            strLine += "," + rule_group;
+            if(std::count(strLine.begin(), strLine.end(), ',') > 2)
+                strLine = regReplace(strLine, "^(.*?,.*?)(,.*)(,.*)$", "$1$3$2");
+            allRules.emplace_back(strLine);
             continue;
         }
         char delimiter = count(retrived_rules.begin(), retrived_rules.end(), '\n') < 1 ? '\r' : '\n';
