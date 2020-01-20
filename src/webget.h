@@ -9,7 +9,8 @@
 
 #include "misc.h"
 
-std::string webGet(std::string url, std::string proxy = "");
+std::string webGet(std::string url, std::string proxy);
+std::string webGet(std::string url, std::string proxy, std::string &response_headers);
 std::string httpGet(std::string host, std::string addr, std::string uri);
 std::string httpsGet(std::string host, std::string addr, std::string uri);
 int curlPost(std::string url, std::string data, std::string proxy, std::string auth_token, std::string *retData);

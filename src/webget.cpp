@@ -20,7 +20,7 @@ static int writer(char *data, size_t size, size_t nmemb, std::string *writerData
     return size * nmemb;
 }
 
-std::string curlGet(std::string url, std::string proxy)
+std::string curlGet(std::string url, std::string proxy, std::string &response_headers)
 {
     CURL *curl_handle;
     std::string data;
@@ -38,6 +38,8 @@ std::string curlGet(std::string url, std::string proxy)
     curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, user_agent_str.data());
     curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, writer);
     curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, &data);
+    curl_easy_setopt(curl_handle, CURLOPT_HEADERFUNCTION, writer);
+    curl_easy_setopt(curl_handle, CURLOPT_HEADERDATA, &response_headers);
     if(proxy != "")
         curl_easy_setopt(curl_handle, CURLOPT_PROXY, proxy.data());
 
@@ -54,9 +56,15 @@ std::string buildSocks5ProxyString(std::string addr, int port, std::string usern
     return proxystr;
 }
 
+std::string webGet(std::string url, std::string proxy, std::string &response_headers)
+{
+    return curlGet(url, proxy, response_headers);
+}
+
 std::string webGet(std::string url, std::string proxy)
 {
-    return curlGet(url, proxy);
+    std::string dummy;
+    return curlGet(url, proxy, dummy);
 }
 
 int curlPost(std::string url, std::string data, std::string proxy, std::string auth_token, std::string *retData)
