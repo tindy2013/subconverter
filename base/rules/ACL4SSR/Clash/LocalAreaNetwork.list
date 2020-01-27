@@ -23,3 +23,14 @@ IP-CIDR6,::1/128
 IP-CIDR6,fc00::/7
 IP-CIDR6,fe80::/10
 IP-CIDR6,fd00::/8
+
+# Router managed 路由器管理域名
+DOMAIN-SUFFIX,hiwifi.com
+DOMAIN-SUFFIX,leike.cc
+DOMAIN-SUFFIX,miwifi.com
+DOMAIN-SUFFIX,p.to
+DOMAIN-SUFFIX,peiluyou.com
+DOMAIN-SUFFIX,phicomm.me
+DOMAIN-SUFFIX,routerlogin.com
+DOMAIN-SUFFIX,tendawifi.com
+DOMAIN-SUFFIX,zte.home
