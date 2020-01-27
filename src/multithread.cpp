@@ -8,21 +8,6 @@ std::mutex on_configuring, on_emoji, on_rename;
 
 extern string_array emojis, renames;
 
-void try_config_lock()
-{
-    guarded_mutex guard(on_configuring);
-}
-
-void try_emoji_lock()
-{
-    guarded_mutex guard(on_emoji);
-}
-
-void try_rename_lock()
-{
-    guarded_mutex guard(on_rename);
-}
-
 string_array safe_get_emojis()
 {
     guarded_mutex guard(on_emoji);

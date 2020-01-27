@@ -268,6 +268,8 @@ struct ExternalConfig
     std::string surge_rule_base;
     std::string surfboard_rule_base;
     std::string mellow_rule_base;
+    string_array rename;
+    string_array emoji;
     bool overwrite_original_rules = false;
     bool enable_rule_generator = true;
 };
@@ -309,6 +311,11 @@ int loadExternalConfig(std::string &path, ExternalConfig &ext, std::string proxy
     if(ini.ItemExist("enable_rule_generator"))
         ext.enable_rule_generator = ini.GetBool("enable_rule_generator");
 
+    if(ini.ItemPrefixExist("rename"))
+        ini.GetAll("rename", ext.rename);
+    if(ini.ItemPrefixExist("emoji"))
+        ini.GetAll("emoji", ext.emoji);
+
     return 0;
 }
 
@@ -324,7 +331,7 @@ void generateBase()
     try
     {
         clash_base = YAML::Load(base_content);
-        rulesetToClash(clash_base, ruleset_content_array);
+        rulesetToClash(clash_base, ruleset_content_array, overwrite_original_rules);
     }
     catch (YAML::Exception &e)
     {
@@ -339,7 +346,7 @@ void generateBase()
     if(retVal != INIREADER_EXCEPTION_NONE)
         std::cerr<<"Unable to load Mellow base content. Reason: "<<mellow_base.GetLastError()<<"\n";
     else
-        rulesetToSurge(mellow_base, ruleset_content_array, 2);
+        rulesetToSurge(mellow_base, ruleset_content_array, 2, overwrite_original_rules);
 }
 
 std::string subconverter(RESPONSE_CALLBACK_ARGS)
@@ -383,6 +390,9 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     else
         proxy = proxy_subscription;
 
+    ext.emoji_array = safe_get_emojis();
+    ext.rename_array = safe_get_renames();
+
     //load external configuration
     if(config.size())
     {
@@ -401,12 +411,17 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
             ext_surfboard_base = extconf.surfboard_rule_base;
         if(extconf.mellow_rule_base.size())
             ext_mellow_base = extconf.mellow_rule_base;
+        if(extconf.rename.size())
+            ext.rename_array = extconf.rename;
+        if(extconf.emoji.size())
+            ext.emoji_array = extconf.emoji;
         ext.enable_rule_generator = extconf.enable_rule_generator;
         //load custom group
         if(extconf.custom_proxy_group.size())
             extra_group = extconf.custom_proxy_group;
         //load custom rules
-        if(extconf.overwrite_original_rules)
+        ext.overwrite_original_rules = extconf.overwrite_original_rules;
+        if(extconf.surge_ruleset.size())
         {
             extra_ruleset = extconf.surge_ruleset;
             refreshRulesets(extra_ruleset, rca);
@@ -679,7 +694,7 @@ std::string simpleToClashR(RESPONSE_CALLBACK_ARGS)
         refreshRulesets(rulesets, ruleset_content_array);
     rca = ruleset_content_array;
 
-    extra_settings ext = {true, add_emoji, remove_old_emoji, append_proxy_type, udp_flag, tfo_flag, false, do_sort, scv_flag, filter_deprecated, ""};
+    extra_settings ext = {true, overwrite_original_rules, safe_get_renames(), safe_get_emojis(), add_emoji, remove_old_emoji, append_proxy_type, udp_flag, tfo_flag, false, do_sort, scv_flag, filter_deprecated, ""};
 
     std::string proxy;
     if(proxy_subscription == "SYSTEM")
