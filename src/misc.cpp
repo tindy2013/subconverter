@@ -441,6 +441,9 @@ std::string getUrlArg(std::string url, std::string request)
         return std::string();
     }
     */
+    std::string::size_type spos = url.find("?");
+    if(spos != url.npos)
+        url.erase(0, spos + 1);
 
     string_array vArray, arglist = split(url, "&");
     for(std::string &x : arglist)
