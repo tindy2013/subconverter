@@ -1,7 +1,10 @@
 #include <fstream>
 #include <algorithm>
 
+#include <time.h>
+
 #include <rapidjson/document.h>
+#include <pcrecpp.h>
 
 #include "misc.h"
 #include "printout.h"
@@ -997,6 +1000,7 @@ bool explodeSurge(std::string surge, std::string custom_port, int local_port, st
     */
 
     ini.store_isolated_line = true;
+    ini.keep_empty_section = false;
     ini.SetIsolatedItemsSection("Proxy");
     ini.IncludeSection("Proxy");
     ini.Parse(surge);
@@ -1388,7 +1392,7 @@ bool chkIgnore(const nodeInfo &node, string_array &exclude_remarks, string_array
     return excluded || !included;
 }
 
-int explodeConf(std::string filepath, std::string custom_port, int local_port, bool sslibev, bool ssrlibev, std::vector<nodeInfo> &nodes, string_array &exclude_remarks, string_array &include_remarks)
+int explodeConf(std::string filepath, std::string custom_port, int local_port, bool sslibev, bool ssrlibev, std::vector<nodeInfo> &nodes)
 {
     std::ifstream infile;
     std::stringstream contentstrm;
@@ -1397,12 +1401,11 @@ int explodeConf(std::string filepath, std::string custom_port, int local_port, b
     contentstrm << infile.rdbuf();
     infile.close();
 
-    return explodeConfContent(contentstrm.str(), custom_port, local_port, sslibev, ssrlibev, nodes, exclude_remarks, include_remarks);
+    return explodeConfContent(contentstrm.str(), custom_port, local_port, sslibev, ssrlibev, nodes);
 }
 
-int explodeConfContent(std::string content, std::string custom_port, int local_port, bool sslibev, bool ssrlibev, std::vector<nodeInfo> &nodes, string_array &exclude_remarks, string_array &include_remarks)
+int explodeConfContent(std::string content, std::string custom_port, int local_port, bool sslibev, bool ssrlibev, std::vector<nodeInfo> &nodes)
 {
-    unsigned int index = 0;
     int filetype = -1;
     std::vector<nodeInfo>::iterator iter;
 
@@ -1443,32 +1446,13 @@ int explodeConfContent(std::string content, std::string custom_port, int local_p
         break;
     default:
         //try to parse as a local subscription
-        explodeSub(content, sslibev, ssrlibev, custom_port, local_port, nodes, exclude_remarks, include_remarks);
+        explodeSub(content, sslibev, ssrlibev, custom_port, local_port, nodes);
     }
 
     if(nodes.size() == 0)
         return SPEEDTEST_ERROR_UNRECOGFILE;
     else
         return SPEEDTEST_ERROR_NONE;
-
-    iter = nodes.begin();
-    while(iter != nodes.end())
-    {
-        if(chkIgnore(*iter, exclude_remarks, include_remarks))
-        {
-            writeLog(LOG_TYPE_INFO, "Node  " + iter->group + " - " + iter->remarks + "  has been ignored and will not be added.");
-            nodes.erase(iter);
-        }
-        else
-        {
-            writeLog(LOG_TYPE_INFO, "Node  " + iter->group + " - " + iter->remarks + "  has been added.");
-            iter->id = index;
-            ++index;
-            ++iter;
-        }
-    }
-
-    return SPEEDTEST_ERROR_NONE;
 }
 
 void explode(std::string link, bool sslibev, bool ssrlibev, std::string custom_port, int local_port, nodeInfo &node)
@@ -1485,7 +1469,7 @@ void explode(std::string link, bool sslibev, bool ssrlibev, std::string custom_p
         explodeNetch(link, sslibev, ssrlibev, custom_port, local_port, node);
 }
 
-void explodeSub(std::string sub, bool sslibev, bool ssrlibev, std::string custom_port, int local_port, std::vector<nodeInfo> &nodes, string_array &exclude_remarks, string_array &include_remarks)
+void explodeSub(std::string sub, bool sslibev, bool ssrlibev, std::string custom_port, int local_port, std::vector<nodeInfo> &nodes)
 {
     std::stringstream strstream;
     std::string strLink;
@@ -1540,7 +1524,10 @@ void explodeSub(std::string sub, bool sslibev, bool ssrlibev, std::string custom
             nodes.push_back(node);
         }
     }
+}
 
+void filterNodes(std::vector<nodeInfo> &nodes, string_array &exclude_remarks, string_array &include_remarks, int groupID)
+{
     int index = 0;
     std::vector<nodeInfo>::iterator iter = nodes.begin();
     while(iter != nodes.end())
@@ -1554,8 +1541,168 @@ void explodeSub(std::string sub, bool sslibev, bool ssrlibev, std::string custom
         {
             writeLog(LOG_TYPE_INFO, "Node  " + iter->group + " - " + iter->remarks + "  has been added.");
             iter->id = index;
+            iter->groupID = groupID;
             ++index;
             ++iter;
         }
     }
+}
+
+static inline unsigned long long streamToInt(std::string stream)
+{
+    if(!stream.size())
+        return 0;
+    double streamval = 1.0;
+    if(stream.find("GB") != std::string::npos)
+        streamval = std::pow(1024, 3) * stof(stream.substr(0, stream.size() - 2));
+    else if(stream.find("TB") != std::string::npos)
+        streamval = std::pow(1024, 4) * stof(stream.substr(0, stream.size() - 2));
+    else if(stream.find("PB") != std::string::npos)
+        streamval = std::pow(1024, 5) * stof(stream.substr(0, stream.size() - 2));
+    else if(stream.find("MB") != std::string::npos)
+        streamval = std::pow(1024, 2) * stof(stream.substr(0, stream.size() - 2));
+    else if(stream.find("KB") != std::string::npos)
+        streamval = 1024.0 * stof(stream.substr(0, stream.size() - 2));
+    else if(stream.find("B") != std::string::npos)
+        streamval = 1.0 * stof(stream.substr(0, stream.size() - 1));
+    return (unsigned long long)streamval;
+}
+
+static inline double percentToDouble(std::string percent)
+{
+    return stof(percent.erase(percent.size() - 1)) / 100.0;
+}
+
+time_t dateStringToTimestamp(std::string date)
+{
+    std::vector<std::string> date_array = split(date, ":");
+    if(date_array.size() != 6)
+        return 0;
+    time_t rawtime;
+    struct tm *expire_time;
+    time(&rawtime);
+    expire_time = localtime(&rawtime);
+    expire_time->tm_year = to_int(date_array[0], 1900) - 1900;
+    expire_time->tm_mon = to_int(date_array[1], 1) - 1;
+    expire_time->tm_mday = to_int(date_array[2]);
+    expire_time->tm_hour = to_int(date_array[3]);
+    expire_time->tm_min = to_int(date_array[4]);
+    expire_time->tm_sec = to_int(date_array[5]);
+    return mktime(expire_time);
+}
+
+bool getSubInfoFromHeader(std::string &header, std::string &result)
+{
+    bool ret = false;
+    pcrecpp::RE reg("^(?i:Subscription-UserInfo): (.*?)\\r$", pcrecpp::MULTILINE());
+    try
+    {
+        ret = reg.PartialMatch(header, &result);
+    }
+    catch (std::exception &e)
+    {
+        //ignore
+    }
+    return ret;
+}
+
+bool getSubInfoFromNodes(std::vector<nodeInfo> &nodes, string_array &stream_rules, string_array &time_rules, std::string &result)
+{
+    std::string remarks, pattern, target, stream_info, time_info;
+    string_array vArray;
+
+    for(nodeInfo &x : nodes)
+    {
+        remarks = x.remarks;
+        if(!stream_info.size())
+        {
+            for(std::string &y : stream_rules)
+            {
+                vArray = split(y, "|");
+                if(vArray.size() != 2)
+                    continue;
+                pattern = vArray[0];
+                target = vArray[1];
+                pcrecpp::RE reg(pattern, pcrecpp::UTF8());
+                if(reg.FullMatch(remarks))
+                {
+                    if(target.find("$") != target.npos)
+                        target = replace_all_distinct(target, "$", "\\");
+                    if(reg.GlobalReplace(target, &remarks))
+                        stream_info = remarks;
+                }
+                else
+                    continue;
+            }
+        }
+
+        remarks = x.remarks;
+        if(!time_info.size())
+        {
+            for(std::string &y : time_rules)
+            {
+                vArray = split(y, "|");
+                if(vArray.size() != 2)
+                    continue;
+                pattern = vArray[0];
+                target = vArray[1];
+                pcrecpp::RE reg(pattern, pcrecpp::UTF8());
+                if(reg.FullMatch(remarks))
+                {
+                    if(target.find("$") != target.npos)
+                        target = replace_all_distinct(target, "$", "\\");
+                    if(reg.GlobalReplace(target, &remarks))
+                        time_info = remarks;
+                }
+                else
+                    continue;
+            }
+        }
+
+        if(stream_info.size() && time_info.size())
+            break;
+    }
+
+    if(!stream_info.size() && !time_info.size())
+        return false;
+
+    //calculate how much stream left
+    unsigned long long total = 0, left = 0, used = 0, expire = 0;
+    std::string total_str = getUrlArg(stream_info, "total"), left_str = getUrlArg(stream_info, "left"), used_str = getUrlArg(stream_info, "used");
+    if(strFind(total_str, "%"))
+    {
+        if(used_str.size())
+        {
+            used = streamToInt(used_str);
+            total = used / (1 - percentToDouble(total_str));
+        }
+        else if(left_str.size())
+        {
+            left = streamToInt(left_str);
+            total = left / percentToDouble(total_str);
+            used = total - left;
+        }
+    }
+    else
+    {
+        total = streamToInt(total_str);
+        if(used_str.size())
+        {
+            used = streamToInt(used_str);
+        }
+        else if(left_str.size())
+        {
+            left = streamToInt(left_str);
+            used = total - left;
+        }
+    }
+
+    result = "upload=0; download=" + std::to_string(used) + "; total=" + std::to_string(total) + ";";
+
+    //calculate expire time
+    expire = dateStringToTimestamp(time_info);
+    if(expire != 0)
+        result += " expire=" + std::to_string(expire) + ";";
+
+    return true;
 }

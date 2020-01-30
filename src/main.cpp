@@ -20,7 +20,7 @@
 //common settings
 std::string pref_path = "pref.ini";
 bool generator_mode = false;
-string_array def_exclude_remarks, def_include_remarks, rulesets;
+string_array def_exclude_remarks, def_include_remarks, rulesets, stream_rules, time_rules;
 std::vector<ruleset_content> ruleset_content_array;
 std::string listen_address = "127.0.0.1", default_url, managed_config_prefix;
 int listen_port = 25500, max_pending_connections = 10, max_concurrent_threads = 4;
@@ -151,7 +151,7 @@ void readConf()
     eraseElements(def_include_remarks);
     eraseElements(clash_extra_group);
     eraseElements(rulesets);
-    string_array emojis_temp, renames_temp;
+    string_array tempArray;
 
     ini.EnterSection("common");
     if(ini.ItemExist("api_mode"))
@@ -201,8 +201,26 @@ void readConf()
             filter_deprecated = ini.GetBool("filter_deprecated_nodes");
         if(ini.ItemPrefixExist("rename_node"))
         {
-            ini.GetAll("rename_node", renames_temp);
-            safe_set_renames(renames_temp);
+            ini.GetAll("rename_node", tempArray);
+            safe_set_renames(tempArray);
+            eraseElements(tempArray);
+        }
+    }
+
+    if(ini.SectionExist("userinfo"))
+    {
+        ini.EnterSection("userinfo");
+        if(ini.ItemPrefixExist("stream_rule"))
+        {
+            ini.GetAll("stream_rule", tempArray);
+            safe_set_streams(tempArray);
+            eraseElements(tempArray);
+        }
+        if(ini.ItemPrefixExist("time_rule"))
+        {
+            ini.GetAll("time_rule", tempArray);
+            safe_set_times(tempArray);
+            eraseElements(tempArray);
         }
     }
 
@@ -219,8 +237,9 @@ void readConf()
         remove_old_emoji = ini.GetBool("remove_old_emoji");
     if(ini.ItemPrefixExist("rule"))
     {
-        ini.GetAll("rule", emojis_temp);
-        safe_set_emojis(emojis_temp);
+        ini.GetAll("rule", tempArray);
+        safe_set_emojis(tempArray);
+        eraseElements(tempArray);
     }
 
     ini.EnterSection("ruleset");
@@ -284,6 +303,7 @@ int loadExternalConfig(std::string &path, ExternalConfig &ext, std::string proxy
 
     INIReader ini;
     ini.store_isolated_line = true;
+    ini.keep_empty_section = false;
     ini.SetIsolatedItemsSection("custom");
     if(ini.Parse(base_content) != INIREADER_EXCEPTION_NONE)
     {
@@ -361,6 +381,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     std::string groups = urlsafe_base64_decode(getUrlArg(argument, "groups")), ruleset = urlsafe_base64_decode(getUrlArg(argument, "ruleset")), config = UrlDecode(getUrlArg(argument, "config"));
     std::vector<ruleset_content> rca;
     extra_settings ext;
+    std::string subInfo;
 
     if(std::find(regex_blacklist.cbegin(), regex_blacklist.cend(), include) != regex_blacklist.cend() || std::find(regex_blacklist.cbegin(), regex_blacklist.cend(), exclude) != regex_blacklist.cend())
         return "Invalid request!";
@@ -512,11 +533,12 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         custom_group = group;
 
     //start parsing urls
+    string_array stream_temp = safe_get_streams(), time_temp = safe_get_times();
     for(std::string &x : urls)
     {
         x = trim(x);
         std::cerr<<"Fetching node data from url '"<<x<<"'."<<std::endl;
-        if(addNodes(x, nodes, groupID, proxy, exclude_remarks, include_remarks) == -1)
+        if(addNodes(x, nodes, groupID, proxy, exclude_remarks, include_remarks, stream_temp, time_temp, subInfo) == -1)
         {
             *status_code = 400;
             return std::string("The following link doesn't contain any valid node info: " + x);
@@ -529,6 +551,9 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         *status_code = 400;
         return "No nodes were found!";
     }
+
+    if(subInfo.size() && groupID == 1)
+        extra_headers.emplace("Subscription-UserInfo", subInfo);
 
     std::cerr<<"Generate target: ";
     if(target == "clash" || target == "clashr")
@@ -672,6 +697,7 @@ std::string simpleToClashR(RESPONSE_CALLBACK_ARGS)
     std::vector<nodeInfo> nodes;
     string_array extra_group, extra_ruleset, include_remarks, exclude_remarks;
     std::vector<ruleset_content> rca;
+    std::string subInfo;
 
     if(!url.size())
         url = default_url;
@@ -707,9 +733,22 @@ std::string simpleToClashR(RESPONSE_CALLBACK_ARGS)
     include_remarks = def_include_remarks;
     exclude_remarks = def_exclude_remarks;
 
-    std::cerr<<"Fetching node data from url '"<<url<<"'.\n";
-    addNodes(url, nodes, 0, proxy, exclude_remarks, include_remarks);
-
+    //start parsing urls
+    int groupID = 0;
+    string_array dummy;
+    string_array urls = split(url, "|");
+    for(std::string &x : urls)
+    {
+        x = trim(x);
+        std::cerr<<"Fetching node data from url '"<<x<<"'."<<std::endl;
+        if(addNodes(x, nodes, groupID, proxy, exclude_remarks, include_remarks, dummy, dummy, subInfo) == -1)
+        {
+            *status_code = 400;
+            return std::string("The following link doesn't contain any valid node info: " + x);
+        }
+        groupID++;
+    }
+    //exit if found nothing
     if(!nodes.size())
     {
         *status_code = 400;

@@ -9,12 +9,15 @@
 
 #include "misc.h"
 
-#define INIREADER_EXCEPTION_NONE 0
-#define INIREADER_EXCEPTION_EMPTY -1
-#define INIREADER_EXCEPTION_DUPLICATE -2
-#define INIREADER_EXCEPTION_OUTOFBOUND -3
-#define INIREADER_EXCEPTION_NOTEXIST -4
-#define INIREADER_EXCEPTION_NOTPARSED -5
+enum
+{
+    INIREADER_EXCEPTION_EMPTY = -5,
+    INIREADER_EXCEPTION_DUPLICATE,
+    INIREADER_EXCEPTION_OUTOFBOUND,
+    INIREADER_EXCEPTION_NOTEXIST,
+    INIREADER_EXCEPTION_NOTPARSED,
+    INIREADER_EXCEPTION_NONE
+};
 
 #define __SAVE_ERROR_AND_RETURN(x) {last_error = x; return last_error;}
 
@@ -79,6 +82,11 @@ public:
     *  @brief Allow a section title to appear multiple times.
     */
     bool allow_dup_section_titles = false;
+
+    /**
+    *  @brief Keep an empty section while parsing
+    */
+    bool keep_empty_section = true;
 
     /**
     *  @brief Initialize the reader.
@@ -224,23 +232,24 @@ public:
                 thisSection = strLine.substr(1, lineSize - 2); //save section title
                 inExcludedSection = chkIgnore(thisSection); //check if this section is excluded
 
-                if(curSection.size() && itemGroup.size()) //just finished reading a section
+                if(curSection.size() && (keep_empty_section || itemGroup.size())) //just finished reading a section
                 {
                     if(ini_content.count(curSection)) //a section with the same name has been inserted
                     {
-                        if(allow_dup_section_titles)
+                        if(allow_dup_section_titles || !ini_content.at(curSection).size())
                         {
                             eraseElements(existItemGroup);
                             existItemGroup = ini_content.at(curSection); //get the old items
                             for(auto &x : existItemGroup)
                                 itemGroup.emplace(x); //insert them all into new section
-                            ini_content.erase(curSection); //remove the old section
                         }
-                        else
+                        else if(ini_content.at(curSection).size())
                             __SAVE_ERROR_AND_RETURN(INIREADER_EXCEPTION_DUPLICATE); //not allowed, stop
+                        ini_content.erase(curSection); //remove the old section
                     }
+                    else if(itemGroup.size())
+                        read_sections.push_back(curSection); //add to read sections list
                     ini_content.emplace(curSection, itemGroup); //insert previous section to content map
-                    read_sections.push_back(curSection); //add to read sections list
                     if(std::count(section_order.cbegin(), section_order.cend(), curSection) == 0)
                         section_order.emplace_back(curSection);
                 }
@@ -255,7 +264,7 @@ public:
             if(include_sections.size() && include_sections == read_sections) //all included sections has been read
                 break; //exit now
         }
-        if(curSection.size() && itemGroup.size()) //final section
+        if(curSection.size() && (keep_empty_section || itemGroup.size())) //final section
         {
             if(ini_content.count(curSection)) //a section with the same name has been inserted
             {
@@ -265,13 +274,14 @@ public:
                     existItemGroup = ini_content.at(curSection); //get the old items
                     for(auto &x : existItemGroup)
                         itemGroup.emplace(x); //insert them all into new section
-                    ini_content.erase(curSection); //remove the old section
                 }
-                else
+                else if(ini_content.at(curSection).size())
                     __SAVE_ERROR_AND_RETURN(INIREADER_EXCEPTION_DUPLICATE); //not allowed, stop
+                ini_content.erase(curSection); //remove the old section
             }
+            else if(itemGroup.size())
+                read_sections.emplace_back(curSection); //add to read sections list
             ini_content.emplace(curSection, itemGroup); //insert this section to content map
-            read_sections.emplace_back(curSection); //add to read sections list
             if(std::count(section_order.cbegin(), section_order.cend(), curSection) == 0)
                 section_order.emplace_back(curSection);
         }
@@ -803,7 +813,7 @@ public:
             content += "\n";
         }
 
-        return content.substr(0, content.size() - 2);
+        return content.erase(content.size() - 2);
     }
 
     /**

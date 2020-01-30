@@ -22,12 +22,12 @@ void copyNodes(std::vector<nodeInfo> &source, std::vector<nodeInfo> &dest)
     }
 }
 
-int addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID, std::string proxy, string_array &exclude_remarks, string_array &include_remarks)
+int addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID, std::string proxy, string_array &exclude_remarks, string_array &include_remarks, string_array &stream_rules, string_array &time_rules, std::string &subInfo)
 {
     int linkType = -1;
     std::vector<nodeInfo> nodes;
     nodeInfo node;
-    std::string strSub;
+    std::string strSub, extra_headers;
 
     link = replace_all_distinct(link, "\"", "");
     writeLog(LOG_TYPE_INFO, "Received Link.");
@@ -52,7 +52,7 @@ int addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID, std
         writeLog(LOG_TYPE_INFO, "Downloading subscription data...");
         if(strFind(link, "surge:///install-config")) //surge config link
             link = UrlDecode(getUrlArg(link, "url"));
-        strSub = webGet(link, proxy);
+        strSub = webGet(link, proxy, extra_headers);
         /*
         if(strSub.size() == 0)
         {
@@ -70,11 +70,14 @@ int addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID, std
         if(strSub.size())
         {
             writeLog(LOG_TYPE_INFO, "Parsing subscription data...");
-            if(explodeConfContent(strSub, override_conf_port, socksport, ss_libev, ssr_libev, nodes, exclude_remarks, include_remarks) == SPEEDTEST_ERROR_UNRECOGFILE)
+            if(explodeConfContent(strSub, override_conf_port, socksport, ss_libev, ssr_libev, nodes) == SPEEDTEST_ERROR_UNRECOGFILE)
             {
                 writeLog(LOG_TYPE_ERROR, "Invalid subscription!");
                 return -1;
             }
+            if(!getSubInfoFromHeader(extra_headers, subInfo))
+                getSubInfoFromNodes(nodes, stream_rules, time_rules, subInfo);
+            filterNodes(nodes, exclude_remarks, include_remarks, groupID);
             for(nodeInfo &x : nodes)
                 x.groupID = groupID;
             copyNodes(nodes, allNodes);
@@ -89,11 +92,13 @@ int addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID, std
         if(api_mode)
             return -1;
         writeLog(LOG_TYPE_INFO, "Parsing configuration file data...");
-        if(explodeConf(link, override_conf_port, socksport, ss_libev, ssr_libev, nodes, exclude_remarks, include_remarks) == SPEEDTEST_ERROR_UNRECOGFILE)
+        if(explodeConf(link, override_conf_port, socksport, ss_libev, ssr_libev, nodes) == SPEEDTEST_ERROR_UNRECOGFILE)
         {
             writeLog(LOG_TYPE_ERROR, "Invalid configuration file!");
             return -1;
         }
+        getSubInfoFromNodes(nodes, stream_rules, time_rules, subInfo);
+        filterNodes(nodes, exclude_remarks, include_remarks, groupID);
         for(nodeInfo &x : nodes)
             x.groupID = groupID;
         copyNodes(nodes, allNodes);

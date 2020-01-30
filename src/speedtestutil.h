@@ -20,9 +20,12 @@ void explodeShadowrocket(std::string kit, std::string custom_port, int local_por
 void explodeKitsunebi(std::string kit, std::string custom_port, int local_port, nodeInfo &node);
 void explode(std::string link, bool sslibev, bool ssrlibev, std::string custom_port, int local_port, nodeInfo &node);
 void explodeSSD(std::string link, bool libev, std::string custom_port, int local_port, std::vector<nodeInfo> &nodes);
-void explodeSub(std::string sub, bool sslibev, bool ssrlibev, std::string custom_port, int local_port, std::vector<nodeInfo> &nodes, string_array &exclude_remarks, string_array &include_remarks);
-int explodeConf(std::string filepath, std::string custom_port, int local_port, bool sslibev, bool ssrlibev, std::vector<nodeInfo> &nodes, string_array &exclude_remarks, string_array &include_remarks);
-int explodeConfContent(std::string content, std::string custom_port, int local_port, bool sslibev, bool ssrlibev, std::vector<nodeInfo> &nodes, string_array &exclude_remarks, string_array &include_remarks);
+void explodeSub(std::string sub, bool sslibev, bool ssrlibev, std::string custom_port, int local_port, std::vector<nodeInfo> &nodes);
+int explodeConf(std::string filepath, std::string custom_port, int local_port, bool sslibev, bool ssrlibev, std::vector<nodeInfo> &nodes);
+int explodeConfContent(std::string content, std::string custom_port, int local_port, bool sslibev, bool ssrlibev, std::vector<nodeInfo> &nodes);
 bool chkIgnore(const nodeInfo &node, string_array &exclude_remarks, string_array &include_remarks);
+void filterNodes(std::vector<nodeInfo> &nodes, string_array &exclude_remarks, string_array &include_remarks, int groupID);
+bool getSubInfoFromHeader(std::string &header, std::string &result);
+bool getSubInfoFromNodes(std::vector<nodeInfo> &nodes, string_array &stream_rules, string_array &time_rules, std::string &result);
 
 #endif // SPEEDTESTUTIL_H_INCLUDED
