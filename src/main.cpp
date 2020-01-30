@@ -40,7 +40,7 @@ std::string proxy_ruleset, proxy_subscription;
 
 std::string clash_rule_base;
 string_array clash_extra_group;
-std::string surge_rule_base, surfboard_rule_base, mellow_rule_base;
+std::string surge_rule_base, surfboard_rule_base, mellow_rule_base, quanx_rule_base;
 std::string surge_ssr_path;
 
 //pre-compiled rule bases
@@ -172,6 +172,8 @@ void readConf()
         surfboard_rule_base = ini.Get("surfboard_rule_base");
     if(ini.ItemExist("mellow_rule_base"))
         mellow_rule_base = ini.Get("mellow_rule_base");
+    if(ini.ItemExist("quanx_rule_base"))
+        quanx_rule_base = ini.Get("quanx_rule_base");
     if(ini.ItemExist("append_proxy_type"))
         append_proxy_type = ini.GetBool("append_proxy_type");
     if(ini.ItemExist("proxy_ruleset"))
@@ -672,9 +674,19 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     else if(target == "quanx")
     {
         std::cerr<<"Quantumult X"<<std::endl;
-        output_content = netchToQuanX(nodes, ext);
+
+        if(fileExist(quanx_rule_base))
+            base_content = fileGet(quanx_rule_base, false);
+        else
+            base_content = webGet(quanx_rule_base, getSystemProxy());
+
+        output_content = netchToQuanX(nodes, base_content, rca, extra_group, ext);
+
         if(upload == "true")
             uploadGist("quanx", upload_path, output_content, false);
+
+        if(write_managed_config && managed_config_prefix.size())
+            output_content = "#!MANAGED-CONFIG " + managed_config_prefix + "/sub?" + argument + "\n\n" + output_content;
     }
     else if(target == "ssd")
     {

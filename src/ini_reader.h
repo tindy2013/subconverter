@@ -775,7 +775,10 @@ public:
             return;
         eraseElements(ini_content.at(section));
         if(cached_section == section)
+        {
             eraseElements(cached_section_content);
+            cached_section.erase();
+        }
         //section_order.erase(std::find(section_order.begin(), section_order.end(), section));
     }
 

@@ -355,10 +355,22 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
     std::string rule_group, rule_path, retrived_rules, strLine;
     std::stringstream strStrm;
 
-    base_rule.SetCurrentSection("Rule");
+    switch(surge_ver)
+    {
+    case 0:
+        base_rule.SetCurrentSection("RoutingRule"); //Mellow
+        break;
+    case -1:
+        base_rule.SetCurrentSection("filter_local"); //Quantumult X
+        break;
+    default:
+        base_rule.SetCurrentSection("Rule");
+    }
 
     if(overwrite_original_rules)
         base_rule.EraseSection();
+
+    const std::string rule_match_regex = "^(.*?,.*?)(,.*)(,.*)$";
 
     for(ruleset_content &x : ruleset_content_array)
     {
@@ -369,7 +381,21 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
             strLine = retrived_rules.substr(2);
             if(strLine == "MATCH")
                 strLine = "FINAL";
-            allRules.emplace_back(strLine + "," + rule_group);
+            strLine += "," + rule_group;
+            if(surge_ver == -1)
+            {
+                if(std::count(strLine.begin(), strLine.end(), ',') > 2 && regReplace(strLine, rule_match_regex, "$2") == ",no-resolve")
+                    strLine = regReplace(strLine, rule_match_regex, "$1$3$2");
+                else
+                    strLine = regReplace(strLine, rule_match_regex, "$1$3");
+            }
+            else
+            {
+                if(std::count(strLine.begin(), strLine.end(), ',') > 2)
+                    strLine = regReplace(strLine, rule_match_regex, "$1$3$2");
+            }
+            strLine = replace_all_distinct(strLine, ",,", ",");
+            allRules.emplace_back(strLine);
             continue;
         }
         else
@@ -390,12 +416,24 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
             strStrm<<retrived_rules;
             while(getline(strStrm, strLine, delimiter))
             {
+                if(surge_ver == -1 && (strLine.find("IP-CIDR6") == 0 || strLine.find("URL-REGEX") == 0 || strLine.find("PROCESS-NAME") == 0 || strLine.find("AND") == 0 || strLine.find("OR") == 0)) //remove unsupported types
+                    continue;
                 strLine = replace_all_distinct(strLine, "\r", ""); //remove line break
                 if(!strLine.size() || strLine.find("#") == 0 || strLine.find(";") == 0) //remove comments
                     continue;
                 strLine += "," + rule_group;
-                if(std::count(strLine.begin(), strLine.end(), ',') > 2)
-                    strLine = regReplace(strLine, "^(.*?,.*?)(,.*)(,.*)$", "$1$3$2");
+                if(surge_ver == -1)
+                {
+                    if(std::count(strLine.begin(), strLine.end(), ',') > 2 && regReplace(strLine, rule_match_regex, "$2") == ",no-resolve")
+                        strLine = regReplace(strLine, rule_match_regex, "$1$3$2");
+                    else
+                        strLine = regReplace(strLine, rule_match_regex, "$1$3");
+                }
+                else
+                {
+                    if(std::count(strLine.begin(), strLine.end(), ',') > 2)
+                        strLine = regReplace(strLine, rule_match_regex, "$1$3$2");
+                }
                 allRules.emplace_back(strLine);
             }
         }
@@ -1302,7 +1340,29 @@ std::string netchToQuan(std::vector<nodeInfo> &nodes, extra_settings &ext)
     return base64_encode(allLinks);
 }
 
-std::string netchToQuanX(std::vector<nodeInfo> &nodes, extra_settings &ext)
+std::string netchToQuanX(std::vector<nodeInfo> &nodes, std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, extra_settings &ext)
+{
+    INIReader ini;
+    ini.store_any_line = true;
+    if(!ext.nodelist && ini.Parse(base_conf) != 0)
+        return std::string();
+
+    netchToQuanX(nodes, ini, ruleset_content_array, extra_proxy_group, ext);
+
+    if(!ext.nodelist)
+    {
+        string_array allnodes;
+        ini.GetAll("server_local", "{NONAME}", allnodes);
+        std::string allLinks = std::accumulate(allnodes.begin(), allnodes.end(), allnodes[0], [](std::string a, std::string b)
+        {
+            return std::move(a) + "\n" + std::move(b);
+        });
+        return allLinks;
+    }
+    return ini.ToString();
+}
+
+void netchToQuanX(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, extra_settings &ext)
 {
     rapidjson::Document json;
     std::string type;
@@ -1310,8 +1370,9 @@ std::string netchToQuanX(std::vector<nodeInfo> &nodes, extra_settings &ext)
     std::string password, plugin, pluginopts;
     std::string id, transproto, host, path;
     std::string protocol, protoparam, obfs, obfsparam;
-    std::string proxyStr, allLinks;
+    std::string proxyStr;
     bool tlssecure;
+    std::vector<nodeInfo> nodelist;
 
     std::for_each(nodes.begin(), nodes.end(), [ext](nodeInfo &x)
     {
@@ -1331,6 +1392,8 @@ std::string netchToQuanX(std::vector<nodeInfo> &nodes, extra_settings &ext)
         });
     }
 
+    ini.SetCurrentSection("server_local");
+    ini.EraseSection();
     for(nodeInfo &x : nodes)
     {
         json.Parse(x.proxyStr.data());
@@ -1391,10 +1454,99 @@ std::string netchToQuanX(std::vector<nodeInfo> &nodes, extra_settings &ext)
         if(ext.udp)
             proxyStr += ", udp-relay=true";
         proxyStr += ", tag=" + remark;
-        allLinks += proxyStr + "\n";
+
+        ini.Set("{NONAME}", proxyStr);
+        nodelist.emplace_back(x);
     }
 
-    return allLinks;
+    if(ext.nodelist)
+        return;
+
+    string_multimap original_groups;
+    string_array filtered_nodelist;
+    ini.SetCurrentSection("policy");
+    ini.GetItems(original_groups);
+    ini.EraseSection();
+
+    std::string singlegroup;
+    std::string name, proxies;
+    string_array vArray;
+    for(std::string &x : extra_proxy_group)
+    {
+        eraseElements(filtered_nodelist);
+        unsigned int rules_upper_bound = 0;
+
+        vArray = split(x, "`");
+        if(vArray.size() < 3)
+            continue;
+
+        if(vArray[1] == "select")
+        {
+            type = "static";
+            rules_upper_bound = vArray.size();
+        }
+        else if(vArray[1] == "url-test")
+        {
+            if(vArray.size() < 5)
+                continue;
+            type = "static";
+            rules_upper_bound = vArray.size() - 2;
+        }
+        else if(vArray[1] == "fallback")
+        {
+            if(vArray.size() < 5)
+                continue;
+            type = "available";
+            rules_upper_bound = vArray.size() - 2;
+        }
+        else if(vArray[1] == "load-balance")
+        {
+            if(vArray.size() < 5)
+                continue;
+            type = "round-robin";
+            rules_upper_bound = vArray.size() - 2;
+        }
+        else
+            continue;
+
+        name = vArray[0];
+
+        for(unsigned int i = 2; i < rules_upper_bound; i++)
+            groupGenerate(vArray[i], nodelist, filtered_nodelist, true);
+
+        if(!filtered_nodelist.size())
+            filtered_nodelist.emplace_back("direct");
+
+        auto iter = std::find_if(original_groups.begin(), original_groups.end(), [name](const string_multimap::value_type &n)
+        {
+            std::string groupdata = n.second;
+            std::string::size_type cpos = groupdata.find(",");
+            if(cpos != std::string::npos)
+                return trim(groupdata.substr(0, cpos)) == name;
+            else
+                return false;
+        });
+        if(iter != original_groups.end())
+        {
+            vArray = split(iter->second, ",");
+            if(vArray.size() > 1)
+            {
+                if(trim(vArray[vArray.size() - 1]).find("img-url") == 0)
+                    filtered_nodelist.emplace_back(trim(vArray[vArray.size() - 1]));
+            }
+        }
+
+        proxies = std::accumulate(std::next(filtered_nodelist.begin()), filtered_nodelist.end(), filtered_nodelist[0], [](std::string a, std::string b)
+        {
+            return std::move(a) + ", " + std::move(b);
+        });
+
+        singlegroup = type + "=" + name + ", " + proxies;
+        ini.Set("{NONAME}", singlegroup);
+    }
+
+    if(ext.enable_rule_generator)
+        rulesetToSurge(ini, ruleset_content_array, -1, ext.overwrite_original_rules);
 }
 
 std::string netchToSSD(std::vector<nodeInfo> &nodes, std::string &group, extra_settings &ext)
@@ -1675,8 +1827,7 @@ void netchToMellow(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rul
     }
 
     if(ext.enable_rule_generator)
-        rulesetToSurge(ini, ruleset_content_array, 2, ext.overwrite_original_rules);
-    ini.RenameSection("Rule", "RoutingRule");
+        rulesetToSurge(ini, ruleset_content_array, 0, ext.overwrite_original_rules);
 }
 
 std::string buildGistData(std::string name, std::string content)
