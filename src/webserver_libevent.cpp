@@ -16,6 +16,8 @@
 #include "webserver.h"
 #include "socket.h"
 
+extern std::string user_agent_str;
+
 struct responseRoute
 {
     std::string method;
@@ -75,6 +77,12 @@ void OnReq(evhttp_request *req, void *args)
     std::cerr<<"Accept connection from client "<<client_ip<<":"<<client_port<<"\n";
     int retVal;
     std::string postdata, content_type, return_data;
+
+    if(user_agent_str.compare(evhttp_find_header(req->input_headers, "User-Agent")) == 0)
+    {
+        evhttp_send_error(req, 500, "Loop request detected!");
+        return;
+    }
 
     if(EVBUFFER_LENGTH(req->input_buffer) != 0)
     {
