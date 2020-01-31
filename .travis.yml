@@ -17,6 +17,7 @@ jobs:
         provider: releases
         token: "$GITHUB_OAUTH_TOKEN"
         file: "subconverter_darwin64.tar.gz"
+        skip_cleanup: true
         draft: true
         on:
           tags: true
@@ -30,6 +31,7 @@ jobs:
         provider: releases
         token: "$GITHUB_OAUTH_TOKEN"
         file: "subconverter_linux32.tar.gz"
+        skip_cleanup: true
         draft: true
         on:
           tags: true
@@ -41,6 +43,7 @@ jobs:
         provider: releases
         token: "$GITHUB_OAUTH_TOKEN"
         file: "subconverter_linux64.tar.gz"
+        skip_cleanup: true
         draft: true
         on:
           tags: true
@@ -55,6 +58,7 @@ jobs:
         provider: releases
         token: "$GITHUB_OAUTH_TOKEN"
         file: "subconverter_armhf.tar.gz"
+        skip_cleanup: true
         draft: true
         on:
           tags: true
@@ -69,6 +73,7 @@ jobs:
         provider: releases
         token: "$GITHUB_OAUTH_TOKEN"
         file: "subconverter_aarch64.tar.gz"
+        skip_cleanup: true
         draft: true
         on:
           tags: true
