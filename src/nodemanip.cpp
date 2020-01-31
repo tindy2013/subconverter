@@ -75,8 +75,15 @@ int addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID, std
                 writeLog(LOG_TYPE_ERROR, "Invalid subscription!");
                 return -1;
             }
-            if(!getSubInfoFromHeader(extra_headers, subInfo))
-                getSubInfoFromNodes(nodes, stream_rules, time_rules, subInfo);
+            if(strSub.find("ssd://") == 0)
+            {
+                getSubInfoFromSSD(strSub, subInfo);
+            }
+            else
+            {
+                if(!getSubInfoFromHeader(extra_headers, subInfo))
+                    getSubInfoFromNodes(nodes, stream_rules, time_rules, subInfo);
+            }
             filterNodes(nodes, exclude_remarks, include_remarks, groupID);
             for(nodeInfo &x : nodes)
                 x.groupID = groupID;
@@ -97,7 +104,14 @@ int addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID, std
             writeLog(LOG_TYPE_ERROR, "Invalid configuration file!");
             return -1;
         }
-        getSubInfoFromNodes(nodes, stream_rules, time_rules, subInfo);
+        if(strSub.find("ssd://") == 0)
+        {
+            getSubInfoFromSSD(strSub, subInfo);
+        }
+        else
+        {
+            getSubInfoFromNodes(nodes, stream_rules, time_rules, subInfo);
+        }
         filterNodes(nodes, exclude_remarks, include_remarks, groupID);
         for(nodeInfo &x : nodes)
             x.groupID = groupID;

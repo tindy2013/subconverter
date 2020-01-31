@@ -1408,7 +1408,6 @@ int explodeConf(std::string filepath, std::string custom_port, int local_port, b
 int explodeConfContent(std::string content, std::string custom_port, int local_port, bool sslibev, bool ssrlibev, std::vector<nodeInfo> &nodes)
 {
     int filetype = -1;
-    std::vector<nodeInfo>::iterator iter;
 
     if(strFind(content, "\"version\""))
         filetype = SPEEDTEST_MESSAGE_FOUNDSS;
@@ -1702,7 +1701,27 @@ bool getSubInfoFromNodes(std::vector<nodeInfo> &nodes, string_array &stream_rule
 
     //calculate expire time
     expire = dateStringToTimestamp(time_info);
-    if(expire != 0)
+    if(expire)
+        result += " expire=" + std::to_string(expire) + ";";
+
+    return true;
+}
+
+bool getSubInfoFromSSD(std::string &sub, std::string &result)
+{
+    rapidjson::Document json;
+    json.Parse(urlsafe_base64_decode(sub.substr(6)).data());
+    if(json.HasParseError())
+        return false;
+
+    std::string used_str = GetMember(json, "traffic_used"), total_str = GetMember(json, "traffic_total"), expire_str = GetMember(json, "expiry");
+    if(!used_str.size() || !total_str.size())
+        return false;
+    unsigned long long used = stod(used_str) * std::pow(1024, 3), total = stod(total_str) * std::pow(1024, 3), expire;
+    result = "upload=0; download=" + std::to_string(used) + "; total=" + std::to_string(total) + ";";
+
+    expire = dateStringToTimestamp(regReplace(expire_str, "(\\d+)-(\\d+)-(\\d+) (.*)", "$1:$2:$3:$4"));
+    if(expire)
         result += " expire=" + std::to_string(expire) + ";";
 
     return true;

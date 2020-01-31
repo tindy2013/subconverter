@@ -27,5 +27,6 @@ bool chkIgnore(const nodeInfo &node, string_array &exclude_remarks, string_array
 void filterNodes(std::vector<nodeInfo> &nodes, string_array &exclude_remarks, string_array &include_remarks, int groupID);
 bool getSubInfoFromHeader(std::string &header, std::string &result);
 bool getSubInfoFromNodes(std::vector<nodeInfo> &nodes, string_array &stream_rules, string_array &time_rules, std::string &result);
+bool getSubInfoFromSSD(std::string &sub, std::string &result);
 
 #endif // SPEEDTESTUTIL_H_INCLUDED

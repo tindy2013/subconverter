@@ -15,7 +15,12 @@
 #endif // USE_STD_REGEX
 
 #include <rapidjson/document.h>
+
+#ifdef USE_MBEDTLS
+#include <mbedtls/md5.h>
+#else
 #include <openssl/md5.h>
+#endif // USE_MBEDTLS
 
 #include "misc.h"
 
@@ -625,14 +630,24 @@ std::string urlsafe_base64_encode(std::string string_to_encode)
 
 std::string getMD5(std::string data)
 {
-    MD5_CTX ctx;
+
     std::string result;
     unsigned int i = 0;
     unsigned char digest[16] = {};
 
+    #ifdef USE_MBEDTLS
+    mbedtls_md5_context ctx;
+
+    mbedtls_md5_init(&ctx);
+    mbedtls_md5_update(&ctx, data.data(), data.size());
+    mbedtls_md5_finish(&ctx, (unsigned char *)&digest);
+    #else
+    MD5_CTX ctx;
+
     MD5_Init(&ctx);
     MD5_Update(&ctx, data.data(), data.size());
     MD5_Final((unsigned char *)&digest, &ctx);
+    #endif // USE_MBEDTLS
 
     char tmp[3] = {};
     for(i = 0; i < 16; i++)
