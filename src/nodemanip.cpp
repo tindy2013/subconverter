@@ -9,7 +9,7 @@
 #include "webget.h"
 #include "speedtestutil.h"
 
-std::string override_conf_port, custom_group;
+std::string override_conf_port;
 int socksport;
 bool ss_libev, ssr_libev;
 extern bool api_mode;
@@ -107,8 +107,6 @@ int addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID, std
         if(linkType > 0)
         {
             explode(link, ss_libev, ssr_libev, override_conf_port, socksport, node);
-            if(custom_group.size() != 0)
-                node.group = custom_group;
             if(node.linkType == -1)
             {
                 writeLog(LOG_TYPE_ERROR, "No valid link found.");

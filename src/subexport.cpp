@@ -363,6 +363,9 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
     case -1:
         base_rule.SetCurrentSection("filter_local"); //Quantumult X
         break;
+    case -2:
+        base_rule.SetCurrentSection("TCP"); //Quantumult
+        break;
     default:
         base_rule.SetCurrentSection("Rule");
     }
@@ -382,7 +385,7 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
             if(strLine == "MATCH")
                 strLine = "FINAL";
             strLine += "," + rule_group;
-            if(surge_ver == -1)
+            if(surge_ver == -1 || surge_ver == -2)
             {
                 if(std::count(strLine.begin(), strLine.end(), ',') > 2 && regReplace(strLine, rule_match_regex, "$2") == ",no-resolve")
                     strLine = regReplace(strLine, rule_match_regex, "$1$3$2");
@@ -416,13 +419,13 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
             strStrm<<retrived_rules;
             while(getline(strStrm, strLine, delimiter))
             {
-                if(surge_ver == -1 && (strLine.find("IP-CIDR6") == 0 || strLine.find("URL-REGEX") == 0 || strLine.find("PROCESS-NAME") == 0 || strLine.find("AND") == 0 || strLine.find("OR") == 0)) //remove unsupported types
+                if((surge_ver == -1 || surge_ver == -2) && (strLine.find("IP-CIDR6") == 0 || strLine.find("URL-REGEX") == 0 || strLine.find("PROCESS-NAME") == 0 || strLine.find("AND") == 0 || strLine.find("OR") == 0)) //remove unsupported types
                     continue;
                 strLine = replace_all_distinct(strLine, "\r", ""); //remove line break
                 if(!strLine.size() || strLine.find("#") == 0 || strLine.find(";") == 0) //remove comments
                     continue;
                 strLine += "," + rule_group;
-                if(surge_ver == -1)
+                if(surge_ver == -1 || surge_ver == -2)
                 {
                     if(std::count(strLine.begin(), strLine.end(), ',') > 2 && regReplace(strLine, rule_match_regex, "$2") == ",no-resolve")
                         strLine = regReplace(strLine, rule_match_regex, "$1$3$2");
@@ -1246,7 +1249,29 @@ std::string netchToVMess(std::vector<nodeInfo> &nodes, extra_settings &ext)
     return base64_encode(allLinks);
 }
 
-std::string netchToQuan(std::vector<nodeInfo> &nodes, extra_settings &ext)
+std::string netchToQuan(std::vector<nodeInfo> &nodes, std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, extra_settings &ext)
+{
+    INIReader ini;
+    ini.store_any_line = true;
+    if(!ext.nodelist && ini.Parse(base_conf) != 0)
+        return std::string();
+
+    netchToQuan(nodes, ini, ruleset_content_array, extra_proxy_group, ext);
+
+    if(ext.nodelist)
+    {
+        string_array allnodes;
+        ini.GetAll("SERVER", "{NONAME}", allnodes);
+        std::string allLinks = std::accumulate(allnodes.begin(), allnodes.end(), allnodes[0], [](std::string a, std::string b)
+        {
+            return std::move(a) + "\n" + std::move(b);
+        });
+        return base64_encode(allLinks);
+    }
+    return ini.ToString();
+}
+
+void netchToQuan(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, extra_settings &ext)
 {
     rapidjson::Document json;
     std::string type;
@@ -1256,6 +1281,7 @@ std::string netchToQuan(std::vector<nodeInfo> &nodes, extra_settings &ext)
     std::string id, aid, transproto, faketype, host, path, quicsecure, quicsecret;
     std::string proxyStr, allLinks;
     bool tlssecure;
+    std::vector<nodeInfo> nodelist;
 
     std::for_each(nodes.begin(), nodes.end(), [ext](nodeInfo &x)
     {
@@ -1275,6 +1301,8 @@ std::string netchToQuan(std::vector<nodeInfo> &nodes, extra_settings &ext)
         });
     }
 
+    ini.SetCurrentSection("SERVER");
+    ini.EraseSection();
     for(nodeInfo &x : nodes)
     {
         json.Parse(x.proxyStr.data());
@@ -1309,7 +1337,9 @@ std::string netchToQuan(std::vector<nodeInfo> &nodes, extra_settings &ext)
                 proxyStr += ", certificate=0";
             if(transproto == "ws")
                 proxyStr += ", obfs=ws, obfs-path=\"" + path + "\", obfs-header=\"Host: " + host + "\"";
-            proxyStr = "vmess://" + urlsafe_base64_encode(proxyStr);
+
+            if(ext.nodelist)
+                proxyStr = "vmess://" + urlsafe_base64_encode(proxyStr);
             break;
         case SPEEDTEST_MESSAGE_FOUNDSSR:
             protocol = GetMember(json, "Protocol");
@@ -1317,27 +1347,121 @@ std::string netchToQuan(std::vector<nodeInfo> &nodes, extra_settings &ext)
             obfs = GetMember(json, "OBFS");
             obfsparam = GetMember(json, "OBFSParam");
 
-            proxyStr = "ssr://" + urlsafe_base64_encode(hostname + ":" + port + ":" + protocol + ":" + method + ":" + obfs + ":" + urlsafe_base64_encode(password) \
-                       + "/?group=" + urlsafe_base64_encode(x.group) + "&remarks=" + urlsafe_base64_encode(remark) \
-                       + "&obfsparam=" + urlsafe_base64_encode(obfsparam) + "&protoparam=" + urlsafe_base64_encode(protoparam));
+            if(ext.nodelist)
+            {
+                proxyStr = "ssr://" + urlsafe_base64_encode(hostname + ":" + port + ":" + protocol + ":" + method + ":" + obfs + ":" + urlsafe_base64_encode(password) \
+                           + "/?group=" + urlsafe_base64_encode(x.group) + "&remarks=" + urlsafe_base64_encode(remark) \
+                           + "&obfsparam=" + urlsafe_base64_encode(obfsparam) + "&protoparam=" + urlsafe_base64_encode(protoparam));
+            }
+            else
+            {
+                proxyStr = remark + " = shadowsocksr, " + hostname + ", " + port + ", " + method + ", \"" + password + "\", group=" + x.group + ", protocol=" + protocol + ", obfs=" + obfs;
+                if(protoparam.size())
+                    proxyStr += ", protocol_param=" + protoparam;
+                if(obfsparam.size())
+                    proxyStr += ", obfs_param=" + obfsparam;
+            }
             break;
         case SPEEDTEST_MESSAGE_FOUNDSS:
             plugin = GetMember(json, "Plugin");
             pluginopts = GetMember(json, "PluginOption");
-            proxyStr = "ss://" + urlsafe_base64_encode(method + ":" + password) + "@" + hostname + ":" + port;
-            if(plugin.size() & pluginopts.size())
+
+            if(ext.nodelist)
             {
-                proxyStr += "/?plugin=" + UrlEncode(plugin + ";" +pluginopts);
+                proxyStr = "ss://" + urlsafe_base64_encode(method + ":" + password) + "@" + hostname + ":" + port;
+                if(plugin.size() && pluginopts.size())
+                {
+                    proxyStr += "/?plugin=" + UrlEncode(plugin + ";" + pluginopts);
+                }
+                proxyStr += "&group=" + urlsafe_base64_encode(x.group) + "#" + UrlEncode(remark);
             }
-            proxyStr += "&group=" + urlsafe_base64_encode(x.group) + "#" + UrlEncode(remark);
+            else
+            {
+                proxyStr = remark + " = shadowsocks, " + hostname + ", " + port + ", " + method + ", \"" + password + "\", group=" + x.group;
+                if(plugin == "simple-obfs" && pluginopts.size())
+                {
+                    proxyStr += ", " + replace_all_distinct(pluginopts, ";", ", ");
+                }
+            }
             break;
         default:
             continue;
         }
-        allLinks += proxyStr + "\n";
+
+        ini.Set("{NONAME}", proxyStr);
+        nodelist.emplace_back(x);
     }
 
-    return base64_encode(allLinks);
+    if(ext.nodelist)
+        return;
+
+    string_array filtered_nodelist;
+    ini.SetCurrentSection("POLICY");
+    ini.EraseSection();
+
+    std::string singlegroup;
+    std::string name, proxies;
+    string_array vArray;
+    for(std::string &x : extra_proxy_group)
+    {
+        eraseElements(filtered_nodelist);
+        unsigned int rules_upper_bound = 0;
+
+        vArray = split(x, "`");
+        if(vArray.size() < 3)
+            continue;
+
+        if(vArray[1] == "select")
+        {
+            type = "static";
+            rules_upper_bound = vArray.size();
+        }
+        else if(vArray[1] == "url-test")
+        {
+            if(vArray.size() < 5)
+                continue;
+            type = "auto";
+            rules_upper_bound = vArray.size() - 2;
+        }
+        else if(vArray[1] == "fallback")
+        {
+            if(vArray.size() < 5)
+                continue;
+            type = "static";
+            rules_upper_bound = vArray.size() - 2;
+        }
+        else if(vArray[1] == "load-balance")
+        {
+            if(vArray.size() < 5)
+                continue;
+            type = "balance, round-robin";
+            rules_upper_bound = vArray.size() - 2;
+        }
+        else
+            continue;
+
+        name = vArray[0];
+
+        for(unsigned int i = 2; i < rules_upper_bound; i++)
+            groupGenerate(vArray[i], nodelist, filtered_nodelist, true);
+
+        if(!filtered_nodelist.size())
+            filtered_nodelist.emplace_back("direct");
+
+        proxies = std::accumulate(std::next(filtered_nodelist.begin()), filtered_nodelist.end(), filtered_nodelist[0], [](std::string a, std::string b)
+        {
+            return std::move(a) + "\n" + std::move(b);
+        });
+
+        singlegroup = name + " : " + type;
+        if(type == "static")
+            singlegroup += ", " + filtered_nodelist[0];
+        singlegroup += "\n" + proxies + "\n";
+        ini.Set("{NONAME}", base64_encode(singlegroup));
+    }
+
+    if(ext.enable_rule_generator)
+        rulesetToSurge(ini, ruleset_content_array, -2, ext.overwrite_original_rules);
 }
 
 std::string netchToQuanX(std::vector<nodeInfo> &nodes, std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, extra_settings &ext)
@@ -1349,7 +1473,7 @@ std::string netchToQuanX(std::vector<nodeInfo> &nodes, std::string &base_conf, s
 
     netchToQuanX(nodes, ini, ruleset_content_array, extra_proxy_group, ext);
 
-    if(!ext.nodelist)
+    if(ext.nodelist)
     {
         string_array allnodes;
         ini.GetAll("server_local", "{NONAME}", allnodes);
@@ -1419,11 +1543,15 @@ void netchToQuanX(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rule
                 method = "chacha20-ietf-poly1305";
             proxyStr = "vmess = " + hostname + ":" + port + ", method=" + method + ", password=" + id;
             if(transproto == "ws")
-                proxyStr += ", obfs=ws, obfs-host=" + host + ", obfs-uri=" + path;
+            {
+                if(tlssecure)
+                    proxyStr += ", obfs=wss";
+                else
+                    proxyStr += ", obfs=ws";
+                proxyStr += ", obfs-host=" + host + ", obfs-uri=" + path;
+            }
             else if(tlssecure)
                 proxyStr += ", obfs=over-tls, obfs-host=" + host;
-            if(ext.skip_cert_verify)
-                proxyStr += ", certificate=0";
             break;
         case SPEEDTEST_MESSAGE_FOUNDSS:
             password = GetMember(json, "Password");

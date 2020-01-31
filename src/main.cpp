@@ -40,7 +40,7 @@ std::string proxy_ruleset, proxy_subscription;
 
 std::string clash_rule_base;
 string_array clash_extra_group;
-std::string surge_rule_base, surfboard_rule_base, mellow_rule_base, quanx_rule_base;
+std::string surge_rule_base, surfboard_rule_base, mellow_rule_base, quan_rule_base, quanx_rule_base;
 std::string surge_ssr_path;
 
 //pre-compiled rule bases
@@ -172,6 +172,8 @@ void readConf()
         surfboard_rule_base = ini.Get("surfboard_rule_base");
     if(ini.ItemExist("mellow_rule_base"))
         mellow_rule_base = ini.Get("mellow_rule_base");
+    if(ini.ItemExist("quan_rule_base"))
+        quan_rule_base = ini.Get("quan_rule_base");
     if(ini.ItemExist("quanx_rule_base"))
         quanx_rule_base = ini.Get("quanx_rule_base");
     if(ini.ItemExist("append_proxy_type"))
@@ -289,6 +291,8 @@ struct ExternalConfig
     std::string surge_rule_base;
     std::string surfboard_rule_base;
     std::string mellow_rule_base;
+    std::string quan_rule_base;
+    std::string quanx_rule_base;
     string_array rename;
     string_array emoji;
     bool overwrite_original_rules = false;
@@ -305,7 +309,6 @@ int loadExternalConfig(std::string &path, ExternalConfig &ext, std::string proxy
 
     INIReader ini;
     ini.store_isolated_line = true;
-    ini.keep_empty_section = false;
     ini.SetIsolatedItemsSection("custom");
     if(ini.Parse(base_content) != INIREADER_EXCEPTION_NONE)
     {
@@ -327,6 +330,10 @@ int loadExternalConfig(std::string &path, ExternalConfig &ext, std::string proxy
         ext.surfboard_rule_base = ini.Get("surfboard_rule_base");
     if(ini.ItemExist("mellow_rule_base"))
         ext.mellow_rule_base = ini.Get("mellow_rule_base");
+    if(ini.ItemExist("quan_rule_base"))
+        ext.quan_rule_base = ini.Get("quan_rule_base");
+    if(ini.ItemExist("quanx_rule_base"))
+        ext.quanx_rule_base = ini.Get("quanx_rule_base");
 
     if(ini.ItemExist("overwrite_original_rules"))
         ext.overwrite_original_rules = ini.GetBool("overwrite_original_rules");
@@ -390,6 +397,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
 
     //for external configuration
     std::string ext_clash_base = clash_rule_base, ext_surge_base = surge_rule_base, ext_mellow_base = mellow_rule_base, ext_surfboard_base = surfboard_rule_base;
+    std::string ext_quan_base = quan_rule_base, ext_quanx_base = quanx_rule_base;
 
     //validate urls
     if(!url.size())
@@ -434,6 +442,10 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
             ext_surfboard_base = extconf.surfboard_rule_base;
         if(extconf.mellow_rule_base.size())
             ext_mellow_base = extconf.mellow_rule_base;
+        if(extconf.quan_rule_base.size())
+            ext_quan_base = extconf.quan_rule_base;
+        if(extconf.quanx_rule_base.size())
+            ext_quanx_base = extconf.quanx_rule_base;
         if(extconf.rename.size())
             ext.rename_array = extconf.rename;
         if(extconf.emoji.size())
@@ -530,10 +542,6 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     else
         exclude_remarks = def_exclude_remarks;
 
-    //check custom group name
-    if(group.size())
-        custom_group = group;
-
     //start parsing urls
     string_array stream_temp = safe_get_streams(), time_temp = safe_get_times();
     for(std::string &x : urls)
@@ -553,6 +561,11 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         *status_code = 400;
         return "No nodes were found!";
     }
+
+    //check custom group name
+    if(group.size())
+        for(nodeInfo &x : nodes)
+            x.group = group;
 
     if(subInfo.size() && groupID == 1)
         extra_headers.emplace("Subscription-UserInfo", subInfo);
@@ -667,26 +680,34 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     else if(target == "quan")
     {
         std::cerr<<"Quantumult"<<std::endl;
-        output_content = netchToQuan(nodes, ext);
+        if(!ext.nodelist)
+        {
+            if(fileExist(ext_quan_base))
+                base_content = fileGet(ext_quan_base, false);
+            else
+                base_content = webGet(ext_quan_base, getSystemProxy());
+        }
+
+        output_content = netchToQuan(nodes, base_content, rca, extra_group, ext);
+
         if(upload == "true")
             uploadGist("quan", upload_path, output_content, false);
     }
     else if(target == "quanx")
     {
         std::cerr<<"Quantumult X"<<std::endl;
-
-        if(fileExist(quanx_rule_base))
-            base_content = fileGet(quanx_rule_base, false);
-        else
-            base_content = webGet(quanx_rule_base, getSystemProxy());
+        if(!ext.nodelist)
+        {
+            if(fileExist(ext_quanx_base))
+                base_content = fileGet(ext_quanx_base, false);
+            else
+                base_content = webGet(ext_quanx_base, getSystemProxy());
+        }
 
         output_content = netchToQuanX(nodes, base_content, rca, extra_group, ext);
 
         if(upload == "true")
             uploadGist("quanx", upload_path, output_content, false);
-
-        if(write_managed_config && managed_config_prefix.size())
-            output_content = "#!MANAGED-CONFIG " + managed_config_prefix + "/sub?" + argument + "\n\n" + output_content;
     }
     else if(target == "ssd")
     {

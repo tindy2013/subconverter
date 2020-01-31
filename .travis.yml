@@ -1,11 +1,11 @@
 language: cpp
-sudo: required
+os: linux
 stages:
     - name: deploy
       if: branch = master
     - name: before_script
       if: branch = master
-matrix:
+jobs:
     include:
     - name: "macOS Build"
       os: osx
@@ -15,9 +15,8 @@ matrix:
       - bash scripts/build.macos.release.sh
       deploy:
         provider: releases
-        api_key: "$GITHUB_OAUTH_TOKEN"
+        token: "$GITHUB_OAUTH_TOKEN"
         file: "subconverter_darwin64.tar.gz"
-        skip_cleanup: true
         draft: true
         on:
           tags: true
@@ -29,9 +28,8 @@ matrix:
         - mv subconverter_linux64.tar.gz subconverter_linux32.tar.gz
       deploy:
         provider: releases
-        api_key: "$GITHUB_OAUTH_TOKEN"
+        token: "$GITHUB_OAUTH_TOKEN"
         file: "subconverter_linux32.tar.gz"
-        skip_cleanup: true
         draft: true
         on:
           tags: true
@@ -41,9 +39,8 @@ matrix:
       - docker run -v $TRAVIS_BUILD_DIR:/root/workdir alpine:latest /bin/sh -c "apk add bash git && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
       deploy:
         provider: releases
-        api_key: "$GITHUB_OAUTH_TOKEN"
+        token: "$GITHUB_OAUTH_TOKEN"
         file: "subconverter_linux64.tar.gz"
-        skip_cleanup: true
         draft: true
         on:
           tags: true
@@ -56,9 +53,8 @@ matrix:
         - mv subconverter_linux64.tar.gz subconverter_armhf.tar.gz
       deploy:
         provider: releases
-        api_key: "$GITHUB_OAUTH_TOKEN"
+        token: "$GITHUB_OAUTH_TOKEN"
         file: "subconverter_armhf.tar.gz"
-        skip_cleanup: true
         draft: true
         on:
           tags: true
@@ -71,9 +67,8 @@ matrix:
         - mv subconverter_linux64.tar.gz subconverter_aarch64.tar.gz
       deploy:
         provider: releases
-        api_key: "$GITHUB_OAUTH_TOKEN"
+        token: "$GITHUB_OAUTH_TOKEN"
         file: "subconverter_aarch64.tar.gz"
-        skip_cleanup: true
         draft: true
         on:
           tags: true
