@@ -816,7 +816,9 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
         remark = x.remarks;
 
         while(std::count(remarks_list.begin(), remarks_list.end(), remark) > 0)
-            remark = x.remarks = x.remarks + "$";
+            x.remarks += "$";
+
+        remark = x.remarks;
         hostname = GetMember(json, "Hostname");
         port = std::to_string((unsigned short)stoi(GetMember(json, "Port")));
         username = GetMember(json, "Username");
@@ -1282,6 +1284,7 @@ void netchToQuan(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rules
     std::string proxyStr, allLinks;
     bool tlssecure;
     std::vector<nodeInfo> nodelist;
+    string_array remarks_list;
 
     std::for_each(nodes.begin(), nodes.end(), [ext](nodeInfo &x)
     {
@@ -1310,6 +1313,10 @@ void netchToQuan(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rules
 
         if(ext.append_proxy_type)
             x.remarks = "[" + type + "]" + x.remarks;
+
+        while(std::count(remarks_list.begin(), remarks_list.end(), x.remarks) > 0)
+            x.remarks += "$";
+
         remark = x.remarks;
 
         hostname = GetMember(json, "Hostname");
@@ -1497,6 +1504,7 @@ void netchToQuanX(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rule
     std::string proxyStr;
     bool tlssecure;
     std::vector<nodeInfo> nodelist;
+    string_array remarks_list;
 
     std::for_each(nodes.begin(), nodes.end(), [ext](nodeInfo &x)
     {
@@ -1525,6 +1533,10 @@ void netchToQuanX(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rule
 
         if(ext.append_proxy_type)
             x.remarks = "[" + type + "]" + x.remarks;
+
+        while(std::count(remarks_list.begin(), remarks_list.end(), x.remarks) > 0)
+            x.remarks += "$";
+
         remark = x.remarks;
 
         hostname = GetMember(json, "Hostname");
