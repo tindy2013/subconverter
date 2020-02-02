@@ -1593,22 +1593,22 @@ time_t dateStringToTimestamp(std::string date)
 
 bool getSubInfoFromHeader(std::string &header, std::string &result)
 {
-    bool ret = false;
-    pcrecpp::RE reg("^(?i:Subscription-UserInfo): (.*?)\\r$", pcrecpp::MULTILINE());
-    try
+    std::string pattern = "(?:[\\s\\S]*?)^(?i:Subscription-UserInfo): (.*?)\\s$(?:[\\s\\S]*)", retStr;
+    if(regFind(header, pattern))
     {
-        ret = reg.PartialMatch(header, &result);
+        retStr = regReplace(header, pattern, "$1");
+        if(retStr != header)
+        {
+            result = retStr;
+            return true;
+        }
     }
-    catch (std::exception &e)
-    {
-        //ignore
-    }
-    return ret;
+    return false;
 }
 
 bool getSubInfoFromNodes(std::vector<nodeInfo> &nodes, string_array &stream_rules, string_array &time_rules, std::string &result)
 {
-    std::string remarks, pattern, target, stream_info, time_info;
+    std::string remarks, pattern, target, stream_info, time_info, retStr;
     string_array vArray;
 
     for(nodeInfo &x : nodes)
@@ -1623,13 +1623,14 @@ bool getSubInfoFromNodes(std::vector<nodeInfo> &nodes, string_array &stream_rule
                     continue;
                 pattern = vArray[0];
                 target = vArray[1];
-                pcrecpp::RE reg(pattern, pcrecpp::UTF8());
-                if(reg.FullMatch(remarks))
+                if(regMatch(remarks, pattern))
                 {
-                    if(target.find("$") != target.npos)
-                        target = replace_all_distinct(target, "$", "\\");
-                    if(reg.GlobalReplace(target, &remarks))
-                        stream_info = remarks;
+                    retStr = regReplace(remarks, pattern, target);
+                    if(retStr != remarks)
+                    {
+                        stream_info = retStr;
+                        break;
+                    }
                 }
                 else
                     continue;
@@ -1646,13 +1647,14 @@ bool getSubInfoFromNodes(std::vector<nodeInfo> &nodes, string_array &stream_rule
                     continue;
                 pattern = vArray[0];
                 target = vArray[1];
-                pcrecpp::RE reg(pattern, pcrecpp::UTF8());
-                if(reg.FullMatch(remarks))
+                if(regMatch(remarks, pattern))
                 {
-                    if(target.find("$") != target.npos)
-                        target = replace_all_distinct(target, "$", "\\");
-                    if(reg.GlobalReplace(target, &remarks))
-                        time_info = remarks;
+                    retStr = regReplace(remarks, pattern, target);
+                    if(retStr != remarks)
+                    {
+                        time_info = retStr;
+                        break;
+                    }
                 }
                 else
                     continue;

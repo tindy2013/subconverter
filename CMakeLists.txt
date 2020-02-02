@@ -2,12 +2,12 @@ project(subconverter LANGUAGES CXX)
 cmake_minimum_required(VERSION 3.4)
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 IF(NOT CMAKE_BUILD_TYPE)
-	SET(CMAKE_BUILD_TYPE Release)
+    SET(CMAKE_BUILD_TYPE Release)
 ENDIF()
 SET(CMAKE_CXX_STANDARD 17)
 ADD_DEFINITIONS(-Wall -Wextra -Wno-unused-parameter -Wno-unused-result)
 
-OPTION(USING_STD_REGEX "Use std::regex from C++ library instead of PCRECPP." OFF)
+OPTION(USING_STD_REGEX "Use std::regex from C++ library instead of PCRE2." OFF)
 OPTION(USING_MALLOC_TRIM "Call malloc_trim after processing request to lower memory usage (Your system must support malloc_trim)." OFF)
 
 INCLUDE(CheckCXXSourceCompiles)
@@ -18,28 +18,28 @@ int main(){std::to_string(0);return 0;}
 " HAVE_TO_STRING)
 
 IF(APPLE)
-	ADD_DEFINITIONS(-D_MACOS)
+    ADD_DEFINITIONS(-D_MACOS)
 ENDIF()
 
 IF(HAVE_TO_STRING)
-	ADD_DEFINITIONS(-DHAVE_TO_STRING)
+    ADD_DEFINITIONS(-DHAVE_TO_STRING)
 ENDIF()
 
 IF(USING_MALLOC_TRIM)
-	ADD_DEFINITIONS(-DMALLOC_TRIM)
+    ADD_DEFINITIONS(-DMALLOC_TRIM)
 ENDIF()
 
 ADD_EXECUTABLE(subconverter 
-	src/logger.cpp
-	src/main.cpp
-	src/misc.cpp
-	src/multithread.cpp
-	src/nodemanip.cpp
-	src/rapidjson_extra.cpp
-	src/speedtestutil.cpp
-	src/subexport.cpp
-	src/webget.cpp
-	src/webserver_libevent.cpp)
+    src/logger.cpp
+    src/main.cpp
+    src/misc.cpp
+    src/multithread.cpp
+    src/nodemanip.cpp
+    src/rapidjson_extra.cpp
+    src/speedtestutil.cpp
+    src/subexport.cpp
+    src/webget.cpp
+    src/webserver_libevent.cpp)
 INCLUDE_DIRECTORIES(src)
 LINK_DIRECTORIES(${CMAKE_SOURCE_DIR})
 
@@ -75,18 +75,21 @@ INCLUDE_DIRECTORIES(${YAML_CPP_INCLUDE_DIRS})
 TARGET_LINK_LIBRARIES(subconverter ${YAML_CPP_LIBRARY})
 
 IF(USING_STD_REGEX STREQUAL "ON")
-	ADD_DEFINITIONS(-DUSE_STD_REGEX)
+    ADD_DEFINITIONS(-DUSE_STD_REGEX)
 ELSE()
-	FIND_PACKAGE(PCRECPP REQUIRED)
-	INCLUDE_DIRECTORIES(${PCRECPP_INCLUDE_DIRS})
-	TARGET_LINK_LIBRARIES(subconverter ${PCRECPP_LIBRARIES})
-	ADD_DEFINITIONS(-DPCRE_STATIC)
+    PKG_CHECK_MODULES(PCRE2 libpcre2-8 REQUIRED)
+    INCLUDE_DIRECTORIES(${PCRE2_INCLUDE_DIRS})
+    TARGET_LINK_LIBRARIES(subconverter ${PCRE2_LIBRARIES})
+    ADD_DEFINITIONS(-DPCRE2_STATIC)
+  
+    FIND_PACKAGE(JPCRE2 REQUIRED)
+    INCLUDE_DIRECTORIES(${JPCRE2_INCLUDE_DIRS})
 ENDIF()
 
 IF(WIN32)
-	TARGET_LINK_LIBRARIES(subconverter wsock32 ws2_32)
+    TARGET_LINK_LIBRARIES(subconverter wsock32 ws2_32)
 ELSE()
-	INCLUDE(GNUInstallDirs)
-	INSTALL(TARGETS subconverter DESTINATION ${CMAKE_INSTALL_BINDIR}/subconverter)
-	INSTALL(DIRECTORY base/ DESTINATION ${CMAKE_INSTALL_BINDIR}/subconverter FILES_MATCHING PATTERN "*")
+    INCLUDE(GNUInstallDirs)
+    INSTALL(TARGETS subconverter DESTINATION ${CMAKE_INSTALL_BINDIR}/subconverter)
+    INSTALL(DIRECTORY base/ DESTINATION ${CMAKE_INSTALL_BINDIR}/subconverter FILES_MATCHING PATTERN "*")
 ENDIF()

@@ -1625,14 +1625,7 @@ void netchToQuanX(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rule
             type = "static";
             rules_upper_bound = vArray.size();
         }
-        else if(vArray[1] == "url-test")
-        {
-            if(vArray.size() < 5)
-                continue;
-            type = "static";
-            rules_upper_bound = vArray.size() - 2;
-        }
-        else if(vArray[1] == "fallback")
+        else if(vArray[1] == "url-test" || vArray[1] == "fallback")
         {
             if(vArray.size() < 5)
                 continue;

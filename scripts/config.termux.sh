@@ -3,7 +3,7 @@ set -xe
 
 apt update
 apt install -y git cmake clang pkg-config
-apt install -y libevent libcurl openssl pcre
+apt install -y libevent libcurl openssl pcre2
 
 git clone https://github.com/jbeder/yaml-cpp
 cd yaml-cpp
@@ -15,3 +15,6 @@ git clone https://github.com/tencent/rapidjson
 cd rapidjson
 cp -r include/* /data/data/com.termux/files/usr/include/
 cd ..
+
+curl -LO https://raw.githubusercontent.com/jpcre2/jpcre2/release/src/jpcre2.hpp
+cp jpcre2.hpp /data/data/com.termux/files/usr/include/

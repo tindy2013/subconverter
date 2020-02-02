@@ -23,6 +23,7 @@ static int writer(char *data, size_t size, size_t nmemb, std::string *writerData
 std::string curlGet(std::string url, std::string proxy, std::string &response_headers)
 {
     CURL *curl_handle;
+    CURLcode res;
     std::string data;
 
     curl_global_init(CURL_GLOBAL_ALL);
@@ -43,8 +44,11 @@ std::string curlGet(std::string url, std::string proxy, std::string &response_he
     if(proxy != "")
         curl_easy_setopt(curl_handle, CURLOPT_PROXY, proxy.data());
 
-    curl_easy_perform(curl_handle);
+    res = curl_easy_perform(curl_handle);
     curl_easy_cleanup(curl_handle);
+
+    if(res != CURLE_OK)
+        data.clear();
 
     return data;
 }
