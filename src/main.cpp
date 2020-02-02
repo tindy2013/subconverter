@@ -66,7 +66,7 @@ void setcd(std::string &file)
     if(!retVal)
         return;
 #else
-    char *ret = realpath(file.data(), &szTemp);
+    char *ret = realpath(file.data(), szTemp);
     if(ret == NULL)
         return;
 #endif // _WIN32
