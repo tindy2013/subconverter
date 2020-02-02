@@ -1,0 +1,15 @@
+;for forcerule.yml
+Proxy`select`.*`[]AUTO`[]DIRECT`.*
+AUTO`url-test`.*`http://www.gstatic.com/generate_204`300
+google`select`.*
+netflix`select`.*
+动画疯`select`(深台|彰化|新北|台)
+fox+`select`(HGC|HKBN|PCCW|HKT|深台|彰化|新北|台|新加坡|sg|hk|tw)
+美区影视`select`(美|美国)
+Global_media`select`.*
+Domestic`select`[]DIRECT`[]Proxy
+Apple`select`[]DIRECT`[]Proxy
+Final`select`[]Proxy`[]DIRECT
+屏蔽广告`select`[]REJECT`[]DIRECT
+UnblockNeteaseMusic`select`云音乐解锁`[]DIRECT
+Telegram`select`新加坡`[]Proxy

@@ -16,6 +16,7 @@
 #include "subexport.h"
 #include "multithread.h"
 #include "version.h"
+#include "logger.h"
 
 //common settings
 std::string pref_path = "pref.ini";
@@ -56,26 +57,61 @@ void SetConsoleTitle(std::string title)
 }
 #endif // _WIN32
 
-void setcd(char *argv[])
+void setcd(std::string &file)
 {
+    char szTemp[1024] = {};
     std::string path;
-    char szTmp[1024];
-#ifndef _WIN32
-    path.assign(argv[0]);
-    if(path[0] != '/')
-    {
-        getcwd(szTmp, 1023);
-        path.assign(szTmp);
-        path.append("/");
-        path.append(argv[0]);
-    }
-    path = path.substr(0, path.rfind("/") + 1);
+#ifdef _WIN32
+    DWORD retVal = GetFullPathName(file.data(), 1023, szTemp, NULL);
+    if(!retVal)
+        return;
 #else
-    GetModuleFileName(NULL, szTmp, 1023);
-    strrchr(szTmp, '\\')[1] = '\0';
-    path.assign(szTmp);
+    char *ret = realpath(file.data(), &szTemp);
+    if(ret == NULL)
+        return;
 #endif // _WIN32
+    path.assign(szTemp);
     chdir(path.data());
+}
+
+int importItems(string_array &target)
+{
+    string_array result;
+    std::stringstream ss;
+    std::string path, content, strLine;
+    unsigned int itemCount = 0;
+    for(std::string &x : target)
+    {
+        if(x.find("!!import:") == x.npos)
+        {
+            result.emplace_back(x);
+            continue;
+        }
+        path = x.substr(x.find(":") + 1);
+        writeLog(0, "Trying to import items from " + path);
+
+        if(fileExist(path))
+            content = fileGet(path, false, api_mode);
+        else
+            content = webGet(path, "");
+        if(!content.size())
+            return -1;
+
+        ss << content;
+        char delimiter = count(content.begin(), content.end(), '\n') < 1 ? '\r' : '\n';
+        std::string::size_type lineSize;
+        while(getline(ss, strLine, delimiter))
+        {
+            lineSize = strLine.size();
+            if(!lineSize || strLine[0] == ';' || strLine[0] == '#' || (lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')) //empty lines and comments are ignored
+                continue;
+            result.emplace_back(strLine);
+            itemCount++;
+        }
+    }
+    target.swap(result);
+    writeLog(0, "Imported " + std::to_string(itemCount) + " item(s).");
+    return 0;
 }
 
 void refreshRulesets(string_array &ruleset_list, std::vector<ruleset_content> &rca)
@@ -206,6 +242,7 @@ void readConf()
         if(ini.ItemPrefixExist("rename_node"))
         {
             ini.GetAll("rename_node", tempArray);
+            importItems(tempArray);
             safe_set_renames(tempArray);
             eraseElements(tempArray);
         }
@@ -217,12 +254,14 @@ void readConf()
         if(ini.ItemPrefixExist("stream_rule"))
         {
             ini.GetAll("stream_rule", tempArray);
+            importItems(tempArray);
             safe_set_streams(tempArray);
             eraseElements(tempArray);
         }
         if(ini.ItemPrefixExist("time_rule"))
         {
             ini.GetAll("time_rule", tempArray);
+            importItems(tempArray);
             safe_set_times(tempArray);
             eraseElements(tempArray);
         }
@@ -242,6 +281,7 @@ void readConf()
     if(ini.ItemPrefixExist("rule"))
     {
         ini.GetAll("rule", tempArray);
+        importItems(tempArray);
         safe_set_emojis(tempArray);
         eraseElements(tempArray);
     }
@@ -254,7 +294,11 @@ void readConf()
         if(ini.ItemExist("update_ruleset_on_request"))
             update_ruleset_on_request = ini.GetBool("update_ruleset_on_request");
         if(ini.ItemPrefixExist("surge_ruleset"))
+        {
             ini.GetAll("surge_ruleset", rulesets);
+            importItems(rulesets);
+        }
+
     }
     else
     {
@@ -264,7 +308,10 @@ void readConf()
 
     ini.EnterSection("clash_proxy_group");
     if(ini.ItemPrefixExist("custom_proxy_group"))
+    {
         ini.GetAll("custom_proxy_group", clash_extra_group);
+        importItems(clash_extra_group);
+    }
 
     ini.EnterSection("server");
     if(ini.ItemExist("listen"))
@@ -303,7 +350,7 @@ int loadExternalConfig(std::string &path, ExternalConfig &ext, std::string proxy
 {
     std::string base_content;
     if(fileExist(path))
-        base_content = fileGet(path, false);
+        base_content = fileGet(path, false, api_mode);
     else
         base_content = webGet(path, proxy);
 
@@ -318,9 +365,15 @@ int loadExternalConfig(std::string &path, ExternalConfig &ext, std::string proxy
 
     ini.EnterSection("custom");
     if(ini.ItemPrefixExist("custom_proxy_group"))
+    {
         ini.GetAll("custom_proxy_group", ext.custom_proxy_group);
+        importItems(ext.custom_proxy_group);
+    }
     if(ini.ItemPrefixExist("surge_ruleset"))
+    {
         ini.GetAll("surge_ruleset", ext.surge_ruleset);
+        importItems(ext.surge_ruleset);
+    }
 
     if(ini.ItemExist("clash_rule_base"))
         ext.clash_rule_base = ini.Get("clash_rule_base");
@@ -341,9 +394,15 @@ int loadExternalConfig(std::string &path, ExternalConfig &ext, std::string proxy
         ext.enable_rule_generator = ini.GetBool("enable_rule_generator");
 
     if(ini.ItemPrefixExist("rename"))
+    {
         ini.GetAll("rename", ext.rename);
+        importItems(ext.rename);
+    }
     if(ini.ItemPrefixExist("emoji"))
+    {
         ini.GetAll("emoji", ext.emoji);
+        importItems(ext.emoji);
+    }
 
     return 0;
 }
@@ -818,11 +877,9 @@ int main(int argc, char *argv[])
     SetConsoleOutputCP(65001);
 #endif // _WIN32
 
-#ifndef _DEBUG
-    setcd(argv);
-#endif // _DEBUG
     SetConsoleTitle("subconverter " VERSION);
     chkArg(argc, argv);
+    setcd(pref_path);
     readConf();
     if(!update_ruleset_on_request)
         refreshRulesets(rulesets, ruleset_content_array);
@@ -955,7 +1012,7 @@ int main(int argc, char *argv[])
 
         append_response("GET", "/getlocal", "text/plain;charset=utf-8", [](RESPONSE_CALLBACK_ARGS) -> std::string
         {
-            return fileGet(UrlDecode(getUrlArg(argument, "path")));
+            return fileGet(UrlDecode(getUrlArg(argument, "path")), false);
         });
     }
 

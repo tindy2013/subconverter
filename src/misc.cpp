@@ -446,6 +446,7 @@ std::string getUrlArg(std::string url, std::string request)
         return std::string();
     }
     */
+    /*
     std::string::size_type spos = url.find("?");
     if(spos != url.npos)
         url.erase(0, spos + 1);
@@ -453,16 +454,20 @@ std::string getUrlArg(std::string url, std::string request)
     string_array vArray, arglist = split(url, "&");
     for(std::string &x : arglist)
     {
-        /*
-        if(regex_search(x.cbegin(), x.cend(), result, std::regex("^" + request + "=(.*)$")))
-            return result[1];
-        */
         std::string::size_type epos = x.find("=");
         if(epos != x.npos)
         {
             if(x.substr(0, epos) == request)
                 return x.substr(epos + 1);
         }
+    }
+    */
+    std::string pattern = request + "=";
+    std::string::size_type pos = url.rfind(pattern);
+    if(pos != url.npos)
+    {
+        pos += pattern.size();
+        return url.substr(pos, url.find("&", pos) - pos);
     }
     return std::string();
 }
@@ -659,11 +664,23 @@ std::string getMD5(std::string data)
     return result;
 }
 
-std::string fileGet(std::string path, bool binary)
+std::string fileGet(std::string path, bool binary, bool scope_limit)
 {
     std::ifstream infile;
     std::stringstream strstrm;
     std::ios::openmode mode = binary ? std::ios::binary : std::ios::in;
+
+    if(scope_limit)
+    {
+#ifdef _WIN32
+    if(path.find(":/") != path.npos || path.find("..") != path.npos)
+        return std::string();
+#else
+    if(path.find("/") == 0 || path.find("..") != path.npos)
+        return std::string();
+#endif // _WIN32
+    }
+
 
     infile.open(path, mode);
     if(infile)
@@ -707,12 +724,12 @@ bool fileCopy(std::string source, std::string dest)
 
 std::string fileToBase64(std::string filepath)
 {
-    return base64_encode(fileGet(filepath));
+    return base64_encode(fileGet(filepath, true));
 }
 
 std::string fileGetMD5(std::string filepath)
 {
-    return getMD5(fileGet(filepath));
+    return getMD5(fileGet(filepath, true));
 }
 
 int fileWrite(std::string path, std::string content, bool overwrite)

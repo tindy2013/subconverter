@@ -56,7 +56,7 @@ int to_int(std::string str, int def_vaule = 0);
 std::string UTF8ToCodePoint(std::string data);
 std::string GetEnv(std::string name);
 
-std::string fileGet(std::string path, bool binary = true);
+std::string fileGet(std::string path, bool binary, bool scope_limit = false);
 int fileWrite(std::string path, std::string content, bool overwrite);
 bool fileExist(std::string path);
 bool fileCopy(std::string source,std::string dest);
