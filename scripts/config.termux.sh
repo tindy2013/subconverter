@@ -15,6 +15,3 @@ git clone https://github.com/tencent/rapidjson
 cd rapidjson
 cp -r include/* /data/data/com.termux/files/usr/include/
 cd ..
-
-curl -LO https://raw.githubusercontent.com/jpcre2/jpcre2/release/src/jpcre2.hpp
-cp jpcre2.hpp /data/data/com.termux/files/usr/include/

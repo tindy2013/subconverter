@@ -560,7 +560,7 @@ bool regMatch(std::string src, std::string match)
 
 #else
 
-bool regMatch(std::string src, std::string target, bool partial)
+bool regMatch(std::string src, std::string target)
 {
     jp::Regex reg;
     reg.setPattern(target).addModifier("gm").compile();
@@ -638,8 +638,10 @@ std::string getMD5(std::string data)
     mbedtls_md5_context ctx;
 
     mbedtls_md5_init(&ctx);
-    mbedtls_md5_update(&ctx, data.data(), data.size());
-    mbedtls_md5_finish(&ctx, (unsigned char *)&digest);
+    mbedtls_md5_starts_ret(&ctx);
+    mbedtls_md5_update_ret(&ctx, reinterpret_cast<const unsigned char*>(data.data()), data.size());
+    mbedtls_md5_finish_ret(&ctx, reinterpret_cast<unsigned char*>(&digest));
+    mbedtls_md5_free(&ctx);
 #else
     MD5_CTX ctx;
 

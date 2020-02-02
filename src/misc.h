@@ -43,7 +43,7 @@ void sleep(int interval);
 bool regValid(std::string &target);
 bool regFind(std::string src, std::string target);
 std::string regReplace(std::string src, std::string match, std::string rep);
-bool regMatch(std::string src, std::string match, bool partial = false);
+bool regMatch(std::string src, std::string match);
 std::string speedCalc(double speed);
 std::string getMD5(std::string data);
 bool isIPv4(std::string &address);

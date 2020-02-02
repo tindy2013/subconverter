@@ -298,7 +298,6 @@ void readConf()
             ini.GetAll("surge_ruleset", rulesets);
             importItems(rulesets);
         }
-
     }
     else
     {

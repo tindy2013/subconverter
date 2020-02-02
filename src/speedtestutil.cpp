@@ -5,7 +5,6 @@
 #include <time.h>
 
 #include <rapidjson/document.h>
-#include <pcrecpp.h>
 
 #include "misc.h"
 #include "printout.h"

@@ -11,9 +11,6 @@ cd curl
 make -j8 > /dev/null
 cd ..
 
-curl -LO https://raw.githubusercontent.com/jpcre2/jpcre2/release/src/jpcre2.hpp
-cp jpcre2.hpp /usr/local/include/
-
 cp curl/lib/.libs/libcurl.a .
 cp /usr/local/lib/libevent.a .
 cp /usr/local/opt/zlib/lib/libz.a .
