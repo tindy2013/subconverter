@@ -31,7 +31,7 @@ std::string access_token;
 extern std::string custom_group;
 
 //multi-thread lock
-extern std::mutex on_configuring;
+std::mutex on_configuring;
 
 //preferences
 string_array renames, emojis;
@@ -59,17 +59,25 @@ void SetConsoleTitle(std::string title)
 
 void setcd(std::string &file)
 {
-    char szTemp[1024] = {};
+    char szTemp[1024] = {}, filename[256] = {};
     std::string path;
 #ifdef _WIN32
-    DWORD retVal = GetFullPathName(file.data(), 1023, szTemp, NULL);
+    char *pname = NULL;
+    DWORD retVal = GetFullPathName(file.data(), 1023, szTemp, &pname);
     if(!retVal)
         return;
+    strcpy(filename, pname);
+    strrchr(szTemp, '\\')[1] = '\0';
 #else
     char *ret = realpath(file.data(), szTemp);
     if(ret == NULL)
         return;
+    ret = strcpy(filename, strrchr(szTemp, '/') + 1);
+    if(ret == NULL)
+        return;
+    strrchr(szTemp, '/')[1] = '\0';
 #endif // _WIN32
+    file.assign(filename);
     path.assign(szTemp);
     chdir(path.data());
 }

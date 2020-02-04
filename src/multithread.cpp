@@ -4,7 +4,7 @@
 
 //safety lock for multi-thread
 typedef std::lock_guard<std::mutex> guarded_mutex;
-std::mutex on_configuring, on_emoji, on_rename, on_stream, on_time;
+std::mutex on_emoji, on_rename, on_stream, on_time;
 
 extern string_array emojis, renames;
 extern string_array stream_rules, time_rules;
