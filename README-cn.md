@@ -12,6 +12,7 @@
   - [阅前提示](#阅前提示)
   - [进阶地址](#进阶地址)
   - [配置文件](#配置文件)
+  - [外部配置](#外部配置)
 - [自动上传](#自动上传)
 
 ## 支持类型
@@ -181,6 +182,7 @@ http://127.0.0.1:25500/sub?target=%TARGET%&url=%URL%&emoji=%EMOJI%····
 | url   |  可选  | https%3A%2F%2Fwww.xxx.com | 指机场所提供的订阅链接，需要经过 [URLEncode](https://www.urlencoder.org/) 处理，**可选的前提是在 `default_url` 中进行指定**    |
 | config |  可选  | https%3A%2F%2Fwww.xxx.com | 指远程 `pref.ini` (包含分组和规则部分)，需要经过 [URLEncode](https://www.urlencoder.org/) 处理，可查看 [示例仓库](https://github.com/lzdnico/subconverteriniexample) 寻找灵感，默认加载本地设置文件 |
 | upload |  可选  | true / false  | 指将生成的订阅文件上传至 `Gist`，需要填写`gistconf.ini`，默认为 false (即不上传)    |
+| upload_path |  可选  | MySS.yaml  | 指将生成的订阅文件上传至 `Gist` 后的名称，需要经过 [URLEncode](https://www.urlencoder.org/) 处理    |
 | emoji |  可选  | true / false  | 指在节点名称前加入 Emoji，默认为 true  |
 | group |  可选  | MySS  | 指设置该订阅的组名，多用于 SSD/SSR  |
 | tfo |  可选  | true / false  | 指开启该订阅链接的 TCP Fast Open，默认为 false  |
@@ -515,6 +517,80 @@ custom_proxy_group=🇯🇵 JP`select`沪日`日本`[]🇯🇵 日本延迟最�
 <summary><b>[advanced] 部分</b></summary>
 
 > 此部分通常**保持默认**即可
+
+</details>
+
+### 外部配置
+
+> 本部分用于 链接参数 `**&config=**`
+
+将文件按照以下格式写好，上传至 Github Gist 或者 其他**可访问**网络位置
+经过 [URLEncode](https://www.urlencoder.org/) 处理后，添加至 `&config=` 即可调用
+需要注意的是，由外部配置中所定义的值会**覆盖** `pref.ini` 里的内容
+即，如果你在外部配置中定义了 
+
+```
+emoji=(流量|时间|应急),🏳️‍🌈
+emoji=阿根廷,🇦🇷
+```
+
+那么本程序只会匹配以上两个 Emoji，不再使用 `pref.ini` 中所定义的 国别 Emoji
+
+<details>
+<summary><b>点击查看文件内容</b></summary>
+
+```ini
+[custom]
+;这是一个外部配置文件示例
+;所有可能的自定义设置如下所示
+
+;用于自定义组的选项 会覆盖 pref.ini 里的内容
+;使用以下模式生成 Clash 代理组，带有 "[]" 前缀将直接添加
+;Format: Group_Name`select`Rule_1`Rule_2`...
+;        Group_Name`url-test|fallback|load-balance`Rule_1`Rule_2`...`test_url`interval
+;Rule with "[]" prefix will be added directly.
+
+custom_proxy_group=Proxy`select`.*`[]AUTO`[]DIRECT`.*
+custom_proxy_group=UrlTest`url-test`.*`http://www.gstatic.com/generate_204`300
+custom_proxy_group=FallBack`fallback`.*`http://www.gstatic.com/generate_204`300
+custom_proxy_group=LoadBalance`load-balance`.*`http://www.gstatic.com/generate_204`300
+
+;custom_proxy_group=g1`select`!!GROUPID=0
+;custom_proxy_group=g2`select`!!GROUPID=1
+;custom_proxy_group=v2ray`select`!!GROUP=V2RayProvider
+
+;custom_proxy_group=g1hk`select`!!GROUPID=0!!(HGC|HKBN|PCCW|HKT|hk|港)
+;custom_proxy_group=sstw`select`!!GROUP=V2RayProvider!!(深台|彰化|新北|台|tw)
+
+
+;用于自定义规则的选项 会覆盖 pref.ini 里的内容
+;Ruleset addresses, supports local files/URL
+;Format: Group name,URL
+;        Group name,[]Rule
+enable_rule_generator=false
+overwrite_original_rules=false
+;surge_ruleset=DIRECT,https://raw.githubusercontent.com/ConnersHua/Profiles/master/Surge/Ruleset/Unbreak.list
+;surge_ruleset=🎯 全球直连,rules/LocalAreaNetwork.list
+;surge_ruleset=🎯 全球直连,[]GEOIP,CN
+;surge_ruleset=🐟 漏网之鱼,[]FINAL
+
+;用于自定义基础配置的选项 会覆盖 pref.ini 里的内容
+clash_rule_base=base/forcerule.yml
+;surge_rule_base=base/surge.conf
+;surfboard_rule_base=base/surfboard.conf
+;mellow_rule_base=base/mellow.conf
+;quan_rule_base=base/quan.conf
+;quanx_rule_base=base/quanx.conf
+
+;用于自定义重命名的选项 会覆盖 pref.ini 里的内容
+;rename=Test-(.*?)-(.*?)-(.*?)\((.*?)\)@\1\4x测试线路_自\2到\3
+;rename=\(?((x|X)?(\d+)(\.?\d+)?)((\s?倍率?)|(x|X))\)?@$1x
+
+;用于自定义 Emoji 的选项 会覆盖 pref.ini 里的内容
+;emoji=(流量|时间|应急),🏳️‍🌈
+;emoji=阿根廷,🇦🇷
+
+```
 
 </details>
 
