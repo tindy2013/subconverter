@@ -27,7 +27,8 @@ std::string modSSMD5 = "f7653207090ce3389115e9c88541afe0";
 
 template <typename T> void operator >> (const YAML::Node& node, T& i)
 {
-    i = node.as<T>();
+    if(node.IsDefined()) //fail-safe
+        i = node.as<T>();
 };
 
 void explodeVmess(std::string vmess, std::string custom_port, int local_port, nodeInfo &node)

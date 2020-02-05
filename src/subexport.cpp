@@ -1340,8 +1340,6 @@ void netchToQuan(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rules
             proxyStr = remark + " = vmess, " + hostname + ", " + port + ", " + method + ", \"" + id + "\", group=" + x.group;
             if(tlssecure)
                 proxyStr += ", over-tls=true, tls-host=" + host;
-            if(ext.skip_cert_verify)
-                proxyStr += ", certificate=0";
             if(transproto == "ws")
                 proxyStr += ", obfs=ws, obfs-path=\"" + path + "\", obfs-header=\"Host: " + host + "\"";
 

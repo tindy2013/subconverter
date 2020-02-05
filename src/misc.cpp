@@ -563,10 +563,10 @@ bool regMatch(std::string src, std::string match)
 bool regMatch(std::string src, std::string target)
 {
     jp::Regex reg;
-    reg.setPattern(target).addModifier("gm").compile();
+    reg.setPattern(target).addModifier("gm").addPcre2Option(PCRE2_ANCHORED|PCRE2_ENDANCHORED).compile();
     if(!reg)
         return false;
-    return reg.replace(src, "$0") == src;
+    return reg.match(src);
 }
 
 bool regFind(std::string src, std::string target)

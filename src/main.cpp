@@ -25,7 +25,7 @@ string_array def_exclude_remarks, def_include_remarks, rulesets, stream_rules, t
 std::vector<ruleset_content> ruleset_content_array;
 std::string listen_address = "127.0.0.1", default_url, managed_config_prefix;
 int listen_port = 25500, max_pending_connections = 10, max_concurrent_threads = 4;
-bool api_mode = true, write_managed_config = false, update_ruleset_on_request = false, overwrite_original_rules = true;
+bool api_mode = true, write_managed_config = false, enable_rule_generator = true, update_ruleset_on_request = false, overwrite_original_rules = true;
 bool print_debug_info = false, cfw_child_process = false;
 std::string access_token;
 extern std::string custom_group;
@@ -457,6 +457,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     std::vector<ruleset_content> rca;
     extra_settings ext;
     std::string subInfo;
+    bool ruleset_group_updated = false;
 
     if(std::find(regex_blacklist.cbegin(), regex_blacklist.cend(), include) != regex_blacklist.cend() || std::find(regex_blacklist.cbegin(), regex_blacklist.cend(), exclude) != regex_blacklist.cend())
         return "Invalid request!";
@@ -526,10 +527,11 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         {
             extra_ruleset = extconf.surge_ruleset;
             refreshRulesets(extra_ruleset, rca);
+            ruleset_group_updated = true;
         }
         else
         {
-            if(update_ruleset_on_request || cfw_child_process)
+            if(update_ruleset_on_request)
                 refreshRulesets(rulesets, ruleset_content_array);
             rca = ruleset_content_array;
         }
@@ -542,6 +544,8 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
             extra_group = split(groups, "@");
             if(!extra_group.size())
                 extra_group = clash_extra_group;
+            else
+                ruleset_group_updated = true;
         }
         else
             extra_group = clash_extra_group;
@@ -552,20 +556,24 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
             extra_ruleset = split(ruleset, "@");
             if(!extra_ruleset.size())
             {
-                if(update_ruleset_on_request || cfw_child_process)
+                if(update_ruleset_on_request)
                     refreshRulesets(rulesets, ruleset_content_array);
                 rca = ruleset_content_array;
             }
             else
             {
                 refreshRulesets(extra_ruleset, rca);
+                ruleset_group_updated = true;
             }
         }
         else
         {
-            if(update_ruleset_on_request || cfw_child_process)
-                refreshRulesets(rulesets, ruleset_content_array);
-            rca = ruleset_content_array;
+            if(enable_rule_generator)
+            {
+                if(update_ruleset_on_request || cfw_child_process)
+                    refreshRulesets(rulesets, ruleset_content_array);
+                rca = ruleset_content_array;
+            }
         }
     }
 
@@ -592,6 +600,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
 
     ext.nodelist = nodelist == "true";
     ext.surge_ssr_path = surge_ssr_path;
+    ext.enable_rule_generator = enable_rule_generator;
 
     //loading urls
     string_array urls = split(url, "|");
@@ -640,7 +649,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     if(target == "clash" || target == "clashr")
     {
         std::cerr<<"Clash"<<((target == "clashr") ? "R" : "")<<std::endl;
-        if(rca.size() || extra_group.size() || update_ruleset_on_request || ext_clash_base != clash_rule_base)
+        if(ruleset_group_updated || update_ruleset_on_request || ext_clash_base != clash_rule_base)
         {
             if(fileExist(ext_clash_base))
                 base_content = fileGet(ext_clash_base, false);
@@ -694,7 +703,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     else if(target == "mellow")
     {
         std::cerr<<"Mellow"<<std::endl;
-        if(rca.size() || extra_group.size() || update_ruleset_on_request || ext_mellow_base != mellow_rule_base)
+        if(ruleset_group_updated || update_ruleset_on_request || ext_mellow_base != mellow_rule_base)
         {
             if(fileExist(ext_mellow_base))
                 base_content = fileGet(ext_mellow_base, false);
@@ -866,7 +875,10 @@ void chkArg(int argc, char *argv[])
     for(int i = 1; i < argc; i++)
     {
         if(strcmp(argv[i], "-cfw") == 0)
+        {
             cfw_child_process = true;
+            update_ruleset_on_request = true;
+        }
         else if(strcmp(argv[i], "-f") == 0 || strcmp(argv[i], "--file") == 0)
             pref_path.assign(argv[++i]);
     }
