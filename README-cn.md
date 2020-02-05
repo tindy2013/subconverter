@@ -3,17 +3,21 @@
 在各种订阅格式之间进行转换的实用程序.
 
 [![Build Status](https://travis-ci.com/tindy2013/subconverter.svg?branch=master)](https://travis-ci.com/tindy2013/subconverter)
+[![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/tindy2013/subconverter.svg)](https://github.com/tindy2013/subconverter/tags)
+[![GitHub release](https://img.shields.io/github/release/tindy2013/subconverter.svg)](https://github.com/tindy2013/subconverter/releases)
+[![GitHub license](https://img.shields.io/github/license/tindy2013/subconverter.svg)](https://github.com/tindy2013/subconverter/blob/master/LICENSE)
 
-- [支持类型](#支持类型)
-- [简易用法](#简易用法)
-  - [调用地址](#调用地址)
-  - [调用说明](#调用说明)
-- [进阶用法](#进阶用法)
-  - [阅前提示](#阅前提示)
-  - [进阶地址](#进阶地址)
-  - [配置文件](#配置文件)
-  - [外部配置](#外部配置)
-- [自动上传](#自动上传)
+- [subconverter](#subconverter)
+  - [支持类型](#支持类型)
+  - [简易用法](#简易用法)
+    - [调用地址](#调用地址)
+    - [调用说明](#调用说明)
+  - [进阶用法](#进阶用法)
+    - [阅前提示](#阅前提示)
+    - [进阶地址](#进阶地址)
+    - [配置文件](#配置文件)
+    - [外部配置](#外部配置)
+  - [自动上传](#自动上传)
 
 ## 支持类型
 
