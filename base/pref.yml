@@ -1,0 +1,75 @@
+common:
+  api_mode: false
+  api_access_token: password
+  default_url: []
+  exclude_remarks: ["(到期|剩余流量|时间|官网|产品)"]
+  include_remarks: []
+  clash_rule_base: base/simple_base.yml
+  surge_rule_base: base/surge.conf
+  surfboard_rule_base: base/surfboard.conf
+  mellow_rule_base: base/mellow.conf
+  quan_rule_base: base/quan.conf
+  quanx_rule_base: base/quanx.conf
+  proxy_ruleset: SYSTEM
+  proxy_subscription: NONE
+  append_proxy_type: false
+
+userinfo:
+  stream_rule: 
+  - {match: "^剩余流量：(.*?) (.*)$", replace: "total=$1&left=$2"}
+  - {match: "^Bandwidth: (.*?)/(.*)$", replace: "used=$1&total=$2"}
+  - {match: "^.*剩余(.*?)(?:\\s*?)@(?:.*)$", replace: "total=$1"}
+  time_rule:
+  - {match: "^过期时间：(\\d+)-(\\d+)-(\\d+) (\\d+):(\\d+):(\\d+)$", replace: "$1:$2:$3:$4:$5:$6"}
+  - {match: "^到期时间:(\\d+)-(\\d+)-(\\d+)$", replace: "$1:$2:$3:0:0:0"}
+  - {match: "^Smart Access expire: (\\d+)/(\\d+)/(\\d+)$", replace: "$1:$2:$3:0:0:0"}
+
+node_pref:
+  udp_flag: false
+  tcp_fast_open_flag: false
+  sort_flag: false
+  skip_cert_verify_flag: false
+  rename_node:
+#  - {match: "\\(?((x|X)?(\\d+)(\\.?\\d+)?)((\\s?倍率?)|(x|X))\\)?", replace: "$1x"}
+  - {import: snippets/rename_node.txt}
+
+managed_config:
+  write_managed_config: true
+  managed_config_prefix: "http://127.0.0.1:25500"
+
+surge_external_proxy:
+  surge_ssr_path: "" # /usr/bin/ssr-local
+
+emojis:
+  add_emoji: true
+  remove_old_emoji: true
+  rules:
+#  - {match: "(流量|时间|应急)", emoji: "🏳️‍🌈"}
+  - {import: snippets/emoji.txt}
+
+ruleset:
+  enabled: true
+  overwrite_original_rules: false
+  update_ruleset_on_request: false
+  surge_ruleset:
+#  - {rule: "GEOIP,CN", group: "DIRECT"}
+#  - {ruleset: "rules/LocalAreaNetwork.list", group: "DIRECT"}
+  - {import: snippets/rulesets.txt}
+
+proxy_group:
+  custom_proxy_group:
+#  - {name: UrlTest, type: url-test, rule: [".*"], url: http://www.gstatic.com/generate_204, interval: 300}
+#  - {name: Proxy, type: select, rule: [".*"]}
+#  - {name: group1, type: select, rule: ["!!GROUPID=0"]}
+#  - {name: v2ray, type: select, rule: ["!!GROUP=V2RayProvider"]}
+#  - {import: snippets/groups_forcerule.txt}
+  - {import: snippets/groups.txt}
+
+server:
+  listen: 0.0.0.0
+  port: 25500
+
+advanced:
+  print_debug_info: false
+  max_pending_connections: 10240
+  max_concurrent_threads: 4

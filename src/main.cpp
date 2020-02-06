@@ -2,6 +2,7 @@
 #include <string>
 #include <mutex>
 #include <unistd.h>
+#include <numeric>
 
 #include <yaml-cpp/yaml.h>
 
@@ -19,7 +20,7 @@
 #include "logger.h"
 
 //common settings
-std::string pref_path = "pref.ini";
+std::string pref_path = "pref.yml";
 bool generator_mode = false;
 string_array def_exclude_remarks, def_include_remarks, rulesets, stream_rules, time_rules;
 std::vector<ruleset_content> ruleset_content_array;
@@ -49,6 +50,12 @@ YAML::Node clash_base;
 INIReader surge_base, mellow_base;
 
 string_array regex_blacklist = {"(.*)*"};
+
+template <typename T> void operator >> (const YAML::Node& node, T& i)
+{
+    if(node.IsDefined()) //fail-safe
+        i = node.as<T>();
+};
 
 #ifndef _WIN32
 void SetConsoleTitle(std::string title)
@@ -122,6 +129,135 @@ int importItems(string_array &target)
     return 0;
 }
 
+void readRegexMatch(YAML::Node node, std::string delimiter, string_array &dest)
+{
+    YAML::Node object;
+    std::string url, match, rep, strLine;
+
+    for(unsigned i = 0; i < node.size(); i++)
+    {
+        object = node[i];
+        object["import"] >> url;
+        if(url.size())
+        {
+            url = "!!import:" + url;
+            dest.emplace_back(url);
+            continue;
+        }
+        object["match"] >> match;
+        object["replace"] >> rep;
+        if(match.size() && rep.size())
+            strLine = match + delimiter + rep;
+        else
+            continue;
+        dest.emplace_back(strLine);
+    }
+    importItems(dest);
+}
+
+void readEmoji(YAML::Node node, string_array &dest)
+{
+    YAML::Node object;
+    std::string url, match, rep, strLine;
+
+    for(unsigned i = 0; i < node.size(); i++)
+    {
+        object = node[i];
+        object["import"] >> url;
+        if(url.size())
+        {
+            url = "!!import:" + url;
+            dest.emplace_back(url);
+            continue;
+        }
+        object["match"] >> match;
+        object["emoji"] >> rep;
+        if(match.size() && rep.size())
+            strLine = match + "," + rep;
+        else
+            continue;
+        dest.emplace_back(strLine);
+    }
+    importItems(dest);
+}
+
+void readGroup(YAML::Node node, string_array &dest)
+{
+    std::string strLine, name, type, url, interval;
+    string_array tempArray;
+    YAML::Node object;
+    unsigned int i, j;
+
+    for(i = 0; i < node.size(); i++)
+    {
+        eraseElements(tempArray);
+        object = node[i];
+        object["import"] >> name;
+        if(name.size())
+        {
+            name = "!!import:" + name;
+            dest.emplace_back(name);
+            continue;
+        }
+        url = "http://www.gstatic.com/generate_204", interval = "300";
+        object["name"] >> name;
+        object["type"] >> type;
+        tempArray.emplace_back(name);
+        tempArray.emplace_back(type);
+        if(object["url"].as<std::string>().size())
+            object["url"] >> url;
+        if(object["interval"].as<std::string>().size())
+            object["interval"] >> interval;
+        for(j = 0; j < object["rule"].size(); j++)
+            tempArray.emplace_back(object["rule"][i].as<std::string>());
+        if(type != "select")
+        {
+            tempArray.emplace_back(url);
+            tempArray.emplace_back(interval);
+        }
+
+        if((type == "select" && tempArray.size() < 3) || (type != "select" && tempArray.size() < 5))
+            continue;
+
+        strLine = std::accumulate(std::next(tempArray.begin()), tempArray.end(), tempArray[0], [](std::string a, std::string b) -> std::string
+        {
+            return std::move(a) + "`" + std::move(b);
+        });
+        dest.emplace_back(strLine);
+    }
+    importItems(dest);
+}
+
+void readRuleset(YAML::Node node, string_array &dest)
+{
+    std::string strLine, name, url, group;
+    YAML::Node object;
+
+    for(unsigned int i = 0; i < node.size(); i++)
+    {
+        name = "";
+        object = node[i];
+        object["import"] >> name;
+        if(name.size())
+        {
+            name = "!!import:" + name;
+            dest.emplace_back(name);
+            continue;
+        }
+        object["ruleset"] >> url;
+        object["group"] >> group;
+        object["rule"] >> name;
+        if(url.size())
+            strLine = group + "," + url;
+        else if(name.size())
+            strLine = group + ",[]" + name;
+        else
+            continue;
+        dest.emplace_back(strLine);
+    }
+    importItems(dest);
+}
+
 void refreshRulesets(string_array &ruleset_list, std::vector<ruleset_content> &rca)
 {
     eraseElements(rca);
@@ -177,10 +313,151 @@ void refreshRulesets(string_array &ruleset_list, std::vector<ruleset_content> &r
     }
 }
 
+void readYAMLConf(YAML::Node &node)
+{
+    YAML::Node section = node["common"];
+    std::string strLine;
+    string_array tempArray;
+
+    section["api_mode"] >> api_mode;
+    section["api_access_token"] >> access_token;
+    if(section["default_url"].IsSequence())
+    {
+        section["default_url"] >> tempArray;
+        if(tempArray.size())
+            strLine = std::accumulate(std::next(tempArray.begin()), tempArray.end(), tempArray[0], [](std::string a, std::string b)
+            {
+                return std::move(a) + "|" + std::move(b);
+            });
+        default_url = strLine;
+    }
+    if(section["exclude_remarks"].IsSequence())
+        section["exclude_remarks"] >> def_exclude_remarks;
+    if(section["include_remarks"].IsSequence())
+        section["include_remarks"] >> def_include_remarks;
+    section["clash_rule_base"] >> clash_rule_base;
+    section["surge_rule_base"] >> surge_rule_base;
+    section["surfboard_rule_base"] >> surfboard_rule_base;
+    section["mellow_rule_base"] >> mellow_rule_base;
+    section["quan_rule_base"] >> quan_rule_base;
+    section["quanx_rule_base"] >> quanx_rule_base;
+
+    section["append_proxy_type"] >> append_proxy_type;
+    section["proxy_ruleset"] >> proxy_ruleset;
+    section["proxy_subscription"] >> proxy_subscription;
+
+    if(node["userinfo"].IsDefined())
+    {
+        section = node["userinfo"];
+        if(section["stream_rule"].IsSequence())
+        {
+            readRegexMatch(section["stream_rule"], "@", tempArray);
+            safe_set_streams(tempArray);
+            eraseElements(tempArray);
+        }
+        if(section["time_rule"].IsSequence())
+        {
+            readRegexMatch(section["time_rule"], "@", tempArray);
+            safe_set_times(tempArray);
+            eraseElements(tempArray);
+        }
+    }
+
+    if(node["node_pref"].IsDefined())
+    {
+        section = node["node_pref"];
+        section["udp_flag"] >> udp_flag;
+        section["tcp_fast_open_flag"] >> tfo_flag;
+        section["sort_flag"] >> do_sort;
+        section["skip_cert_verify_flag"] >> scv_flag;
+    }
+
+    if(section["rename_node"].IsSequence())
+    {
+        readRegexMatch(section["rename_node"], "@", tempArray);
+        safe_set_renames(tempArray);
+        eraseElements(tempArray);
+    }
+
+    if(node["managed_config"].IsDefined())
+    {
+        section = node["managed_config"];
+        section["write_managed_config"] >> write_managed_config;
+        section["managed_config_prefix"] >> managed_config_prefix;
+    }
+
+    if(node["surge_external_proxy"].IsDefined())
+        node["surge_external_proxy"]["surge_ssr_path"] >> surge_ssr_path;
+
+    if(node["emojis"].IsDefined())
+    {
+        section = node["emojis"];
+        section["add_emoji"] >> add_emoji;
+        section["remove_old_emoji"] >> remove_old_emoji;
+        if(section["rules"].IsSequence())
+        {
+            readEmoji(section["rules"], tempArray);
+            safe_set_emojis(tempArray);
+            eraseElements(tempArray);
+        }
+    }
+
+    if(node["ruleset"].IsDefined())
+    {
+        section = node["ruleset"];
+        section["enabled"] >> enable_rule_generator;
+        if(!enable_rule_generator)
+        {
+            overwrite_original_rules = false;
+            update_ruleset_on_request = false;
+        }
+        else
+        {
+            section["overwrite_original_rules"] >> overwrite_original_rules;
+            section["update_ruleset_on_request"] >> update_ruleset_on_request;
+        }
+        if(section["surge_ruleset"].IsSequence())
+            readRuleset(section["surge_ruleset"], rulesets);
+    }
+
+    if(node["proxy_group"].IsDefined() && node["proxy_group"]["custom_proxy_group"].IsDefined())
+        readGroup(node["proxy_group"]["custom_proxy_group"], clash_extra_group);
+
+    if(node["server"].IsDefined())
+    {
+        node["server"]["listen"] >> listen_address;
+        node["server"]["port"] >> listen_port;
+    }
+
+    if(node["advanced"].IsDefined())
+    {
+        node["advanced"]["print_debug_info"] >> print_debug_info;
+        node["advanced"]["max_pending_connections"] >> max_pending_connections;
+        node["advanced"]["max_concurrent_threads"] >> max_concurrent_threads;
+    }
+}
+
 void readConf()
 {
     guarded_mutex guard(on_configuring);
     std::cerr<<"Reading preference settings..."<<std::endl;
+
+    eraseElements(def_exclude_remarks);
+    eraseElements(def_include_remarks);
+    eraseElements(clash_extra_group);
+    eraseElements(rulesets);
+
+    try
+    {
+        YAML::Node yaml = YAML::LoadFile(pref_path);
+        if(yaml.size() && yaml["common"])
+            return readYAMLConf(yaml);
+    }
+    catch (YAML::Exception &e)
+    {
+        //ignore
+    }
+
     INIReader ini;
     ini.allow_dup_section_titles = true;
     //ini.do_utf8_to_gbk = true;
@@ -191,10 +468,6 @@ void readConf()
         return;
     }
 
-    eraseElements(def_exclude_remarks);
-    eraseElements(def_include_remarks);
-    eraseElements(clash_extra_group);
-    eraseElements(rulesets);
     string_array tempArray;
 
     ini.EnterSection("common");
@@ -354,6 +627,34 @@ struct ExternalConfig
     bool enable_rule_generator = true;
 };
 
+int loadExternalYAML(YAML::Node &node, ExternalConfig &ext)
+{
+    YAML::Node section = node["custom"], object;
+    std::string name, type, url, interval;
+    std::string group, strLine;
+
+    section["clash_rule_base"] >> ext.clash_rule_base;
+    section["surge_rule_base"] >> ext.surge_rule_base;
+    section["surfboard_rule_base"] >> ext.surfboard_rule_base;
+    section["mellow_rule_base"] >> ext.mellow_rule_base;
+    section["quan_rule_base"] >> ext.quan_rule_base;
+    section["quanx_rule_base"] >> ext.quanx_rule_base;
+
+    ext.enable_rule_generator = section["enable_rule_generator"].as<bool>();
+    ext.overwrite_original_rules = section["overwrite_original_rules"].as<bool>();
+
+    if(section["custom_proxy_group"].size())
+        readGroup(section["custom_proxy_group"], ext.custom_proxy_group);
+
+    if(section["surge_ruleset"].size())
+        readRuleset(section["surge_ruleset"], ext.surge_ruleset);
+
+    if(section["rename_node"].size())
+        readRegexMatch(section["rename_node"], "@", ext.rename);
+
+    return 0;
+}
+
 int loadExternalConfig(std::string &path, ExternalConfig &ext, std::string proxy)
 {
     std::string base_content;
@@ -361,6 +662,17 @@ int loadExternalConfig(std::string &path, ExternalConfig &ext, std::string proxy
         base_content = fileGet(path, false, api_mode);
     else
         base_content = webGet(path, proxy);
+
+    try
+    {
+        YAML::Node yaml = YAML::Load(base_content);
+        if(yaml.size() && yaml["custom"])
+            return loadExternalYAML(yaml, ext);
+    }
+    catch (YAML::Exception &e)
+    {
+        //ignore
+    }
 
     INIReader ini;
     ini.store_isolated_line = true;
@@ -458,7 +770,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     std::vector<ruleset_content> rca;
     extra_settings ext;
     std::string subInfo;
-    bool ruleset_group_updated = false;
+    bool ruleset_updated = false;
 
     if(std::find(regex_blacklist.cbegin(), regex_blacklist.cend(), include) != regex_blacklist.cend() || std::find(regex_blacklist.cbegin(), regex_blacklist.cend(), exclude) != regex_blacklist.cend())
         return "Invalid request!";
@@ -528,13 +840,16 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         {
             extra_ruleset = extconf.surge_ruleset;
             refreshRulesets(extra_ruleset, rca);
-            ruleset_group_updated = true;
+            ruleset_updated = true;
         }
         else
         {
-            if(update_ruleset_on_request)
-                refreshRulesets(rulesets, ruleset_content_array);
-            rca = ruleset_content_array;
+            if(ext.enable_rule_generator)
+            {
+                if(update_ruleset_on_request)
+                    refreshRulesets(rulesets, ruleset_content_array);
+                rca = ruleset_content_array;
+            }
         }
     }
     else
@@ -545,8 +860,6 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
             extra_group = split(groups, "@");
             if(!extra_group.size())
                 extra_group = clash_extra_group;
-            else
-                ruleset_group_updated = true;
         }
         else
             extra_group = clash_extra_group;
@@ -564,7 +877,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
             else
             {
                 refreshRulesets(extra_ruleset, rca);
-                ruleset_group_updated = true;
+                ruleset_updated = true;
             }
         }
         else
@@ -650,7 +963,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     if(target == "clash" || target == "clashr")
     {
         std::cerr<<"Clash"<<((target == "clashr") ? "R" : "")<<std::endl;
-        if(ruleset_group_updated || update_ruleset_on_request || ext_clash_base != clash_rule_base)
+        if(ruleset_updated || update_ruleset_on_request || ext_clash_base != clash_rule_base)
         {
             if(fileExist(ext_clash_base))
                 base_content = fileGet(ext_clash_base, false);
@@ -661,7 +974,8 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         }
         else
         {
-            YAML::Node yamlnode = clash_base;
+            YAML::Node yamlnode;
+            yamlnode = clash_base;
             netchToClash(nodes, yamlnode, extra_group, target == "clashr", ext);
             output_content = YAML::Dump(yamlnode);
         }
@@ -704,7 +1018,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     else if(target == "mellow")
     {
         std::cerr<<"Mellow"<<std::endl;
-        if(ruleset_group_updated || update_ruleset_on_request || ext_mellow_base != mellow_rule_base)
+        if(ruleset_updated || update_ruleset_on_request || ext_mellow_base != mellow_rule_base)
         {
             if(fileExist(ext_mellow_base))
                 base_content = fileGet(ext_mellow_base, false);
@@ -942,7 +1256,10 @@ int main(int argc, char *argv[])
         {
             std::string token = getUrlArg(argument, "token");
             if(token != access_token)
+            {
+                *status_code = 403;
                 return "Unauthorized\n";
+            }
         }
         std::string type = getUrlArg(argument, "type");
         if(type == "form")
