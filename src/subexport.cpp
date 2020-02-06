@@ -675,7 +675,7 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
     {
         YAML::Node provider;
         provider["proxies"] = proxies;
-        yamlnode = provider;
+        yamlnode.reset(provider);
         return;
     }
 

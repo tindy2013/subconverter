@@ -295,7 +295,8 @@ void readConf()
     }
 
     ini.EnterSection("ruleset");
-    if(ini.GetBool("enabled"))
+    enable_rule_generator = ini.GetBool("enabled");
+    if(enable_rule_generator)
     {
         if(ini.ItemExist("overwrite_original_rules"))
             overwrite_original_rules = ini.GetBool("overwrite_original_rules");
