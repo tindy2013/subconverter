@@ -123,6 +123,7 @@ int importItems(string_array &target)
             result.emplace_back(strLine);
             itemCount++;
         }
+        ss.clear();
     }
     target.swap(result);
     writeLog(0, "Imported " + std::to_string(itemCount) + " item(s).");
@@ -1230,7 +1231,10 @@ int main(int argc, char *argv[])
         {
             std::string token = getUrlArg(argument, "token");
             if(token != access_token)
-                return "Unauthorized\n";
+            {
+                *status_code = 403;
+                return "Forbidden\n";
+            }
         }
         refreshRulesets(rulesets, ruleset_content_array);
         generateBase();
@@ -1243,7 +1247,10 @@ int main(int argc, char *argv[])
         {
             std::string token = getUrlArg(argument, "token");
             if(token != access_token)
-                return "Unauthorized\n";
+            {
+                *status_code = 403;
+                return "Forbidden\n";
+            }
         }
         readConf();
         generateBase();
@@ -1258,7 +1265,7 @@ int main(int argc, char *argv[])
             if(token != access_token)
             {
                 *status_code = 403;
-                return "Unauthorized\n";
+                return "Forbidden\n";
             }
         }
         std::string type = getUrlArg(argument, "type");
@@ -1267,7 +1274,11 @@ int main(int argc, char *argv[])
         else if(type == "direct")
             fileWrite(pref_path, postdata, true);
         else
-            return "Not implemented\n";
+        {
+            *status_code = 501;
+            return "Not Implemented\n";
+        }
+
         readConf();
         if(!update_ruleset_on_request)
             refreshRulesets(rulesets, ruleset_content_array);
