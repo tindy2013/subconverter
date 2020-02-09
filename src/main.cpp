@@ -20,7 +20,7 @@
 #include "logger.h"
 
 //common settings
-std::string pref_path = "pref.yml";
+std::string pref_path = "pref.ini";
 bool generator_mode = false;
 string_array def_exclude_remarks, def_include_remarks, rulesets, stream_rules, time_rules;
 std::vector<ruleset_content> ruleset_content_array;
@@ -1213,6 +1213,8 @@ int main(int argc, char *argv[])
 #endif // _WIN32
 
     SetConsoleTitle("subconverter " VERSION);
+    if(fileExist("pref.yml"))
+        pref_path = "pref.yml";
     chkArg(argc, argv);
     setcd(pref_path);
     readConf();

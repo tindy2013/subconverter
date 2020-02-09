@@ -16,4 +16,5 @@ RUN apk add git g++ build-base linux-headers cmake && \
     apk del git gcc g++ build-base linux-headers cmake libressl-dev curl-dev rapidjson-dev libevent-dev pcre2-dev yaml-cpp-dev
 
 # set entry
-CMD /base/subconverter
+WORKDIR /base
+CMD ./subconverter
