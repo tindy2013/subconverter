@@ -118,6 +118,11 @@ int importItems(string_array &target)
         while(getline(ss, strLine, delimiter))
         {
             lineSize = strLine.size();
+            if(strLine[lineSize - 1] == '\r') //remove line break
+            {
+                strLine = strLine.substr(0, lineSize - 1);
+                lineSize--;
+            }
             if(!lineSize || strLine[0] == ';' || strLine[0] == '#' || (lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')) //empty lines and comments are ignored
                 continue;
             result.emplace_back(strLine);
@@ -205,19 +210,17 @@ void readGroup(YAML::Node node, string_array &dest)
         object["type"] >> type;
         tempArray.emplace_back(name);
         tempArray.emplace_back(type);
-        if(object["url"].as<std::string>().size())
-            object["url"] >> url;
-        if(object["interval"].as<std::string>().size())
-            object["interval"] >> interval;
+        object["url"] >> url;
+        object["interval"] >> interval;
         for(j = 0; j < object["rule"].size(); j++)
-            tempArray.emplace_back(object["rule"][i].as<std::string>());
-        if(type != "select")
+            tempArray.emplace_back(object["rule"][j].as<std::string>());
+        if(type != "select" && type != "ssid")
         {
             tempArray.emplace_back(url);
             tempArray.emplace_back(interval);
         }
 
-        if((type == "select" && tempArray.size() < 3) || (type != "select" && tempArray.size() < 5))
+        if((type == "select" && tempArray.size() < 3) || (type == "ssid" && tempArray.size() < 4) || (type != "select" && type != "ssid" && tempArray.size() < 5))
             continue;
 
         strLine = std::accumulate(std::next(tempArray.begin()), tempArray.end(), tempArray[0], [](std::string a, std::string b) -> std::string

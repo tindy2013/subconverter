@@ -955,8 +955,8 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
         {
             if(vArray.size() < 4)
                 continue;
-            proxy = vArray[1] + ",default=" + vArray[2];
-            proxy += std::accumulate(vArray.begin() + 3, vArray.end(), vArray[3], [](std::string a, std::string b)
+            proxy = vArray[1] + ",default=" + vArray[2] + ",";
+            proxy += std::accumulate(vArray.begin() + 4, vArray.end(), vArray[3], [](std::string a, std::string b)
             {
                 return std::move(a) + "," + std::move(b);
             });
