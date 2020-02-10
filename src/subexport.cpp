@@ -324,9 +324,9 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset
         while(getline(strStrm, strLine, delimiter))
         {
             lineSize = strLine.size();
+            strLine = replace_all_distinct(strLine, "\r", ""); //remove line break
             if(!lineSize || strLine[0] == ';' || strLine[0] == '#' || (lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')) //empty lines and comments are ignored
                 continue;
-            strLine = replace_all_distinct(strLine, "\r", ""); //remove line break
             if(strLine.find("USER-AGENT") == 0 || strLine.find("URL-REGEX") == 0 || strLine.find("PROCESS-NAME") == 0 || strLine.find("AND") == 0 || strLine.find("OR") == 0) //remove unsupported types
                 continue;
             /*
