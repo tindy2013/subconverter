@@ -819,7 +819,7 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
             x.remarks = "[" + type + "]" + x.remarks;
         remark = x.remarks;
 
-        while(std::count(remarks_list.begin(), remarks_list.end(), remark) > 0)
+        while(std::count(remarks_list.begin(), remarks_list.end(), x.remarks) > 0)
             x.remarks += "$";
 
         remark = x.remarks;

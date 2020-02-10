@@ -32,6 +32,7 @@ IF(USING_MALLOC_TRIM)
 ENDIF()
 
 ADD_EXECUTABLE(subconverter 
+    src/interfaces.cpp
     src/logger.cpp
     src/main.cpp
     src/misc.cpp

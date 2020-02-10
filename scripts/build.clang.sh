@@ -3,6 +3,7 @@ mkdir obj
 
 set -xe
 
+c++ -std=c++17 -Wall -fexceptions -c src/interfaces.cpp -o obj/interfaces.o
 c++ -std=c++17 -Wall -fexceptions -c src/logger.cpp -o obj/logger.o
 c++ -std=c++17 -Wall -fexceptions -c src/main.cpp -o obj/main.o
 c++ -std=c++17 -Wall -fexceptions -c src/misc.cpp -o obj/misc.o

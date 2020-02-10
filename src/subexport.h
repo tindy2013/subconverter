@@ -2,6 +2,11 @@
 #define SUBEXPORT_H_INCLUDED
 
 #include <string>
+#include <vector>
+
+#include "misc.h"
+#include "ini_reader.h"
+#include "nodeinfo.h"
 
 struct ruleset_content
 {
