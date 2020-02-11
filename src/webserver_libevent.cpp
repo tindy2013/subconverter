@@ -71,6 +71,7 @@ void OnReq(evhttp_request *req, void *args)
 {
     const char *req_content_type = evhttp_find_header(req->input_headers, "Content-Type"), *req_ac_method = evhttp_find_header(req->input_headers, "Access-Control-Request-Method");
     const char *req_method = req_ac_method == NULL ? EVBUFFER_LENGTH(req->input_buffer) == 0 ? "GET" : "POST" : "OPTIONS", *uri = req->uri;
+    const char *user_agent = evhttp_find_header(req->input_headers, "User-Agent");
     char *client_ip;
     u_short client_port;
     evhttp_connection_get_peer(evhttp_request_get_connection(req), &client_ip, &client_port);
@@ -78,7 +79,7 @@ void OnReq(evhttp_request *req, void *args)
     int retVal;
     std::string postdata, content_type, return_data;
 
-    if(user_agent_str.compare(evhttp_find_header(req->input_headers, "User-Agent")) == 0)
+    if(user_agent != NULL && user_agent_str.compare(user_agent) == 0)
     {
         evhttp_send_error(req, 500, "Loop request detected!");
         return;

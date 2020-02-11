@@ -54,6 +54,64 @@ template <typename T> void operator >> (const YAML::Node& node, T& i)
         i = node.as<T>();
 };
 
+std::string getRuleset(RESPONSE_CALLBACK_ARGS)
+{
+    std::string url = UrlDecode(getUrlArg(argument, "url")), type = getUrlArg(argument, "type"), group = UrlDecode(getUrlArg(argument, "group"));
+    std::string output_content;
+
+    if(!url.size() || !type.size() || !group.size() || (type != "1" && type != "2"))
+    {
+        *status_code = 400;
+        return "Invalid request!";
+    }
+
+    if(fileExist(url))
+        output_content = fileGet(url, false, true);
+    else
+        output_content = webGet(url, "");
+
+    if(!output_content.size())
+    {
+        *status_code = 400;
+        return "Invalid request!";
+    }
+
+    if(type == "2")
+    {
+        std::string strLine;
+        std::stringstream ss;
+        const std::string rule_match_regex = "^(.*?,.*?)(,.*)(,.*)$";
+
+        ss << output_content;
+        char delimiter = count(output_content.begin(), output_content.end(), '\n') < 1 ? '\r' : '\n';
+        std::string::size_type lineSize;
+
+        output_content.clear();
+
+        while(getline(ss, strLine, delimiter))
+        {
+            if(strLine.find("IP-CIDR6") == 0 || strLine.find("URL-REGEX") == 0 || strLine.find("PROCESS-NAME") == 0 || strLine.find("AND") == 0 || strLine.find("OR") == 0) //remove unsupported types
+                continue;
+
+            lineSize = strLine.size();
+
+            if(!strLine.empty() && (strLine[0] != ';' && strLine[0] != '#' && !(lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')))
+            {
+                strLine += "," + group;
+
+                if(std::count(strLine.begin(), strLine.end(), ',') > 2 && regReplace(strLine, rule_match_regex, "$2") == ",no-resolve")
+                    strLine = regReplace(strLine, rule_match_regex, "$1$3$2");
+                else
+                    strLine = regReplace(strLine, rule_match_regex, "$1$3");
+            }
+
+            output_content.append(strLine + "\n");
+        }
+    }
+
+    return output_content;
+}
+
 int importItems(string_array &target)
 {
     string_array result;
