@@ -669,7 +669,7 @@ std::string fileGet(std::string path, bool binary, bool scope_limit)
     if(scope_limit)
     {
 #ifdef _WIN32
-        if(path.find(":/") != path.npos || path.find("..") != path.npos)
+        if(path.find(":\\") != path.npos || path.find("..") != path.npos)
             return std::string();
 #else
         if(path.find("/") == 0 || path.find("..") != path.npos)
@@ -916,10 +916,7 @@ std::string getFormData(const std::string &raw_data)
     std::string line;
 
     std::string boundary;
-    std::string disp; /* content disposition string */
-    std::string type; /* content type string */
     std::string file; /* actual file content */
-
 
     int i = 0;
 
@@ -932,18 +929,9 @@ std::string getFormData(const std::string &raw_data)
             // Get boundary
             boundary = line.substr(0, line.length() - 1);
         }
-        else if(line.find("Content-Disposition") == 0)
-        {
-            disp = line;
-        }
-        else if(line.find("Content-Type") == 0)
-        {
-            type = line;
-        }
         else if(line.find(boundary) == 0)
         {
             // The end
-            type = line;
             break;
         }
         else if(line.length() == 1)

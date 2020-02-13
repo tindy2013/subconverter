@@ -168,6 +168,7 @@ public:
         exclude_sections = src.exclude_sections;
         include_sections = src.include_sections;
         read_sections = src.read_sections;
+        section_order = src.section_order;
         isolated_items_section = src.isolated_items_section;
         //copy preferences
         do_utf8_to_gbk = src.do_utf8_to_gbk;

@@ -777,11 +777,13 @@ void generateBase()
         base_content = fileGet(mellow_rule_base, false);
     else
         base_content = webGet(mellow_rule_base, getSystemProxy());
+    mellow_base.keep_empty_section = true;
+    mellow_base.store_any_line = true;
     retVal = mellow_base.Parse(base_content);
     if(retVal != INIREADER_EXCEPTION_NONE)
         std::cerr<<"Unable to load Mellow base content. Reason: "<<mellow_base.GetLastError()<<"\n";
     else
-        rulesetToSurge(mellow_base, ruleset_content_array, 2, overwrite_original_rules);
+        rulesetToSurge(mellow_base, ruleset_content_array, 0, overwrite_original_rules);
 }
 
 std::string subconverter(RESPONSE_CALLBACK_ARGS)
@@ -790,7 +792,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     std::string group = UrlDecode(getUrlArg(argument, "group")), upload = getUrlArg(argument, "upload"), upload_path = getUrlArg(argument, "upload_path"), version = getUrlArg(argument, "ver");
     std::string append_type = getUrlArg(argument, "append_type"), tfo = getUrlArg(argument, "tfo"), udp = getUrlArg(argument, "udp"), nodelist = getUrlArg(argument, "list");
     std::string include = UrlDecode(getUrlArg(argument, "include")), exclude = UrlDecode(getUrlArg(argument, "exclude")), sort_flag = getUrlArg(argument, "sort");
-    std::string scv = getUrlArg(argument, "scv"), fdn = getUrlArg(argument, "fdn");
+    std::string scv = getUrlArg(argument, "scv"), fdn = getUrlArg(argument, "fdn"), token = getUrlArg(argument, "token");
     std::string base_content, output_content;
     string_array extra_group, extra_ruleset, include_remarks, exclude_remarks;
     std::string groups = urlsafe_base64_decode(getUrlArg(argument, "groups")), ruleset = urlsafe_base64_decode(getUrlArg(argument, "ruleset")), config = UrlDecode(getUrlArg(argument, "config"));
@@ -807,7 +809,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     std::string ext_quan_base = quan_rule_base, ext_quanx_base = quanx_rule_base;
 
     //validate urls
-    if(!url.size())
+    if(!url.size() && (!api_mode || token == access_token))
         url = default_url;
     if(!url.size() || !target.size())
     {
@@ -1149,7 +1151,7 @@ std::string simpleToClashR(RESPONSE_CALLBACK_ARGS)
     std::vector<ruleset_content> rca;
     std::string subInfo;
 
-    if(!url.size())
+    if(!url.size() && !api_mode)
         url = default_url;
     if(!url.size() || argument.substr(0, 8) != "sublink=")
     {
