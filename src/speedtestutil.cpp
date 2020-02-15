@@ -1376,7 +1376,7 @@ void explodeNetchConf(std::string netch, bool ss_libev, bool ssr_libev, std::str
 bool chkIgnore(const nodeInfo &node, string_array &exclude_remarks, string_array &include_remarks)
 {
     bool excluded = false, included = false;
-    //std::string remarks = UTF8ToGBK(node.remarks);
+    //std::string remarks = UTF8ToACP(node.remarks);
     std::string remarks = node.remarks;
     writeLog(LOG_TYPE_INFO, "Comparing exclude remarks...");
     excluded = std::any_of(exclude_remarks.cbegin(), exclude_remarks.cend(), [&remarks](auto &x)
