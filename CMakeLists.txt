@@ -6,7 +6,13 @@ IF(NOT CMAKE_BUILD_TYPE)
     SET(CMAKE_BUILD_TYPE Release)
 ENDIF()
 SET(CMAKE_CXX_STANDARD 17)
-ADD_DEFINITIONS(-Wall -Wextra -Wno-unused-parameter -Wno-unused-result)
+
+
+IF (NOT MSVC)
+    ADD_COMPILE_OPTIONS(-Wall -Wextra -Wno-unused-parameter -Wno-unused-result)
+ELSE()
+    ADD_COMPILE_OPTIONS(/W4)
+ENDIF()
 
 OPTION(USING_STD_REGEX "Use std::regex from C++ library instead of PCRE2." OFF)
 OPTION(USING_MALLOC_TRIM "Call malloc_trim after processing request to lower memory usage (Your system must support malloc_trim)." OFF)

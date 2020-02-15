@@ -664,6 +664,7 @@ std::string getMD5(std::string data)
     return result;
 }
 
+// TODO: Add preprocessor option to disable (open web service safety)
 std::string fileGet(std::string path, bool binary, bool scope_limit)
 {
     std::ifstream infile;

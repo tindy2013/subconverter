@@ -14,6 +14,7 @@
 #endif // _WIN32
 
 typedef std::vector<std::string> string_array;
+typedef const std::string &refCnstStr;
 
 static const std::string base64_chars =
              "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
