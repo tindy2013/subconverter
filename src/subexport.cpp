@@ -818,7 +818,7 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
     string_array vArray, remarks_list, filtered_nodelist;
 
     ini.store_any_line = true;
-    if(ini.Parse(base_conf) != 0)
+    if(ini.Parse(base_conf) != 0 && !ext.nodelist)
         return std::string();
 
     ini.SetCurrentSection("Proxy");
