@@ -1463,6 +1463,7 @@ int explodeConfContent(std::string content, std::string custom_port, int local_p
 
 void explode(std::string link, bool sslibev, bool ssrlibev, std::string custom_port, int local_port, nodeInfo &node)
 {
+    // TODO: replace strFind with startsWith if appropriate
     if(strFind(link, "ssr://"))
         explodeSSR(link, sslibev, ssrlibev, custom_port, local_port, node);
     else if(strFind(link, "vmess://") || strFind(link, "vmess1://"))
