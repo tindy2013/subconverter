@@ -239,23 +239,38 @@ std::string base64_encode(std::string string_to_encode)
 
 }
 
-std::string base64_decode(std::string encoded_string)
+std::string base64_decode(std::string encoded_string, bool accept_urlsafe)
 {
-    int in_len = encoded_string.size();
-    int i = 0;
-    int j = 0;
-    int in_ = 0;
+    string_size in_len = encoded_string.size();
+    string_size i = 0;
+    string_size j = 0;
+    string_size in_ = 0;
     unsigned char char_array_4[4], char_array_3[3];
+    static unsigned char dtable[256], itable[256], table_ready = 0;
     std::string ret;
 
-    while (in_len-- && ( encoded_string[in_] != '=') && is_base64(encoded_string[in_]))
+    // Should not need thread_local with the flag...
+    if (!table_ready) {
+        // No memset needed for static/TLS
+        for (string_size k = 0; k < base64_chars.length(); k++) {
+            dtable[base64_chars[k]] = k;  // decode (find)
+            itable[base64_chars[k]] = 1;  // is_base64
+        }
+        // Add urlsafe table
+        dtable['-'] = dtable['+']; itable['-'] = 2;
+        dtable['_'] = dtable['/']; itable['_'] = 2;
+        table_ready = 1;
+    }
+
+    while (in_len-- && (encoded_string[in_] != '=') &&
+           (accept_urlsafe ? itable[encoded_string[in_]] : (itable[encoded_string[in_]] == 1)))
     {
         char_array_4[i++] = encoded_string[in_];
         in_++;
-        if (i ==4)
+        if (i == 4)
         {
-            for (i = 0; i <4; i++)
-                char_array_4[i] = base64_chars.find(char_array_4[i]);
+            for (i = 0; i < 4; i++)
+                char_array_4[i] = dtable[char_array_4[i]];
 
             char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
             char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
@@ -273,7 +288,7 @@ std::string base64_decode(std::string encoded_string)
             char_array_4[j] = 0;
 
         for (j = 0; j <4; j++)
-            char_array_4[j] = base64_chars.find(char_array_4[j]);
+            char_array_4[j] = dtable[char_array_4[j]];
 
         char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
         char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
@@ -617,14 +632,19 @@ std::string urlsafe_base64_reverse(std::string encoded_string)
     return replace_all_distinct(replace_all_distinct(encoded_string, "-", "+"), "_", "/");
 }
 
+std::string urlsafe_base64(std::string encoded_string)
+{
+    return replace_all_distinct(replace_all_distinct(replace_all_distinct(encoded_string, "+", "-"), "/", "_"), "=", "");
+}
+
 std::string urlsafe_base64_decode(std::string encoded_string)
 {
-    return base64_decode(urlsafe_base64_reverse(encoded_string));
+    return base64_decode(encoded_string, true);
 }
 
 std::string urlsafe_base64_encode(std::string string_to_encode)
 {
-    return replace_all_distinct(replace_all_distinct(replace_all_distinct(base64_encode(string_to_encode), "+", "-"), "/", "_"), "=", "");
+    return urlsafe_base64((base64_encode(string_to_encode));
 }
 
 std::string getMD5(std::string data)
