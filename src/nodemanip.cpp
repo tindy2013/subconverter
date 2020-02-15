@@ -29,6 +29,7 @@ int addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID, std
     nodeInfo node;
     std::string strSub, extra_headers;
 
+    // TODO: replace with startsWith if appropriate
     link = replace_all_distinct(link, "\"", "");
     writeLog(LOG_TYPE_INFO, "Received Link.");
     if(strFind(link, "vmess://") || strFind(link, "vmess1://"))
@@ -39,7 +40,7 @@ int addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID, std
         linkType = SPEEDTEST_MESSAGE_FOUNDSSR;
     else if(strFind(link, "socks://") || strFind(link, "https://t.me/socks") || strFind(link, "tg://socks"))
         linkType = SPEEDTEST_MESSAGE_FOUNDSOCKS;
-    else if(strFind(link, "http://") || strFind(link, "https://") || strFind(link, "surge:///install-config"))
+    else if(startsWith(link, "http://") || startsWith(link, "https://") || startsWith(link, "data:") || strFind(link, "surge:///install-config"))
         linkType = SPEEDTEST_MESSAGE_FOUNDSUB;
     else if(strFind(link, "Netch://"))
         linkType = SPEEDTEST_MESSAGE_FOUNDNETCH;

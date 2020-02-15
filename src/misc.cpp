@@ -54,7 +54,8 @@ void sleep(int interval)
     std::this_thread::sleep_for(std::chrono::milliseconds(interval));
 }
 
-std::string GBKToUTF8(std::string str_src)
+// ANSI code page (GBK on 936) to UTF8
+std::string ACPToUTF8(std::string str_src)
 {
 #ifdef _WIN32
     const char* strGBK = str_src.c_str();
@@ -77,7 +78,8 @@ std::string GBKToUTF8(std::string str_src)
 #endif // _WIN32
 }
 
-std::string UTF8ToGBK(std::string str_src)
+// UTF8 to ANSI code page (GBK on 936)
+std::string UTF8ToACP(std::string str_src)
 {
 #ifdef _WIN32
     const char* strUTF8 = str_src.data();
@@ -113,6 +115,8 @@ void StringToWstring(std::wstring& szDst, std::string str)
     //std::wstring r = wszUtf8;
     delete[] wszUtf8;
 }
+#else
+/* Unimplemented: std::codecvt_utf8 */
 #endif // _WIN32
 
 unsigned char ToHex(unsigned char x)
@@ -660,6 +664,7 @@ std::string getMD5(std::string data)
     return result;
 }
 
+// TODO: Add preprocessor option to disable (open web service safety)
 std::string fileGet(std::string path, bool binary, bool scope_limit)
 {
     std::ifstream infile;

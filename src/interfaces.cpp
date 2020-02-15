@@ -326,7 +326,7 @@ void refreshRulesets(string_array &ruleset_list, std::vector<ruleset_content> &r
             {
                 rc = {rule_group, rule_url, fileGet(rule_url, false)};
             }
-            else if(rule_url.find("http://") == 0 || rule_url.find("https://") == 0)
+            else if(startsWith(rule_url, "http://") || startsWith(rule_url, "https://") || startsWith(rule_url, "data:"))
             {
                 rc = {rule_group, rule_url, webGet(rule_url, proxy)};
             }

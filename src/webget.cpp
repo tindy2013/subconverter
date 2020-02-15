@@ -21,7 +21,7 @@ static int writer(char *data, size_t size, size_t nmemb, std::string *writerData
     return size * nmemb;
 }
 
-std::string curlGet(std::string url, std::string proxy, std::string &response_headers)
+static std::string curlGet(std::string url, std::string proxy, std::string &response_headers)
 {
     CURL *curl_handle;
     CURLcode res;
@@ -54,6 +54,23 @@ std::string curlGet(std::string url, std::string proxy, std::string &response_he
     return data;
 }
 
+// data:[<mediatype>][;base64],<data>
+static std::string dataGet(std::string url)
+{
+    if (!startsWith(url, "data:"))
+        return "";
+    std::string::size_type comma = url.find(',');
+    if (comma == std::string::npos)
+        return "";
+    
+    std::string data = UrlDecode(url.substr(comma));
+    if (endsWith(url.substr(0, comma), ";base64")) {
+        return urlsafe_base64_decode(data);
+    } else {
+        return data;
+    }
+}
+
 std::string buildSocks5ProxyString(std::string addr, int port, std::string username, std::string password)
 {
     std::string authstr = username != "" && password != "" ? username + ":" + password + "@" : "";
@@ -63,13 +80,15 @@ std::string buildSocks5ProxyString(std::string addr, int port, std::string usern
 
 std::string webGet(std::string url, std::string proxy, std::string &response_headers)
 {
+    if (startsWith(url, "data:"))
+        return dataGet(url);
     return curlGet(url, proxy, response_headers);
 }
 
 std::string webGet(std::string url, std::string proxy)
 {
     std::string dummy;
-    return curlGet(url, proxy, dummy);
+    return webGet(url, proxy, dummy);
 }
 
 int curlPost(std::string url, std::string data, std::string proxy, std::string auth_token, std::string *retData)

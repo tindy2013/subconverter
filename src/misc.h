@@ -14,6 +14,7 @@
 #endif // _WIN32
 
 typedef std::vector<std::string> string_array;
+typedef const std::string &refCnstStr;
 
 static const std::string base64_chars =
              "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -31,8 +32,8 @@ std::string replace_all_distinct(std::string str, std::string old_value, std::st
 std::string urlsafe_base64_reverse(std::string encoded_string);
 std::string urlsafe_base64_decode(std::string encoded_string);
 std::string urlsafe_base64_encode(std::string string_to_encode);
-std::string UTF8ToGBK(std::string str_src);
-std::string GBKToUTF8(std::string str_src);
+std::string UTF8ToACP(std::string str_src);
+std::string ACPToUTF8(std::string str_src);
 std::string trim(const std::string& str);
 std::string getSystemProxy();
 std::string rand_str(const int len);
@@ -63,9 +64,18 @@ bool fileCopy(std::string source,std::string dest);
 std::string fileToBase64(std::string filepath);
 std::string fileGetMD5(std::string filepath);
 
-static inline bool strFind(std::string str, std::string target)
+static inline bool strFind(const std::string &str, const std::string &target)
 {
     return str.find(target) != str.npos;
+}
+
+static inline bool startsWith(const std::string &hay, const std::string &needle) {
+    return hay.substr(0, needle.length()) == needle;
+}
+
+static inline bool endsWith(const std::string &hay, const std::string &needle) {
+    std::string::size_type hl = hay.length(), nl = needle.length();
+    return hl >= nl && hay.substr(hl - nl, nl) == needle;
 }
 
 template <typename T> static inline void eraseElements(std::vector<T> &target)

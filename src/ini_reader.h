@@ -203,7 +203,7 @@ public:
 
         EraseAll(); //first erase all data
         if(do_utf8_to_gbk && is_str_utf8(content))
-            content = UTF8ToGBK(content); //do conversion if flag is set
+            content = UTF8ToACP(content); //do conversion if flag is set
 
         if(store_isolated_line)
             curSection = isolated_items_section; //items before any section define will be store in this section
