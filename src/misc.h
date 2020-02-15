@@ -74,7 +74,7 @@ static inline bool startsWith(const std::string &hay, const std::string &needle)
 }
 
 static inline bool endsWith(const std::string &hay, const std::string &needle) {
-    size_t hl = hay.length(), nl = needle.length();
+    std::string::size_type hl = hay.length(), nl = needle.length();
     return hl >= nl && hay.substr(hl - nl, nl) == needle;
 }
 
