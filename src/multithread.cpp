@@ -1,13 +1,12 @@
-#include <mutex>
-
-#include "misc.h"
+#include "multithread.h"
 
 //safety lock for multi-thread
-typedef std::lock_guard<std::mutex> guarded_mutex;
-std::mutex on_emoji, on_rename, on_stream, on_time;
+std::mutex on_emoji, on_rename, on_stream, on_time, clash_base_mutex, mellow_base_mutex;
 
 extern string_array emojis, renames;
 extern string_array stream_rules, time_rules;
+extern YAML::Node clash_base;
+extern INIReader mellow_base;
 
 string_array safe_get_emojis()
 {
@@ -31,6 +30,18 @@ string_array safe_get_times()
 {
     guarded_mutex guard(on_time);
     return time_rules;
+}
+
+YAML::Node safe_get_clash_base()
+{
+    guarded_mutex guard(clash_base_mutex);
+    return clash_base;
+}
+
+INIReader safe_get_mellow_base()
+{
+    guarded_mutex guard(mellow_base_mutex);
+    return mellow_base;
 }
 
 void safe_set_emojis(string_array &data)

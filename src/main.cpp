@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <unistd.h>
+#include <signal.h>
 
 #include "interfaces.h"
 #include "version.h"
@@ -70,6 +71,9 @@ int main(int argc, char *argv[])
         return 1;
     }
     SetConsoleOutputCP(65001);
+#else
+    signal(SIGPIPE, SIG_IGN);
+    signal(SIGABRT, SIG_IGN);
 #endif // _WIN32
 
     SetConsoleTitle("subconverter " VERSION);

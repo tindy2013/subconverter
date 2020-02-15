@@ -194,6 +194,9 @@ int httpserver_bindsocket(std::string listen_address, int listen_port, int backl
 
     int one = 1;
     ret = setsockopt(nfd, SOL_SOCKET, SO_REUSEADDR, (char *)&one, sizeof(int));
+#ifdef SO_NOSIGPIPE
+    ret = setsockopt(nfd, SOL_SOCKET, SO_NOSIGPIPE, (char *)&one, sizeof(int));
+#endif
 
     struct sockaddr_in addr;
     memset(&addr, 0, sizeof(addr));

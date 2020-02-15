@@ -107,6 +107,28 @@ public:
 
     ~INIReader() = default;
 
+    INIReader& operator=(const INIReader& src)
+    {
+        //copy contents
+        ini_content = src.ini_content;
+        //copy status
+        parsed = src.parsed;
+        current_section = src.current_section;
+        exclude_sections = src.exclude_sections;
+        include_sections = src.include_sections;
+        read_sections = src.read_sections;
+        section_order = src.section_order;
+        isolated_items_section = src.isolated_items_section;
+        //copy preferences
+        do_utf8_to_gbk = src.do_utf8_to_gbk;
+        store_any_line = src.store_any_line;
+        store_isolated_line = src.store_isolated_line;
+        allow_dup_section_titles = src.allow_dup_section_titles;
+        return *this;
+    }
+
+    INIReader(const INIReader &src) = default;
+
     std::string GetErrorString(int error)
     {
         switch(error)
@@ -158,26 +180,6 @@ public:
         isolated_items_section = section;
     }
 
-    INIReader& operator=(const INIReader& src)
-    {
-        //copy contents
-        ini_content = src.ini_content;
-        //copy status
-        parsed = src.parsed;
-        current_section = src.current_section;
-        exclude_sections = src.exclude_sections;
-        include_sections = src.include_sections;
-        read_sections = src.read_sections;
-        section_order = src.section_order;
-        isolated_items_section = src.isolated_items_section;
-        //copy preferences
-        do_utf8_to_gbk = src.do_utf8_to_gbk;
-        store_any_line = src.store_any_line;
-        store_isolated_line = src.store_isolated_line;
-        allow_dup_section_titles = src.allow_dup_section_titles;
-        return *this;
-    }
-
     /**
     *  @brief Parse INI content into mapped data structure.
     * If exclude sections are set, these sections will not be stored.
@@ -211,13 +213,13 @@ public:
         {
             last_error_index++;
             lineSize = strLine.size();
-            if(!lineSize || strLine[0] == ';' || strLine[0] == '#' || (lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')) //empty lines and comments are ignored
-                continue;
-            if(strLine[lineSize - 1] == '\r') //remove line break
+            if(lineSize && strLine[lineSize - 1] == '\r') //remove line break
             {
                 strLine = strLine.substr(0, lineSize - 1);
                 lineSize--;
             }
+            if(!lineSize || strLine[0] == ';' || strLine[0] == '#' || (lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')) //empty lines and comments are ignored
+                continue;
             if(strLine.find("=") != strLine.npos) //is an item
             {
                 if(inExcludedSection) //this section is excluded

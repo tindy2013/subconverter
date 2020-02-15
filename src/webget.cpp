@@ -4,11 +4,12 @@
 #include <curl/curl.h>
 
 #include "webget.h"
+#include "version.h"
 
 extern bool print_debug_info;
 
 //std::string user_agent_str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36";
-std::string user_agent_str = "subconverter/latest cURL/7.xx-DEV";
+std::string user_agent_str = "subconverter/" + std::string(VERSION) + " cURL/" + std::string(LIBCURL_VERSION);
 
 static int writer(char *data, size_t size, size_t nmemb, std::string *writerData)
 {

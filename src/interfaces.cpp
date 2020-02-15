@@ -141,7 +141,7 @@ int importItems(string_array &target)
         while(getline(ss, strLine, delimiter))
         {
             lineSize = strLine.size();
-            if(strLine[lineSize - 1] == '\r') //remove line break
+            if(lineSize && strLine[lineSize - 1] == '\r') //remove line break
             {
                 strLine = strLine.substr(0, lineSize - 1);
                 lineSize--;
@@ -1003,8 +1003,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         }
         else
         {
-            YAML::Node yamlnode;
-            yamlnode = clash_base;
+            YAML::Node yamlnode = safe_get_clash_base();
             netchToClash(nodes, yamlnode, extra_group, target == "clashr", ext);
             output_content = YAML::Dump(yamlnode);
         }
@@ -1059,7 +1058,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         else
         {
             INIReader ini;
-            ini = mellow_base;
+            ini = safe_get_mellow_base();
             netchToMellow(nodes, ini, rca, extra_group, ext);
             output_content = ini.ToString();
         }

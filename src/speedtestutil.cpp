@@ -235,6 +235,8 @@ void explodeSS(std::string ss, bool libev, std::string custom_port, int local_po
         ss = regReplace(ss, "(.*?)@(.*):(.*)", "$1|$2|$3");
         args = split(ss, "|");
         secret = split(urlsafe_base64_decode(args[0]), ":");
+        if(args.size() < 3 || secret.size() < 2)
+            return;
         method = secret[0];
         password = secret[1];
         server = args[1];
@@ -246,6 +248,8 @@ void explodeSS(std::string ss, bool libev, std::string custom_port, int local_po
             return;
         ss = regReplace(urlsafe_base64_decode(ss), "(.*?):(.*?)@(.*):(.*)", "$1|$2|$3|$4");
         args = split(ss, "|");
+        if(args.size() < 4)
+            return;
         method = args[0];
         password = args[1];
         server = args[2];
@@ -325,16 +329,18 @@ void explodeSSAndroid(std::string ss, bool libev, std::string custom_port, int l
 
     for(unsigned int i = 0; i < json["nodes"].Size(); i++)
     {
-        json["nodes"][i]["remarks"] >> ps;
-        json["nodes"][i]["server"] >> server;
+        server = GetMember(json["nodes"][i], "server");
+        if(server.empty())
+            continue;
+        ps = GetMember(json["nodes"][i], "remarks");
         if(custom_port.size())
             port = custom_port;
         else
-            json["nodes"][i]["server_port"] >> port;
+            port = GetMember(json["nodes"][i], "server_port");
         if(ps == "")
             ps = server + ":" + port;
-        json["nodes"][i]["password"] >> password;
-        json["nodes"][i]["method"] >> method;
+        password = GetMember(json["nodes"][i], "password");
+        method = GetMember(json["nodes"][i], "method");
         plugin = GetMember(json["nodes"][i], "plugin");
         pluginopts = GetMember(json["nodes"][i], "plugin_opts");
 
