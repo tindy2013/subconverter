@@ -22,6 +22,8 @@ DOMAIN-SUFFIX,doub.io
 DOMAIN-SUFFIX,gameloft.com
 DOMAIN-SUFFIX,githubusercontent.com
 DOMAIN-SUFFIX,gvtw.com
+DOMAIN-SUFFIX,inoreader.com
+DOMAIN-SUFFIX,ip138.com
 DOMAIN-SUFFIX,microsoft.com
 DOMAIN-SUFFIX,ping.pe
 DOMAIN-SUFFIX,quora.com
@@ -33,7 +35,7 @@ DOMAIN-SUFFIX,tvb.com
 DOMAIN-SUFFIX,twdvd.com
 DOMAIN-SUFFIX,unsplash.com
 DOMAIN-SUFFIX,xn--i2ru8q2qg.com
-DOMAIN-SUFFIX,ip138.com
+DOMAIN-SUFFIX,yunpanjingling.com
 
 # 国外域名关键字
 DOMAIN-KEYWORD,1e100

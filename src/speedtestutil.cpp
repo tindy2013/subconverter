@@ -1376,7 +1376,7 @@ void explodeNetchConf(std::string netch, bool ss_libev, bool ssr_libev, std::str
 bool chkIgnore(const nodeInfo &node, string_array &exclude_remarks, string_array &include_remarks)
 {
     bool excluded = false, included = false;
-    //std::string remarks = UTF8ToGBK(node.remarks);
+    //std::string remarks = UTF8ToACP(node.remarks);
     std::string remarks = node.remarks;
     writeLog(LOG_TYPE_INFO, "Comparing exclude remarks...");
     excluded = std::any_of(exclude_remarks.cbegin(), exclude_remarks.cend(), [&remarks](auto &x)
@@ -1463,6 +1463,7 @@ int explodeConfContent(std::string content, std::string custom_port, int local_p
 
 void explode(std::string link, bool sslibev, bool ssrlibev, std::string custom_port, int local_port, nodeInfo &node)
 {
+    // TODO: replace strFind with startsWith if appropriate
     if(strFind(link, "ssr://"))
         explodeSSR(link, sslibev, ssrlibev, custom_port, local_port, node);
     else if(strFind(link, "vmess://") || strFind(link, "vmess1://"))
