@@ -215,7 +215,7 @@ public:
             lineSize = strLine.size();
             if(lineSize && strLine[lineSize - 1] == '\r') //remove line break
             {
-                strLine = strLine.substr(0, lineSize - 1);
+                strLine.erase(lineSize - 1);
                 lineSize--;
             }
             if(!lineSize || strLine[0] == ';' || strLine[0] == '#' || (lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')) //empty lines and comments are ignored

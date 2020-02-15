@@ -94,6 +94,11 @@ std::string getRuleset(RESPONSE_CALLBACK_ARGS)
                 continue;
 
             lineSize = strLine.size();
+            if(lineSize && strLine[lineSize - 1] == '\r') //remove line break
+            {
+                strLine.erase(lineSize - 1);
+                lineSize--;
+            }
 
             if(!strLine.empty() && (strLine[0] != ';' && strLine[0] != '#' && !(lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')))
             {
@@ -1297,7 +1302,7 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
         return "No nodes were found!";
     }
 
-    extra_settings ext = {true, true, dummy_str_array, dummy_str_array, false, false, false, udp_flag, tfo_flag, false, do_sort, scv_flag, filter_deprecated, ""};
+    extra_settings ext = {true, true, dummy_str_array, dummy_str_array, false, false, false, udp_flag, tfo_flag, false, do_sort, scv_flag, filter_deprecated, "", ""};
 
     netchToClash(nodes, clash, dummy_str_array, false, ext);
 
