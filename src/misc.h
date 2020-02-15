@@ -63,16 +63,16 @@ bool fileCopy(std::string source,std::string dest);
 std::string fileToBase64(std::string filepath);
 std::string fileGetMD5(std::string filepath);
 
-static inline bool strFind(std::string str, std::string target)
+static inline bool strFind(const std::string &str, const std::string &target)
 {
     return str.find(target) != str.npos;
 }
 
-static inline bool startsWith(std::string && hay, std::string && needle) {
+static inline bool startsWith(const std::string &hay, const std::string &needle) {
     return hay.substr(0, needle.length()) == needle;
 }
 
-static inline bool endsWith(std::string && hay, std::string && needle) {
+static inline bool endsWith(const std::string &hay, const std::string &needle) {
     size_t hl = hay.length(), nl = needle.length();
     return hl >= nl && hay.substr(hl - nl, nl) == needle;
 }

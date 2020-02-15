@@ -60,7 +60,7 @@ static std::string dataGet(std::string url)
     if (!startsWith(url, "data:"))
         return "";
     size_t comma = url.find(',');
-    if (comma == string::npos)
+    if (comma == std::string::npos)
         return "";
     
     std::string data = UrlDecode(url.substr(comma));
