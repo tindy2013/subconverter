@@ -59,7 +59,7 @@ std::string getRuleset(RESPONSE_CALLBACK_ARGS)
     std::string url = urlsafe_base64_decode(getUrlArg(argument, "url")), type = getUrlArg(argument, "type"), group = urlsafe_base64_decode(getUrlArg(argument, "group"));
     std::string output_content;
 
-    if(!url.size() || !type.size() || !group.size() || (type != "1" && type != "2"))
+    if(!url.size() || !type.size() || (type == "2" && !group.size()) || (type != "1" && type != "2"))
     {
         *status_code = 400;
         return "Invalid request!";
