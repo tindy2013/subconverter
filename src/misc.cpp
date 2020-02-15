@@ -55,7 +55,7 @@ void sleep(int interval)
 }
 
 // ANSI code page (GBK on 936) to UTF8
-std::string ACPToUTF8(std::string str_src)
+std::string ACPToUTF8(const std::string &str_src)
 {
 #ifdef _WIN32
     const char* strGBK = str_src.c_str();
@@ -79,7 +79,7 @@ std::string ACPToUTF8(std::string str_src)
 }
 
 // UTF8 to ANSI code page (GBK on 936)
-std::string UTF8ToACP(std::string str_src)
+std::string UTF8ToACP(const std::string &str_src)
 {
 #ifdef _WIN32
     const char* strUTF8 = str_src.data();
@@ -104,7 +104,7 @@ std::string UTF8ToACP(std::string str_src)
 
 #ifdef _WIN32
 // std::string to wstring
-void StringToWstring(std::wstring& szDst, std::string str)
+void StringToWstring(std::wstring& szDst, const std::string &str)
 {
     std::string temp = str;
     int len = MultiByteToWideChar(CP_ACP, 0, (LPCSTR)temp.c_str(), -1, NULL,0);
@@ -194,7 +194,7 @@ static inline bool is_base64(unsigned char c)
     return (isalnum(c) || (c == '+') || (c == '/'));
 }
 
-std::string base64_encode(std::string string_to_encode)
+std::string base64_encode(const std::string &string_to_encode)
 {
     char const* bytes_to_encode = string_to_encode.data();
     unsigned int in_len = string_to_encode.size();
@@ -243,7 +243,7 @@ std::string base64_encode(std::string string_to_encode)
 
 }
 
-std::string base64_decode(std::string encoded_string)
+std::string base64_decode(const std::string &encoded_string)
 {
     int in_len = encoded_string.size();
     int i = 0;
@@ -333,7 +333,7 @@ std::vector<std::string> split(const std::string &s, const std::string &seperato
     return result;
 }
 
-std::string GetEnv(std::string name)
+std::string GetEnv(const std::string &name)
 {
     std::string retVal;
 #ifdef _WIN32
@@ -434,7 +434,7 @@ std::string trim(const std::string& str)
     return str.substr(pos);
 }
 
-std::string getUrlArg(std::string url, std::string request)
+std::string getUrlArg(const std::string &url, const std::string &request)
 {
     //std::smatch result;
     /*
@@ -477,7 +477,7 @@ std::string getUrlArg(std::string url, std::string request)
     return std::string();
 }
 
-std::string replace_all_distinct(std::string str, std::string old_value, std::string new_value)
+std::string replace_all_distinct(std::string str, const std::string &old_value, const std::string &new_value)
 {
     for(std::string::size_type pos(0); pos != std::string::npos; pos += new_value.length())
     {
@@ -490,7 +490,7 @@ std::string replace_all_distinct(std::string str, std::string old_value, std::st
 }
 
 #ifdef USE_STD_REGEX
-bool regValid(std::string &reg)
+bool regValid(const std::string &reg)
 {
     try
     {
@@ -503,7 +503,7 @@ bool regValid(std::string &reg)
     }
 }
 
-bool regFind(std::string src, std::string target)
+bool regFind(const std::string &src, const std::string &target)
 {
     try
     {
@@ -522,7 +522,7 @@ bool regFind(std::string src, std::string target)
     }
 }
 
-std::string regReplace(std::string src, std::string match, std::string rep)
+std::string regReplace(const std::string &src, const std::string &match, const std::string &rep)
 {
     std::string result = "";
     try
@@ -543,7 +543,7 @@ std::string regReplace(std::string src, std::string match, std::string rep)
     return result;
 }
 
-bool regMatch(std::string src, std::string match)
+bool regMatch(const std::string &src, const std::string &match)
 {
     try
     {
@@ -564,7 +564,7 @@ bool regMatch(std::string src, std::string match)
 
 #else
 
-bool regMatch(std::string src, std::string target)
+bool regMatch(const std::string &src, const std::string &target)
 {
     jp::Regex reg;
     reg.setPattern(target).addModifier("gm").addPcre2Option(PCRE2_ANCHORED|PCRE2_ENDANCHORED).compile();
@@ -573,7 +573,7 @@ bool regMatch(std::string src, std::string target)
     return reg.match(src);
 }
 
-bool regFind(std::string src, std::string target)
+bool regFind(const std::string &src, const std::string &target)
 {
     jp::Regex reg;
     reg.setPattern(target).addModifier("gm").compile();
@@ -582,7 +582,7 @@ bool regFind(std::string src, std::string target)
     return reg.match(src);
 }
 
-std::string regReplace(std::string src, std::string target, std::string rep)
+std::string regReplace(const std::string &src, const std::string &target, const std::string &rep)
 {
     jp::Regex reg;
     reg.setPattern(target).addModifier("gm").compile();
@@ -591,7 +591,7 @@ std::string regReplace(std::string src, std::string target, std::string rep)
     return reg.replace(src, rep);
 }
 
-bool regValid(std::string &target)
+bool regValid(const std::string &target)
 {
     jp::Regex reg(target);
     return !!reg;
@@ -616,22 +616,22 @@ std::string speedCalc(double speed)
     return retstr;
 }
 
-std::string urlsafe_base64_reverse(std::string encoded_string)
+std::string urlsafe_base64_reverse(const std::string &encoded_string)
 {
     return replace_all_distinct(replace_all_distinct(encoded_string, "-", "+"), "_", "/");
 }
 
-std::string urlsafe_base64_decode(std::string encoded_string)
+std::string urlsafe_base64_decode(const std::string &encoded_string)
 {
     return base64_decode(urlsafe_base64_reverse(encoded_string));
 }
 
-std::string urlsafe_base64_encode(std::string string_to_encode)
+std::string urlsafe_base64_encode(const std::string &string_to_encode)
 {
     return replace_all_distinct(replace_all_distinct(replace_all_distinct(base64_encode(string_to_encode), "+", "-"), "/", "_"), "=", "");
 }
 
-std::string getMD5(std::string data)
+std::string getMD5(const std::string &data)
 {
 
     std::string result;
@@ -665,7 +665,7 @@ std::string getMD5(std::string data)
 }
 
 // TODO: Add preprocessor option to disable (open web service safety)
-std::string fileGet(std::string path, bool binary, bool scope_limit)
+std::string fileGet(const std::string &path, bool binary, bool scope_limit)
 {
     std::ifstream infile;
     std::stringstream strstrm;
@@ -693,14 +693,14 @@ std::string fileGet(std::string path, bool binary, bool scope_limit)
     return std::string();
 }
 
-bool fileExist(std::string path)
+bool fileExist(const std::string &path)
 {
     //using c++17 standard, but may cause problem on clang
     //return std::filesystem::exists(path);
     return _access(path.data(), 4) != -1;
 }
 
-bool fileCopy(std::string source, std::string dest)
+bool fileCopy(const std::string &source, const std::string &dest)
 {
     std::ifstream infile;
     std::ofstream outfile;
@@ -723,17 +723,17 @@ bool fileCopy(std::string source, std::string dest)
     return true;
 }
 
-std::string fileToBase64(std::string filepath)
+std::string fileToBase64(const std::string &filepath)
 {
     return base64_encode(fileGet(filepath, true));
 }
 
-std::string fileGetMD5(std::string filepath)
+std::string fileGetMD5(const std::string &filepath)
 {
     return getMD5(fileGet(filepath, true));
 }
 
-int fileWrite(std::string path, std::string content, bool overwrite)
+int fileWrite(const std::string &path, const std::string &content, bool overwrite)
 {
     std::fstream outfile;
     std::ios::openmode mode = overwrite ? std::ios::out : std::ios::app;
@@ -743,12 +743,12 @@ int fileWrite(std::string path, std::string content, bool overwrite)
     return 0;
 }
 
-bool isIPv4(std::string &address)
+bool isIPv4(const std::string &address)
 {
     return regMatch(address, "^(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}$");
 }
 
-bool isIPv6(std::string &address)
+bool isIPv6(const std::string &address)
 {
     std::vector<std::string> regLists = {"^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$", "^((?:[0-9A-Fa-f]{1,4}(:[0-9A-Fa-f]{1,4})*)?)::((?:([0-9A-Fa-f]{1,4}:)*[0-9A-Fa-f]{1,4})?)$", "^(::(?:[0-9A-Fa-f]{1,4})(?::[0-9A-Fa-f]{1,4}){5})|((?:[0-9A-Fa-f]{1,4})(?::[0-9A-Fa-f]{1,4}){5}::)$"};
     for(unsigned int i = 0; i < regLists.size(); i++)
@@ -783,7 +783,7 @@ std::string rand_str(const int len)
     return retData;
 }
 
-void urlParse(std::string url, std::string &host, std::string &path, int &port, bool &isTLS)
+void urlParse(std::string &url, std::string &host, std::string &path, int &port, bool &isTLS)
 {
     std::vector<std::string> args;
 
@@ -821,7 +821,7 @@ void urlParse(std::string url, std::string &host, std::string &path, int &port, 
     }
 }
 
-bool is_str_utf8(std::string data)
+bool is_str_utf8(const std::string &data)
 {
     const char *str = data.c_str();
     unsigned int nBytes = 0;
@@ -902,7 +902,7 @@ void shortDisassemble(int source, unsigned short &num_a, unsigned short &num_b)
     num_b = (unsigned short)(source >> 16);
 }
 
-int to_int(std::string str, int def_vaule)
+int to_int(const std::string &str, int def_vaule)
 {
     int retval = 0;
     char c;
@@ -978,7 +978,7 @@ std::string getFormData(const std::string &raw_data)
     return file;
 }
 
-std::string UTF8ToCodePoint(std::string data)
+std::string UTF8ToCodePoint(const std::string &data)
 {
     std::stringstream ss;
     int charcode = 0;

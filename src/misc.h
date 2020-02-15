@@ -23,46 +23,46 @@ static const std::string base64_chars =
 
 std::string UrlEncode(const std::string& str);
 std::string UrlDecode(const std::string& str);
-std::string base64_decode(std::string encoded_string);
-std::string base64_encode(std::string string_to_encode);
+std::string base64_decode(const std::string &encoded_string);
+std::string base64_encode(const std::string &string_to_encode);
 
 std::vector<std::string> split(const std::string &s, const std::string &seperator);
-std::string getUrlArg(std::string url, std::string request);
-std::string replace_all_distinct(std::string str, std::string old_value, std::string new_value);
-std::string urlsafe_base64_reverse(std::string encoded_string);
-std::string urlsafe_base64_decode(std::string encoded_string);
-std::string urlsafe_base64_encode(std::string string_to_encode);
-std::string UTF8ToACP(std::string str_src);
-std::string ACPToUTF8(std::string str_src);
+std::string getUrlArg(const std::string &url, const std::string &request);
+std::string replace_all_distinct(std::string str, const std::string &old_value, const std::string &new_value);
+std::string urlsafe_base64_reverse(const std::string &encoded_string);
+std::string urlsafe_base64_decode(const std::string &encoded_string);
+std::string urlsafe_base64_encode(const std::string &string_to_encode);
+std::string UTF8ToACP(const std::string &str_src);
+std::string ACPToUTF8(const std::string &str_src);
 std::string trim(const std::string& str);
 std::string getSystemProxy();
 std::string rand_str(const int len);
-bool is_str_utf8(std::string data);
+bool is_str_utf8(const std::string &data);
 std::string getFormData(const std::string &raw_data);
 
 void sleep(int interval);
-bool regValid(std::string &target);
-bool regFind(std::string src, std::string target);
-std::string regReplace(std::string src, std::string match, std::string rep);
-bool regMatch(std::string src, std::string match);
+bool regValid(const std::string &target);
+bool regFind(const std::string &src, const std::string &target);
+std::string regReplace(const std::string &src, const std::string &match, const std::string &rep);
+bool regMatch(const std::string &src, const std::string &match);
 std::string speedCalc(double speed);
-std::string getMD5(std::string data);
-bool isIPv4(std::string &address);
-bool isIPv6(std::string &address);
-void urlParse(std::string url, std::string &host, std::string &path, int &port, bool &isTLS);
+std::string getMD5(const std::string &data);
+bool isIPv4(const std::string &address);
+bool isIPv6(const std::string &address);
+void urlParse(const std::string &url, std::string &host, std::string &path, int &port, bool &isTLS);
 void removeUTF8BOM(std::string &data);
 int shortAssemble(unsigned short num_a, unsigned short num_b);
 void shortDisassemble(int source, unsigned short &num_a, unsigned short &num_b);
-int to_int(std::string str, int def_vaule = 0);
-std::string UTF8ToCodePoint(std::string data);
-std::string GetEnv(std::string name);
+int to_int(const std::string &str, int def_vaule = 0);
+std::string UTF8ToCodePoint(const std::string &data);
+std::string GetEnv(const std::string &name);
 
-std::string fileGet(std::string path, bool binary, bool scope_limit = false);
-int fileWrite(std::string path, std::string content, bool overwrite);
-bool fileExist(std::string path);
-bool fileCopy(std::string source,std::string dest);
-std::string fileToBase64(std::string filepath);
-std::string fileGetMD5(std::string filepath);
+std::string fileGet(const std::string &path, bool binary, bool scope_limit = false);
+int fileWrite(const std::string &path, const std::string &content, bool overwrite);
+bool fileExist(const std::string &path);
+bool fileCopy(const std::string &source, const std::string &dest);
+std::string fileToBase64(const std::string &filepath);
+std::string fileGetMD5(const std::string &filepath);
 
 static inline bool strFind(const std::string &str, const std::string &target)
 {
@@ -102,7 +102,7 @@ namespace std
 #endif // HAVE_TO_STRING
 
 #ifdef _WIN32
-void StringToWstring(std::wstring& szDst, std::string str);
+void StringToWstring(std::wstring& szDst, const std::string &str);
 #endif // _WIN32
 
 #endif // MISC_H_INCLUDED
