@@ -56,7 +56,7 @@ template <typename T> void operator >> (const YAML::Node& node, T& i)
 
 std::string getRuleset(RESPONSE_CALLBACK_ARGS)
 {
-    std::string url = UrlDecode(getUrlArg(argument, "url")), type = getUrlArg(argument, "type"), group = UrlDecode(getUrlArg(argument, "group"));
+    std::string url = urlsafe_base64_decode(getUrlArg(argument, "url")), type = getUrlArg(argument, "type"), group = urlsafe_base64_decode(getUrlArg(argument, "group"));
     std::string output_content;
 
     if(!url.size() || !type.size() || !group.size() || (type != "1" && type != "2"))
@@ -783,7 +783,7 @@ void generateBase()
     if(retVal != INIREADER_EXCEPTION_NONE)
         std::cerr<<"Unable to load Mellow base content. Reason: "<<mellow_base.GetLastError()<<"\n";
     else
-        rulesetToSurge(mellow_base, ruleset_content_array, 0, overwrite_original_rules);
+        rulesetToSurge(mellow_base, ruleset_content_array, 0, overwrite_original_rules, std::string());
 }
 
 std::string subconverter(RESPONSE_CALLBACK_ARGS)
@@ -792,7 +792,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     std::string group = UrlDecode(getUrlArg(argument, "group")), upload = getUrlArg(argument, "upload"), upload_path = getUrlArg(argument, "upload_path"), version = getUrlArg(argument, "ver");
     std::string append_type = getUrlArg(argument, "append_type"), tfo = getUrlArg(argument, "tfo"), udp = getUrlArg(argument, "udp"), nodelist = getUrlArg(argument, "list");
     std::string include = UrlDecode(getUrlArg(argument, "include")), exclude = UrlDecode(getUrlArg(argument, "exclude")), sort_flag = getUrlArg(argument, "sort");
-    std::string scv = getUrlArg(argument, "scv"), fdn = getUrlArg(argument, "fdn"), token = getUrlArg(argument, "token");
+    std::string scv = getUrlArg(argument, "scv"), fdn = getUrlArg(argument, "fdn"), token = getUrlArg(argument, "token"), expand = getUrlArg(argument, "expand");
     std::string base_content, output_content;
     string_array extra_group, extra_ruleset, include_remarks, exclude_remarks;
     std::string groups = urlsafe_base64_decode(getUrlArg(argument, "groups")), ruleset = urlsafe_base64_decode(getUrlArg(argument, "ruleset")), config = UrlDecode(getUrlArg(argument, "config"));
@@ -833,6 +833,33 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     ext.emoji_array = safe_get_emojis();
     ext.rename_array = safe_get_renames();
 
+    //check other flags
+    if(emoji.size())
+    {
+        ext.add_emoji = ext.remove_emoji = emoji == "true";
+    }
+    else
+    {
+        ext.add_emoji = add_emoji;
+        ext.remove_emoji = remove_old_emoji;
+    }
+    if(append_type.size())
+        ext.append_proxy_type = append_type == "true";
+    else
+        ext.append_proxy_type = append_proxy_type;
+
+    ext.tfo = tfo.size() ? tfo == "true" : tfo_flag;
+    ext.udp = udp.size() ? udp == "true" : udp_flag;
+    ext.sort_flag = sort_flag.size() ? sort_flag == "true" : do_sort;
+    ext.skip_cert_verify = scv.size() ? scv == "true" : scv_flag;
+    ext.filter_deprecated = fdn.size() ? fdn == "true" : filter_deprecated;
+
+    ext.nodelist = nodelist == "true";
+    ext.surge_ssr_path = surge_ssr_path;
+    ext.enable_rule_generator = enable_rule_generator;
+    if(expand != "true")
+        ext.managed_config_prefix = managed_config_prefix;
+
     //load external configuration
     if(config.size())
     {
@@ -865,7 +892,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
             extra_group = extconf.custom_proxy_group;
         //load custom rules
         ext.overwrite_original_rules = extconf.overwrite_original_rules;
-        if(extconf.surge_ruleset.size())
+        if(extconf.surge_ruleset.size() && !ext.nodelist)
         {
             extra_ruleset = extconf.surge_ruleset;
             refreshRulesets(extra_ruleset, rca);
@@ -873,7 +900,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         }
         else
         {
-            if(ext.enable_rule_generator)
+            if(ext.enable_rule_generator && !ext.nodelist)
             {
                 if(update_ruleset_on_request)
                     refreshRulesets(rulesets, ruleset_content_array);
@@ -884,7 +911,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     else
     {
         //loading custom groups
-        if(groups.size())
+        if(groups.size() && !ext.nodelist)
         {
             extra_group = split(groups, "@");
             if(!extra_group.size())
@@ -894,7 +921,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
             extra_group = clash_extra_group;
 
         //loading custom rulesets
-        if(ruleset.size())
+        if(ruleset.size() && !ext.nodelist)
         {
             extra_ruleset = split(ruleset, "@");
             if(!extra_ruleset.size())
@@ -911,7 +938,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         }
         else
         {
-            if(enable_rule_generator)
+            if(enable_rule_generator && !ext.nodelist)
             {
                 if(update_ruleset_on_request || cfw_child_process)
                     refreshRulesets(rulesets, ruleset_content_array);
@@ -919,31 +946,6 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
             }
         }
     }
-
-    //check other flags
-    if(emoji.size())
-    {
-        ext.add_emoji = ext.remove_emoji = emoji == "true";
-    }
-    else
-    {
-        ext.add_emoji = add_emoji;
-        ext.remove_emoji = remove_old_emoji;
-    }
-    if(append_type.size())
-        ext.append_proxy_type = append_type == "true";
-    else
-        ext.append_proxy_type = append_proxy_type;
-
-    ext.tfo = tfo.size() ? tfo == "true" : tfo_flag;
-    ext.udp = udp.size() ? udp == "true" : udp_flag;
-    ext.sort_flag = sort_flag.size() ? sort_flag == "true" : do_sort;
-    ext.skip_cert_verify = scv.size() ? scv == "true" : scv_flag;
-    ext.filter_deprecated = fdn.size() ? fdn == "true" : filter_deprecated;
-
-    ext.nodelist = nodelist == "true";
-    ext.surge_ssr_path = surge_ssr_path;
-    ext.enable_rule_generator = enable_rule_generator;
 
     //loading urls
     string_array urls = split(url, "|");
@@ -988,11 +990,20 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     if(subInfo.size() && groupID == 1)
         extra_headers.emplace("Subscription-UserInfo", subInfo);
 
+    string_array dummy_group;
+    std::vector<ruleset_content> dummy_ruleset;
+
     std::cerr<<"Generate target: ";
     if(target == "clash" || target == "clashr")
     {
         std::cerr<<"Clash"<<((target == "clashr") ? "R" : "")<<std::endl;
-        if(ruleset_updated || update_ruleset_on_request || ext_clash_base != clash_rule_base)
+        if(ext.nodelist)
+        {
+            YAML::Node yamlnode;
+            netchToClash(nodes, yamlnode, dummy_group, target == "clashr", ext);
+            output_content = YAML::Dump(yamlnode);
+        }
+        else if(ruleset_updated || update_ruleset_on_request || ext_clash_base != clash_rule_base)
         {
             if(fileExist(ext_clash_base))
                 base_content = fileGet(ext_clash_base, false);
@@ -1016,17 +1027,24 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         int surge_ver = version.size() ? to_int(version, 3) : 3;
         std::cerr<<"Surge "<<surge_ver<<std::endl;
 
-        if(fileExist(ext_surge_base))
-            base_content = fileGet(ext_surge_base, false);
+        if(ext.nodelist)
+        {
+            output_content = netchToSurge(nodes, base_content, dummy_ruleset, dummy_group, surge_ver, ext);
+        }
         else
-            base_content = webGet(ext_surge_base, getSystemProxy());
+        {
+            if(fileExist(ext_surge_base))
+                base_content = fileGet(ext_surge_base, false);
+            else
+                base_content = webGet(ext_surge_base, getSystemProxy());
 
-        output_content = netchToSurge(nodes, base_content, rca, extra_group, surge_ver, ext);
-        if(upload == "true")
-            uploadGist("surge" + version, upload_path, output_content, true);
+            output_content = netchToSurge(nodes, base_content, rca, extra_group, surge_ver, ext);
+            if(upload == "true")
+                uploadGist("surge" + version, upload_path, output_content, true);
 
-        if(write_managed_config && managed_config_prefix.size() && !ext.nodelist)
-            output_content = "#!MANAGED-CONFIG " + managed_config_prefix + "/sub?" + argument + "\n\n" + output_content;
+            if(write_managed_config && managed_config_prefix.size())
+                output_content = "#!MANAGED-CONFIG " + managed_config_prefix + "/sub?" + argument + "\n\n" + output_content;
+        }
     }
     else if(target == "surfboard")
     {
