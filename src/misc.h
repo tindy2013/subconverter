@@ -68,6 +68,15 @@ static inline bool strFind(std::string str, std::string target)
     return str.find(target) != str.npos;
 }
 
+static inline bool startsWith(std::string && hay, std::string && needle) {
+    return hay.substr(0, needle.length()) == needle;
+}
+
+static inline bool endsWith(std::string && hay, std::string && needle) {
+    size_t hl = hay.length(), nl = needle.length();
+    return hl >= nl && hay.substr(hl - nl, nl) == needle;
+}
+
 template <typename T> static inline void eraseElements(std::vector<T> &target)
 {
     target.clear();

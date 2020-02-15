@@ -1,6 +1,6 @@
 # subconverter
 
-Utility to convert between various subscription format.
+Utility to convert between various proxy subscription formats.
 
 [![Build Status](https://travis-ci.com/tindy2013/subconverter.svg?branch=master)](https://travis-ci.com/tindy2013/subconverter)
 [![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/tindy2013/subconverter.svg)](https://github.com/tindy2013/subconverter/tags)
@@ -115,7 +115,7 @@ http://127.0.0.1:25500/sub?target=%TARGET%&url=%URL%&emoji=%EMOJI%····
 | Argument | Needed  | Example | Explanation |
 | -------- | :----:  | :--------------- | :------------------------ |
 | target   |  Yes    | quan    | Target subscription type. Acquire from Target Name in [Supported Types](#Supported_Types). |
-| url      |  No     | https%3A%2F%2Fwww.xxx.com | Subscription to convert. Supports URLs and file paths. Process with [URLEncode](https://www.urlencoder.org/) first. **Not needed ONLY WHEN YOU HAVE SET `default_urls` IN `pref.ini`. |
+| url      |  No     | https%3A%2F%2Fwww.xxx.com | Subscription to convert. Supports URLs, data URIs, and file paths. Process with [URLEncode](https://www.urlencoder.org/) first. **Not needed ONLY WHEN YOU HAVE SET `default_urls` IN `pref.ini`. |
 | config   |  No     | https%3A%2F%2Fwww.xxx.com | External configuration file path. Supports URLs and file paths. Process with [URLEncode](https://www.urlencoder.org/) first. More examples can be found in [this](https://github.com/lzdnico/subconverteriniexample) repository. Default is to load configurations from `pref.ini`. |
 | upload   |  No     | true / false  | Upload generated configuration to `Gist repository`. `gistconf.ini` must be filled before uploading. Default is `false`. |
 | upload_path |  No     | MySS.yaml  | File name when uploaded to `Gist`. Process with [URLEncode](https://www.urlencoder.org/) first.    |
