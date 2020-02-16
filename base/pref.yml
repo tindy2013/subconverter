@@ -29,6 +29,7 @@ node_pref:
   tcp_fast_open_flag: false
   sort_flag: false
   skip_cert_verify_flag: false
+  filter_deprecated_nodes: false
   rename_node:
 #  - {match: "\\(?((x|X)?(\\d+)(\\.?\\d+)?)((\\s?倍率?)|(x|X))\\)?", replace: "$1x"}
   - {import: snippets/rename_node.txt}

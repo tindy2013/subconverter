@@ -402,6 +402,7 @@ void readYAMLConf(YAML::Node &node)
         section["tcp_fast_open_flag"] >> tfo_flag;
         section["sort_flag"] >> do_sort;
         section["skip_cert_verify_flag"] >> scv_flag;
+        section["filter_deprecated_nodes"] >> filter_deprecated;
     }
 
     if(section["rename_node"].IsSequence())
@@ -1194,7 +1195,7 @@ std::string simpleToClashR(RESPONSE_CALLBACK_ARGS)
         refreshRulesets(rulesets, ruleset_content_array);
     rca = ruleset_content_array;
 
-    extra_settings ext = {true, overwrite_original_rules, safe_get_renames(), safe_get_emojis(), add_emoji, remove_old_emoji, append_proxy_type, udp_flag, tfo_flag, false, do_sort, scv_flag, filter_deprecated, ""};
+    extra_settings ext = {true, overwrite_original_rules, safe_get_renames(), safe_get_emojis(), add_emoji, remove_old_emoji, append_proxy_type, udp_flag, tfo_flag, false, do_sort, scv_flag, filter_deprecated, "", ""};
 
     std::string proxy;
     if(proxy_subscription == "SYSTEM")
