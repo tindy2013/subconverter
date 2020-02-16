@@ -880,7 +880,7 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
         }
         else if(x.linkType == SPEEDTEST_MESSAGE_FOUNDVMESS)
         {
-            if(surge_ver < 4)
+            if(surge_ver < 4 && surge_ver != -3)
                 continue;
             id = GetMember(json, "UserID");
             aid = GetMember(json, "AlterID");

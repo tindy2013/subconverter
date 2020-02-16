@@ -1060,7 +1060,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         else
             base_content = webGet(ext_surfboard_base, getSystemProxy());
 
-        output_content = netchToSurge(nodes, base_content, rca, extra_group, 2, ext);
+        output_content = netchToSurge(nodes, base_content, rca, extra_group, -3, ext);
         if(upload == "true")
             uploadGist("surfboard", upload_path, output_content, true);
 
