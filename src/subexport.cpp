@@ -1301,7 +1301,7 @@ std::string netchToQuan(std::vector<nodeInfo> &nodes, std::string &base_conf, st
     {
         string_array allnodes;
         ini.GetAll("SERVER", "{NONAME}", allnodes);
-        std::string allLinks = std::accumulate(allnodes.begin(), allnodes.end(), allnodes[0], [](std::string a, std::string b)
+        std::string allLinks = std::accumulate(std::next(allnodes.begin()), allnodes.end(), allnodes[0], [](std::string a, std::string b)
         {
             return std::move(a) + "\n" + std::move(b);
         });
@@ -1519,7 +1519,7 @@ std::string netchToQuanX(std::vector<nodeInfo> &nodes, std::string &base_conf, s
     {
         string_array allnodes;
         ini.GetAll("server_local", "{NONAME}", allnodes);
-        std::string allLinks = std::accumulate(allnodes.begin(), allnodes.end(), allnodes[0], [](std::string a, std::string b)
+        std::string allLinks = std::accumulate(std::next(allnodes.begin()), allnodes.end(), allnodes[0], [](std::string a, std::string b)
         {
             return std::move(a) + "\n" + std::move(b);
         });
@@ -1985,7 +1985,7 @@ void netchToMellow(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rul
             proxy += y + ":";
         proxy = proxy.substr(0, proxy.size() - 1);
         */
-        proxy += std::accumulate(std::next(filtered_nodelist.cbegin()), filtered_nodelist.cend(), filtered_nodelist[0], [](std::string a, std::string b)
+        proxy += std::accumulate(std::next(filtered_nodelist.begin()), filtered_nodelist.end(), filtered_nodelist[0], [](std::string a, std::string b)
         {
             return std::move(a) + ":" + std::move(b);
         });
