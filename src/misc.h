@@ -13,6 +13,7 @@
 #define PATH_SLASH "//"
 #endif // _WIN32
 
+typedef std::string::size_type string_size;
 typedef std::vector<std::string> string_array;
 typedef const std::string &refCnstStr;
 
@@ -23,12 +24,13 @@ static const std::string base64_chars =
 
 std::string UrlEncode(const std::string& str);
 std::string UrlDecode(const std::string& str);
-std::string base64_decode(const std::string &encoded_string);
+std::string base64_decode(const std::string &encoded_string, bool accept_urlsafe = false);
 std::string base64_encode(const std::string &string_to_encode);
 
 std::vector<std::string> split(const std::string &s, const std::string &seperator);
 std::string getUrlArg(const std::string &url, const std::string &request);
 std::string replace_all_distinct(std::string str, const std::string &old_value, const std::string &new_value);
+std::string urlsafe_base64(const std::string &encoded_string);
 std::string urlsafe_base64_reverse(const std::string &encoded_string);
 std::string urlsafe_base64_decode(const std::string &encoded_string);
 std::string urlsafe_base64_encode(const std::string &string_to_encode);
