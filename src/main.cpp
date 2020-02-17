@@ -61,6 +61,21 @@ void chkArg(int argc, char *argv[])
     }
 }
 
+void signal_handler(int sig)
+{
+    std::cerr<<"Interrupt signal "<<sig<<" received. Exiting gracefully...\n";
+    switch(sig)
+    {
+#ifndef _WIN32
+    case SIGHUP:
+    case SIGQUIT:
+#endif // _WIN32
+    case SIGTERM:
+    case SIGINT:
+        stop_web_server();
+        break;
+    }
+}
 int main(int argc, char *argv[])
 {
 #ifdef _WIN32
@@ -74,13 +89,21 @@ int main(int argc, char *argv[])
 #else
     signal(SIGPIPE, SIG_IGN);
     signal(SIGABRT, SIG_IGN);
+    signal(SIGHUP, signal_handler);
+    signal(SIGQUIT, signal_handler);
 #endif // _WIN32
+    signal(SIGTERM, signal_handler);
+    signal(SIGINT, signal_handler);
 
     SetConsoleTitle("subconverter " VERSION);
+#ifndef _DEBUG
+    std::string prgpath = argv[0];
+    setcd(prgpath); //first switch to program directory
+#endif // _DEBUG
     if(fileExist("pref.yml"))
         pref_path = "pref.yml";
     chkArg(argc, argv);
-    setcd(pref_path);
+    setcd(pref_path); //then switch to pref directory
     readConf();
     if(!update_ruleset_on_request)
         refreshRulesets(rulesets, ruleset_content_array);

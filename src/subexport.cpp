@@ -58,7 +58,7 @@ std::string hostnameToIPAddr(std::string host)
 }
 */
 
-std::string vmessConstruct(std::string add, std::string port, std::string type, std::string id, std::string aid, std::string net, std::string cipher, std::string path, std::string host, std::string tls, int local_port)
+std::string vmessConstruct(std::string add, std::string port, std::string type, std::string id, std::string aid, std::string net, std::string cipher, std::string path, std::string host, std::string edge, std::string tls, int local_port)
 {
     if(!path.size())
         path = "/";
@@ -90,6 +90,8 @@ std::string vmessConstruct(std::string add, std::string port, std::string type, 
     writer.String(net.data());
     writer.Key("Host");
     writer.String(host.data());
+    writer.Key("Edge");
+    writer.String(edge.data());
     if(net == "ws")
     {
         writer.Key("Path");
@@ -557,7 +559,7 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
     std::string type, remark, hostname, port, username, password, method;
     std::string plugin, pluginopts;
     std::string protocol, protoparam, obfs, obfsparam;
-    std::string id, aid, transproto, faketype, host, path, quicsecure, quicsecret;
+    std::string id, aid, transproto, faketype, host, edge, path, quicsecure, quicsecret;
     std::vector<nodeInfo> nodelist;
     bool tlssecure, replace_flag;
     string_array vArray, remarks_list, filtered_nodelist;
@@ -637,6 +639,7 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
             aid = GetMember(json, "AlterID");
             transproto = GetMember(json, "TransferProtocol");
             host = GetMember(json, "Host");
+            edge = GetMember(json, "Edge");
             path = GetMember(json, "Path");
             tlssecure = GetMember(json, "TLSSecure") == "true";
             singleproxy["type"] = "vmess";
@@ -651,6 +654,12 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
                 singleproxy["network"] = transproto;
                 singleproxy["ws-path"] = path;
                 singleproxy["ws-headers"]["Host"] = host;
+                singleproxy["headers"]["Host"] = host;
+                if(edge.size())
+                {
+                    singleproxy["ws-headers"]["Edge"] = edge;
+                    singleproxy["headers"]["Edge"] = edge;
+                }
             }
             else if(transproto == "kcp" || transproto == "h2" || transproto == "quic")
                 continue;
@@ -662,7 +671,7 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
             obfs = GetMember(json, "OBFS");
             if(ext.filter_deprecated)
             {
-                if(method == "chacha20")
+                if(method == "chacha20" && !clashR) //the mainline core no longer supports chacha20, but clashR core still does
                     continue;
                 if(std::find(clashr_protocols.cbegin(), clashr_protocols.cend(), protocol) == clashr_protocols.cend())
                     continue;
@@ -805,7 +814,7 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
     std::string type, remark, hostname, port, username, password, method;
     std::string plugin, pluginopts;
     std::string protocol, protoparam, obfs, obfsparam;
-    std::string id, aid, transproto, faketype, host, path, quicsecure, quicsecret;
+    std::string id, aid, transproto, faketype, host, edge, path, quicsecure, quicsecret;
     std::string output_nodelist;
     std::vector<nodeInfo> nodelist;
     unsigned short local_port = 1080;
@@ -886,12 +895,15 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
             aid = GetMember(json, "AlterID");
             transproto = GetMember(json, "TransferProtocol");
             host = GetMember(json, "Host");
+            edge = GetMember(json, "Edge");
             path = GetMember(json, "Path");
             tlssecure = GetMember(json, "TLSSecure") == "true";
             proxy = "vmess, " + hostname + ", " + port + ", username=" + id + ", tls=" + (tlssecure ? "true" : "false");
             if(transproto == "ws")
             {
                 proxy += ", ws=true, ws-path=" + path + ", ws-headers=Host:" + host;
+                if(edge.size())
+                    proxy += "|Edge:" + edge;
             }
             if(ext.skip_cert_verify)
                 proxy += ", skip-cert-verify=1";
@@ -1317,7 +1329,7 @@ void netchToQuan(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rules
     std::string remark, hostname, port, method, password;
     std::string plugin, pluginopts;
     std::string protocol, protoparam, obfs, obfsparam;
-    std::string id, aid, transproto, faketype, host, path, quicsecure, quicsecret;
+    std::string id, aid, transproto, faketype, host, edge, path, quicsecure, quicsecret;
     std::string proxyStr, allLinks;
     bool tlssecure;
     std::vector<nodeInfo> nodelist;
@@ -1369,6 +1381,7 @@ void netchToQuan(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rules
             transproto = GetMember(json, "TransferProtocol");
             host = GetMember(json, "Host");
             path = GetMember(json, "Path");
+            edge = GetMember(json, "Edge");
             faketype = GetMember(json, "FakeType");
             tlssecure = GetMember(json, "TLSSecure") == "true";
 
@@ -1378,7 +1391,12 @@ void netchToQuan(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rules
             if(tlssecure)
                 proxyStr += ", over-tls=true, tls-host=" + host;
             if(transproto == "ws")
-                proxyStr += ", obfs=ws, obfs-path=\"" + path + "\", obfs-header=\"Host: " + host + "\"";
+            {
+                proxyStr += ", obfs=ws, obfs-path=\"" + path + "\", obfs-header=\"Host: " + host;
+                if(edge.size())
+                    proxyStr += "[Rr][Nn]Edge: " + edge;
+                proxyStr += "\"";
+            }
 
             if(ext.nodelist)
                 proxyStr = "vmess://" + urlsafe_base64_encode(proxyStr);

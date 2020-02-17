@@ -94,7 +94,7 @@ void explodeVmess(std::string vmess, std::string custom_port, int local_port, no
     node.remarks = ps;
     node.server = add;
     node.port = to_int(port, 0);
-    node.proxyStr = vmessConstruct(add, port, type, id, aid, net, "auto", path, host, tls, local_port);
+    node.proxyStr = vmessConstruct(add, port, type, id, aid, net, "auto", path, host, "", tls, local_port);
 }
 
 void explodeVmessConf(std::string content, std::string custom_port, int local_port, bool libev, std::vector<nodeInfo> &nodes)
@@ -181,7 +181,7 @@ void explodeVmessConf(std::string content, std::string custom_port, int local_po
             json["vmess"][i]["security"] >> cipher;
             group = V2RAY_DEFAULT_GROUP;
             node.linkType = SPEEDTEST_MESSAGE_FOUNDVMESS;
-            node.proxyStr = vmessConstruct(add, port, type, id, aid, net, cipher, path, host, tls, local_port);
+            node.proxyStr = vmessConstruct(add, port, type, id, aid, net, cipher, path, host, "", tls, local_port);
             break;
         case 3: //ss config
             json["vmess"][i]["id"] >> id;
@@ -579,7 +579,7 @@ void explodeSocks(std::string link, std::string custom_port, nodeInfo &node)
 void explodeQuan(std::string quan, std::string custom_port, int local_port, nodeInfo &node)
 {
     std::string strTemp, itemName, itemVal;
-    std::string group = V2RAY_DEFAULT_GROUP, ps, add, port, cipher = "auto", type = "none", id, aid = "0", net = "tcp", path, host, tls;
+    std::string group = V2RAY_DEFAULT_GROUP, ps, add, port, cipher = "auto", type = "none", id, aid = "0", net = "tcp", path, host, edge, tls;
     std::vector<std::string> configs, vArray;
     strTemp = regReplace(quan, "(.*?) = (.*)", "$1,$2");
     configs = split(strTemp, ",");
@@ -614,6 +614,8 @@ void explodeQuan(std::string quan, std::string custom_port, int local_port, node
                 {
                     if(strFind(headers[j], "Host: "))
                         host = headers[j].substr(6);
+                    else if(strFind(headers[j], "Edge: "))
+                        edge = headers[j].substr(6);
                 }
             }
             else if(itemName == "obfs" && itemVal == "ws")
@@ -627,14 +629,14 @@ void explodeQuan(std::string quan, std::string custom_port, int local_port, node
         node.remarks = ps;
         node.server = add;
         node.port = to_int(port, 0);
-        node.proxyStr = vmessConstruct(add, port, type, id, aid, net, cipher, path, host, tls, local_port);
+        node.proxyStr = vmessConstruct(add, port, type, id, aid, net, cipher, path, host, edge, tls, local_port);
     }
 }
 
 void explodeNetch(std::string netch, bool ss_libev, bool ssr_libev, std::string custom_port, int local_port, nodeInfo &node)
 {
     Document json;
-    std::string type, remark, address, port, username, password, method, plugin, pluginopts, protocol, protoparam, obfs, obfsparam, id, aid, transprot, faketype, host, path, tls;
+    std::string type, remark, address, port, username, password, method, plugin, pluginopts, protocol, protoparam, obfs, obfsparam, id, aid, transprot, faketype, host, edge, path, tls;
     netch = urlsafe_base64_decode(netch.substr(8));
 
     json.Parse(netch.data());
@@ -685,10 +687,11 @@ void explodeNetch(std::string netch, bool ss_libev, bool ssr_libev, std::string 
         faketype = GetMember(json, "FakeType");
         host = GetMember(json, "Host");
         path = GetMember(json, "Path");
+        edge = GetMember(json, "Edge");
         tls = GetMember(json, "TLSSecure") == "true" ? "tls" : "";
         node.linkType = SPEEDTEST_MESSAGE_FOUNDVMESS;
         node.group = V2RAY_DEFAULT_GROUP;
-        node.proxyStr = vmessConstruct(address, port, faketype, id, aid, transprot, method, path, host, tls, local_port);
+        node.proxyStr = vmessConstruct(address, port, faketype, id, aid, transprot, method, path, host, edge, tls, local_port);
     }
     else if(type == "Socks5")
     {
@@ -711,7 +714,7 @@ void explodeClash(Node yamlnode, std::string custom_port, int local_port, std::v
     Node singleproxy;
     unsigned int index = nodes.size();
     std::string proxytype, ps, server, port, cipher, group, password; //common
-    std::string type = "none", id, aid = "0", net = "tcp", path, host, tls; //vmess
+    std::string type = "none", id, aid = "0", net = "tcp", path, host, edge, tls; //vmess
     std::string plugin, pluginopts, pluginopts_mode, pluginopts_host, pluginopts_mux; //ss
     std::string protocol, protoparam, obfs, obfsparam; //ssr
     std::string user; //socks
@@ -736,13 +739,16 @@ void explodeClash(Node yamlnode, std::string custom_port, int local_port, std::v
             else
                 tls.clear();
             if(singleproxy["ws-headers"].IsDefined())
+            {
                 singleproxy["ws-headers"]["Host"] >> host;
+                singleproxy["ws-headers"]["Edge"] >> edge;
+            }
             else
                 host.clear();
 
 
             node.linkType = SPEEDTEST_MESSAGE_FOUNDVMESS;
-            node.proxyStr = vmessConstruct(server, port, type, id, aid, net, cipher, path, host, tls, local_port);
+            node.proxyStr = vmessConstruct(server, port, type, id, aid, net, cipher, path, host, edge, tls, local_port);
         }
         else if(proxytype == "ss")
         {
@@ -940,7 +946,7 @@ void explodeShadowrocket(std::string rocket, std::string custom_port, int local_
     node.remarks = remarks;
     node.server = add;
     node.port = to_int(port, 0);
-    node.proxyStr = vmessConstruct(add, port, type, id, aid, net, cipher, path, host, tls, local_port);
+    node.proxyStr = vmessConstruct(add, port, type, id, aid, net, cipher, path, host, "", tls, local_port);
 }
 
 void explodeKitsunebi(std::string kit, std::string custom_port, int local_port, nodeInfo &node)
@@ -985,14 +991,14 @@ void explodeKitsunebi(std::string kit, std::string custom_port, int local_port, 
     node.remarks = remarks;
     node.server = add;
     node.port = to_int(port, 0);
-    node.proxyStr = vmessConstruct(add, port, type, id, aid, net, cipher, path, host, tls, local_port);
+    node.proxyStr = vmessConstruct(add, port, type, id, aid, net, cipher, path, host, "", tls, local_port);
 }
 
 bool explodeSurge(std::string surge, std::string custom_port, int local_port, std::vector<nodeInfo> &nodes, bool libev)
 {
     std::string remarks, server, port, method, username, password; //common
     std::string plugin, pluginopts, pluginopts_mode, pluginopts_host = "cloudfront.net", mod_url, mod_md5; //ss
-    std::string id, net, tls, host, path; //v2
+    std::string id, net, tls, host, edge, path; //v2
     std::string protocol, protoparam; //ssr
     std::string itemName, itemVal;
     std::vector<std::string> configs, vArray, headers, header;
@@ -1157,6 +1163,8 @@ bool explodeSurge(std::string surge, std::string custom_port, int local_port, st
                         header = split(trim(y), ":");
                         if(header[0] == "Host")
                             host = header[1];
+                        else if(header[0] == "Edge")
+                            edge = header[1];
                     }
                 }
             }
@@ -1165,7 +1173,7 @@ bool explodeSurge(std::string surge, std::string custom_port, int local_port, st
 
             node.linkType = SPEEDTEST_MESSAGE_FOUNDVMESS;
             node.group = V2RAY_DEFAULT_GROUP;
-            node.proxyStr = vmessConstruct(server, port, "", id, "0", net, method, path, host, tls, local_port);
+            node.proxyStr = vmessConstruct(server, port, "", id, "0", net, method, path, host, edge, tls, local_port);
         }
         else if(configs[0] == "http") //http proxy
         {
@@ -1274,7 +1282,7 @@ bool explodeSurge(std::string surge, std::string custom_port, int local_port, st
 
             node.linkType = SPEEDTEST_MESSAGE_FOUNDVMESS;
             node.group = V2RAY_DEFAULT_GROUP;
-            node.proxyStr = vmessConstruct(server, port, "", id, "0", net, method, path, host, tls, local_port);
+            node.proxyStr = vmessConstruct(server, port, "", id, "0", net, method, path, host, "", tls, local_port);
         }
         else
             continue;

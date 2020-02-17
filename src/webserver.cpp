@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <map>
-#include <mutex>
+#include <atomic>
 #include <thread>
 #include <pthread.h>
 
@@ -23,44 +23,9 @@ struct responseRoute
 std::vector<responseRoute> responses;
 
 //for use of multi-thread
-typedef std::lock_guard<std::mutex> guarded_mutex;
-int working_thread = 0, max_send_failure = 10;
-bool SERVER_EXIT_FLAG = false;
-std::mutex working_mutex, server_exit_flag_mutex;
-
-static inline void working_acc()
-{
-    guarded_mutex guard(working_mutex);
-    working_thread++;
-}
-
-static inline void working_dec()
-{
-    guarded_mutex guard(working_mutex);
-    working_thread--;
-}
-
-static inline int safe_read_working()
-{
-    int retVal;
-    guarded_mutex guard(working_mutex);
-    retVal = working_thread;
-    return retVal;
-}
-
-static inline bool safe_read_server_exit_flag()
-{
-    bool retVal;
-    guarded_mutex guard(server_exit_flag_mutex);
-    retVal = SERVER_EXIT_FLAG;
-    return retVal;
-}
-
-static inline void safe_set_server_exit_flag()
-{
-    guarded_mutex guard(server_exit_flag_mutex);
-    SERVER_EXIT_FLAG = true;
-}
+int max_send_failure = 10;
+std::atomic_bool SERVER_EXIT_FLAG(false);
+std::atomic_int working_thread(0)
 
 int sendall(SOCKET sock, std::string data)
 {
@@ -214,7 +179,7 @@ int setTimeout(SOCKET s, int timeout)
     ret = setsockopt(s, SOL_SOCKET, SO_SNDTIMEO, (char*)&timeout, sizeof(int));
     ret = setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, (char*)&timeout, sizeof(int));
 #else
-    struct timeval timeo = {0, timeout * 1000};
+    struct timeval timeo = {timeout / 1000, (timeout % 1000) * 1000};
     ret = setsockopt(s, SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeo, sizeof(timeo));
     ret = setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeo, sizeof(timeo));
 #endif
@@ -224,7 +189,7 @@ int setTimeout(SOCKET s, int timeout)
 
 void handle_req(std::string request, int client_sock)
 {
-    working_acc();
+    working_thread++;
     std::cerr<<"worker startup"<<std::endl;
     string_array vArray;
     char command[16] = {};
@@ -279,7 +244,7 @@ end:
     std::cerr<<"worker stop"<<std::endl;
     sleep(1);
     closesocket(client_sock);
-    working_dec();
+    working_thread--;
 }
 
 void append_response(std::string type, std::string request, std::string content_type, response_callback response)
@@ -290,6 +255,18 @@ void append_response(std::string type, std::string request, std::string content_
     rr.content_type = content_type;
     rr.rc = response;
     responses.push_back(rr);
+}
+
+void stop_web_server()
+{
+    SERVER_EXIT_FLAG = true;
+}
+
+int start_web_server(void *argv)
+{
+    struct listener_args *args = (listener_args*)argv;
+    args->max_workers = 1;
+    return start_web_server_multi(args);
 }
 
 int start_web_server_multi(void *argv)
@@ -373,10 +350,10 @@ int start_web_server_multi(void *argv)
 
         //handle_req(buf, acc_socket);
 
-        while(safe_read_working() >= max_workers)
+        while(working_thread >= max_workers)
         {
             sleep(10);
-            if(safe_read_server_exit_flag())
+            if(SERVER_EXIT_FLAG)
                 break;
         }
         while(workers[worker_index].get_id() != std::thread::id())

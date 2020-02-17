@@ -16,5 +16,6 @@ struct listener_args
 void append_response(std::string method, std::string uri, std::string content_type, response_callback response);
 int start_web_server(void *argv);
 int start_web_server_multi(void *argv);
+void stop_web_server();
 
 #endif // WEBSERVER_H_INCLUDED
