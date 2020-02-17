@@ -438,10 +438,16 @@ exclude=(流量|官网)
 
 1. **skip_cert_verify_flag**
 
-   > 关闭 TLS 节点的证书检查。设置为 true 时打开，默认为 false
+   > 关闭 TLS 节点的证书检查，设置为 true 时打开，默认为 false
 
     - **请勿随意将此设置修改为 true**
 
+1. **filter deprecated nodes**
+
+   > 排除当前 **`target=`** 不支持的节点类型，设置为 true 时打开，默认为 false
+
+    - 可以考虑设置为 true，从而在**一定程度上避免出现兼容问题**
+    
 1. **rename_node**
 
    > 重命名节点，支持正则匹配
@@ -454,7 +460,7 @@ exclude=(流量|官网)
      rename_node=中国@中
      rename_node=\(?((x|X)?(\d+)(\.?\d+)?)((\s?倍率?:?)|(x|X))\)?@(倍率:$1)
      ```
-
+     
 </details>
 <details>
 <summary><b>[managed_config] 部分</b></summary>
@@ -467,7 +473,9 @@ exclude=(流量|官网)
 
 1. **managed_config_prefix**
 
-   > 具体的 '#!MANAGED-CONFIG' 信息，地址前缀不用添加 "/"。Surge 或 Surfboard 会向此地址发出更新请求
+   > 具体的 '#!MANAGED-CONFIG' 信息，地址前缀不用添加 "/"。
+   >
+   > Surge 或 Surfboard 会向此地址发出更新请求，同时本地 ruleset 转 url 会用此生成/getruleset链接。
    >
    > 局域网用户需要将此处改为本程序运行设备的局域网 IP
 
@@ -605,7 +613,7 @@ custom_proxy_group=🇯🇵 JP`select`沪日`日本`[]🇯🇵 日本延迟最�
 
 ### 外部配置
 
-> 本部分用于 链接参数 `**&config=**`
+> 本部分用于 链接参数 **`&config=`**
 
 将文件按照以下格式写好，上传至 Github Gist 或者 其他**可访问**网络位置
 经过 [URLEncode](https://www.urlencoder.org/) 处理后，添加至 `&config=` 即可调用
@@ -673,6 +681,9 @@ clash_rule_base=base/forcerule.yml
 ;emoji=(流量|时间|应急),🏳️‍🌈
 ;emoji=阿根廷,🇦🇷
 
+;用于包含或排除节点关键词的选项 会覆盖 pref.ini 里的内容
+;include_remarks=
+;exclude_remarks=
 ```
 
 </details>
