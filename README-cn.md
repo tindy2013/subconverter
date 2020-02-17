@@ -14,7 +14,8 @@
     - [调用说明](#调用说明)
   - [进阶用法](#进阶用法)
     - [阅前提示](#阅前提示)
-    - [进阶地址](#进阶地址)
+    - [进阶链接](#进阶链接)
+    - [配置档案](#配置档案)
     - [配置文件](#配置文件)
     - [外部配置](#外部配置)
   - [自动上传](#自动上传)
@@ -151,6 +152,16 @@ http://127.0.0.1:25500/sub?target=clash&url=ss%3A%2F%2FYWVzLTEyOC1nY206dGVzdA%3D
 
 </details>
 
+### 简易转换
+
+当机场提供的 Surge 配置足以满足需求，但额外需要使用 Clash 配置文件时，此时可以使用以下方式进行转换
+
+```txt
+http://127.0.0.1:25500/surge2clash?link=Surge的订阅链接
+```
+
+此处 `Surge的订阅链接`可以**不用进行URLEncode**，且**无需任何额外配置**。
+
 ---
 
 ## 进阶用法
@@ -170,7 +181,7 @@ http://127.0.0.1:25500/sub?target=clash&url=ss%3A%2F%2FYWVzLTEyOC1nY206dGVzdA%3D
 
 当您尝试进行进阶操作时，即默认您有相关的操作能力，本程序仅保证在默认配置文件下能够正常运行。
 
-### 进阶地址
+### 进阶链接
 
 #### 调用地址 (进阶)
 
@@ -217,6 +228,30 @@ http://127.0.0.1:25500/sub?target=surge&ver=4&tfo=true&udp=true&emoji=true&exclu
 最后将该链接填写至 Surge 的订阅处就大功告成了。
 ```
 
+
+### 配置档案
+
+此功能暂时**仅能读取本地文件**
+
+当通过上述 [进阶链接](#进阶链接) 配置好订阅链接后，通常会使得链接十分冗长和难以记忆，此时可以考虑使用配置档案。
+
+在程序目录内的任意位置创建一个新的文档文件，如 `formyairport.ini`，并仿照 [示例文档](https://github.com/tindy2013/subconverter/blob/master/base/profiles/example_profile.ini) 根据配置好的参数填写进去即可。
+
+以上述 [进阶链接](#进阶链接) 的例子而言，`formyairport.ini` 内的内容应当是：
+
+ ```txt
+url=https://dler.cloud/subscribe/ABCDE?clash=vmess
+target=surge
+surge_ver=4
+tfo=true
+udp=true
+emoji=true
+exclude=(流量|官网)
+ ```
+ 
+在编辑并保存好 `formyairport.ini` 后，即可使用 `http://127.0.0.1:25500/getprofile?name=formyairport.ini&token=passwd` 进行调用。
+应当注意的是，此处文件内的参数**无需进行 URLEncode**，且为了安全考虑**必须设置token**（详见 [配置文件](#配置文件) 中 `[common] 部分` 对 `api_access_token` 的描述），另外此处的 `token` 与 `api_mod` 的状态无关。
+
 ### 配置文件
 
 > 关于 subconverter 主程序目录中 `pref.ini` 文件的解释
@@ -235,6 +270,14 @@ http://127.0.0.1:25500/sub?target=surge&ver=4&tfo=true&udp=true&emoji=true&exclu
     > API 模式，设置为 true 以防止直接加载本地订阅或直接提供本地文件。（多用于架设于服务器上）
 
     - 当值为 `false` 时, 每次更新配置都会读取 `pref.ini` , 为 `true` 时则仅启动时读取。
+    
+1. **api_access_token**
+    > 用于访问相对隐私的参数（如 `/getprofile`,`/get` 和 `/getlocal` 等）
+    - 例如:
+
+     ```ini
+     api_access_token=passwd
+     ```
 
 1. **default_url**
 
