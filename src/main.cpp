@@ -183,6 +183,8 @@ int main(int argc, char *argv[])
 
     append_response("GET", "/getruleset", "text/plain;charset=utf-8", getRuleset);
 
+    append_response("GET", "/getprofile", "text/plain;charset=utf-8", getProfile);
+
     append_response("GET", "/clash", "text/plain;charset=utf-8", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
         return subconverter(argument + "&target=clash", postdata, status_code, extra_headers);

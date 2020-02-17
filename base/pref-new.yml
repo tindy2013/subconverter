@@ -2,6 +2,7 @@ common:
   api_mode: false
   api_access_token: password
   default_url: []
+  insert_url: []
   exclude_remarks: ["(到期|剩余流量|时间|官网|产品)"]
   include_remarks: []
   clash_rule_base: base/simple_base.yml

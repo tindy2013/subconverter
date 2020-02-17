@@ -10,6 +10,7 @@
 void refreshRulesets(string_array &ruleset_list, std::vector<ruleset_content> &rca);
 void readConf();
 void generateBase();
+std::string getProfile(RESPONSE_CALLBACK_ARGS);
 std::string getRuleset(RESPONSE_CALLBACK_ARGS);
 std::string subconverter(RESPONSE_CALLBACK_ARGS);
 std::string simpleToClashR(RESPONSE_CALLBACK_ARGS);

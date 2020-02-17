@@ -269,7 +269,7 @@ std::string removeEmoji(std::string remark)
     while(true)
     {
         if(remark[0] == emoji_id[0] && remark[1] == emoji_id[1])
-            remark = remark.substr(4);
+            remark.erase(0, 4);
         else
             break;
     }

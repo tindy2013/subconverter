@@ -12,7 +12,6 @@
 std::string override_conf_port;
 int socksport;
 bool ss_libev, ssr_libev;
-extern bool api_mode;
 
 void copyNodes(std::vector<nodeInfo> &source, std::vector<nodeInfo> &dest)
 {
@@ -22,7 +21,7 @@ void copyNodes(std::vector<nodeInfo> &source, std::vector<nodeInfo> &dest)
     }
 }
 
-int addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID, std::string proxy, string_array &exclude_remarks, string_array &include_remarks, string_array &stream_rules, string_array &time_rules, std::string &subInfo)
+int addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID, std::string proxy, string_array &exclude_remarks, string_array &include_remarks, string_array &stream_rules, string_array &time_rules, std::string &subInfo, bool authorized)
 {
     int linkType = -1;
     std::vector<nodeInfo> nodes;
@@ -97,7 +96,7 @@ int addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID, std
         }
         break;
     case SPEEDTEST_MESSAGE_FOUNDLOCAL:
-        if(api_mode)
+        if(!authorized)
             return -1;
         writeLog(LOG_TYPE_INFO, "Parsing configuration file data...");
         if(explodeConf(link, override_conf_port, socksport, ss_libev, ssr_libev, nodes) == SPEEDTEST_ERROR_UNRECOGFILE)

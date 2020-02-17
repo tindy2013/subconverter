@@ -20,3 +20,6 @@ custom:
 
 #  emoji:
 #  - {import: snippets/emoji.txt}
+
+#  include_remarks: []
+#  exclude_remarks: []

@@ -21,10 +21,10 @@ std::string pref_path = "pref.ini";
 bool generator_mode = false;
 string_array def_exclude_remarks, def_include_remarks, rulesets, stream_rules, time_rules;
 std::vector<ruleset_content> ruleset_content_array;
-std::string listen_address = "127.0.0.1", default_url, managed_config_prefix;
+std::string listen_address = "127.0.0.1", default_url, insert_url, managed_config_prefix;
 int listen_port = 25500, max_pending_connections = 10, max_concurrent_threads = 4;
 bool api_mode = true, write_managed_config = false, enable_rule_generator = true, update_ruleset_on_request = false, overwrite_original_rules = true;
-bool print_debug_info = false, cfw_child_process = false;
+bool print_debug_info = false, cfw_child_process = false, append_userinfo = true;
 std::string access_token;
 extern std::string custom_group;
 
@@ -363,6 +363,16 @@ void readYAMLConf(YAML::Node &node)
         });
         default_url = strLine;
     }
+    if(section["insert_url"].IsSequence())
+    {
+        section["insert_url"] >> tempArray;
+        if(tempArray.size())
+            strLine = std::accumulate(std::next(tempArray.begin()), tempArray.end(), tempArray[0], [](std::string a, std::string b)
+        {
+            return std::move(a) + "|" + std::move(b);
+        });
+        insert_url = strLine;
+    }
     if(section["exclude_remarks"].IsSequence())
         section["exclude_remarks"] >> def_exclude_remarks;
     if(section["include_remarks"].IsSequence())
@@ -403,6 +413,7 @@ void readYAMLConf(YAML::Node &node)
         section["sort_flag"] >> do_sort;
         section["skip_cert_verify_flag"] >> scv_flag;
         section["filter_deprecated_nodes"] >> filter_deprecated;
+        section["append_sub_userinfo"] >> append_userinfo;
     }
 
     if(section["rename_node"].IsSequence())
@@ -510,6 +521,8 @@ void readConf()
         access_token = ini.Get("api_access_token");
     if(ini.ItemExist("default_url"))
         default_url = ini.Get("default_url");
+    if(ini.ItemExist("insert_url"))
+        insert_url = ini.Get("insert_url");
     if(ini.ItemPrefixExist("exclude_remarks"))
         ini.GetAll("exclude_remarks", def_exclude_remarks);
     if(ini.ItemPrefixExist("include_remarks"))
@@ -553,6 +566,8 @@ void readConf()
             scv_flag = ini.GetBool("skip_cert_verify_flag");
         if(ini.ItemExist("filter_deprecated_nodes"))
             filter_deprecated = ini.GetBool("filter_deprecated_nodes");
+        if(ini.ItemExist("append_sub_userinfo"))
+            append_userinfo = ini.GetBool("append_sub_userinfo");
         if(ini.ItemPrefixExist("rename_node"))
         {
             ini.GetAll("rename_node", tempArray);
@@ -656,6 +671,8 @@ struct ExternalConfig
     std::string quanx_rule_base;
     string_array rename;
     string_array emoji;
+    string_array include;
+    string_array exclude;
     bool overwrite_original_rules = false;
     bool enable_rule_generator = true;
 };
@@ -684,6 +701,9 @@ int loadExternalYAML(YAML::Node &node, ExternalConfig &ext)
 
     if(section["rename_node"].size())
         readRegexMatch(section["rename_node"], "@", ext.rename);
+
+    section["include_remarks"] >> ext.include;
+    section["exclude_remarks"] >> ext.exclude;
 
     return 0;
 }
@@ -756,6 +776,10 @@ int loadExternalConfig(std::string &path, ExternalConfig &ext, std::string proxy
         ini.GetAll("emoji", ext.emoji);
         importItems(ext.emoji);
     }
+    if(ini.ItemPrefixExist("include_remarks"))
+        ini.GetAll("include_remarks", ext.include);
+    if(ini.ItemPrefixExist("exclude_remarks"))
+        ini.GetAll("exclude_remarks", ext.exclude);
 
     return 0;
 }
@@ -798,14 +822,14 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     std::string group = UrlDecode(getUrlArg(argument, "group")), upload = getUrlArg(argument, "upload"), upload_path = getUrlArg(argument, "upload_path"), version = getUrlArg(argument, "ver");
     std::string append_type = getUrlArg(argument, "append_type"), tfo = getUrlArg(argument, "tfo"), udp = getUrlArg(argument, "udp"), nodelist = getUrlArg(argument, "list");
     std::string include = UrlDecode(getUrlArg(argument, "include")), exclude = UrlDecode(getUrlArg(argument, "exclude")), sort_flag = getUrlArg(argument, "sort");
-    std::string scv = getUrlArg(argument, "scv"), fdn = getUrlArg(argument, "fdn"), token = getUrlArg(argument, "token"), expand = getUrlArg(argument, "expand");
+    std::string scv = getUrlArg(argument, "scv"), fdn = getUrlArg(argument, "fdn"), expand = getUrlArg(argument, "expand"), append_sub_userinfo = getUrlArg(argument, "append_info");
     std::string base_content, output_content;
     string_array extra_group, extra_ruleset, include_remarks, exclude_remarks;
     std::string groups = urlsafe_base64_decode(getUrlArg(argument, "groups")), ruleset = urlsafe_base64_decode(getUrlArg(argument, "ruleset")), config = UrlDecode(getUrlArg(argument, "config"));
     std::vector<ruleset_content> rca;
     extra_settings ext;
     std::string subInfo;
-    bool ruleset_updated = false;
+    bool ruleset_updated = false, authorized = getUrlArg(argument, "token") == access_token;
 
     if(std::find(regex_blacklist.cbegin(), regex_blacklist.cend(), include) != regex_blacklist.cend() || std::find(regex_blacklist.cbegin(), regex_blacklist.cend(), exclude) != regex_blacklist.cend())
         return "Invalid request!";
@@ -815,8 +839,10 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     std::string ext_quan_base = quan_rule_base, ext_quanx_base = quanx_rule_base;
 
     //validate urls
-    if(!url.size() && (!api_mode || token == access_token))
+    if(!url.size() && (!api_mode || authorized))
         url = default_url;
+    if(insert_url.size())
+        url = insert_url + "|" + url;
     if(!url.size() || !target.size())
     {
         *status_code = 400;
@@ -913,6 +939,10 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
                 rca = ruleset_content_array;
             }
         }
+        if(extconf.include.size())
+            include_remarks = extconf.include;
+        if(extconf.exclude.size())
+            exclude_remarks = extconf.exclude;
     }
     else
     {
@@ -974,7 +1004,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     {
         x = trim(x);
         std::cerr<<"Fetching node data from url '"<<x<<"'."<<std::endl;
-        if(addNodes(x, nodes, groupID, proxy, exclude_remarks, include_remarks, stream_temp, time_temp, subInfo) == -1)
+        if(addNodes(x, nodes, groupID, proxy, exclude_remarks, include_remarks, stream_temp, time_temp, subInfo, authorized) == -1)
         {
             *status_code = 400;
             return std::string("The following link doesn't contain any valid node info: " + x);
@@ -993,7 +1023,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         for(nodeInfo &x : nodes)
             x.group = group;
 
-    if(subInfo.size() && groupID == 1)
+    if(subInfo.size() && (append_sub_userinfo.size() ? append_sub_userinfo == "true" : append_userinfo))
         extra_headers.emplace("Subscription-UserInfo", subInfo);
 
     string_array dummy_group;
@@ -1186,6 +1216,8 @@ std::string simpleToClashR(RESPONSE_CALLBACK_ARGS)
         *status_code = 400;
         return "Please insert your subscription link instead of clicking the default link.";
     }
+    if(insert_url.size())
+        url = insert_url + "|" + url;
     if(!api_mode || cfw_child_process)
         readConf();
 
@@ -1216,7 +1248,7 @@ std::string simpleToClashR(RESPONSE_CALLBACK_ARGS)
     {
         x = trim(x);
         std::cerr<<"Fetching node data from url '"<<x<<"'."<<std::endl;
-        if(addNodes(x, nodes, groupID, proxy, exclude_remarks, include_remarks, dummy, dummy, subInfo) == -1)
+        if(addNodes(x, nodes, groupID, proxy, exclude_remarks, include_remarks, dummy, dummy, subInfo, false) == -1)
         {
             *status_code = 400;
             return std::string("The following link doesn't contain any valid node info: " + x);
@@ -1290,7 +1322,7 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
 
     std::string subInfo;
     std::cerr<<"Fetching node data from url '"<<url<<"'."<<std::endl;
-    if(addNodes(url, nodes, 0, proxy, dummy_str_array, dummy_str_array, dummy_str_array, dummy_str_array, subInfo) == -1)
+    if(addNodes(url, nodes, 0, proxy, dummy_str_array, dummy_str_array, dummy_str_array, dummy_str_array, subInfo, false) == -1)
     {
         *status_code = 400;
         return std::string("The following link doesn't contain any valid node info: " + url);
@@ -1411,4 +1443,44 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
     clash["Rule"] = rule;
 
     return YAML::Dump(clash);
+}
+
+std::string getProfile(RESPONSE_CALLBACK_ARGS)
+{
+    std::string name = UrlDecode(getUrlArg(argument, "name")), token = getUrlArg(argument, "token");
+    if(token != access_token)
+    {
+        *status_code = 403;
+        return "Forbidden";
+    }
+    if(!fileExist(name))
+    {
+        *status_code = 404;
+        return "Profile not found";
+    }
+    std::cerr<<"Trying to load profile '" + name + "'.\n";
+    INIReader ini;
+    if(ini.ParseFile(name) != INIREADER_EXCEPTION_NONE && !ini.SectionExist("Profile"))
+    {
+        std::cerr<<"Load profile failed! Reason: "<<ini.GetLastError()<<"\n";
+        *status_code = 500;
+        return "Broken profile!";
+    }
+    std::cerr<<"Trying to parse profile '" + name + "'.\n";
+    string_multimap contents;
+    ini.GetItems("Profile", contents);
+    if(!contents.size())
+    {
+        std::cerr<<"Load profile failed! Reason: Empty Profile section\n";
+        *status_code = 500;
+        return "Broken profile!";
+    }
+    contents.emplace("token", token);
+    std::string query;
+    for(auto &x : contents)
+    {
+        query += x.first + "=" + UrlEncode(x.second) + "&";
+    }
+    query.erase(query.size() - 1);
+    return subconverter(query, postdata, status_code, extra_headers);
 }
