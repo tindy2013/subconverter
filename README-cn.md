@@ -14,7 +14,8 @@
     - [调用说明](#调用说明)
   - [进阶用法](#进阶用法)
     - [阅前提示](#阅前提示)
-    - [进阶地址](#进阶地址)
+    - [进阶链接](#进阶链接)
+    - [配置档案](#配置档案)
     - [配置文件](#配置文件)
     - [外部配置](#外部配置)
   - [自动上传](#自动上传)
@@ -151,6 +152,16 @@ http://127.0.0.1:25500/sub?target=clash&url=ss%3A%2F%2FYWVzLTEyOC1nY206dGVzdA%3D
 
 </details>
 
+### 简易转换
+
+当机场提供的 Surge 配置足以满足需求，但额外需要使用 Clash 配置文件时，此时可以使用以下方式进行转换
+
+```txt
+http://127.0.0.1:25500/surge2clash?link=Surge的订阅链接
+```
+
+此处 `Surge的订阅链接`**不需要进行URLEncode**，且**无需任何额外配置**。
+
 ---
 
 ## 进阶用法
@@ -170,7 +181,7 @@ http://127.0.0.1:25500/sub?target=clash&url=ss%3A%2F%2FYWVzLTEyOC1nY206dGVzdA%3D
 
 当您尝试进行进阶操作时，即默认您有相关的操作能力，本程序仅保证在默认配置文件下能够正常运行。
 
-### 进阶地址
+### 进阶链接
 
 #### 调用地址 (进阶)
 
@@ -217,6 +228,48 @@ http://127.0.0.1:25500/sub?target=surge&ver=4&tfo=true&udp=true&emoji=true&exclu
 最后将该链接填写至 Surge 的订阅处就大功告成了。
 ```
 
+
+### 配置档案
+
+> 当通过上述 [进阶链接](#进阶链接) 配置好订阅链接后，通常会使得链接十分冗长和难以记忆，此时可以考虑使用配置档案。
+
+此功能暂时**仅能读取本地文件**
+
+#### 调用地址 (档案)
+
+```txt
+http://127.0.0.1:25500/getprofile?name=%NAME%&token=%TOKEN%
+```
+
+#### 调用说明 (档案)
+
+| 调用参数 | 必要性 | 示例  | 解释   |
+| -------- | :----: | :--------------- | :------------------------ |
+| name |  必要  | profiles/formyairport.ini  | 指配置档案的存储位置(可使用基于**主程序**的相对位置)   |
+| token |  必要  | passwd | 为了安全考虑**必须设置token**（详见 [配置文件](#配置文件) 中 `[common] 部分` 对 `api_access_token` 的描述）   |
+
+应当注意的是，此处文件内的参数**无需进行 URLEncode**，且此处的 `token` 与 `api_mode` 的状态无关。
+
+在程序目录内的任意位置创建一个新的文档文件（推荐保存至 `profiles` 文件夹内，以使整洁目录及便于后续维护），如 `formyairport.ini`，并仿照 [示例文档](https://github.com/tindy2013/subconverter/blob/master/base/profiles/example_profile.ini) 根据配置好的参数填写进去即可。
+
+<details>
+<summary>举个例子：</summary>
+  
+以上述 [进阶链接](#进阶链接) 的例子而言，`formyairport.ini` 内的内容应当是：
+
+ ```txt
+url=https://dler.cloud/subscribe/ABCDE?clash=vmess
+target=surge
+surge_ver=4
+tfo=true
+udp=true
+emoji=true
+exclude=(流量|官网)
+ ```
+ 
+在编辑并保存好 `formyairport.ini` 后，即可使用 `http://127.0.0.1:25500/getprofile?name=profiles/formyairport.ini&token=passwd` 进行调用。
+</details>
+
 ### 配置文件
 
 > 关于 subconverter 主程序目录中 `pref.ini` 文件的解释
@@ -232,18 +285,30 @@ http://127.0.0.1:25500/sub?target=surge&ver=4&tfo=true&udp=true&emoji=true&exclu
 
 1. **api_mode**
 
-    > API 模式，设置为 true 以防止直接加载本地订阅或直接提供本地文件。（多用于架设于服务器上）
+    > API 模式，设置为 true 以防止直接加载本地订阅或直接提供本地文件，若访问这些内容则需要接上 `&token=`。（多用于架设于服务器上）
 
     - 当值为 `false` 时, 每次更新配置都会读取 `pref.ini` , 为 `true` 时则仅启动时读取。
+    
+1. **api_access_token**
+
+    > 用于访问相对隐私的接口（如 `/getprofile`）
+    
+    - 例如:
+
+     ```ini
+     api_access_token=passwd
+     ```
 
 1. **default_url**
 
-    > 无 %URL% 参数时，默认加载的订阅链接， **不需要 URLEncode**。 如果有多个链接，仍然需要使用 "|" 分隔，支持`文件`/`url`
+    > 无 %URL% 参数时，默认加载的订阅链接， **不需要 URLEncode**。 
+    >
+    > 如果有多个链接，仍然需要使用 "|" 分隔，支持`文件`/`url`
 
     - 例如:
 
      ```ini
-     default_url='https://dler.cloud/subscribe/ABCDE?clash=vmess'
+     default_url=https://dler.cloud/subscribe/ABCDE?clash=vmess
      ```
 
     - 解释：
@@ -253,6 +318,20 @@ http://127.0.0.1:25500/sub?target=surge&ver=4&tfo=true&udp=true&emoji=true&exclu
      http://127.0.0.1:25500/sub?target=clash
      等同于:
      http://127.0.0.1:25500/sub?target=clash&url=https%3A%2F%2Fdler.cloud%2Fsubscribe%2FABCDE%3Fclash%3Dvmess
+     ```
+
+1. **insert_url**
+
+    > 无论是否具有 %URL% 参数时，都会在添加订阅前加入的节点， **不需要 URLEncode**。
+    >
+    > 如果有多个节点，仍然需要使用 "|" 分隔，支持 `单个节点`/`订阅链接`
+    >
+    > 支持 SS/SSR/Vmess 链接
+
+    - 例如:
+
+     ```ini
+     insert_url=ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpwYXNzd29yZA@www.example.com:1080#Example
      ```
 
 1. **exclude_remarks**
@@ -359,10 +438,16 @@ http://127.0.0.1:25500/sub?target=surge&ver=4&tfo=true&udp=true&emoji=true&exclu
 
 1. **skip_cert_verify_flag**
 
-   > 关闭 TLS 节点的证书检查。设置为 true 时打开，默认为 false
+   > 关闭 TLS 节点的证书检查，设置为 true 时打开，默认为 false
 
     - **请勿随意将此设置修改为 true**
 
+1. **filter deprecated nodes**
+
+   > 排除当前 **`target=`** 不支持的节点类型，设置为 true 时打开，默认为 false
+
+    - 可以考虑设置为 true，从而在**一定程度上避免出现兼容问题**
+    
 1. **rename_node**
 
    > 重命名节点，支持正则匹配
@@ -375,7 +460,7 @@ http://127.0.0.1:25500/sub?target=surge&ver=4&tfo=true&udp=true&emoji=true&exclu
      rename_node=中国@中
      rename_node=\(?((x|X)?(\d+)(\.?\d+)?)((\s?倍率?:?)|(x|X))\)?@(倍率:$1)
      ```
-
+     
 </details>
 <details>
 <summary><b>[managed_config] 部分</b></summary>
@@ -388,7 +473,9 @@ http://127.0.0.1:25500/sub?target=surge&ver=4&tfo=true&udp=true&emoji=true&exclu
 
 1. **managed_config_prefix**
 
-   > 具体的 '#!MANAGED-CONFIG' 信息，地址前缀不用添加 "/"。Surge 或 Surfboard 会向此地址发出更新请求
+   > 具体的 '#!MANAGED-CONFIG' 信息，地址前缀不用添加 "/"。
+   >
+   > Surge 或 Surfboard 会向此地址发出更新请求，同时本地 ruleset 转 url 会用此生成/getruleset链接。
    >
    > 局域网用户需要将此处改为本程序运行设备的局域网 IP
 
@@ -526,7 +613,7 @@ custom_proxy_group=🇯🇵 JP`select`沪日`日本`[]🇯🇵 日本延迟最�
 
 ### 外部配置
 
-> 本部分用于 链接参数 `**&config=**`
+> 本部分用于 链接参数 **`&config=`**
 
 将文件按照以下格式写好，上传至 Github Gist 或者 其他**可访问**网络位置
 经过 [URLEncode](https://www.urlencoder.org/) 处理后，添加至 `&config=` 即可调用
@@ -594,6 +681,9 @@ clash_rule_base=base/forcerule.yml
 ;emoji=(流量|时间|应急),🏳️‍🌈
 ;emoji=阿根廷,🇦🇷
 
+;用于包含或排除节点关键词的选项 会覆盖 pref.ini 里的内容
+;include_remarks=
+;exclude_remarks=
 ```
 
 </details>
