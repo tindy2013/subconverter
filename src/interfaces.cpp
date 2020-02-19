@@ -35,7 +35,7 @@ std::mutex on_configuring;
 string_array renames, emojis;
 bool add_emoji = false, remove_old_emoji = false, append_proxy_type = false, filter_deprecated = true;
 bool udp_flag = false, tfo_flag = false, scv_flag = false, do_sort = false;
-std::string proxy_ruleset, proxy_subscription;
+std::string proxy_config, proxy_ruleset, proxy_subscription;
 
 std::string clash_rule_base;
 string_array clash_extra_group;
@@ -45,6 +45,9 @@ std::string surge_ssr_path;
 //pre-compiled rule bases
 YAML::Node clash_base;
 INIReader surge_base, mellow_base;
+
+//cache system
+int cache_subscription = 60, cache_config = 300, cache_ruleset = 21600;
 
 string_array regex_blacklist = {"(.*)*"};
 
@@ -57,7 +60,7 @@ template <typename T> void operator >> (const YAML::Node& node, T& i)
 std::string getRuleset(RESPONSE_CALLBACK_ARGS)
 {
     std::string url = urlsafe_base64_decode(getUrlArg(argument, "url")), type = getUrlArg(argument, "type"), group = urlsafe_base64_decode(getUrlArg(argument, "group"));
-    std::string output_content;
+    std::string output_content, dummy;
 
     if(!url.size() || !type.size() || (type == "2" && !group.size()) || (type != "1" && type != "2"))
     {
@@ -65,10 +68,18 @@ std::string getRuleset(RESPONSE_CALLBACK_ARGS)
         return "Invalid request!";
     }
 
+    std::string proxy;
+    if(proxy_ruleset == "SYSTEM")
+        proxy = getSystemProxy();
+    else if(proxy_ruleset == "NONE")
+        proxy = "";
+    else
+        proxy = proxy_ruleset;
+
     if(fileExist(url))
         output_content = fileGet(url, false, true);
     else
-        output_content = webGet(url, "");
+        output_content = webGet(url, proxy, dummy, cache_ruleset);
 
     if(!output_content.size())
     {
@@ -121,7 +132,7 @@ int importItems(string_array &target)
 {
     string_array result;
     std::stringstream ss;
-    std::string path, content, strLine;
+    std::string path, content, strLine, dummy;
     unsigned int itemCount = 0;
     for(std::string &x : target)
     {
@@ -133,10 +144,18 @@ int importItems(string_array &target)
         path = x.substr(x.find(":") + 1);
         writeLog(0, "Trying to import items from " + path);
 
+        std::string proxy;
+        if(proxy_ruleset == "SYSTEM")
+            proxy = getSystemProxy();
+        else if(proxy_ruleset == "NONE")
+            proxy = "";
+        else
+            proxy = proxy_ruleset;
+
         if(fileExist(path))
             content = fileGet(path, false, api_mode);
         else
-            content = webGet(path, "");
+            content = webGet(path, proxy, dummy, cache_config);
         if(!content.size())
             return -1;
 
@@ -293,7 +312,7 @@ void readRuleset(YAML::Node node, string_array &dest)
 void refreshRulesets(string_array &ruleset_list, std::vector<ruleset_content> &rca)
 {
     eraseElements(rca);
-    std::string rule_group, rule_url;
+    std::string rule_group, rule_url, dummy;
     ruleset_content rc;
 
     std::string proxy;
@@ -333,7 +352,7 @@ void refreshRulesets(string_array &ruleset_list, std::vector<ruleset_content> &r
             }
             else if(startsWith(rule_url, "http://") || startsWith(rule_url, "https://") || startsWith(rule_url, "data:"))
             {
-                rc = {rule_group, rule_url, webGet(rule_url, proxy)};
+                rc = {rule_group, rule_url, webGet(rule_url, proxy, dummy, cache_ruleset)};
             }
             else
                 continue;
@@ -385,6 +404,7 @@ void readYAMLConf(YAML::Node &node)
     section["quanx_rule_base"] >> quanx_rule_base;
 
     section["append_proxy_type"] >> append_proxy_type;
+    section["proxy_config"] >> proxy_config;
     section["proxy_ruleset"] >> proxy_ruleset;
     section["proxy_subscription"] >> proxy_subscription;
 
@@ -478,6 +498,17 @@ void readYAMLConf(YAML::Node &node)
         node["advanced"]["print_debug_info"] >> print_debug_info;
         node["advanced"]["max_pending_connections"] >> max_pending_connections;
         node["advanced"]["max_concurrent_threads"] >> max_concurrent_threads;
+        if(node["advanced"]["enable_cache"].IsDefined())
+        {
+            if(node["advanced"]["enable_cache"].as<bool>())
+            {
+                node["advanced"]["cache_subscription"] >> cache_subscription;
+                node["advanced"]["cache_config"] >> cache_config;
+                node["advanced"]["cache_ruleset"] >> cache_ruleset;
+            }
+            else
+                cache_subscription = cache_config = cache_ruleset = 0; //disable cache
+        }
     }
 }
 
@@ -541,6 +572,8 @@ void readConf()
         quanx_rule_base = ini.Get("quanx_rule_base");
     if(ini.ItemExist("append_proxy_type"))
         append_proxy_type = ini.GetBool("append_proxy_type");
+    if(ini.ItemExist("proxy_config"))
+        proxy_config = ini.Get("proxy_config");
     if(ini.ItemExist("proxy_ruleset"))
         proxy_ruleset = ini.Get("proxy_ruleset");
     if(ini.ItemExist("proxy_subscription"))
@@ -655,6 +688,20 @@ void readConf()
         max_pending_connections = ini.GetInt("max_pending_connections");
     if(ini.ItemExist("max_concurrent_threads"))
         max_concurrent_threads = ini.GetInt("max_concurrent_threads");
+    if(ini.ItemExist("enable_cache"))
+    {
+        if(ini.GetBool("enable_cache"))
+        {
+            if(ini.ItemExist("cache_subscription"))
+                cache_subscription = ini.GetInt("cache_subscription");
+            if(ini.ItemExist("cache_config"))
+                cache_config = ini.GetInt("cache_config");
+            if(ini.ItemExist("cache_ruleset"))
+                cache_ruleset = ini.GetInt("cache_ruleset");
+        }
+        else
+            cache_subscription = cache_config = cache_ruleset = 0; //disable cache
+    }
 
     std::cerr<<"Read preference settings completed."<<std::endl;
 }
@@ -708,13 +755,21 @@ int loadExternalYAML(YAML::Node &node, ExternalConfig &ext)
     return 0;
 }
 
-int loadExternalConfig(std::string &path, ExternalConfig &ext, std::string proxy)
+int loadExternalConfig(std::string &path, ExternalConfig &ext)
 {
-    std::string base_content;
+    std::string base_content, dummy;
+    std::string proxy;
+    if(proxy_config == "SYSTEM")
+        proxy = getSystemProxy();
+    else if(proxy_config == "NONE")
+        proxy = "";
+    else
+        proxy = proxy_config;
+
     if(fileExist(path))
         base_content = fileGet(path, false, api_mode);
     else
-        base_content = webGet(path, proxy);
+        base_content = webGet(path, proxy, dummy, cache_config);
 
     try
     {
@@ -828,7 +883,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     std::string groups = urlsafe_base64_decode(getUrlArg(argument, "groups")), ruleset = urlsafe_base64_decode(getUrlArg(argument, "ruleset")), config = UrlDecode(getUrlArg(argument, "config"));
     std::vector<ruleset_content> rca;
     extra_settings ext;
-    std::string subInfo;
+    std::string subInfo, dummy;
     bool ruleset_updated = false, authorized = getUrlArg(argument, "token") == access_token;
 
     if(std::find(regex_blacklist.cbegin(), regex_blacklist.cend(), include) != regex_blacklist.cend() || std::find(regex_blacklist.cbegin(), regex_blacklist.cend(), exclude) != regex_blacklist.cend())
@@ -902,7 +957,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         extra_ruleset = rulesets;
         //then load external configuration
         ExternalConfig extconf;
-        loadExternalConfig(config, extconf, proxy);
+        loadExternalConfig(config, extconf);
         if(extconf.clash_rule_base.size())
             ext_clash_base = extconf.clash_rule_base;
         if(extconf.surge_rule_base.size())
@@ -1045,7 +1100,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
             if(fileExist(ext_clash_base))
                 base_content = fileGet(ext_clash_base, false);
             else
-                base_content = webGet(ext_clash_base, getSystemProxy());
+                base_content = webGet(ext_clash_base, getSystemProxy(), dummy, cache_config);
 
             output_content = netchToClash(nodes, base_content, rca, extra_group, target == "clashr", ext);
         }
@@ -1073,7 +1128,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
             if(fileExist(ext_surge_base))
                 base_content = fileGet(ext_surge_base, false);
             else
-                base_content = webGet(ext_surge_base, getSystemProxy());
+                base_content = webGet(ext_surge_base, getSystemProxy(), dummy, cache_config);
 
             output_content = netchToSurge(nodes, base_content, rca, extra_group, surge_ver, ext);
             if(upload == "true")
@@ -1089,7 +1144,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         if(fileExist(ext_surfboard_base))
             base_content = fileGet(ext_surfboard_base, false);
         else
-            base_content = webGet(ext_surfboard_base, getSystemProxy());
+            base_content = webGet(ext_surfboard_base, getSystemProxy(), dummy, cache_config);
 
         output_content = netchToSurge(nodes, base_content, rca, extra_group, -3, ext);
         if(upload == "true")
@@ -1106,7 +1161,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
             if(fileExist(ext_mellow_base))
                 base_content = fileGet(ext_mellow_base, false);
             else
-                base_content = webGet(ext_mellow_base, getSystemProxy());
+                base_content = webGet(ext_mellow_base, getSystemProxy(), dummy, cache_config);
 
             output_content = netchToMellow(nodes, base_content, rca, extra_group, ext);
         }
@@ -1158,7 +1213,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
             if(fileExist(ext_quan_base))
                 base_content = fileGet(ext_quan_base, false);
             else
-                base_content = webGet(ext_quan_base, getSystemProxy());
+                base_content = webGet(ext_quan_base, getSystemProxy(), dummy, cache_config);
         }
 
         output_content = netchToQuan(nodes, base_content, rca, extra_group, ext);
@@ -1174,7 +1229,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
             if(fileExist(ext_quanx_base))
                 base_content = fileGet(ext_quanx_base, false);
             else
-                base_content = webGet(ext_quanx_base, getSystemProxy());
+                base_content = webGet(ext_quanx_base, getSystemProxy(), dummy, cache_config);
         }
 
         output_content = netchToQuanX(nodes, base_content, rca, extra_group, ext);
@@ -1276,7 +1331,7 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
     YAML::Node clash = safe_get_clash_base();
     string_array dummy_str_array;
     std::vector<nodeInfo> nodes;
-    std::string base_content, url = argument.size() <= 5 ? "" : argument.substr(5);
+    std::string base_content, url = argument.size() <= 5 ? "" : argument.substr(5), dummy;
     ini.store_any_line = true;
 
     if(!url.size())
@@ -1292,10 +1347,18 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
         return "Please insert your subscription link instead of clicking the default link.";
     }
 
+    std::string proxy;
+    if(proxy_config == "SYSTEM")
+        proxy = getSystemProxy();
+    else if(proxy_config == "NONE")
+        proxy = "";
+    else
+        proxy = proxy_config;
+
     if(fileExist(url))
         base_content = fileGet(url, false);
     else
-        base_content = webGet(url, getSystemProxy());
+        base_content = webGet(url, proxy, dummy, cache_config);
 
     if(ini.Parse(base_content) != INIREADER_EXCEPTION_NONE)
     {
@@ -1312,14 +1375,12 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
         return errmsg;
     }
 
-    std::string proxy;
     if(proxy_subscription == "SYSTEM")
         proxy = getSystemProxy();
     else if(proxy_subscription == "NONE")
         proxy = "";
     else
         proxy = proxy_subscription;
-
 
     std::string subInfo;
     std::cerr<<"Fetching node data from url '"<<url<<"'."<<std::endl;
@@ -1412,7 +1473,7 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
             strArray = split(x, ",");
             if(strArray.size() != 3)
                 continue;
-            content = webGet(strArray[1], "");
+            content = webGet(strArray[1], proxy, dummy, cache_ruleset);
             if(!content.size())
                 continue;
 

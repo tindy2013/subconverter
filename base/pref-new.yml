@@ -11,6 +11,7 @@ common:
   mellow_rule_base: base/mellow.conf
   quan_rule_base: base/quan.conf
   quanx_rule_base: base/quanx.conf
+  proxy_config: SYSTEM
   proxy_ruleset: SYSTEM
   proxy_subscription: NONE
   append_proxy_type: false
@@ -76,3 +77,7 @@ advanced:
   print_debug_info: false
   max_pending_connections: 10240
   max_concurrent_threads: 4
+  enable_cache: false
+  cache_subscription: 60
+  cache_config: 300
+  cache_ruleset: 21600

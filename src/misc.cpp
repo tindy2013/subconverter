@@ -756,7 +756,8 @@ std::string fileGetMD5(const std::string &filepath)
 int fileWrite(const std::string &path, const std::string &content, bool overwrite)
 {
     std::fstream outfile;
-    std::ios::openmode mode = overwrite ? std::ios::out : std::ios::app;
+    std::ios_base::openmode mode = overwrite ? std::ios_base::out : std::ios_base::app;
+    mode |= std::ios_base::binary;
     outfile.open(path, mode);
     outfile << content << std::endl;
     outfile.close();

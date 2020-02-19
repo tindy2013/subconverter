@@ -12,6 +12,7 @@
 std::string override_conf_port;
 int socksport;
 bool ss_libev, ssr_libev;
+extern int cache_subscription;
 
 void copyNodes(std::vector<nodeInfo> &source, std::vector<nodeInfo> &dest)
 {
@@ -48,7 +49,7 @@ int addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID, std
         writeLog(LOG_TYPE_INFO, "Downloading subscription data...");
         if(strFind(link, "surge:///install-config")) //surge config link
             link = UrlDecode(getUrlArg(link, "url"));
-        strSub = webGet(link, proxy, extra_headers);
+        strSub = webGet(link, proxy, extra_headers, cache_subscription);
         /*
         if(strSub.size() == 0)
         {

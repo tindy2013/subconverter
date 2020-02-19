@@ -1,10 +1,13 @@
 #include <iostream>
 #include <unistd.h>
+#include <sys/stat.h>
 
 #include <curl/curl.h>
 
 #include "webget.h"
 #include "version.h"
+#include "misc.h"
+#include "logger.h"
 
 extern bool print_debug_info;
 
@@ -21,10 +24,9 @@ static int writer(char *data, size_t size, size_t nmemb, std::string *writerData
     return size * nmemb;
 }
 
-static std::string curlGet(std::string url, std::string proxy, std::string &response_headers)
+static std::string curlGet(std::string url, std::string proxy, std::string &response_headers, CURLcode &return_code)
 {
     CURL *curl_handle;
-    CURLcode res;
     std::string data;
 
     curl_global_init(CURL_GLOBAL_ALL);
@@ -45,10 +47,10 @@ static std::string curlGet(std::string url, std::string proxy, std::string &resp
     if(proxy != "")
         curl_easy_setopt(curl_handle, CURLOPT_PROXY, proxy.data());
 
-    res = curl_easy_perform(curl_handle);
+    return_code = curl_easy_perform(curl_handle);
     curl_easy_cleanup(curl_handle);
 
-    if(res != CURLE_OK)
+    if(return_code != CURLE_OK)
         data.clear();
 
     return data;
@@ -62,7 +64,7 @@ static std::string dataGet(std::string url)
     std::string::size_type comma = url.find(',');
     if (comma == std::string::npos)
         return "";
-    
+
     std::string data = UrlDecode(url.substr(comma));
     if (endsWith(url.substr(0, comma), ";base64")) {
         return urlsafe_base64_decode(data);
@@ -78,11 +80,43 @@ std::string buildSocks5ProxyString(std::string addr, int port, std::string usern
     return proxystr;
 }
 
-std::string webGet(std::string url, std::string proxy, std::string &response_headers)
+std::string webGet(std::string url, std::string proxy, std::string &response_headers, unsigned int cache_ttl)
 {
+    std::string content;
+    CURLcode return_code;
     if (startsWith(url, "data:"))
         return dataGet(url);
-    return curlGet(url, proxy, response_headers);
+    // cache system
+    if(cache_ttl > 0)
+    {
+        mkdir("cache");
+        std::string url_md5 = getMD5(url);
+        std::string path = "cache/" + url_md5;
+        struct _stat result;
+        if(_stat(path.data(), &result) == 0)
+        {
+            time_t mtime = result.st_mtime, now = time(NULL);
+            if(difftime(now, mtime) <= cache_ttl)
+            {
+                writeLog(0, "CACHE HIT: '" + url + "', using local cache.");
+                response_headers = fileGet(path + "_header", true, true);
+                return fileGet(path, true, true);
+            }
+            writeLog(0, "CACHE MISS: '" + url + "', TTL timeout, creating new cache.");
+        }
+        else
+            writeLog(0, "CACHE NOT EXIST: '" + url + "', creating new cache.");
+        content = curlGet(url, proxy, response_headers, return_code);
+        if(return_code == CURLE_OK)
+        {
+            fileWrite(path, content, true);
+            fileWrite(path + "_header", response_headers, true);
+        }
+        else
+            writeLog(0, "Fetched failed. Skip creating new cache.");
+        return content;
+    }
+    return curlGet(url, proxy, response_headers, return_code);
 }
 
 std::string webGet(std::string url, std::string proxy)
