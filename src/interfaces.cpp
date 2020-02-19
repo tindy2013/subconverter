@@ -868,7 +868,8 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     //check other flags
     if(emoji.size())
     {
-        ext.add_emoji = ext.remove_emoji = emoji == "true";
+        ext.add_emoji = emoji == "true";
+        ext.remove_emoji = true;
     }
     else
     {
@@ -1264,7 +1265,7 @@ std::string simpleToClashR(RESPONSE_CALLBACK_ARGS)
 
     std::cerr<<"Generate target: ClashR\n";
 
-    YAML::Node yamlnode = clash_base;
+    YAML::Node yamlnode = safe_get_clash_base();
     netchToClash(nodes, yamlnode, extra_group, true, ext);
     return YAML::Dump(yamlnode);
 }
@@ -1272,7 +1273,7 @@ std::string simpleToClashR(RESPONSE_CALLBACK_ARGS)
 std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
 {
     INIReader ini;
-    YAML::Node clash = clash_base;
+    YAML::Node clash = safe_get_clash_base();
     string_array dummy_str_array;
     std::vector<nodeInfo> nodes;
     std::string base_content, url = argument.size() <= 5 ? "" : argument.substr(5);
