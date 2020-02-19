@@ -897,15 +897,15 @@ void shortDisassemble(int source, unsigned short &num_a, unsigned short &num_b)
     num_b = (unsigned short)(source >> 16);
 }
 
-int to_int(const std::string &str, int def_vaule)
+int to_int(const std::string &str, int def_value)
 {
     int retval = 0;
     char c;
     std::stringstream ss(str);
     if(!(ss >> retval))
-        return def_vaule;
+        return def_value;
     else if(ss >> c)
-        return def_vaule;
+        return def_value;
     else
         return retval;
 }

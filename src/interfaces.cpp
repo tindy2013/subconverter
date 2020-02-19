@@ -1185,7 +1185,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     else if(target == "ssd")
     {
         std::cerr<<"SSD"<<std::endl;
-        output_content = netchToSSD(nodes, group, ext);
+        output_content = netchToSSD(nodes, group, subInfo, ext);
         if(upload == "true")
             uploadGist("ssd", upload_path, output_content, false);
     }

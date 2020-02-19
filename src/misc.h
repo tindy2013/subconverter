@@ -55,7 +55,6 @@ void urlParse(const std::string &url, std::string &host, std::string &path, int 
 void removeUTF8BOM(std::string &data);
 int shortAssemble(unsigned short num_a, unsigned short num_b);
 void shortDisassemble(int source, unsigned short &num_a, unsigned short &num_b);
-int to_int(const std::string &str, int def_vaule = 0);
 std::string UTF8ToCodePoint(const std::string &data);
 std::string GetEnv(const std::string &name);
 
@@ -90,6 +89,21 @@ template <typename T> static inline void eraseElements(T &target)
 {
     T().swap(target);
 }
+
+template <typename T> static inline T to_number(const std::string &str, T def_value)
+{
+    T retval = 0.0;
+    char c;
+    std::stringstream ss(str);
+    if(!(ss >> retval))
+        return def_value;
+    else if(ss >> c)
+        return def_value;
+    else
+        return retval;
+}
+
+int to_int(const std::string &str, int def_value = 0);
 
 #ifndef HAVE_TO_STRING
 namespace std

@@ -242,23 +242,34 @@ std::string vmessLinkConstruct(std::string remarks, std::string add, std::string
     return sb.GetString();
 }
 
-std::string nodeRename(std::string remark, const string_array &rename_array)
+std::string nodeRename(std::string remark, int groupID, const string_array &rename_array)
 {
     string_array vArray;
+    int targetGroupID = groupID;
+    string_size pos;
 
     for(const std::string &x : rename_array)
     {
         vArray = split(x, "@");
         if(vArray.size() == 1)
         {
-            remark = regReplace(remark, vArray[0], "");
+            vArray.emplace_back("");
         }
-        else if(vArray.size() == 2)
-        {
-            remark = regReplace(remark, vArray[0], vArray[1]);
-        }
-        else
+        else if(vArray.size() != 2)
             continue;
+        if(startsWith(vArray[0], "!!GROUPID="))
+        {
+            pos = vArray[0].find("!!", vArray[0].find("!!") + 2);
+            if(pos != vArray[0].npos)
+            {
+                targetGroupID = to_int(vArray[0].substr(10, pos - 10), groupID);
+                vArray[0] = vArray[0].substr(pos + 2);
+            }
+            else
+                continue;
+        }
+        if(groupID == targetGroupID)
+            remark = regReplace(remark, vArray[0], vArray[1]);
     }
     return remark;
 }
@@ -276,15 +287,29 @@ std::string removeEmoji(std::string remark)
     return remark;
 }
 
-std::string addEmoji(std::string remark, const string_array &emoji_array)
+std::string addEmoji(std::string remark, int groupID, const string_array &emoji_array)
 {
     string_array vArray;
+    int targetGroupID = groupID;
+    string_size pos;
+
     for(const std::string &x : emoji_array)
     {
         vArray = split(x, ",");
         if(vArray.size() != 2)
             continue;
-        if(regFind(remark, vArray[0]))
+        if(startsWith(vArray[0], "!!GROUPID="))
+        {
+            pos = vArray[0].find("!!", vArray[0].find("!!") + 2);
+            if(pos != vArray[0].npos)
+            {
+                targetGroupID = to_int(vArray[0].substr(10, pos - 10), groupID);
+                vArray[0] = vArray[0].substr(pos + 2);
+            }
+            else
+                continue;
+        }
+        if(groupID == targetGroupID && regFind(remark, vArray[0]))
         {
             remark = vArray[1] + " " + remark;
             break;
@@ -566,12 +591,12 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
 
     std::for_each(nodes.begin(), nodes.end(), [ext](nodeInfo &x)
     {
-        x.remarks = nodeRename(x.remarks, ext.rename_array);
+        x.remarks = nodeRename(x.remarks, x.groupID, ext.rename_array);
         if(ext.remove_emoji)
             x.remarks = trim(removeEmoji(x.remarks));
 
         if(ext.add_emoji)
-            x.remarks = addEmoji(x.remarks, ext.emoji_array);
+            x.remarks = addEmoji(x.remarks, x.groupID, ext.emoji_array);
     });
 
     if(ext.sort_flag)
@@ -836,12 +861,12 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
 
     std::for_each(nodes.begin(), nodes.end(), [ext](nodeInfo &x)
     {
-        x.remarks = nodeRename(x.remarks, ext.rename_array);
+        x.remarks = nodeRename(x.remarks, x.groupID, ext.rename_array);
         if(ext.remove_emoji)
             x.remarks = trim(removeEmoji(x.remarks));
 
         if(ext.add_emoji)
-            x.remarks = addEmoji(x.remarks, ext.emoji_array);
+            x.remarks = addEmoji(x.remarks, x.groupID, ext.emoji_array);
     });
 
     if(ext.sort_flag)
@@ -1048,12 +1073,12 @@ std::string netchToSS(std::vector<nodeInfo> &nodes, extra_settings &ext)
 
     std::for_each(nodes.begin(), nodes.end(), [ext](nodeInfo &x)
     {
-        x.remarks = nodeRename(x.remarks, ext.rename_array);
+        x.remarks = nodeRename(x.remarks, x.groupID, ext.rename_array);
         if(ext.remove_emoji)
             x.remarks = trim(removeEmoji(x.remarks));
 
         if(ext.add_emoji)
-            x.remarks = addEmoji(x.remarks, ext.emoji_array);
+            x.remarks = addEmoji(x.remarks, x.groupID, ext.emoji_array);
     });
 
     if(ext.sort_flag)
@@ -1120,12 +1145,12 @@ std::string netchToSSSub(std::vector<nodeInfo> &nodes, extra_settings &ext)
 
     std::for_each(nodes.begin(), nodes.end(), [ext](nodeInfo &x)
     {
-        x.remarks = nodeRename(x.remarks, ext.rename_array);
+        x.remarks = nodeRename(x.remarks, x.groupID, ext.rename_array);
         if(ext.remove_emoji)
             x.remarks = trim(removeEmoji(x.remarks));
 
         if(ext.add_emoji)
-            x.remarks = addEmoji(x.remarks, ext.emoji_array);
+            x.remarks = addEmoji(x.remarks, x.groupID, ext.emoji_array);
     });
 
     if(ext.sort_flag)
@@ -1193,12 +1218,12 @@ std::string netchToSSR(std::vector<nodeInfo> &nodes, extra_settings &ext)
 
     std::for_each(nodes.begin(), nodes.end(), [ext](nodeInfo &x)
     {
-        x.remarks = nodeRename(x.remarks, ext.rename_array);
+        x.remarks = nodeRename(x.remarks, x.groupID, ext.rename_array);
         if(ext.remove_emoji)
             x.remarks = trim(removeEmoji(x.remarks));
 
         if(ext.add_emoji)
-            x.remarks = addEmoji(x.remarks, ext.emoji_array);
+            x.remarks = addEmoji(x.remarks, x.groupID, ext.emoji_array);
     });
 
     if(ext.sort_flag)
@@ -1254,12 +1279,12 @@ std::string netchToVMess(std::vector<nodeInfo> &nodes, extra_settings &ext)
 
     std::for_each(nodes.begin(), nodes.end(), [ext](nodeInfo &x)
     {
-        x.remarks = nodeRename(x.remarks, ext.rename_array);
+        x.remarks = nodeRename(x.remarks, x.groupID, ext.rename_array);
         if(ext.remove_emoji)
             x.remarks = trim(removeEmoji(x.remarks));
 
         if(ext.add_emoji)
-            x.remarks = addEmoji(x.remarks, ext.emoji_array);
+            x.remarks = addEmoji(x.remarks, x.groupID, ext.emoji_array);
     });
 
     if(ext.sort_flag)
@@ -1337,12 +1362,12 @@ void netchToQuan(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rules
 
     std::for_each(nodes.begin(), nodes.end(), [ext](nodeInfo &x)
     {
-        x.remarks = nodeRename(x.remarks, ext.rename_array);
+        x.remarks = nodeRename(x.remarks, x.groupID, ext.rename_array);
         if(ext.remove_emoji)
             x.remarks = trim(removeEmoji(x.remarks));
 
         if(ext.add_emoji)
-            x.remarks = addEmoji(x.remarks, ext.emoji_array);
+            x.remarks = addEmoji(x.remarks, x.groupID, ext.emoji_array);
     });
 
     if(ext.sort_flag)
@@ -1561,12 +1586,12 @@ void netchToQuanX(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rule
 
     std::for_each(nodes.begin(), nodes.end(), [ext](nodeInfo &x)
     {
-        x.remarks = nodeRename(x.remarks, ext.rename_array);
+        x.remarks = nodeRename(x.remarks, x.groupID, ext.rename_array);
         if(ext.remove_emoji)
             x.remarks = trim(removeEmoji(x.remarks));
 
         if(ext.add_emoji)
-            x.remarks = addEmoji(x.remarks, ext.emoji_array);
+            x.remarks = addEmoji(x.remarks, x.groupID, ext.emoji_array);
     });
 
     if(ext.sort_flag)
@@ -1735,7 +1760,7 @@ void netchToQuanX(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rule
         rulesetToSurge(ini, ruleset_content_array, -1, ext.overwrite_original_rules, ext.managed_config_prefix);
 }
 
-std::string netchToSSD(std::vector<nodeInfo> &nodes, std::string &group, extra_settings &ext)
+std::string netchToSSD(std::vector<nodeInfo> &nodes, std::string &group, std::string &userinfo, extra_settings &ext)
 {
     rapidjson::Document json;
     rapidjson::StringBuffer sb;
@@ -1757,17 +1782,36 @@ std::string netchToSSD(std::vector<nodeInfo> &nodes, std::string &group, extra_s
     writer.String("aes-128-gcm");
     writer.Key("password");
     writer.String("password");
+    if(userinfo.size())
+    {
+        std::string data = replace_all_distinct(userinfo, "; ", "&");
+        std::string upload = getUrlArg(data, "upload"), download = getUrlArg(data, "download"), total = getUrlArg(data, "total"), expiry = getUrlArg(data, "expire");
+        double used = (to_number(upload, 0.0) + to_number(download, 0.0)) / std::pow(1024, 3) * 1.0, tot = to_number(total, 0.0) / std::pow(1024, 3) * 1.0;
+        writer.Key("traffic_used");
+        writer.Double(used);
+        writer.Key("traffic_total");
+        writer.Double(tot);
+        if(expiry.size())
+        {
+            const time_t rawtime = to_int(expiry);
+            char buffer[30];
+            struct tm *dt = localtime(&rawtime);
+            strftime(buffer, sizeof(buffer), "%F %R", dt);
+            writer.Key("expiry");
+            writer.String(buffer);
+        }
+    }
     writer.Key("servers");
     writer.StartArray();
 
     std::for_each(nodes.begin(), nodes.end(), [ext](nodeInfo &x)
     {
-        x.remarks = nodeRename(x.remarks, ext.rename_array);
+        x.remarks = nodeRename(x.remarks, x.groupID, ext.rename_array);
         if(ext.remove_emoji)
             x.remarks = trim(removeEmoji(x.remarks));
 
         if(ext.add_emoji)
-            x.remarks = addEmoji(x.remarks, ext.emoji_array);
+            x.remarks = addEmoji(x.remarks, x.groupID, ext.emoji_array);
     });
 
     if(ext.sort_flag)
@@ -1877,12 +1921,12 @@ void netchToMellow(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rul
 
     std::for_each(nodes.begin(), nodes.end(), [ext](nodeInfo &x)
     {
-        x.remarks = nodeRename(x.remarks, ext.rename_array);
+        x.remarks = nodeRename(x.remarks, x.groupID, ext.rename_array);
         if(ext.remove_emoji)
             x.remarks = trim(removeEmoji(x.remarks));
 
         if(ext.add_emoji)
-            x.remarks = addEmoji(x.remarks, ext.emoji_array);
+            x.remarks = addEmoji(x.remarks, x.groupID, ext.emoji_array);
     });
 
     if(ext.sort_flag)
