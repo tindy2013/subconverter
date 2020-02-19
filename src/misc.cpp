@@ -141,8 +141,8 @@ unsigned char FromHex(unsigned char x)
 std::string UrlEncode(const std::string& str)
 {
     std::string strTemp = "";
-    size_t length = str.length();
-    for (size_t i = 0; i < length; i++)
+    string_size length = str.length();
+    for (string_size i = 0; i < length; i++)
     {
         if (isalnum((unsigned char)str[i]) ||
                 (str[i] == '-') ||
@@ -150,8 +150,6 @@ std::string UrlEncode(const std::string& str)
                 (str[i] == '.') ||
                 (str[i] == '~'))
             strTemp += str[i];
-        //else if (str[i] == ' ')
-        //    strTemp += "+";
         else
         {
             strTemp += '%';
@@ -165,8 +163,8 @@ std::string UrlEncode(const std::string& str)
 std::string UrlDecode(const std::string& str)
 {
     std::string strTemp;
-    size_t length = str.length();
-    for (size_t i = 0; i < length; i++)
+    string_size length = str.length();
+    for (string_size i = 0; i < length; i++)
     {
         if (str[i] == '+')
             strTemp += ' ';
@@ -248,16 +246,19 @@ std::string base64_decode(const std::string &encoded_string, bool accept_urlsafe
     string_size in_len = encoded_string.size();
     string_size i = 0;
     string_size in_ = 0;
-    unsigned char char_array_4[4], char_array_3[3];
+    unsigned char char_array_4[4], char_array_3[3], uchar = 0;
     static unsigned char dtable[256], itable[256], table_ready = 0;
     std::string ret;
 
     // Should not need thread_local with the flag...
-    if (!table_ready) {
+    if (!table_ready)
+    {
         // No memset needed for static/TLS
-        for (string_size k = 0; k < base64_chars.length(); k++) {
-            dtable[base64_chars[k]] = k;  // decode (find)
-            itable[base64_chars[k]] = 1;  // is_base64
+        for (string_size k = 0; k < base64_chars.length(); k++)
+        {
+            uchar = base64_chars[k]; // make compiler happy
+            dtable[uchar] = k;  // decode (find)
+            itable[uchar] = 1;  // is_base64
         }
         // Add urlsafe table
         dtable['-'] = dtable['+']; itable['-'] = 2;
@@ -265,10 +266,12 @@ std::string base64_decode(const std::string &encoded_string, bool accept_urlsafe
         table_ready = 1;
     }
 
-    while (in_len-- && (encoded_string[in_] != '=') &&
-           (accept_urlsafe ? itable[encoded_string[in_]] : (itable[encoded_string[in_]] == 1)))
+    while (in_len-- && (encoded_string[in_] != '='))
     {
-        char_array_4[i++] = encoded_string[in_];
+        uchar = encoded_string[in_]; // make compiler happy
+        if (!(accept_urlsafe ? itable[uchar] : (itable[uchar] == 1))) // break away from the while condition
+            continue;
+        char_array_4[i++] = uchar;
         in_++;
         if (i == 4)
         {
@@ -652,7 +655,6 @@ std::string urlsafe_base64_encode(const std::string &string_to_encode)
 
 std::string getMD5(const std::string &data)
 {
-
     std::string result;
     unsigned int i = 0;
     unsigned char digest[16] = {};
@@ -700,7 +702,6 @@ std::string fileGet(const std::string &path, bool binary, bool scope_limit)
             return std::string();
 #endif // _WIN32
     }
-
 
     infile.open(path, mode);
     if(infile)
@@ -845,62 +846,37 @@ bool is_str_utf8(const std::string &data)
     const char *str = data.c_str();
     unsigned int nBytes = 0;
     unsigned char chr;
-    bool bAllAscii = true;
     for (unsigned int i = 0; str[i] != '\0'; ++i)
     {
         chr = *(str + i);
-        if (nBytes == 0 && (chr & 0x80) != 0)
-        {
-            bAllAscii = false;
-        }
         if (nBytes == 0)
         {
             if (chr >= 0x80)
             {
                 if (chr >= 0xFC && chr <= 0xFD)
-                {
                     nBytes = 6;
-                }
                 else if (chr >= 0xF8)
-                {
                     nBytes = 5;
-                }
                 else if (chr >= 0xF0)
-                {
                     nBytes = 4;
-                }
                 else if (chr >= 0xE0)
-                {
                     nBytes = 3;
-                }
                 else if (chr >= 0xC0)
-                {
                     nBytes = 2;
-                }
                 else
-                {
                     return false;
-                }
                 nBytes--;
             }
         }
         else
         {
             if ((chr & 0xC0) != 0x80)
-            {
                 return false;
-            }
             nBytes--;
         }
     }
     if (nBytes != 0)
-    {
         return false;
-    }
-    if (bAllAscii)
-    {
-        return true;
-    }
     return true;
 }
 
@@ -949,19 +925,12 @@ std::string getFormData(const std::string &raw_data)
     while (std::getline(strstrm, line))
     {
         if(i == 0)
-        {
-            // Get boundary
-            boundary = line.substr(0, line.length() - 1);
-        }
+            boundary = line.substr(0, line.length() - 1); // Get boundary
         else if(line.find(boundary) == 0)
-        {
-            // The end
-            break;
-        }
+            break; // The end
         else if(line.length() == 1)
         {
             // Time to get raw data
-
             char c;
             int bl = boundary.length();
             bool endfile = false;
