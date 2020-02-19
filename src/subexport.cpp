@@ -190,13 +190,13 @@ std::string socksConstruct(std::string remarks, std::string server, std::string 
     return sb.GetString();
 }
 
-std::string httpConstruct(std::string remarks, std::string server, std::string port, std::string username, std::string password)
+std::string httpConstruct(std::string remarks, std::string server, std::string port, std::string username, std::string password, bool tls)
 {
     rapidjson::StringBuffer sb;
     rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
     writer.StartObject();
     writer.Key("Type");
-    writer.String("HTTP");
+    writer.String(tls ? "HTTPS" : "HTTP");
     writer.Key("Remark");
     writer.String(remarks.data());
     writer.Key("Hostname");

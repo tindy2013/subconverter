@@ -31,14 +31,10 @@ int addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID, std
     // TODO: replace with startsWith if appropriate
     link = replace_all_distinct(link, "\"", "");
     writeLog(LOG_TYPE_INFO, "Received Link.");
-    if(strFind(link, "vmess://") || strFind(link, "vmess1://"))
-        linkType = SPEEDTEST_MESSAGE_FOUNDVMESS;
-    else if(strFind(link, "ss://"))
-        linkType = SPEEDTEST_MESSAGE_FOUNDSS;
-    else if(strFind(link, "ssr://"))
-        linkType = SPEEDTEST_MESSAGE_FOUNDSSR;
-    else if(strFind(link, "socks://") || strFind(link, "https://t.me/socks") || strFind(link, "tg://socks"))
+    if(strFind(link, "https://t.me/socks") || strFind(link, "tg://socks"))
         linkType = SPEEDTEST_MESSAGE_FOUNDSOCKS;
+    else if(strFind(link, "https://t.me/http") || strFind(link, "tg://http"))
+        linkType = SPEEDTEST_MESSAGE_FOUNDHTTP;
     else if(startsWith(link, "http://") || startsWith(link, "https://") || startsWith(link, "data:") || strFind(link, "surge:///install-config"))
         linkType = SPEEDTEST_MESSAGE_FOUNDSUB;
     else if(strFind(link, "Netch://"))
@@ -118,22 +114,14 @@ int addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID, std
         copyNodes(nodes, allNodes);
         break;
     default:
-        if(linkType > 0)
-        {
-            explode(link, ss_libev, ssr_libev, override_conf_port, socksport, node);
-            if(node.linkType == -1)
-            {
-                writeLog(LOG_TYPE_ERROR, "No valid link found.");
-                return -1;
-            }
-            node.groupID = groupID;
-            allNodes.push_back(node);
-        }
-        else
+        explode(link, ss_libev, ssr_libev, override_conf_port, socksport, node);
+        if(node.linkType == -1)
         {
             writeLog(LOG_TYPE_ERROR, "No valid link found.");
             return -1;
         }
+        node.groupID = groupID;
+        allNodes.push_back(node);
     }
     return 0;
 }

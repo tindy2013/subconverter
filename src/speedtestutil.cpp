@@ -560,13 +560,9 @@ void explodeSocks(std::string link, std::string custom_port, nodeInfo &node)
         password = getUrlArg(link, "pass");
     }
     if(remarks == "")
-    {
         remarks = server + ":" + port;
-    }
     if(custom_port.size())
-    {
         port = custom_port;
-    }
 
     node.linkType = SPEEDTEST_MESSAGE_FOUNDSOCKS;
     node.group = SOCKS_DEFAULT_GROUP;
@@ -574,6 +570,27 @@ void explodeSocks(std::string link, std::string custom_port, nodeInfo &node)
     node.server = server;
     node.port = to_int(port, 0);
     node.proxyStr = socksConstruct(remarks, server, port, username, password);
+}
+
+void explodeHTTP(std::string link, std::string custom_port, nodeInfo &node)
+{
+    std::string remarks, server, port, username, password;
+    server = getUrlArg(link, "server");
+    port = getUrlArg(link, "port");
+    username = getUrlArg(link, "user");
+    password = getUrlArg(link, "pass");
+
+    if(remarks == "")
+        remarks = server + ":" + port;
+    if(custom_port.size())
+        port = custom_port;
+
+    node.linkType = SPEEDTEST_MESSAGE_FOUNDHTTP;
+    node.group = HTTP_DEFAULT_GROUP;
+    node.remarks = remarks;
+    node.server = server;
+    node.port = to_int(port, 0);
+    node.proxyStr = httpConstruct(remarks, server, port, username, password, strFind(link, "/https"));
 }
 
 void explodeQuan(std::string quan, std::string custom_port, int local_port, nodeInfo &node)
@@ -1480,6 +1497,8 @@ void explode(std::string link, bool sslibev, bool ssrlibev, std::string custom_p
         explodeSS(link, sslibev, custom_port, local_port, node);
     else if(strFind(link, "socks://") || strFind(link, "https://t.me/socks") || strFind(link, "tg://socks"))
         explodeSocks(link, custom_port, node);
+    else if(strFind(link, "https://t.me/http") || strFind(link, "tg://http")) //telegram style http link
+        explodeHTTP(link, custom_port, node);
     else if(strFind(link, "Netch://"))
         explodeNetch(link, sslibev, ssrlibev, custom_port, local_port, node);
 }
