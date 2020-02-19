@@ -9,6 +9,10 @@
 #include "misc.h"
 #include "logger.h"
 
+#ifdef _WIN32
+#define _stat stat
+#endif // _WIN32
+
 extern bool print_debug_info;
 
 //std::string user_agent_str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36";
@@ -89,11 +93,11 @@ std::string webGet(std::string url, std::string proxy, std::string &response_hea
     // cache system
     if(cache_ttl > 0)
     {
-        mkdir("cache");
+        md("cache");
         std::string url_md5 = getMD5(url);
         std::string path = "cache/" + url_md5;
-        struct _stat result;
-        if(_stat(path.data(), &result) == 0)
+        struct stat result;
+        if(stat(path.data(), &result) == 0)
         {
             time_t mtime = result.st_mtime, now = time(NULL);
             if(difftime(now, mtime) <= cache_ttl)

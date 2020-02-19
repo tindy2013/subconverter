@@ -1796,7 +1796,7 @@ std::string netchToSSD(std::vector<nodeInfo> &nodes, std::string &group, std::st
             const time_t rawtime = to_int(expiry);
             char buffer[30];
             struct tm *dt = localtime(&rawtime);
-            strftime(buffer, sizeof(buffer), "%F %R", dt);
+            strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M", dt);
             writer.Key("expiry");
             writer.String(buffer);
         }
