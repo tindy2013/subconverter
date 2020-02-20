@@ -35,7 +35,7 @@ string_array safe_get_times()
 YAML::Node safe_get_clash_base()
 {
     guarded_mutex guard(clash_base_mutex);
-    return clash_base;
+    return YAML::Clone(clash_base);
 }
 
 INIReader safe_get_mellow_base()

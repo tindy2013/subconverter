@@ -1758,6 +1758,63 @@ void netchToQuanX(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rule
 
     if(ext.enable_rule_generator)
         rulesetToSurge(ini, ruleset_content_array, -1, ext.overwrite_original_rules, ext.managed_config_prefix);
+
+    //process scripts
+    string_multimap scripts;
+    std::string content, title, url;
+    const std::string pattern = "^(.*? url script-.*? )(.*?)$";
+    if(ini.SectionExist("rewrite_local") && ext.quanx_dev_id.size())
+    {
+        ini.GetItems("rewrite_local", scripts);
+        ini.EraseSection("rewrite_local");
+        ini.SetCurrentSection("rewrite_local");
+        for(auto &x : scripts)
+        {
+            title = x.first;
+            if(title != "{NONAME}")
+                content = title + "=" + x.second;
+            else
+                content = x.second;
+
+            if(regMatch(content, pattern))
+            {
+                url = regReplace(content, pattern, "$2");
+                if(startsWith(url, "https://") || startsWith(url, "http://"))
+                {
+                    url = ext.managed_config_prefix + "/qx-script?id=" + ext.quanx_dev_id + "&url=" + urlsafe_base64_encode(url);
+                    content = regReplace(content, pattern, "$1") + url;
+                }
+            }
+            ini.Set("{NONAME}", content);
+        }
+    }
+    eraseElements(scripts);
+    string_size pos;
+    if(ini.SectionExist("rewrite_remote") && ext.quanx_dev_id.size())
+    {
+        ini.GetItems("rewrite_remote", scripts);
+        ini.EraseSection("rewrite_remote");
+        ini.SetCurrentSection("rewrite_remote");
+        for(auto &x : scripts)
+        {
+            title = x.first;
+            if(title != "{NONAME}")
+                content = title + "=" + x.second;
+            else
+                content = x.second;
+
+            if(startsWith(content, "https://") || startsWith(content, "http://"))
+            {
+                pos = content.find(",");
+                url = ext.managed_config_prefix + "/qx-rewrite?id=" + ext.quanx_dev_id + "&url=" + urlsafe_base64_encode(content.substr(0, pos));
+                if(pos != content.npos)
+                    content = url + content.substr(content.find(","));
+                else
+                    content = url;
+            }
+            ini.Set("{NONAME}", content);
+        }
+    }
 }
 
 std::string netchToSSD(std::vector<nodeInfo> &nodes, std::string &group, std::string &userinfo, extra_settings &ext)

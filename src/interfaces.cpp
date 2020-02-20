@@ -34,13 +34,14 @@ std::mutex on_configuring;
 //preferences
 string_array renames, emojis;
 bool add_emoji = false, remove_old_emoji = false, append_proxy_type = false, filter_deprecated = true;
-bool udp_flag = false, tfo_flag = false, scv_flag = false, do_sort = false;
+bool udp_flag = false, tfo_flag = false, scv_flag = false, do_sort = false, config_update_strict = false;
 std::string proxy_config, proxy_ruleset, proxy_subscription;
+int config_update_interval = 0;
 
 std::string clash_rule_base;
 string_array clash_extra_group;
 std::string surge_rule_base, surfboard_rule_base, mellow_rule_base, quan_rule_base, quanx_rule_base;
-std::string surge_ssr_path;
+std::string surge_ssr_path, quanx_script_id;
 
 //pre-compiled rule bases
 YAML::Node clash_base;
@@ -448,6 +449,9 @@ void readYAMLConf(YAML::Node &node)
         section = node["managed_config"];
         section["write_managed_config"] >> write_managed_config;
         section["managed_config_prefix"] >> managed_config_prefix;
+        section["config_update_interval"] >> config_update_interval;
+        section["config_update_strict"] >> config_update_strict;
+        section["quanx_device_id"] >> quanx_script_id;
     }
 
     if(node["surge_external_proxy"].IsDefined())
@@ -634,6 +638,12 @@ void readConf()
         write_managed_config = ini.GetBool("write_managed_config");
     if(ini.ItemExist("managed_config_prefix"))
         managed_config_prefix = ini.Get("managed_config_prefix");
+    if(ini.ItemExist("config_update_interval"))
+        config_update_interval = ini.GetInt("config_update_interval");
+    if(ini.ItemExist("config_update_strict"))
+        config_update_strict = ini.GetBool("config_update_strict");
+    if(ini.ItemExist("quanx_device_id"))
+        quanx_script_id = ini.Get("quanx_device_id");
 
     ini.EnterSection("emojis");
     if(ini.ItemExist("add_emoji"))
@@ -878,13 +888,15 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     std::string append_type = getUrlArg(argument, "append_type"), tfo = getUrlArg(argument, "tfo"), udp = getUrlArg(argument, "udp"), nodelist = getUrlArg(argument, "list");
     std::string include = UrlDecode(getUrlArg(argument, "include")), exclude = UrlDecode(getUrlArg(argument, "exclude")), sort_flag = getUrlArg(argument, "sort");
     std::string scv = getUrlArg(argument, "scv"), fdn = getUrlArg(argument, "fdn"), expand = getUrlArg(argument, "expand"), append_sub_userinfo = getUrlArg(argument, "append_info");
+    std::string dev_id = getUrlArg(argument, "dev_id"), filename = UrlDecode(getUrlArg(argument, "filename")), interval_str = getUrlArg(argument, "interval"), strict_str = getUrlArg(argument, "strict");
     std::string base_content, output_content;
     string_array extra_group, extra_ruleset, include_remarks, exclude_remarks;
     std::string groups = urlsafe_base64_decode(getUrlArg(argument, "groups")), ruleset = urlsafe_base64_decode(getUrlArg(argument, "ruleset")), config = UrlDecode(getUrlArg(argument, "config"));
     std::vector<ruleset_content> rca;
     extra_settings ext;
     std::string subInfo, dummy;
-    bool ruleset_updated = false, authorized = getUrlArg(argument, "token") == access_token;
+    int interval = interval_str.size() ? to_int(interval_str, config_update_interval) : config_update_interval;
+    bool ruleset_updated = false, authorized = getUrlArg(argument, "token") == access_token, strict = strict_str.size() ? strict_str == "true" : config_update_strict;
 
     if(std::find(regex_blacklist.cbegin(), regex_blacklist.cend(), include) != regex_blacklist.cend() || std::find(regex_blacklist.cbegin(), regex_blacklist.cend(), exclude) != regex_blacklist.cend())
         return "Invalid request!";
@@ -944,6 +956,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
 
     ext.nodelist = nodelist == "true";
     ext.surge_ssr_path = surge_ssr_path;
+    ext.quanx_dev_id = dev_id.size() ? dev_id : quanx_script_id;
     ext.enable_rule_generator = enable_rule_generator;
     if(expand != "true")
         ext.managed_config_prefix = managed_config_prefix;
@@ -1135,7 +1148,8 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
                 uploadGist("surge" + version, upload_path, output_content, true);
 
             if(write_managed_config && managed_config_prefix.size())
-                output_content = "#!MANAGED-CONFIG " + managed_config_prefix + "/sub?" + argument + "\n\n" + output_content;
+                output_content = "#!MANAGED-CONFIG " + managed_config_prefix + "/sub?" + argument + (interval ? " interval=" + std::to_string(interval) : "") \
+                 + " strict=" + std::string(strict ? "true" : "false") + "\n\n" + output_content;
         }
     }
     else if(target == "surfboard")
@@ -1151,7 +1165,8 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
             uploadGist("surfboard", upload_path, output_content, true);
 
         if(write_managed_config && managed_config_prefix.size())
-            output_content = "#!MANAGED-CONFIG " + managed_config_prefix + "/sub?" + argument + "\n\n" + output_content;
+            output_content = "#!MANAGED-CONFIG " + managed_config_prefix + "/sub?" + argument + (interval ? " interval=" + std::to_string(interval) : "") \
+                 + " strict=" + std::string(strict ? "true" : "false") + "\n\n" + output_content;
     }
     else if(target == "mellow")
     {
@@ -1247,14 +1262,18 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     else
     {
         std::cerr<<"Unspecified"<<std::endl;
+        *status_code = 500;
+        return "Unrecognized target";
     }
+    if(filename.size())
+        extra_headers.emplace("Content-Disposition", "attachment; filename=\"" + filename + "\"");
     return output_content;
 }
 
 std::string simpleToClashR(RESPONSE_CALLBACK_ARGS)
 {
     std::string url = argument.size() <= 8 ? "" : argument.substr(8);
-    std::string base_content, output_content;
+    std::string base_content;
     std::vector<nodeInfo> nodes;
     string_array extra_group, extra_ruleset, include_remarks, exclude_remarks;
     std::vector<ruleset_content> rca;
@@ -1283,7 +1302,7 @@ std::string simpleToClashR(RESPONSE_CALLBACK_ARGS)
         refreshRulesets(rulesets, ruleset_content_array);
     rca = ruleset_content_array;
 
-    extra_settings ext = {true, overwrite_original_rules, safe_get_renames(), safe_get_emojis(), add_emoji, remove_old_emoji, append_proxy_type, udp_flag, tfo_flag, false, do_sort, scv_flag, filter_deprecated, "", ""};
+    extra_settings ext = {true, overwrite_original_rules, safe_get_renames(), safe_get_emojis(), add_emoji, remove_old_emoji, append_proxy_type, udp_flag, tfo_flag, false, do_sort, scv_flag, filter_deprecated, "", "", ""};
 
     std::string proxy;
     if(proxy_subscription == "SYSTEM")
@@ -1382,28 +1401,12 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
     else
         proxy = proxy_subscription;
 
-    std::string subInfo;
-    std::cerr<<"Fetching node data from url '"<<url<<"'."<<std::endl;
-    if(addNodes(url, nodes, 0, proxy, dummy_str_array, dummy_str_array, dummy_str_array, dummy_str_array, subInfo, false) == -1)
-    {
-        *status_code = 400;
-        return std::string("The following link doesn't contain any valid node info: " + url);
-    }
-
-    //exit if found nothing
-    if(!nodes.size())
-    {
-        *status_code = 400;
-        return "No nodes were found!";
-    }
-
-    extra_settings ext = {true, true, dummy_str_array, dummy_str_array, false, false, false, udp_flag, tfo_flag, false, do_sort, scv_flag, filter_deprecated, "", ""};
-
-    netchToClash(nodes, clash, dummy_str_array, false, ext);
-
+    //scan groups first, get potential policy-path
     string_multimap section;
     ini.GetItems("Proxy Group", section);
     std::string name, type, content;
+    string_array links;
+    links.emplace_back(url);
     YAML::Node singlegroup;
     for(auto &x : section)
     {
@@ -1424,11 +1427,36 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
                 singlegroup["url"] = trim(dummy_str_array[i].substr(dummy_str_array[i].find("=") + 1));
             else if(dummy_str_array[i].find("interval") == 0)
                 singlegroup["interval"] = trim(dummy_str_array[i].substr(dummy_str_array[i].find("=") + 1));
+            else if(dummy_str_array[i].find("policy-path") == 0)
+                links.emplace_back(trim(dummy_str_array[i].substr(dummy_str_array[i].find("=") + 1)));
             else
                 singlegroup["proxies"].push_back(trim(dummy_str_array[i]));
         }
         clash["Proxy Group"].push_back(singlegroup);
     }
+
+    std::string subInfo;
+    for(std::string &x : links)
+    {
+        std::cerr<<"Fetching node data from url '"<<x<<"'."<<std::endl;
+        if(addNodes(x, nodes, 0, proxy, dummy_str_array, dummy_str_array, dummy_str_array, dummy_str_array, subInfo, false) == -1)
+        {
+            *status_code = 400;
+            return std::string("The following link doesn't contain any valid node info: " + x);
+        }
+    }
+
+    //exit if found nothing
+    if(!nodes.size())
+    {
+        *status_code = 400;
+        return "No nodes were found!";
+    }
+
+    extra_settings ext = {true, true, dummy_str_array, dummy_str_array, false, false, false, udp_flag, tfo_flag, false, do_sort, scv_flag, filter_deprecated, "", "", ""};
+
+    netchToClash(nodes, clash, dummy_str_array, false, ext);
+
     section.clear();
     ini.GetItems("Proxy", section);
     for(auto &x : section)
@@ -1509,7 +1537,7 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
 
 std::string getProfile(RESPONSE_CALLBACK_ARGS)
 {
-    std::string name = UrlDecode(getUrlArg(argument, "name")), token = getUrlArg(argument, "token");
+    std::string name = UrlDecode(getUrlArg(argument, "name")), token = UrlDecode(getUrlArg(argument, "token"));
     if(token != access_token)
     {
         *status_code = 403;
@@ -1545,4 +1573,87 @@ std::string getProfile(RESPONSE_CALLBACK_ARGS)
     }
     query.erase(query.size() - 1);
     return subconverter(query, postdata, status_code, extra_headers);
+}
+
+std::string getScript(RESPONSE_CALLBACK_ARGS)
+{
+    std::string url = urlsafe_base64_decode(getUrlArg(argument, "url")), dev_id = getUrlArg(argument, "id");
+    std::string output_content, dummy;
+
+    std::string proxy;
+    if(proxy_config == "SYSTEM")
+        proxy = getSystemProxy();
+    else if(proxy_config == "NONE")
+        proxy = "";
+    else
+        proxy = proxy_config;
+
+    if(fileExist(url))
+        output_content = fileGet(url, true, true);
+    else
+        output_content = webGet(url, proxy, dummy, cache_config);
+
+    if(!dev_id.size())
+        dev_id = quanx_script_id;
+
+    const std::string pattern = "(\\/\\*[\\s\\S]*?)^(.*?@supported )(.*?\\s?)$([\\s\\S]*\\*\\/\\s?";
+    if(dev_id.size())
+    {
+        if(regFind(output_content, pattern))
+            output_content = regReplace(output_content, pattern, "$1$2" + dev_id + "$4");
+        else
+            output_content = "/**\n * @supported " + dev_id + "\n * THIS COMMENT IS GENERATED BY SUBCONVERTER\n */\n\n" + output_content;
+    }
+    return output_content;
+}
+
+std::string getRewriteRemote(RESPONSE_CALLBACK_ARGS)
+{
+    std::string url = urlsafe_base64_decode(getUrlArg(argument, "url")), dev_id = getUrlArg(argument, "id");
+    std::string output_content, dummy;
+
+    std::string proxy;
+    if(proxy_config == "SYSTEM")
+        proxy = getSystemProxy();
+    else if(proxy_config == "NONE")
+        proxy = "";
+    else
+        proxy = proxy_config;
+
+    if(fileExist(url))
+        output_content = fileGet(url, true, true);
+    else
+        output_content = webGet(url, proxy, dummy, cache_config);
+
+    if(!dev_id.size())
+        dev_id = quanx_script_id;
+
+    if(dev_id.size())
+    {
+        std::stringstream ss;
+        std::string strLine;
+        const std::string pattern = "^(.*? url script-.*? )(.*?)$";
+        string_size lineSize;
+        char delimiter = count(output_content.begin(), output_content.end(), '\n') < 1 ? '\r' : '\n';
+
+        ss << output_content;
+        output_content.clear();
+        while(getline(ss, strLine, delimiter))
+        {
+            lineSize = strLine.size();
+            if(lineSize && strLine[lineSize - 1] == '\r') //remove line break
+            {
+                strLine.erase(lineSize - 1);
+                lineSize--;
+            }
+
+            if(!strLine.empty() && regMatch(strLine, pattern))
+            {
+                url = managed_config_prefix + "/qx-script?id=" + dev_id + "&url=" + urlsafe_base64_encode(regReplace(strLine, pattern, "$2"));
+                strLine = regReplace(strLine, pattern, "$1") + url;
+            }
+            output_content.append(strLine + "\n");
+        }
+    }
+    return output_content;
 }

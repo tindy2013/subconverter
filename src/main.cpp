@@ -185,6 +185,10 @@ int main(int argc, char *argv[])
 
     append_response("GET", "/getprofile", "text/plain;charset=utf-8", getProfile);
 
+    append_response("GET", "/qx-script", "text/plain;charset=utf-8", getScript);
+
+    append_response("GET", "/qx-rewrite", "text/plain;charset=utf-8", getRewriteRemote);
+
     append_response("GET", "/clash", "text/plain;charset=utf-8", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
         return subconverter(argument + "&target=clash", postdata, status_code, extra_headers);

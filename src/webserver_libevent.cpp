@@ -32,7 +32,7 @@ std::vector<responseRoute> responses;
 
 static inline void buffer_cleanup(struct evbuffer *eb)
 {
-    evbuffer_free(eb);
+    //evbuffer_free(eb);
 #ifdef MALLOC_TRIM
     malloc_trim(0);
 #endif // MALLOC_TRIM
@@ -102,8 +102,8 @@ void OnReq(evhttp_request *req, void *args)
     std::map<std::string, std::string> extra_headers;
     retVal = process_request(req_method, uri, postdata, content_type, return_data, &status_code, extra_headers);
 
-    //auto *OutBuf = evhttp_request_get_output_buffer(req);
-    struct evbuffer *OutBuf = evbuffer_new();
+    auto *OutBuf = evhttp_request_get_output_buffer(req);
+    //struct evbuffer *OutBuf = evbuffer_new();
     if (!OutBuf)
         return;
 
@@ -168,6 +168,7 @@ int start_web_server(void *argv)
 
     evhttp_set_allowed_methods(Server.get(), EVHTTP_REQ_GET | EVHTTP_REQ_POST | EVHTTP_REQ_OPTIONS);
     evhttp_set_gencb(Server.get(), OnReq, nullptr);
+    evhttp_set_timeout(Server.get(), 30);
     if (event_dispatch() == -1)
     {
         std::cerr << "Failed to run message loop." << std::endl;
@@ -253,6 +254,7 @@ int start_web_server_multi(void *argv)
 
         evhttp_set_allowed_methods(httpd, EVHTTP_REQ_GET | EVHTTP_REQ_POST | EVHTTP_REQ_OPTIONS);
         evhttp_set_gencb(httpd, OnReq, nullptr);
+        evhttp_set_timeout(httpd, 30);
         ret = pthread_create(&ths[i], NULL, httpserver_dispatch, base[i]);
         if (ret != 0)
             return -1;

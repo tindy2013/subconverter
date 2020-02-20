@@ -32,6 +32,7 @@ struct extra_settings
     bool filter_deprecated = false;
     std::string surge_ssr_path;
     std::string managed_config_prefix;
+    std::string quanx_dev_id;
 };
 
 void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset_content_array, bool overwrite_original_rules);
