@@ -689,7 +689,8 @@ std::string getMD5(const std::string &data)
 std::string fileGet(const std::string &path, bool binary, bool scope_limit)
 {
     std::ifstream infile;
-    std::stringstream strstrm;
+    //std::stringstream strstrm;
+    std::string content;
     std::ios::openmode mode = binary ? std::ios::binary : std::ios::in;
 
     if(scope_limit)
@@ -706,11 +707,19 @@ std::string fileGet(const std::string &path, bool binary, bool scope_limit)
     infile.open(path, mode);
     if(infile)
     {
-        strstrm<<infile.rdbuf();
+        //move to a faster method
+        infile.seekg(0, std::ios::end);
+        content.resize(infile.tellg());
+        infile.seekg(0, std::ios::beg);
+        infile.read(&content[0], content.size());
+        infile.close();
+        /*
+        strstrm << infile.rdbuf();
         infile.close();
         return strstrm.str();
+        */
     }
-    return std::string();
+    return content;
 }
 
 bool fileExist(const std::string &path)
@@ -759,7 +768,7 @@ int fileWrite(const std::string &path, const std::string &content, bool overwrit
     std::ios_base::openmode mode = overwrite ? std::ios_base::out : std::ios_base::app;
     mode |= std::ios_base::binary;
     outfile.open(path, mode);
-    outfile << content << std::endl;
+    outfile << content;
     outfile.close();
     return 0;
 }
