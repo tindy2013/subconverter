@@ -2218,6 +2218,9 @@ std::string netchToLoon(std::vector<nodeInfo> &nodes, std::string &base_conf, st
             edge = GetMember(json, "Edge");
             path = GetMember(json, "Path");
             tlssecure = GetMember(json, "TLSSecure") == "true";
+            if(method == "auto")
+                method = "chacha20-ietf-poly1305";
+
             proxy = "vmess," + hostname + "," + port + "," + method + ",\"" + id + "\",over-tls:" + (tlssecure ? "true" : "false");
             if(tlssecure)
                 proxy += ",tls-name:" + host;
