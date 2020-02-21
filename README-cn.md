@@ -25,22 +25,31 @@
 
 | 类型         | 作为源类型 | 作为目标类型 | 参数        |
 | ------------ | :--------: | :----------: | ----------- |
-| Clash        |     ✔      |      ✔       | clash       |
-| ClashR       |     ✔      |      ✔       | clashr      |
-| Quantumult (完整配置)   |     ✔      |      ✔       | quan        |
-| Quantumult X (完整配置) |     ✔      |      ✔       | quanx       |
-| Loon         |     ✔      |      ✔       | loon        |
-| SS (SIP002)  |     ✔      |      ✔       | ss          |
-| SS (软件订阅)|     ✔      |      ✔       | sssub       |
-| SSD          |     ✔      |      ✔       | ssd         |
-| SSR          |     ✔      |      ✔       | ssr         |
-| Surfboard    |     ✔      |      ✔       | surfboard   |
-| Surge 2      |     ✔      |      ✔       | surge&ver=2 |
-| Surge 3      |     ✔      |      ✔       | surge&ver=3 |
-| Surge 4      |     ✔      |      ✔       | surge&ver=4 |
-| V2Ray        |     ✔      |      ✔       | v2ray       |
+| Clash        |     √      |      √       | clash       |
+| ClashR       |     √      |      √       | clashr      |
+| Quantumult (完整配置)   |     √      |      √       | quan        |
+| Quantumult X (完整配置) |     √      |      √       | quanx       |
+| Loon         |     √      |      √       | loon        |
+| SS (SIP002)  |     √      |      √       | ss          |
+| SS (软件订阅)|     √      |      √       | sssub       |
+| SSD          |     √      |      √       | ssd         |
+| SSR          |     √      |      √       | ssr         |
+| Surfboard    |     √      |      √       | surfboard   |
+| Surge 2      |     √      |      √       | surge&ver=2 |
+| Surge 3      |     √      |      √       | surge&ver=3 |
+| Surge 4      |     √      |      √       | surge&ver=4 |
+| V2Ray        |     √      |      √       | v2ray       |
+| 类 TG 代理的 HTTP/Socks 链接 |     √      |      ×       | 仅支持 `&url=` 调用    |
 
-**注意**：Shadowrocket 用户可以使用 `ss`、`ssr`以及 `v2ray`参数
+注意：
+
+1. Shadowrocket 用户可以使用 `ss`、`ssr`以及 `v2ray`参数
+
+2. 类 TG 代理的 HTTP/Socks 链接 由于没有命名设定，所以可以在后方插入`&remark=`进行命名，例如
+
+   - tg://http?server=1.2.3.4&port=233&user=user&pass=pass&remark=Example
+
+   - https://t.me/http?server=1.2.3.4&port=233&user=user&pass=pass&remark=Example
 
 ---
 
@@ -336,15 +345,6 @@ exclude=(流量|官网)
      insert_url=ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpwYXNzd29yZA@www.example.com:1080#Example
      insert_url=ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpwYXNzd29yZA@www.example.com:1080#Example
      ```
-
-   - 特殊节点 (即类 TG 代理链接):
-
-     ```ini
-     insert_url=https://t.me/http?server=1.2.3.4&port=233&user=user&pass=pass&remark=Example
-     insert_url=tg://http?server=1.2.3.4&port=233&user=user&pass=pass&remark=Example
-     ```
-
-     其中 `&remark=Example` 是将该链接命名为 Example
 
 1. **exclude_remarks**
 
