@@ -736,9 +736,10 @@ void explodeClash(Node yamlnode, std::string custom_port, int local_port, std::v
     std::string plugin, pluginopts, pluginopts_mode, pluginopts_host, pluginopts_mux; //ss
     std::string protocol, protoparam, obfs, obfsparam; //ssr
     std::string user; //socks
-    for(unsigned int i = 0; i < yamlnode["Proxy"].size(); i++)
+    const std::string section = yamlnode["proxies"].IsDefined() ? "proxies" : "Proxy";
+    for(unsigned int i = 0; i < yamlnode[section].size(); i++)
     {
-        singleproxy = yamlnode["Proxy"][i];
+        singleproxy = yamlnode[section][i];
         singleproxy["type"] >> proxytype;
         singleproxy["name"] >> ps;
         singleproxy["server"] >> server;
@@ -1521,10 +1522,10 @@ void explodeSub(std::string sub, bool sslibev, bool ssrlibev, std::string custom
     //try to parse as clash configuration
     try
     {
-        if(!processed && strFind(sub, "Proxy"))
+        if(!processed && (strFind(sub, "Proxy:") || strFind(sub, "proxies:")))
         {
             Node yamlnode = Load(sub);
-            if(yamlnode.size() && yamlnode["Proxy"])
+            if(yamlnode.size() && (yamlnode["Proxy"].IsDefined() || yamlnode["proxies"].IsDefined()))
             {
                 explodeClash(yamlnode, custom_port, local_port, nodes, sslibev, ssrlibev);
                 processed = true;

@@ -43,7 +43,7 @@
 
 注意：
 
-1. Shadowrocket 用户可以使用 `ss`、`ssr`以及 `v2ray`参数
+1. Shadowrocket 用户可以使用 `ss`、`ssr` 以及 `v2ray` 参数
 
 2. 类 TG 代理的 HTTP/Socks 链接 由于没有命名设定，所以可以在后方插入`&remark=`进行命名，例如
 
@@ -256,7 +256,7 @@ http://127.0.0.1:25500/getprofile?name=%NAME%&token=%TOKEN%
 
 | 调用参数 | 必要性 | 示例  | 解释   |
 | -------- | :----: | :--------------- | :------------------------ |
-| name |  必要  | profiles/formyairport.ini  | 指配置档案的存储位置(可使用基于**主程序**的相对位置)   |
+| name |  必要  | profiles/formyairport.ini  | 指配置档案的存储位置(可使用基于**pref 配置文件**的相对位置)   |
 | token |  必要  | passwd | 为了安全考虑**必须设置token**（详见 [配置文件](#配置文件) 中 `[common] 部分` 对 `api_access_token` 的描述）   |
 
 应当注意的是，此处文件内的参数**无需进行 URLEncode**，且此处的 `token` 与 `api_mode` 的状态无关。
@@ -269,6 +269,7 @@ http://127.0.0.1:25500/getprofile?name=%NAME%&token=%TOKEN%
 以上述 [进阶链接](#进阶链接) 的例子而言，`formyairport.ini` 内的内容应当是：
 
  ```txt
+[Profile]
 url=https://dler.cloud/subscribe/ABCDE?clash=vmess
 target=surge
 surge_ver=4

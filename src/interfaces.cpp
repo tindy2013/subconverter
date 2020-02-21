@@ -903,7 +903,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     extra_settings ext;
     std::string subInfo, dummy;
     int interval = interval_str.size() ? to_int(interval_str, config_update_interval) : config_update_interval;
-    bool ruleset_updated = false, authorized = getUrlArg(argument, "token") == access_token, strict = strict_str.size() ? strict_str == "true" : config_update_strict;
+    bool ruleset_updated = false, authorized = !api_mode || getUrlArg(argument, "token") == access_token, strict = strict_str.size() ? strict_str == "true" : config_update_strict;
 
     if(std::find(regex_blacklist.cbegin(), regex_blacklist.cend(), include) != regex_blacklist.cend() || std::find(regex_blacklist.cbegin(), regex_blacklist.cend(), exclude) != regex_blacklist.cend())
         return "Invalid request!";
