@@ -12,6 +12,7 @@
   - [简易用法](#简易用法)
     - [调用地址](#调用地址)
     - [调用说明](#调用说明)
+    - [简易转换](#简易转换)
   - [进阶用法](#进阶用法)
     - [阅前提示](#阅前提示)
     - [进阶链接](#进阶链接)
@@ -28,6 +29,7 @@
 | ClashR       |     ✔      |      ✔       | clashr      |
 | Quantumult (完整配置)   |     ✔      |      ✔       | quan        |
 | Quantumult X (完整配置) |     ✔      |      ✔       | quanx       |
+| Loon         |     ✔      |      ✔       | loon        |
 | SS (SIP002)  |     ✔      |      ✔       | ss          |
 | SS (软件订阅)|     ✔      |      ✔       | sssub       |
 | SSD          |     ✔      |      ✔       | ssd         |
@@ -207,6 +209,7 @@ http://127.0.0.1:25500/sub?target=%TARGET%&url=%URL%&emoji=%EMOJI%····
 | sort |  可选  | true / false  | 指对输出的节点或策略组进行再次排序，默认为 false  |
 | include |  可选  | 详见下文中 `include_remarks`  | 指仅保留匹配到的节点，支持正则匹配，需要经过 [URLEncode](https://www.urlencoder.org/) 处理，会覆盖配置文件里的设置  |
 | exclude |  可选  | 详见下文中 `exclude_remarks`  | 指排除匹配到的节点，支持正则匹配，需要经过 [URLEncode](https://www.urlencoder.org/) 处理，会覆盖配置文件里的设置  |
+| filename |  可选  | MySS  | 指定该链接生成的配置文件的文件名，可以在 Clash For Windows 等支持文件名的软件中显示出来  |
 
 举个例子：
 
@@ -227,7 +230,6 @@ http://127.0.0.1:25500/sub?target=surge&ver=4&tfo=true&udp=true&emoji=true&exclu
 
 最后将该链接填写至 Surge 的订阅处就大功告成了。
 ```
-
 
 ### 配置档案
 
@@ -266,7 +268,7 @@ udp=true
 emoji=true
 exclude=(流量|官网)
  ```
- 
+
 在编辑并保存好 `formyairport.ini` 后，即可使用 `http://127.0.0.1:25500/getprofile?name=profiles/formyairport.ini&token=passwd` 进行调用。
 </details>
 
@@ -288,11 +290,11 @@ exclude=(流量|官网)
     > API 模式，设置为 true 以防止直接加载本地订阅或直接提供本地文件，若访问这些内容则需要接上 `&token=`。（多用于架设于服务器上）
 
     - 当值为 `false` 时, 每次更新配置都会读取 `pref.ini` , 为 `true` 时则仅启动时读取。
-    
+
 1. **api_access_token**
 
     > 用于访问相对隐私的接口（如 `/getprofile`）
-    
+
     - 例如:
 
      ```ini
@@ -301,7 +303,7 @@ exclude=(流量|官网)
 
 1. **default_url**
 
-    > 无 %URL% 参数时，默认加载的订阅链接， **不需要 URLEncode**。 
+    > 无 %URL% 参数时，默认加载的订阅链接， **不需要 URLEncode**。
     >
     > 如果有多个链接，仍然需要使用 "|" 分隔，支持`文件`/`url`
 
@@ -326,13 +328,23 @@ exclude=(流量|官网)
     >
     > 如果有多个节点，仍然需要使用 "|" 分隔，支持 `单个节点`/`订阅链接`
     >
-    > 支持 SS/SSR/Vmess 链接
+    > 支持 SS/SSR/Vmess 以及类 TG 代理的 HTTP/Socks 链接
 
     - 例如:
 
      ```ini
      insert_url=ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpwYXNzd29yZA@www.example.com:1080#Example
+     insert_url=ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpwYXNzd29yZA@www.example.com:1080#Example
      ```
+
+   - 特殊节点 (即类 TG 代理链接):
+
+     ```ini
+     insert_url=https://t.me/http?server=1.2.3.4&port=233&user=user&pass=pass&remark=Example
+     insert_url=tg://http?server=1.2.3.4&port=233&user=user&pass=pass&remark=Example
+     ```
+
+     其中 `&remark=Example` 是将该链接命名为 Example
 
 1. **exclude_remarks**
 
@@ -379,6 +391,10 @@ exclude=(流量|官网)
 
    > 生成的 Mellow 配置文件基础，用法同上
 
+1. **loon_rule_base**
+
+   > 生成的 Loon 配置文件基础，用法同上
+
 1. **proxy_ruleset**
 
    > 更新 RuleSet 时是否使用代理
@@ -398,6 +414,10 @@ exclude=(流量|官网)
 1. **proxy_subscription**
 
    > 更新 原始订阅 时是否使用代理，用法同上
+
+1. **proxy_config**
+
+   > 更新 外部配置文件 时是否使用代理，用法同上
 
 1. **append_proxy_type**
 
@@ -447,7 +467,7 @@ exclude=(流量|官网)
    > 排除当前 **`target=`** 不支持的节点类型，设置为 true 时打开，默认为 false
 
     - 可以考虑设置为 true，从而在**一定程度上避免出现兼容问题**
-    
+
 1. **rename_node**
 
    > 重命名节点，支持正则匹配
@@ -460,7 +480,14 @@ exclude=(流量|官网)
      rename_node=中国@中
      rename_node=\(?((x|X)?(\d+)(\.?\d+)?)((\s?倍率?:?)|(x|X))\)?@(倍率:$1)
      ```
-     
+
+   - 特殊用法:
+
+     ```ini
+     rename_node=!!GROUPID=0!!中国@中
+     # 指定此重命名仅在第一个订阅的节点中生效
+     ```
+
 </details>
 <details>
 <summary><b>[managed_config] 部分</b></summary>
@@ -483,6 +510,31 @@ exclude=(流量|官网)
 
     ```ini
     managed_config_prefix = http://192.168.1.5:25500
+    ```
+
+1. **config_update_interval**
+
+   > 托管配置更新间隔，确定配置将更新多长时间，单位为秒
+
+    - 例如:
+
+    ```ini
+    config_update_interval = 86400
+    # 每 86400 秒更新一次（即一天）
+    ```
+
+1. **config_update_struct**
+
+   > 如果 config_update_struct 为 true，则 Surge 将在上述间隔后要求强制更新。
+
+1. **quanx_device_id**
+
+   > 用于重写 Quantumult X 远程 JS 中的设备 ID，该 ID 在 Quantumult X 设置中自行查找
+
+    - 例如:
+
+    ```ini
+    quanx_device_id = XXXXXXX
     ```
 
 </details>
@@ -513,6 +565,13 @@ exclude=(流量|官网)
     rule=(流量|时间|应急),⌛time
     rule=(美|美国|United States),🇺🇸
     ```
+
+   - 特殊用法:
+
+     ```ini
+     rule=!!GROUPID=0!!(流量|时间|应急),⌛time
+     # 指定此 Emoji 规则仅在第一个订阅的节点中生效
+     ```
 
 </details>
 <details>
@@ -618,9 +677,9 @@ custom_proxy_group=🇯🇵 JP`select`沪日`日本`[]🇯🇵 日本延迟最�
 将文件按照以下格式写好，上传至 Github Gist 或者 其他**可访问**网络位置
 经过 [URLEncode](https://www.urlencoder.org/) 处理后，添加至 `&config=` 即可调用
 需要注意的是，由外部配置中所定义的值会**覆盖** `pref.ini` 里的内容
-即，如果你在外部配置中定义了 
+即，如果你在外部配置中定义了
 
-```
+```txt
 emoji=(流量|时间|应急),🏳️‍🌈
 emoji=阿根廷,🇦🇷
 ```
