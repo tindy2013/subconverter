@@ -40,7 +40,7 @@ int config_update_interval = 0;
 
 std::string clash_rule_base;
 string_array clash_extra_group;
-std::string surge_rule_base, surfboard_rule_base, mellow_rule_base, quan_rule_base, quanx_rule_base;
+std::string surge_rule_base, surfboard_rule_base, mellow_rule_base, quan_rule_base, quanx_rule_base, loon_rule_base;
 std::string surge_ssr_path, quanx_script_id;
 
 //pre-compiled rule bases
@@ -403,6 +403,7 @@ void readYAMLConf(YAML::Node &node)
     section["mellow_rule_base"] >> mellow_rule_base;
     section["quan_rule_base"] >> quan_rule_base;
     section["quanx_rule_base"] >> quanx_rule_base;
+    section["loon_rule_base"] >> loon_rule_base;
 
     section["append_proxy_type"] >> append_proxy_type;
     section["proxy_config"] >> proxy_config;
@@ -574,6 +575,8 @@ void readConf()
         quan_rule_base = ini.Get("quan_rule_base");
     if(ini.ItemExist("quanx_rule_base"))
         quanx_rule_base = ini.Get("quanx_rule_base");
+    if(ini.ItemExist("loon_rule_base"))
+        loon_rule_base = ini.Get("loon_rule_base");
     if(ini.ItemExist("append_proxy_type"))
         append_proxy_type = ini.GetBool("append_proxy_type");
     if(ini.ItemExist("proxy_config"))
@@ -726,6 +729,7 @@ struct ExternalConfig
     std::string mellow_rule_base;
     std::string quan_rule_base;
     std::string quanx_rule_base;
+    std::string loon_rule_base;
     string_array rename;
     string_array emoji;
     string_array include;
@@ -746,6 +750,7 @@ int loadExternalYAML(YAML::Node &node, ExternalConfig &ext)
     section["mellow_rule_base"] >> ext.mellow_rule_base;
     section["quan_rule_base"] >> ext.quan_rule_base;
     section["quanx_rule_base"] >> ext.quanx_rule_base;
+    section["loon_rule_base"] >> ext.loon_rule_base;
 
     ext.enable_rule_generator = section["enable_rule_generator"].as<bool>();
     ext.overwrite_original_rules = section["overwrite_original_rules"].as<bool>();
@@ -825,6 +830,8 @@ int loadExternalConfig(std::string &path, ExternalConfig &ext)
         ext.quan_rule_base = ini.Get("quan_rule_base");
     if(ini.ItemExist("quanx_rule_base"))
         ext.quanx_rule_base = ini.Get("quanx_rule_base");
+    if(ini.ItemExist("loon_rule_base"))
+        ext.loon_rule_base = ini.Get("loon_rule_base");
 
     if(ini.ItemExist("overwrite_original_rules"))
         ext.overwrite_original_rules = ini.GetBool("overwrite_original_rules");
@@ -903,7 +910,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
 
     //for external configuration
     std::string ext_clash_base = clash_rule_base, ext_surge_base = surge_rule_base, ext_mellow_base = mellow_rule_base, ext_surfboard_base = surfboard_rule_base;
-    std::string ext_quan_base = quan_rule_base, ext_quanx_base = quanx_rule_base;
+    std::string ext_quan_base = quan_rule_base, ext_quanx_base = quanx_rule_base, ext_loon_base = loon_rule_base;
 
     //validate urls
     if(!url.size() && (!api_mode || authorized))
@@ -983,6 +990,8 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
             ext_quan_base = extconf.quan_rule_base;
         if(extconf.quanx_rule_base.size())
             ext_quanx_base = extconf.quanx_rule_base;
+        if(extconf.loon_rule_base.size())
+            ext_loon_base = extconf.loon_rule_base;
         if(extconf.rename.size())
             ext.rename_array = extconf.rename;
         if(extconf.emoji.size())
@@ -1251,6 +1260,22 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
 
         if(upload == "true")
             uploadGist("quanx", upload_path, output_content, false);
+    }
+    else if(target == "loon")
+    {
+        std::cerr<<"Loon"<<std::endl;
+        if(!ext.nodelist)
+        {
+            if(fileExist(ext_loon_base))
+                base_content = fileGet(ext_loon_base, false);
+            else
+                base_content = webGet(ext_loon_base, getSystemProxy(), dummy, cache_config);
+        }
+
+        output_content = netchToLoon(nodes, base_content, rca, extra_group, ext);
+
+        if(upload == "true")
+            uploadGist("loon", upload_path, output_content, false);
     }
     else if(target == "ssd")
     {

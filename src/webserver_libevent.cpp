@@ -263,7 +263,11 @@ int start_web_server_multi(void *argv)
         sleep(200); //block forever until receive stop signal
 
     for (i = 0; i < nthreads; i++)
-        event_base_loopbreak(base[i]);
+    {
+        event_base_loopbreak(base[i]); //stop the loop
+        event_base_free(base[i]); //free resources
+    }
+    closesocket(nfd); //close listener socket
 
     return 0;
 }

@@ -388,7 +388,7 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
     std::string rule_group, rule_path, retrived_rules, strLine;
     std::stringstream strStrm;
 
-    switch(surge_ver)
+    switch(surge_ver) //other version: -3 for Surfboard, -4 for Loon
     {
     case 0:
         base_rule.SetCurrentSection("RoutingRule"); //Mellow
@@ -452,6 +452,12 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
                     base_rule.Set("filter_remote", "{NONAME}", strLine);
                     continue;
                 }
+                else if(surge_ver == -4)
+                {
+                    strLine = rule_path + "," + rule_group;
+                    base_rule.Set("Remote Rule", "{NONAME}", strLine);
+                    continue;
+                }
             }
             else
             {
@@ -466,6 +472,12 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
                     strLine = remote_path_prefix + "/getruleset?type=2&url=" + urlsafe_base64_encode(rule_path) + "&group=" + urlsafe_base64_encode(rule_group);
                     strLine += ", tag=" + rule_group + ", enabled=true";
                     base_rule.Set("filter_remote", "{NONAME}", strLine);
+                    continue;
+                }
+                else if(surge_ver == -4 && remote_path_prefix.size())
+                {
+                    strLine = remote_path_prefix + "/getruleset?type=1&url=" + urlsafe_base64_encode(rule_path) + "," + rule_group;
+                    base_rule.Set("Remote Rule", "{NONAME}", strLine);
                     continue;
                 }
             }
@@ -988,9 +1000,11 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
         if(ext.nodelist)
             output_nodelist += remark + " = " + proxy + "\n";
         else
+        {
             ini.Set("{NONAME}", remark + " = " + proxy);
-        nodelist.emplace_back(x);
-        remarks_list.emplace_back(remark);
+            nodelist.emplace_back(x);
+            remarks_list.emplace_back(remark);
+        }
     }
 
     if(ext.nodelist)
@@ -2115,6 +2129,223 @@ void netchToMellow(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rul
 
     if(ext.enable_rule_generator)
         rulesetToSurge(ini, ruleset_content_array, 0, ext.overwrite_original_rules, std::string());
+}
+
+std::string netchToLoon(std::vector<nodeInfo> &nodes, std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, extra_settings &ext)
+{
+    rapidjson::Document json;
+    INIReader ini;
+    std::string proxy;
+    std::string type, remark, hostname, port, username, password, method;
+    std::string plugin, pluginopts;
+    std::string protocol, protoparam, obfs, obfsparam;
+    std::string id, aid, transproto, faketype, host, edge, path, quicsecure, quicsecret;
+    std::string output_nodelist;
+    std::vector<nodeInfo> nodelist;
+    bool tlssecure;
+    //group pref
+    std::string url;
+    int interval = 0;
+    std::string ssid_default;
+
+    string_array vArray, remarks_list, filtered_nodelist;
+
+    ini.store_any_line = true;
+    if(ini.Parse(base_conf) != INIREADER_EXCEPTION_NONE && !ext.nodelist)
+        return std::string();
+
+    ini.SetCurrentSection("Proxy");
+    ini.EraseSection();
+
+    std::for_each(nodes.begin(), nodes.end(), [ext](nodeInfo &x)
+    {
+        x.remarks = nodeRename(x.remarks, x.groupID, ext.rename_array);
+        if(ext.remove_emoji)
+            x.remarks = trim(removeEmoji(x.remarks));
+
+        if(ext.add_emoji)
+            x.remarks = addEmoji(x.remarks, x.groupID, ext.emoji_array);
+    });
+
+    if(ext.sort_flag)
+    {
+        std::sort(nodes.begin(), nodes.end(), [](const nodeInfo &a, const nodeInfo &b)
+        {
+            return a.remarks < b.remarks;
+        });
+    }
+
+    for(nodeInfo &x : nodes)
+    {
+        json.Parse(x.proxyStr.data());
+        type = GetMember(json, "Type");
+
+        if(ext.append_proxy_type)
+            x.remarks = "[" + type + "]" + x.remarks;
+        remark = x.remarks;
+
+        while(std::count(remarks_list.begin(), remarks_list.end(), x.remarks) > 0)
+            x.remarks += "$";
+
+        remark = x.remarks;
+        hostname = GetMember(json, "Hostname");
+        port = std::to_string((unsigned short)stoi(GetMember(json, "Port")));
+        username = GetMember(json, "Username");
+        password = GetMember(json, "Password");
+        method = GetMember(json, "EncryptMethod");
+        proxy.clear();
+
+        if(x.linkType == SPEEDTEST_MESSAGE_FOUNDSS)
+        {
+            plugin = GetMember(json, "Plugin");
+            pluginopts = GetMember(json, "PluginOption");
+
+            proxy = "Shadowsocks," + hostname + "," + port + "," + method + ",\"" + password + "\"";
+            if(plugin == "simple-obfs")
+            {
+                if(pluginopts.size())
+                    proxy += "," + replace_all_distinct(replace_all_distinct(pluginopts, ";obfs-host=", ","), "obfs=", "");
+            }
+            else
+                continue;
+        }
+        else if(x.linkType == SPEEDTEST_MESSAGE_FOUNDVMESS)
+        {
+            id = GetMember(json, "UserID");
+            aid = GetMember(json, "AlterID");
+            transproto = GetMember(json, "TransferProtocol");
+            host = GetMember(json, "Host");
+            edge = GetMember(json, "Edge");
+            path = GetMember(json, "Path");
+            tlssecure = GetMember(json, "TLSSecure") == "true";
+            proxy = "vmess," + hostname + "," + port + "," + method + ",\"" + id + "\",over-tls:" + (tlssecure ? "true" : "false");
+            if(tlssecure)
+                proxy += ",tls-name:" + host;
+            if(transproto == "ws")
+            {
+                proxy += ",transport:ws,path:" + path + ",host:" + host;
+            }
+            else if(transproto == "kcp" || transproto == "h2" || transproto == "quic")
+                continue;
+            else
+                proxy += ",transport:tcp";
+            if(ext.skip_cert_verify)
+                proxy += ",skip-cert-verify:1";
+
+        }
+        else if(x.linkType == SPEEDTEST_MESSAGE_FOUNDSSR)
+        {
+            protocol = GetMember(json, "Protocol");
+            protoparam = GetMember(json, "ProtocolParam");
+            obfs = GetMember(json, "OBFS");
+            obfsparam = GetMember(json, "OBFSParam");
+            proxy = "ShadowsocksR," + hostname + "," + port + "," + method + ",\"" + password + "\"," + protocol + ",{" + protoparam + "}," + obfs + ",{" + obfsparam + "}";
+        }
+        /*
+        else if(x.linkType == SPEEDTEST_MESSAGE_FOUNDSOCKS)
+        {
+            proxy = "socks5, " + hostname + ", " + port + ", " + username + ", " + password;
+            if(ext.skip_cert_verify)
+                proxy += ", skip-cert-verify=1";
+        }
+        */
+        else if(x.linkType == SPEEDTEST_MESSAGE_FOUNDHTTP)
+        {
+            proxy = "http," + hostname + "," + port + "," + username + "," + password;
+            /*
+            proxy += std::string(", tls=") + (type == "HTTPS" ? "true" : "false");
+            if(ext.skip_cert_verify)
+                proxy += ", skip-cert-verify=1";
+            */
+        }
+        else
+            continue;
+
+        /*
+        if(ext.tfo)
+            proxy += ", tfo=true";
+        if(ext.udp)
+            proxy += ", udp-relay=true";
+        */
+
+        if(ext.nodelist)
+            output_nodelist += remark + " = " + proxy + "\n";
+        else
+        {
+            ini.Set("{NONAME}", remark + " = " + proxy);
+            nodelist.emplace_back(x);
+            remarks_list.emplace_back(remark);
+        }
+    }
+
+    if(ext.nodelist)
+        return output_nodelist;
+
+    ini.SetCurrentSection("Proxy Group");
+    ini.EraseSection();
+    for(std::string &x : extra_proxy_group)
+    {
+        eraseElements(filtered_nodelist);
+        unsigned int rules_upper_bound = 0;
+        url.clear();
+        proxy.clear();
+
+        vArray = split(x, "`");
+        if(vArray.size() < 3)
+            continue;
+
+        if(vArray[1] == "select")
+        {
+            rules_upper_bound = vArray.size();
+        }
+        else if(vArray[1] == "url-test" || vArray[1] == "fallback")
+        {
+            if(vArray.size() < 5)
+                continue;
+            rules_upper_bound = vArray.size() - 2;
+            url = vArray[vArray.size() - 2];
+            interval = to_int(vArray[vArray.size() - 1]);
+        }
+        else if(vArray[1] == "ssid")
+        {
+            if(vArray.size() < 4)
+                continue;
+            proxy = vArray[1] + ",default=" + vArray[2] + ",";
+            proxy += std::accumulate(vArray.begin() + 4, vArray.end(), vArray[3], [](std::string a, std::string b)
+            {
+                return std::move(a) + "," + std::move(b);
+            });
+            ini.Set("{NONAME}", vArray[0] + " = " + proxy); //insert order
+            continue;
+        }
+        else
+            continue;
+
+        for(unsigned int i = 2; i < rules_upper_bound; i++)
+            groupGenerate(vArray[i], nodelist, filtered_nodelist, true);
+
+        if(!filtered_nodelist.size())
+            filtered_nodelist.emplace_back("DIRECT");
+
+        proxy = vArray[1] + ",";
+        /*
+        for(std::string &y : filtered_nodelist)
+            proxy += "," + y;
+        */
+        proxy += std::accumulate(std::next(filtered_nodelist.cbegin()), filtered_nodelist.cend(), filtered_nodelist[0], [](std::string a, std::string b)
+        {
+            return std::move(a) + "," + std::move(b);
+        });
+        if(vArray[1] == "url-test" || vArray[1] == "fallback")
+            proxy += ",url=" + url + ",interval=" + std::to_string(interval);
+
+        ini.Set("{NONAME}", vArray[0] + " = " + proxy); //insert order
+    }
+
+    if(ext.enable_rule_generator)
+        rulesetToSurge(ini, ruleset_content_array, -4, ext.overwrite_original_rules, ext.managed_config_prefix);
+
+    return ini.ToString();
 }
 
 std::string buildGistData(std::string name, std::string content)

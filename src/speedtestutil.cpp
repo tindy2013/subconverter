@@ -579,6 +579,7 @@ void explodeHTTP(std::string link, std::string custom_port, nodeInfo &node)
     port = getUrlArg(link, "port");
     username = getUrlArg(link, "user");
     password = getUrlArg(link, "pass");
+    remarks = UrlDecode(getUrlArg(link, "remark"));
 
     if(remarks == "")
         remarks = server + ":" + port;

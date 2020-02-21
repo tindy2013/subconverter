@@ -11,6 +11,7 @@ common:
   mellow_rule_base: base/mellow.conf
   quan_rule_base: base/quan.conf
   quanx_rule_base: base/quanx.conf
+  loon_rule_base: base/loon.conf
   proxy_config: SYSTEM
   proxy_ruleset: SYSTEM
   proxy_subscription: NONE

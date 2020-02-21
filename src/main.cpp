@@ -76,6 +76,7 @@ void signal_handler(int sig)
         break;
     }
 }
+
 int main(int argc, char *argv[])
 {
 #ifdef _WIN32
@@ -242,6 +243,11 @@ int main(int argc, char *argv[])
     append_response("GET", "/quanx", "text/plain;charset=utf-8", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
         return subconverter(argument + "&target=quanx", postdata, status_code, extra_headers);
+    });
+
+    append_response("GET", "/loon", "text/plain;charset=utf-8", [](RESPONSE_CALLBACK_ARGS) -> std::string
+    {
+        return subconverter(argument + "&target=loon", postdata, status_code, extra_headers);
     });
 
     append_response("GET", "/ssd", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
