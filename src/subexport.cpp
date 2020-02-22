@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <iostream>
 #include <numeric>
+#include <cmath>
 #include <rapidjson/writer.h>
 #include <rapidjson/document.h>
 #include <yaml-cpp/yaml.h>

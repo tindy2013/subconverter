@@ -483,6 +483,7 @@ cfw-bypass:
   - "*.zmzfile.com"
   # Private Tracker
   - "*.awesome-hd.me"
+  - "*.bittorrent.com"
   - "*.broadcasthe.net"
   - "*.chdbits.co"
   - "*.classix-unlimited.co.uk"
