@@ -265,7 +265,7 @@ int main(int argc, char *argv[])
 
         append_response("GET", "/getlocal", "text/plain;charset=utf-8", [](RESPONSE_CALLBACK_ARGS) -> std::string
         {
-            return fileGet(UrlDecode(getUrlArg(argument, "path")), false);
+            return fileGet(UrlDecode(getUrlArg(argument, "path")));
         });
     }
 

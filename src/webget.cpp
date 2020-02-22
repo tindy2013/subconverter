@@ -10,7 +10,9 @@
 #include "logger.h"
 
 #ifdef _WIN32
+#ifndef _stat
 #define _stat stat
+#endif // _stat
 #endif // _WIN32
 
 extern bool print_debug_info;
@@ -110,30 +112,39 @@ std::string webGet(std::string url, std::string proxy, std::string &response_hea
     if(cache_ttl > 0)
     {
         md("cache");
-        std::string url_md5 = getMD5(url);
-        std::string path = "cache/" + url_md5;
+        const std::string url_md5 = getMD5(url);
+        const std::string path = "cache/" + url_md5, path_header = path + "_header";
         struct stat result;
-        if(stat(path.data(), &result) == 0)
+        if(stat(path.data(), &result) == 0) // cache exist
         {
-            time_t mtime = result.st_mtime, now = time(NULL);
-            if(difftime(now, mtime) <= cache_ttl)
+            time_t mtime = result.st_mtime, now = time(NULL); // get cache modified time and current time
+            if(difftime(now, mtime) <= cache_ttl) // within TTL
             {
                 writeLog(0, "CACHE HIT: '" + url + "', using local cache.");
-                response_headers = fileGet(path + "_header", true, true);
-                return fileGet(path, true, true);
+                response_headers = fileGet(path_header, true);
+                return fileGet(path, true);
             }
-            writeLog(0, "CACHE MISS: '" + url + "', TTL timeout, creating new cache.");
+            writeLog(0, "CACHE MISS: '" + url + "', TTL timeout, creating new cache."); // out of TTL
         }
         else
             writeLog(0, "CACHE NOT EXIST: '" + url + "', creating new cache.");
-        content = curlGet(url, proxy, response_headers, return_code);
-        if(return_code == CURLE_OK)
+        content = curlGet(url, proxy, response_headers, return_code); // try to fetch data
+        if(return_code == CURLE_OK) // success, save new cache
         {
             fileWrite(path, content, true);
-            fileWrite(path + "_header", response_headers, true);
+            fileWrite(path_header, response_headers, true);
         }
         else
-            writeLog(0, "Fetched failed. Skip creating new cache.");
+        {
+            if(fileExist(path)) // failed, check if cache exist
+            {
+                writeLog(0, "Fetch failed. Serving cached content."); // cache exist, serving cache
+                content = fileGet(path, true);
+                response_headers = fileGet(path_header, true);
+            }
+            else
+                writeLog(0, "Fetch failed. No local cache available."); // cache not exist, serving nothing
+        }
         return content;
     }
     return curlGet(url, proxy, response_headers, return_code);

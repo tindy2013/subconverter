@@ -299,7 +299,7 @@ public:
     {
         if(!fileExist(filePath))
             __SAVE_ERROR_AND_RETURN(INIREADER_EXCEPTION_NOTEXIST);
-        return Parse(fileGet(filePath, false));
+        return Parse(fileGet(filePath));
     }
 
     /**

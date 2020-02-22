@@ -61,7 +61,7 @@ void shortDisassemble(int source, unsigned short &num_a, unsigned short &num_b);
 std::string UTF8ToCodePoint(const std::string &data);
 std::string GetEnv(const std::string &name);
 
-std::string fileGet(const std::string &path, bool binary, bool scope_limit = false);
+std::string fileGet(const std::string &path, bool scope_limit = false);
 int fileWrite(const std::string &path, const std::string &content, bool overwrite);
 bool fileExist(const std::string &path);
 bool fileCopy(const std::string &source, const std::string &dest);

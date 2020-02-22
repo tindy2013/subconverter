@@ -78,7 +78,7 @@ std::string getRuleset(RESPONSE_CALLBACK_ARGS)
         proxy = proxy_ruleset;
 
     if(fileExist(url))
-        output_content = fileGet(url, false, true);
+        output_content = fileGet(url, true);
     else
         output_content = webGet(url, proxy, dummy, cache_ruleset);
 
@@ -154,7 +154,7 @@ int importItems(string_array &target)
             proxy = proxy_ruleset;
 
         if(fileExist(path))
-            content = fileGet(path, false, api_mode);
+            content = fileGet(path, api_mode);
         else
             content = webGet(path, proxy, dummy, cache_config);
         if(!content.size())
@@ -349,7 +349,7 @@ void refreshRulesets(string_array &ruleset_list, std::vector<ruleset_content> &r
             std::cerr<<"Updating ruleset url '"<<rule_url<<"' with group '"<<rule_group<<"'."<<std::endl;
             if(fileExist(rule_url))
             {
-                rc = {rule_group, rule_url, fileGet(rule_url, false)};
+                rc = {rule_group, rule_url, fileGet(rule_url)};
             }
             else if(startsWith(rule_url, "http://") || startsWith(rule_url, "https://") || startsWith(rule_url, "data:"))
             {
@@ -782,7 +782,7 @@ int loadExternalConfig(std::string &path, ExternalConfig &ext)
         proxy = proxy_config;
 
     if(fileExist(path))
-        base_content = fileGet(path, false, api_mode);
+        base_content = fileGet(path, api_mode);
     else
         base_content = webGet(path, proxy, dummy, cache_config);
 
@@ -862,7 +862,7 @@ void generateBase()
     int retVal = 0;
     std::cerr<<"Generating base content for Clash/R...\n";
     if(fileExist(clash_rule_base))
-        base_content = fileGet(clash_rule_base, false);
+        base_content = fileGet(clash_rule_base);
     else
         base_content = webGet(clash_rule_base, getSystemProxy());
     try
@@ -876,7 +876,7 @@ void generateBase()
     }
     std::cerr<<"Generating base content for Mellow...\n";
     if(fileExist(mellow_rule_base))
-        base_content = fileGet(mellow_rule_base, false);
+        base_content = fileGet(mellow_rule_base);
     else
         base_content = webGet(mellow_rule_base, getSystemProxy());
     mellow_base.keep_empty_section = true;
@@ -1120,7 +1120,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         else if(ruleset_updated || update_ruleset_on_request || ext_clash_base != clash_rule_base)
         {
             if(fileExist(ext_clash_base))
-                base_content = fileGet(ext_clash_base, false);
+                base_content = fileGet(ext_clash_base);
             else
                 base_content = webGet(ext_clash_base, getSystemProxy(), dummy, cache_config);
 
@@ -1148,7 +1148,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         else
         {
             if(fileExist(ext_surge_base))
-                base_content = fileGet(ext_surge_base, false);
+                base_content = fileGet(ext_surge_base);
             else
                 base_content = webGet(ext_surge_base, getSystemProxy(), dummy, cache_config);
 
@@ -1165,7 +1165,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     {
         std::cerr<<"Surfboard"<<std::endl;
         if(fileExist(ext_surfboard_base))
-            base_content = fileGet(ext_surfboard_base, false);
+            base_content = fileGet(ext_surfboard_base);
         else
             base_content = webGet(ext_surfboard_base, getSystemProxy(), dummy, cache_config);
 
@@ -1183,7 +1183,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         if(ruleset_updated || update_ruleset_on_request || ext_mellow_base != mellow_rule_base)
         {
             if(fileExist(ext_mellow_base))
-                base_content = fileGet(ext_mellow_base, false);
+                base_content = fileGet(ext_mellow_base);
             else
                 base_content = webGet(ext_mellow_base, getSystemProxy(), dummy, cache_config);
 
@@ -1235,7 +1235,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         if(!ext.nodelist)
         {
             if(fileExist(ext_quan_base))
-                base_content = fileGet(ext_quan_base, false);
+                base_content = fileGet(ext_quan_base);
             else
                 base_content = webGet(ext_quan_base, getSystemProxy(), dummy, cache_config);
         }
@@ -1251,7 +1251,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         if(!ext.nodelist)
         {
             if(fileExist(ext_quanx_base))
-                base_content = fileGet(ext_quanx_base, false);
+                base_content = fileGet(ext_quanx_base);
             else
                 base_content = webGet(ext_quanx_base, getSystemProxy(), dummy, cache_config);
         }
@@ -1267,7 +1267,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         if(!ext.nodelist)
         {
             if(fileExist(ext_loon_base))
-                base_content = fileGet(ext_loon_base, false);
+                base_content = fileGet(ext_loon_base);
             else
                 base_content = webGet(ext_loon_base, getSystemProxy(), dummy, cache_config);
         }
@@ -1400,7 +1400,7 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
         proxy = proxy_config;
 
     if(fileExist(url))
-        base_content = fileGet(url, false);
+        base_content = fileGet(url);
     else
         base_content = webGet(url, proxy, dummy, cache_config);
 
@@ -1614,7 +1614,7 @@ std::string getScript(RESPONSE_CALLBACK_ARGS)
         proxy = proxy_config;
 
     if(fileExist(url))
-        output_content = fileGet(url, true, true);
+        output_content = fileGet(url, true);
     else
         output_content = webGet(url, proxy, dummy, cache_config);
 
@@ -1646,7 +1646,7 @@ std::string getRewriteRemote(RESPONSE_CALLBACK_ARGS)
         proxy = proxy_config;
 
     if(fileExist(url))
-        output_content = fileGet(url, true, true);
+        output_content = fileGet(url, true);
     else
         output_content = webGet(url, proxy, dummy, cache_config);
 

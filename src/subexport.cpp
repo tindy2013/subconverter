@@ -7,6 +7,7 @@
 #include "printout.h"
 #include "multithread.h"
 #include "socket.h"
+#include "string_hash.h"
 
 #include <algorithm>
 #include <iostream>
@@ -642,8 +643,9 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
         singleproxy["server"] = hostname;
         singleproxy["port"] = (unsigned short)stoi(port);
 
-        if(x.linkType == SPEEDTEST_MESSAGE_FOUNDSS)
+        switch(x.linkType)
         {
+        case SPEEDTEST_MESSAGE_FOUNDSS:
             //latest clash core removed support for chacha20 encryption
             if(ext.filter_deprecated && method == "chacha20")
                 continue;
@@ -669,9 +671,8 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
                 if(ext.skip_cert_verify)
                     singleproxy["plugin-opts"]["skip-cert-verify"] = true;
             }
-        }
-        else if(x.linkType == SPEEDTEST_MESSAGE_FOUNDVMESS)
-        {
+            break;
+        case SPEEDTEST_MESSAGE_FOUNDVMESS:
             id = GetMember(json, "UserID");
             aid = GetMember(json, "AlterID");
             transproto = GetMember(json, "TransferProtocol");
@@ -700,9 +701,10 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
             }
             else if(transproto == "kcp" || transproto == "h2" || transproto == "quic")
                 continue;
-        }
-        else if(x.linkType == SPEEDTEST_MESSAGE_FOUNDSSR && clashR)
-        {
+            break;
+        case SPEEDTEST_MESSAGE_FOUNDSSR:
+            if(!clashR)
+                continue;
             //ignoring all nodes with unsupported obfs, protocols and encryption
             protocol = GetMember(json, "Protocol");
             obfs = GetMember(json, "OBFS");
@@ -725,26 +727,25 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
             singleproxy["protocolparam"] = protoparam;
             singleproxy["obfs"] = obfs;
             singleproxy["obfsparam"] = obfsparam;
-        }
-        else if(x.linkType == SPEEDTEST_MESSAGE_FOUNDSOCKS)
-        {
+            break;
+        case SPEEDTEST_MESSAGE_FOUNDSOCKS:
             singleproxy["type"] = "socks5";
             singleproxy["username"] = username;
             singleproxy["password"] = password;
             if(ext.skip_cert_verify)
                 singleproxy["skip-cert-verify"] = true;
-        }
-        else if(x.linkType == SPEEDTEST_MESSAGE_FOUNDHTTP)
-        {
+            break;
+        case SPEEDTEST_MESSAGE_FOUNDHTTP:
             singleproxy["type"] = "http";
             singleproxy["username"] = username;
             singleproxy["password"] = password;
             singleproxy["tls"] = type == "HTTPS";
             if(ext.skip_cert_verify)
                 singleproxy["skip-cert-verify"] = true;
-        }
-        else
+            break;
+        default:
             continue;
+        }
 
         if(ext.udp)
             singleproxy["udp"] = true;
@@ -861,7 +862,7 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
     int interval = 0;
     std::string ssid_default;
 
-    string_array vArray, remarks_list, filtered_nodelist;
+    string_array vArray, remarks_list, filtered_nodelist, args;
 
     ini.store_any_line = true;
     if(ini.Parse(base_conf) != 0 && !ext.nodelist)
@@ -909,8 +910,9 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
         method = GetMember(json, "EncryptMethod");
         proxy.clear();
 
-        if(x.linkType == SPEEDTEST_MESSAGE_FOUNDSS)
+        switch(x.linkType)
         {
+        case SPEEDTEST_MESSAGE_FOUNDSS:
             plugin = GetMember(json, "Plugin");
             pluginopts = GetMember(json, "PluginOption");
             if(surge_ver >= 3)
@@ -923,9 +925,8 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
             }
             if(plugin.size() && pluginopts.size())
                 proxy += "," + replace_all_distinct(pluginopts, ";", ",");
-        }
-        else if(x.linkType == SPEEDTEST_MESSAGE_FOUNDVMESS)
-        {
+            break;
+        case SPEEDTEST_MESSAGE_FOUNDVMESS:
             if(surge_ver < 4 && surge_ver != -3)
                 continue;
             id = GetMember(json, "UserID");
@@ -946,17 +947,16 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
                 proxy += ", skip-cert-verify=1";
             else if(transproto == "kcp" || transproto == "h2" || transproto == "quic")
                 continue;
-        }
-        else if(x.linkType == SPEEDTEST_MESSAGE_FOUNDSSR && ext.surge_ssr_path.size())
-        {
-            if(surge_ver < 2)
+            break;
+        case SPEEDTEST_MESSAGE_FOUNDSSR:
+            if(ext.surge_ssr_path.empty() || surge_ver < 2)
                 continue;
             protocol = GetMember(json, "Protocol");
             protoparam = GetMember(json, "ProtocolParam");
             obfs = GetMember(json, "OBFS");
             obfsparam = GetMember(json, "OBFSParam");
             proxy = "external, exec=\"" + ext.surge_ssr_path + "\", args=\"";
-            string_array args = {"-l", std::to_string(local_port), "-s", hostname, "-p", port, "-m", method, "-k", password, "-o", obfs, "-O", protocol};
+            args = {"-l", std::to_string(local_port), "-s", hostname, "-p", port, "-m", method, "-k", password, "-o", obfs, "-O", protocol};
             if(obfsparam.size())
             {
                 args.emplace_back("-g");
@@ -975,22 +975,21 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
             //proxy += "\", local-port=" + std::to_string(local_port) + ", addresses=" + ipaddr;
             proxy += "\", local-port=" + std::to_string(local_port);
             local_port++;
-        }
-        else if(x.linkType == SPEEDTEST_MESSAGE_FOUNDSOCKS)
-        {
+            break;
+        case SPEEDTEST_MESSAGE_FOUNDSOCKS:
             proxy = "socks5, " + hostname + ", " + port + ", " + username + ", " + password;
             if(ext.skip_cert_verify)
                 proxy += ", skip-cert-verify=1";
-        }
-        else if(x.linkType == SPEEDTEST_MESSAGE_FOUNDHTTP)
-        {
+            break;
+        case SPEEDTEST_MESSAGE_FOUNDHTTP:
             proxy = "http," + hostname + "," + port + ", " + username + ", " + password;
             proxy += std::string(", tls=") + (type == "HTTPS" ? "true" : "false");
             if(ext.skip_cert_verify)
                 proxy += ", skip-cert-verify=1";
-        }
-        else
+            break;
+        default:
             continue;
+        }
 
         if(ext.tfo)
             proxy += ", tfo=true";
@@ -1023,20 +1022,20 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
         if(vArray.size() < 3)
             continue;
 
-        if(vArray[1] == "select")
+        rules_upper_bound = vArray.size();
+        switch(hash_(vArray[1]))
         {
-            rules_upper_bound = vArray.size();
-        }
-        else if(vArray[1] == "url-test" || vArray[1] == "fallback")
-        {
+        case "select"_hash:
+            break;
+        case "url-test"_hash:
+        case "fallback"_hash:
             if(vArray.size() < 5)
                 continue;
-            rules_upper_bound = vArray.size() - 2;
-            url = vArray[vArray.size() - 2];
-            interval = to_int(vArray[vArray.size() - 1]);
-        }
-        else if(vArray[1] == "ssid")
-        {
+            rules_upper_bound -= 2;
+            url = vArray[rules_upper_bound];
+            interval = to_int(vArray[rules_upper_bound + 1]);
+            break;
+        case "ssid"_hash:
             if(vArray.size() < 4)
                 continue;
             proxy = vArray[1] + ",default=" + vArray[2] + ",";
@@ -1046,9 +1045,9 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
             });
             ini.Set("{NONAME}", vArray[0] + " = " + proxy); //insert order
             continue;
-        }
-        else
+        default:
             continue;
+        }
 
         for(unsigned int i = 2; i < rules_upper_bound; i++)
             groupGenerate(vArray[i], nodelist, filtered_nodelist, true);
@@ -1510,34 +1509,25 @@ void netchToQuan(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rules
         if(vArray.size() < 3)
             continue;
 
-        if(vArray[1] == "select")
+        rules_upper_bound = vArray.size();
+        switch(hash_(vArray[1]))
         {
+        case "select"_hash:
             type = "static";
-            rules_upper_bound = vArray.size();
-        }
-        else if(vArray[1] == "url-test")
-        {
-            if(vArray.size() < 5)
-                continue;
+            break;
+        case "fallback"_hash:
+            type = "static";
+        case "url-test"_hash:
             type = "auto";
-            rules_upper_bound = vArray.size() - 2;
-        }
-        else if(vArray[1] == "fallback")
-        {
-            if(vArray.size() < 5)
-                continue;
-            type = "static";
-            rules_upper_bound = vArray.size() - 2;
-        }
-        else if(vArray[1] == "load-balance")
-        {
-            if(vArray.size() < 5)
-                continue;
+        case "load-balance"_hash:
             type = "balance, round-robin";
-            rules_upper_bound = vArray.size() - 2;
-        }
-        else
+            if(vArray.size() < 5)
+                continue;
+            rules_upper_bound -= 2;
+            break;
+        default:
             continue;
+        }
 
         name = vArray[0];
 
@@ -1712,27 +1702,23 @@ void netchToQuanX(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rule
         if(vArray.size() < 3)
             continue;
 
-        if(vArray[1] == "select")
+        rules_upper_bound = vArray.size();
+        switch(hash_(vArray[1]))
         {
+        case "select"_hash:
             type = "static";
-            rules_upper_bound = vArray.size();
-        }
-        else if(vArray[1] == "url-test" || vArray[1] == "fallback")
-        {
-            if(vArray.size() < 5)
-                continue;
+            break;
+        case "url-test"_hash:
+        case "fallback"_hash:
             type = "available";
-            rules_upper_bound = vArray.size() - 2;
-        }
-        else if(vArray[1] == "load-balance")
-        {
+        case "load-balance"_hash:
+            type = "round-robin";
             if(vArray.size() < 5)
                 continue;
-            type = "round-robin";
-            rules_upper_bound = vArray.size() - 2;
-        }
-        else
+            rules_upper_bound -= 2;
+        default:
             continue;
+        }
 
         name = vArray[0];
 
@@ -1821,10 +1807,9 @@ void netchToQuanX(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rule
             {
                 pos = content.find(",");
                 url = ext.managed_config_prefix + "/qx-rewrite?id=" + ext.quanx_dev_id + "&url=" + urlsafe_base64_encode(content.substr(0, pos));
+                content = url;
                 if(pos != content.npos)
-                    content = url + content.substr(content.find(","));
-                else
-                    content = url;
+                    content += content.substr(content.find(","));
             }
             ini.Set("{NONAME}", content);
         }
@@ -2025,12 +2010,14 @@ void netchToMellow(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rul
         password = GetMember(json, "Password");
         method = GetMember(json, "EncryptMethod");
 
-        if(x.linkType == SPEEDTEST_MESSAGE_FOUNDSS && GetMember(json, "Plugin") == "")
+        switch(x.linkType)
         {
+        case SPEEDTEST_MESSAGE_FOUNDSS:
+            if(GetMember(json, "Plugin").size())
+                continue;
             proxy = remark + ", ss, ss://" + urlsafe_base64_encode(method + ":" + password) + "@" + hostname + ":" + port;
-        }
-        else if(x.linkType == SPEEDTEST_MESSAGE_FOUNDVMESS)
-        {
+            break;
+        case SPEEDTEST_MESSAGE_FOUNDVMESS:
             id = GetMember(json, "UserID");
             aid = GetMember(json, "AlterID");
             transproto = GetMember(json, "TransferProtocol");
@@ -2048,17 +2035,16 @@ void netchToMellow(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rul
                 proxy += "&ws.host=" + UrlEncode(host);
             }
             proxy += "&tls=" + tlssecure;
-        }
-        else if(x.linkType == SPEEDTEST_MESSAGE_FOUNDSOCKS)
-        {
+            break;
+        case SPEEDTEST_MESSAGE_FOUNDSOCKS:
             proxy = remark + ", builtin, socks, address=" + hostname + ", port=" + port + ", user=" + username + ", pass=" + password;
-        }
-        else if(x.linkType == SPEEDTEST_MESSAGE_FOUNDHTTP)
-        {
+            break;
+        case SPEEDTEST_MESSAGE_FOUNDHTTP:
             proxy = remark + ", builtin, http, address=" + hostname + ", port=" + port + ", user=" + username + ", pass=" + password;
-        }
-        else
+            break;
+        default:
             continue;
+        }
 
         ini.Set("{NONAME}", proxy);
         remarks_list.emplace_back(remark);
@@ -2078,19 +2064,21 @@ void netchToMellow(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rul
         if(vArray.size() < 3)
             continue;
 
-        if(vArray[1] == "select")
+        rules_upper_bound = vArray.size();
+        switch(hash_(vArray[1]))
         {
-            rules_upper_bound = vArray.size();
-        }
-        else if(vArray[1] == "url-test" || vArray[1] == "fallback" || vArray[1] == "load-balance")
-        {
+        case "select"_hash:
+            break;
+        case "url-test"_hash:
+        case "fallback"_hash:
+        case "load-balance"_hash:
             if(vArray.size() < 5)
                 continue;
-            rules_upper_bound = vArray.size() - 2;
+            rules_upper_bound -= 2;
             url = vArray[vArray.size() - 2];
-        }
-        else
+        default:
             continue;
+        }
 
         for(unsigned int i = 2; i < rules_upper_bound; i++)
             groupGenerate(vArray[i], nodelist, filtered_nodelist, false);
@@ -2195,8 +2183,9 @@ std::string netchToLoon(std::vector<nodeInfo> &nodes, std::string &base_conf, st
         method = GetMember(json, "EncryptMethod");
         proxy.clear();
 
-        if(x.linkType == SPEEDTEST_MESSAGE_FOUNDSS)
+        switch(x.linkType)
         {
+        case SPEEDTEST_MESSAGE_FOUNDSS:
             plugin = GetMember(json, "Plugin");
             pluginopts = GetMember(json, "PluginOption");
 
@@ -2208,9 +2197,8 @@ std::string netchToLoon(std::vector<nodeInfo> &nodes, std::string &base_conf, st
             }
             else
                 continue;
-        }
-        else if(x.linkType == SPEEDTEST_MESSAGE_FOUNDVMESS)
-        {
+            break;
+        case SPEEDTEST_MESSAGE_FOUNDVMESS:
             id = GetMember(json, "UserID");
             aid = GetMember(json, "AlterID");
             transproto = GetMember(json, "TransferProtocol");
@@ -2234,35 +2222,27 @@ std::string netchToLoon(std::vector<nodeInfo> &nodes, std::string &base_conf, st
                 proxy += ",transport:tcp";
             if(ext.skip_cert_verify)
                 proxy += ",skip-cert-verify:1";
-
-        }
-        else if(x.linkType == SPEEDTEST_MESSAGE_FOUNDSSR)
-        {
+            break;
+        case SPEEDTEST_MESSAGE_FOUNDSSR:
             protocol = GetMember(json, "Protocol");
             protoparam = GetMember(json, "ProtocolParam");
             obfs = GetMember(json, "OBFS");
             obfsparam = GetMember(json, "OBFSParam");
             proxy = "ShadowsocksR," + hostname + "," + port + "," + method + ",\"" + password + "\"," + protocol + ",{" + protoparam + "}," + obfs + ",{" + obfsparam + "}";
-        }
+            break;
         /*
-        else if(x.linkType == SPEEDTEST_MESSAGE_FOUNDSOCKS)
-        {
+        case SPEEDTEST_MESSAGE_FOUNDSOCKS:
             proxy = "socks5, " + hostname + ", " + port + ", " + username + ", " + password;
             if(ext.skip_cert_verify)
-                proxy += ", skip-cert-verify=1";
-        }
+                proxy += ", skip-cert-verify:1";
+            break;
         */
-        else if(x.linkType == SPEEDTEST_MESSAGE_FOUNDHTTP)
-        {
+        case SPEEDTEST_MESSAGE_FOUNDHTTP:
             proxy = "http," + hostname + "," + port + "," + username + "," + password;
-            /*
-            proxy += std::string(", tls=") + (type == "HTTPS" ? "true" : "false");
-            if(ext.skip_cert_verify)
-                proxy += ", skip-cert-verify=1";
-            */
-        }
-        else
+            break;
+        default:
             continue;
+        }
 
         /*
         if(ext.tfo)
@@ -2297,20 +2277,20 @@ std::string netchToLoon(std::vector<nodeInfo> &nodes, std::string &base_conf, st
         if(vArray.size() < 3)
             continue;
 
-        if(vArray[1] == "select")
+        rules_upper_bound = vArray.size();
+        switch(hash_(vArray[1]))
         {
-            rules_upper_bound = vArray.size();
-        }
-        else if(vArray[1] == "url-test" || vArray[1] == "fallback")
-        {
+        case "select"_hash:
+            break;
+        case "url-test"_hash:
+        case "fallback"_hash:
             if(vArray.size() < 5)
                 continue;
-            rules_upper_bound = vArray.size() - 2;
-            url = vArray[vArray.size() - 2];
-            interval = to_int(vArray[vArray.size() - 1]);
-        }
-        else if(vArray[1] == "ssid")
-        {
+            rules_upper_bound -= 2;
+            url = vArray[rules_upper_bound];
+            interval = to_int(vArray[rules_upper_bound + 1]);
+            break;
+        case "ssid"_hash:
             if(vArray.size() < 4)
                 continue;
             proxy = vArray[1] + ",default=" + vArray[2] + ",";
@@ -2320,9 +2300,9 @@ std::string netchToLoon(std::vector<nodeInfo> &nodes, std::string &base_conf, st
             });
             ini.Set("{NONAME}", vArray[0] + " = " + proxy); //insert order
             continue;
-        }
-        else
+        default:
             continue;
+        }
 
         for(unsigned int i = 2; i < rules_upper_bound; i++)
             groupGenerate(vArray[i], nodelist, filtered_nodelist, true);

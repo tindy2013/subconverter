@@ -687,10 +687,9 @@ std::string getMD5(const std::string &data)
 }
 
 // TODO: Add preprocessor option to disable (open web service safety)
-std::string fileGet(const std::string &path, bool binary, bool scope_limit)
+std::string fileGet(const std::string &path, bool scope_limit)
 {
     std::string content;
-    const char *mode = binary ? "rb" : "r";
 
     if(scope_limit)
     {
@@ -703,15 +702,30 @@ std::string fileGet(const std::string &path, bool binary, bool scope_limit)
 #endif // _WIN32
     }
 
-    std::FILE *fp = std::fopen(path.c_str(), mode);
+    std::FILE *fp = std::fopen(path.c_str(), "rb");
     if(fp)
     {
         std::fseek(fp, 0, SEEK_END);
-        content.resize(std::ftell(fp));
+        long tot = std::ftell(fp);
+        char *data = new char[tot + 1];
         std::rewind(fp);
-        std::fread(&content[0], 1, content.size(), fp);
+        std::fread(&data[0], 1, tot, fp);
         std::fclose(fp);
+        content.append(data, 0, tot);
+        delete[] data;
     }
+
+    /*
+    std::stringstream sstream;
+    std::ifstream infile;
+    infile.open(path, std::ios::binary);
+    if(infile)
+    {
+        sstream<<infile.rdbuf();
+        infile.close();
+        content = sstream.str();
+    }
+    */
     return content;
 }
 
@@ -747,12 +761,12 @@ bool fileCopy(const std::string &source, const std::string &dest)
 
 std::string fileToBase64(const std::string &filepath)
 {
-    return base64_encode(fileGet(filepath, true));
+    return base64_encode(fileGet(filepath));
 }
 
 std::string fileGetMD5(const std::string &filepath)
 {
-    return getMD5(fileGet(filepath, true));
+    return getMD5(fileGet(filepath));
 }
 
 int fileWrite(const std::string &path, const std::string &content, bool overwrite)
