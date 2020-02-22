@@ -24,7 +24,7 @@ std::vector<ruleset_content> ruleset_content_array;
 std::string listen_address = "127.0.0.1", default_url, insert_url, managed_config_prefix;
 int listen_port = 25500, max_pending_connections = 10, max_concurrent_threads = 4;
 bool api_mode = true, write_managed_config = false, enable_rule_generator = true, update_ruleset_on_request = false, overwrite_original_rules = true;
-bool print_debug_info = false, cfw_child_process = false, append_userinfo = true;
+bool print_debug_info = false, cfw_child_process = false, append_userinfo = true, enable_base_gen = false;
 std::string access_token;
 extern std::string custom_group;
 
@@ -503,6 +503,7 @@ void readYAMLConf(YAML::Node &node)
         node["advanced"]["print_debug_info"] >> print_debug_info;
         node["advanced"]["max_pending_connections"] >> max_pending_connections;
         node["advanced"]["max_concurrent_threads"] >> max_concurrent_threads;
+        node["advanced"]["enable_base_gen"] >> enable_base_gen;
         if(node["advanced"]["enable_cache"].IsDefined())
         {
             if(node["advanced"]["enable_cache"].as<bool>())
@@ -701,6 +702,8 @@ void readConf()
         max_pending_connections = ini.GetInt("max_pending_connections");
     if(ini.ItemExist("max_concurrent_threads"))
         max_concurrent_threads = ini.GetInt("max_concurrent_threads");
+    if(ini.ItemExist("enable_base_gen"))
+        enable_base_gen = ini.GetBool("enable_base_gen");
     if(ini.ItemExist("enable_cache"))
     {
         if(ini.GetBool("enable_cache"))
@@ -858,6 +861,8 @@ int loadExternalConfig(std::string &path, ExternalConfig &ext)
 
 void generateBase()
 {
+    if(!enable_base_gen)
+        return;
     std::string base_content;
     int retVal = 0;
     std::cerr<<"Generating base content for Clash/R...\n";
@@ -874,6 +879,8 @@ void generateBase()
     {
         std::cerr<<"Unable to load Clash base content. Reason: "<<e.msg<<"\n";
     }
+    // mellow base generate removed for now
+    /*
     std::cerr<<"Generating base content for Mellow...\n";
     if(fileExist(mellow_rule_base))
         base_content = fileGet(mellow_rule_base);
@@ -886,6 +893,7 @@ void generateBase()
         std::cerr<<"Unable to load Mellow base content. Reason: "<<mellow_base.GetLastError()<<"\n";
     else
         rulesetToSurge(mellow_base, ruleset_content_array, 0, overwrite_original_rules, std::string());
+    */
 }
 
 std::string subconverter(RESPONSE_CALLBACK_ARGS)
@@ -1117,7 +1125,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
             netchToClash(nodes, yamlnode, dummy_group, target == "clashr", ext);
             output_content = YAML::Dump(yamlnode);
         }
-        else if(ruleset_updated || update_ruleset_on_request || ext_clash_base != clash_rule_base)
+        else if(ruleset_updated || update_ruleset_on_request || ext_clash_base != clash_rule_base || !enable_base_gen)
         {
             if(fileExist(ext_clash_base))
                 base_content = fileGet(ext_clash_base);
@@ -1180,7 +1188,8 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     else if(target == "mellow")
     {
         std::cerr<<"Mellow"<<std::endl;
-        if(ruleset_updated || update_ruleset_on_request || ext_mellow_base != mellow_rule_base)
+        // mellow base generator removed for now
+        //if(ruleset_updated || update_ruleset_on_request || ext_mellow_base != mellow_rule_base || !enable_base_gen)
         {
             if(fileExist(ext_mellow_base))
                 base_content = fileGet(ext_mellow_base);
@@ -1189,6 +1198,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
 
             output_content = netchToMellow(nodes, base_content, rca, extra_group, ext);
         }
+        /*
         else
         {
             INIReader ini;
@@ -1196,6 +1206,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
             netchToMellow(nodes, ini, rca, extra_group, ext);
             output_content = ini.ToString();
         }
+        */
 
         if(upload == "true")
             uploadGist("mellow", upload_path, output_content, true);

@@ -80,7 +80,8 @@ server:
 advanced:
   print_debug_info: false
   max_pending_connections: 10240
-  max_concurrent_threads: 4
+  max_concurrent_threads: 2
+  enable_base_gen: false
   enable_cache: false
   cache_subscription: 60
   cache_config: 300
