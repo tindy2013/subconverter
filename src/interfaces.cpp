@@ -971,6 +971,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     ext.surge_ssr_path = surge_ssr_path;
     ext.quanx_dev_id = dev_id.size() ? dev_id : quanx_script_id;
     ext.enable_rule_generator = enable_rule_generator;
+    ext.overwrite_original_rules = overwrite_original_rules;
     if(expand != "true")
         ext.managed_config_prefix = managed_config_prefix;
 

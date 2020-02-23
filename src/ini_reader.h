@@ -268,7 +268,7 @@ public:
                 eraseElements(itemGroup); //reset section storage
                 curSection = thisSection; //start a new section
             }
-            else if((store_any_line || inDirectSaveSection) && !inExcludedSection && curSection.size()) //store a line without name
+            else if(((store_any_line && strLine.find("=") == strLine.npos) || inDirectSaveSection) && !inExcludedSection && curSection.size()) //store a line without name
             {
                 itemGroup.emplace("{NONAME}", strLine);
             }
