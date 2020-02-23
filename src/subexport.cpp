@@ -874,6 +874,11 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
     string_array vArray, remarks_list, filtered_nodelist, args;
 
     ini.store_any_line = true;
+    // filter out sections that requires direct-save
+    ini.AddDirectSaveSection("Rule");
+    ini.AddDirectSaveSection("Script");
+    ini.AddDirectSaveSection("URL Rewrite");
+    ini.AddDirectSaveSection("Header Rewrite");
     if(ini.Parse(base_conf) != 0 && !ext.nodelist)
         return std::string();
 
@@ -1566,6 +1571,7 @@ std::string netchToQuanX(std::vector<nodeInfo> &nodes, std::string &base_conf, s
 {
     INIReader ini;
     ini.store_any_line = true;
+    ini.AddDirectSaveSection("rewrite_local");
     if(!ext.nodelist && ini.Parse(base_conf) != 0)
         return std::string();
 
