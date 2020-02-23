@@ -1702,6 +1702,7 @@ void netchToQuanX(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rule
             proxyStr += ", udp-relay=true";
         proxyStr += ", tag=" + remark;
 
+        remarks_list.push_back(remark);
         ini.Set("{NONAME}", proxyStr);
         nodelist.emplace_back(x);
     }
@@ -2226,7 +2227,7 @@ std::string netchToLoon(std::vector<nodeInfo> &nodes, std::string &base_conf, st
                 if(pluginopts.size())
                     proxy += "," + replace_all_distinct(replace_all_distinct(pluginopts, ";obfs-host=", ","), "obfs=", "");
             }
-            else
+            else if(plugin.size())
                 continue;
             break;
         case SPEEDTEST_MESSAGE_FOUNDVMESS:

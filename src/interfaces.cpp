@@ -1571,7 +1571,7 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
 
 std::string getProfile(RESPONSE_CALLBACK_ARGS)
 {
-    std::string name = UrlDecode(getUrlArg(argument, "name")), token = UrlDecode(getUrlArg(argument, "token"));
+    std::string name = UrlDecode(getUrlArg(argument, "name")), token = UrlDecode(getUrlArg(argument, "token")), expand = getUrlArg(argument, "expand");
     if(token != access_token)
     {
         *status_code = 403;
@@ -1600,6 +1600,7 @@ std::string getProfile(RESPONSE_CALLBACK_ARGS)
         return "Broken profile!";
     }
     contents.emplace("token", token);
+    contents.emplace("expand", expand);
     std::string query;
     for(auto &x : contents)
     {
@@ -1732,11 +1733,12 @@ void simpleGenerator()
         if(ini.ItemExist("profile"))
         {
             profile = ini.Get("profile");
-            content = getProfile("name=" + UrlEncode(profile) + "&token=" + access_token, dummy_str, &ret_code, dummy_map);
+            content = getProfile("name=" + UrlEncode(profile) + "&token=" + access_token + "&expand=true", dummy_str, &ret_code, dummy_map);
         }
         else
         {
             ini.GetItems(allItems);
+            allItems.emplace("expand", "true");
             for(auto &y : allItems)
             {
                 if(y.first == "path")
