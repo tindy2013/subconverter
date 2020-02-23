@@ -1533,8 +1533,16 @@ void netchToQuan(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rules
             break;
         case "fallback"_hash:
             type = "static";
+            if(vArray.size() < 5)
+                continue;
+            rules_upper_bound -= 2;
+            break;
         case "url-test"_hash:
             type = "auto";
+            if(vArray.size() < 5)
+                continue;
+            rules_upper_bound -= 2;
+            break;
         case "load-balance"_hash:
             type = "balance, round-robin";
             if(vArray.size() < 5)
@@ -1728,6 +1736,10 @@ void netchToQuanX(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rule
         case "url-test"_hash:
         case "fallback"_hash:
             type = "available";
+            if(rules_upper_bound < 5)
+                continue;
+            rules_upper_bound -= 2;
+            break;
         case "load-balance"_hash:
             type = "round-robin";
             if(rules_upper_bound < 5)
