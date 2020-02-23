@@ -10,7 +10,7 @@
 #include "webget.h"
 
 extern std::string pref_path, access_token, listen_address;
-extern bool api_mode, cfw_child_process, update_ruleset_on_request;
+extern bool api_mode, generator_mode, cfw_child_process, update_ruleset_on_request;
 extern int listen_port, max_concurrent_threads, max_pending_connections;
 extern string_array rulesets;
 extern std::vector<ruleset_content> ruleset_content_array;
@@ -58,6 +58,8 @@ void chkArg(int argc, char *argv[])
         }
         else if(strcmp(argv[i], "-f") == 0 || strcmp(argv[i], "--file") == 0)
             pref_path.assign(argv[++i]);
+        else if(strcmp(argv[i], "-g") == 0 || strcmp(argv[i], "--gen") == 0)
+            generator_mode = true;
     }
 }
 
@@ -109,6 +111,12 @@ int main(int argc, char *argv[])
     if(!update_ruleset_on_request)
         refreshRulesets(rulesets, ruleset_content_array);
     generateBase();
+
+    if(generator_mode)
+    {
+        simpleGenerator();
+        return 0;
+    }
 
     append_response("GET", "/", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {

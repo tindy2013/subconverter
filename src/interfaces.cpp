@@ -54,7 +54,7 @@ string_array regex_blacklist = {"(.*)*"};
 
 template <typename T> void operator >> (const YAML::Node& node, T& i)
 {
-    if(node.IsDefined()) //fail-safe
+    if(node.IsDefined() && !node.IsNull()) //fail-safe
         i = node.as<T>();
 };
 
@@ -864,7 +864,6 @@ void generateBase()
     if(!enable_base_gen)
         return;
     std::string base_content;
-    int retVal = 0;
     std::cerr<<"Generating base content for Clash/R...\n";
     if(fileExist(clash_rule_base))
         base_content = fileGet(clash_rule_base);
@@ -888,8 +887,7 @@ void generateBase()
         base_content = webGet(mellow_rule_base, getSystemProxy());
     mellow_base.keep_empty_section = true;
     mellow_base.store_any_line = true;
-    retVal = mellow_base.Parse(base_content);
-    if(retVal != INIREADER_EXCEPTION_NONE)
+    if(mellow_base.Parse(base_content) != INIREADER_EXCEPTION_NONE)
         std::cerr<<"Unable to load Mellow base content. Reason: "<<mellow_base.GetLastError()<<"\n";
     else
         rulesetToSurge(mellow_base, ruleset_content_array, 0, overwrite_original_rules, std::string());
@@ -932,7 +930,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     }
 
     //check if we need to read configuration
-    if(!api_mode || cfw_child_process)
+    if((!api_mode || cfw_child_process) && !generator_mode)
         readConf();
 
     //check for proxy settings
@@ -1692,4 +1690,69 @@ std::string getRewriteRemote(RESPONSE_CALLBACK_ARGS)
         }
     }
     return output_content;
+}
+
+
+void simpleGenerator()
+{
+    std::cerr<<"\nReading generator configuration...\n";
+    std::string config = fileGet("generate.ini"), path, profile, arguments, content;
+    if(config.empty())
+    {
+        std::cerr<<"Generator configuration not found or empty!\n";
+        return;
+    }
+
+    INIReader ini;
+    if(ini.Parse(config) != INIREADER_EXCEPTION_NONE)
+    {
+        std::cerr<<"Generator configuration broken! Reason:"<<ini.GetLastError()<<"\n";
+        return;
+    }
+    std::cerr<<"Read generator configuration completed.\n\n";
+
+    string_array sections = ini.GetSections();
+    string_multimap allItems;
+    std::string dummy_str;
+    std::map<std::string, std::string> dummy_map;
+    int ret_code = 200;
+    for(std::string &x : sections)
+    {
+        arguments.clear();
+        ret_code = 200;
+        std::cerr<<"Generating artifact '"<<x<<"'...\n";
+        ini.EnterSection(x);
+        if(ini.ItemExist("path"))
+            path = ini.Get("path");
+        else
+        {
+            std::cerr<<"Artifact '"<<x<<"' output path missing! Skipping...\n\n";
+            continue;
+        }
+        if(ini.ItemExist("profile"))
+        {
+            profile = ini.Get("profile");
+            content = getProfile("name=" + UrlEncode(profile) + "&token=" + access_token, dummy_str, &ret_code, dummy_map);
+        }
+        else
+        {
+            ini.GetItems(allItems);
+            for(auto &y : allItems)
+            {
+                if(y.first == "path")
+                    continue;
+                arguments += y.first + "=" + UrlEncode(y.second) + "&";
+            }
+            arguments.erase(arguments.size() - 1);
+            content = subconverter(arguments, dummy_str, &ret_code, dummy_map);
+        }
+        if(ret_code != 200)
+        {
+            std::cerr<<"Artifact '"<<x<<"' generate ERROR! Reason: "<<content<<"\n\n";
+            continue;
+        }
+        fileWrite(path, content, true);
+        std::cerr<<"Artifact '"<<x<<"' generate SUCCESS!\n\n";
+    }
+    std::cerr<<"All artifact generated. Exiting...\n";
 }
