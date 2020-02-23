@@ -789,20 +789,23 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
         singlegroup["name"] = vArray[0];
         singlegroup["type"] = vArray[1];
 
-        if(vArray[1] == "select")
+        rules_upper_bound = vArray.size();
+        switch(hash_(vArray[1]))
         {
-            rules_upper_bound = vArray.size();
-        }
-        else if(vArray[1] == "url-test" || vArray[1] == "fallback" || vArray[1] == "load-balance")
-        {
-            if(vArray.size() < 5)
+        case "select"_hash:
+            break;
+        case "url-test"_hash:
+        case "fallback"_hash:
+        case "load-balance"_hash:
+            if(rules_upper_bound < 5)
                 continue;
-            rules_upper_bound = vArray.size() - 2;
-            singlegroup["url"] = vArray[vArray.size() - 2];
-            singlegroup["interval"] = to_int(vArray[vArray.size() - 1]);
-        }
-        else
+            rules_upper_bound -= 2;
+            singlegroup["url"] = vArray[rules_upper_bound];
+            singlegroup["interval"] = to_int(vArray[rules_upper_bound + 1]);
+            break;
+        default:
             continue;
+        }
 
         for(unsigned int i = 2; i < rules_upper_bound; i++)
             groupGenerate(vArray[i], nodelist, filtered_nodelist, true);
@@ -1043,14 +1046,14 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
             break;
         case "url-test"_hash:
         case "fallback"_hash:
-            if(vArray.size() < 5)
+            if(rules_upper_bound < 5)
                 continue;
             rules_upper_bound -= 2;
             url = vArray[rules_upper_bound];
             interval = to_int(vArray[rules_upper_bound + 1]);
             break;
         case "ssid"_hash:
-            if(vArray.size() < 4)
+            if(rules_upper_bound < 4)
                 continue;
             proxy = vArray[1] + ",default=" + vArray[2] + ",";
             proxy += std::accumulate(vArray.begin() + 4, vArray.end(), vArray[3], [](std::string a, std::string b)
@@ -1058,7 +1061,6 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
                 return std::move(a) + "," + std::move(b);
             });
             ini.Set("{NONAME}", vArray[0] + " = " + proxy); //insert order
-            continue;
         default:
             continue;
         }
@@ -1728,9 +1730,10 @@ void netchToQuanX(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rule
             type = "available";
         case "load-balance"_hash:
             type = "round-robin";
-            if(vArray.size() < 5)
+            if(rules_upper_bound < 5)
                 continue;
             rules_upper_bound -= 2;
+            break;
         default:
             continue;
         }
@@ -2091,6 +2094,7 @@ void netchToMellow(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rul
                 continue;
             rules_upper_bound -= 2;
             url = vArray[vArray.size() - 2];
+            break;
         default:
             continue;
         }
@@ -2314,7 +2318,6 @@ std::string netchToLoon(std::vector<nodeInfo> &nodes, std::string &base_conf, st
                 return std::move(a) + "," + std::move(b);
             });
             ini.Set("{NONAME}", vArray[0] + " = " + proxy); //insert order
-            continue;
         default:
             continue;
         }
