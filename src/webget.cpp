@@ -57,7 +57,7 @@ static std::string curlGet(std::string url, std::string proxy, std::string &resp
 {
     CURL *curl_handle;
     std::string data;
-    int retVal = 0;
+    long retVal = 0;
 
     curl_init();
 
@@ -164,7 +164,7 @@ int curlPost(std::string url, std::string data, std::string proxy, std::string a
     CURL *curl_handle;
     CURLcode res;
     struct curl_slist *list = NULL;
-    int retVal = 0;
+    long retVal = 0;
 
     curl_init();
     curl_handle = curl_easy_init();
@@ -200,7 +200,7 @@ int curlPatch(std::string url, std::string data, std::string proxy, std::string 
 {
     CURL *curl_handle;
     CURLcode res;
-    int retVal = 0;
+    long retVal = 0;
     struct curl_slist *list = NULL;
 
     curl_init();
