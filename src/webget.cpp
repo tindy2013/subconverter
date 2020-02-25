@@ -57,6 +57,7 @@ static std::string curlGet(std::string url, std::string proxy, std::string &resp
 {
     CURL *curl_handle;
     std::string data;
+    int retVal = 0;
 
     curl_init();
 
@@ -70,10 +71,12 @@ static std::string curlGet(std::string url, std::string proxy, std::string &resp
         curl_easy_setopt(curl_handle, CURLOPT_PROXY, proxy.data());
 
     return_code = curl_easy_perform(curl_handle);
+    curl_easy_getinfo(curl_handle, CURLINFO_HTTP_CODE, &retVal);
     curl_easy_cleanup(curl_handle);
 
-    if(return_code != CURLE_OK)
+    if(return_code != CURLE_OK || retVal != 200)
         data.clear();
+    data.shrink_to_fit();
 
     return data;
 }

@@ -18,7 +18,6 @@
 
 //common settings
 std::string pref_path = "pref.ini";
-bool generator_mode = false;
 string_array def_exclude_remarks, def_include_remarks, rulesets, stream_rules, time_rules;
 std::vector<ruleset_content> ruleset_content_array;
 std::string listen_address = "127.0.0.1", default_url, insert_url, managed_config_prefix;
@@ -27,6 +26,10 @@ bool api_mode = true, write_managed_config = false, enable_rule_generator = true
 bool print_debug_info = false, cfw_child_process = false, append_userinfo = true, enable_base_gen = false;
 std::string access_token;
 extern std::string custom_group;
+
+//generator settings
+bool generator_mode = false;
+std::string gen_profile;
 
 //multi-thread lock
 std::mutex on_configuring;
@@ -901,7 +904,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     std::string append_type = getUrlArg(argument, "append_type"), tfo = getUrlArg(argument, "tfo"), udp = getUrlArg(argument, "udp"), nodelist = getUrlArg(argument, "list");
     std::string include = UrlDecode(getUrlArg(argument, "include")), exclude = UrlDecode(getUrlArg(argument, "exclude")), sort_flag = getUrlArg(argument, "sort");
     std::string scv = getUrlArg(argument, "scv"), fdn = getUrlArg(argument, "fdn"), expand = getUrlArg(argument, "expand"), append_sub_userinfo = getUrlArg(argument, "append_info");
-    std::string dev_id = getUrlArg(argument, "dev_id"), filename = UrlDecode(getUrlArg(argument, "filename")), interval_str = getUrlArg(argument, "interval"), strict_str = getUrlArg(argument, "strict");
+    std::string dev_id = getUrlArg(argument, "dev_id"), filename = getUrlArg(argument, "filename"), interval_str = getUrlArg(argument, "interval"), strict_str = getUrlArg(argument, "strict");
     std::string base_content, output_content;
     string_array extra_group, extra_ruleset, include_remarks, exclude_remarks;
     std::string groups = urlsafe_base64_decode(getUrlArg(argument, "groups")), ruleset = urlsafe_base64_decode(getUrlArg(argument, "ruleset")), config = UrlDecode(getUrlArg(argument, "config"));
@@ -1695,25 +1698,46 @@ std::string getRewriteRemote(RESPONSE_CALLBACK_ARGS)
 }
 
 
-void simpleGenerator()
+int simpleGenerator()
 {
     std::cerr<<"\nReading generator configuration...\n";
     std::string config = fileGet("generate.ini"), path, profile, arguments, content;
     if(config.empty())
     {
         std::cerr<<"Generator configuration not found or empty!\n";
-        return;
+        return -1;
     }
 
     INIReader ini;
     if(ini.Parse(config) != INIREADER_EXCEPTION_NONE)
     {
         std::cerr<<"Generator configuration broken! Reason:"<<ini.GetLastError()<<"\n";
-        return;
+        return -2;
     }
     std::cerr<<"Read generator configuration completed.\n\n";
 
     string_array sections = ini.GetSections();
+    if(gen_profile.size())
+    {
+        std::cerr<<"Generating with specific artifacts: \""<<gen_profile<<"\"...\n";
+        string_array targets = split(gen_profile, ","), new_targets;
+        for(std::string &x : targets)
+        {
+            x = trim(x);
+            if(std::find(sections.cbegin(), sections.cend(), x) != sections.cend())
+                new_targets.emplace_back(x);
+            else
+            {
+                std::cerr<<"Artifact \""<<x<<"\" not found in generator settings!\n";
+                return -3;
+            }
+        }
+        sections = new_targets;
+        sections.shrink_to_fit();
+    }
+    else
+        std::cerr<<"Generating all artifacts...\n";
+
     string_multimap allItems;
     std::string dummy_str;
     std::map<std::string, std::string> dummy_map;
@@ -1758,4 +1782,5 @@ void simpleGenerator()
         std::cerr<<"Artifact '"<<x<<"' generate SUCCESS!\n\n";
     }
     std::cerr<<"All artifact generated. Exiting...\n";
+    return 0;
 }

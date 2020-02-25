@@ -9,7 +9,7 @@
 #include "socket.h"
 #include "webget.h"
 
-extern std::string pref_path, access_token, listen_address;
+extern std::string pref_path, access_token, listen_address, gen_profile;
 extern bool api_mode, generator_mode, cfw_child_process, update_ruleset_on_request;
 extern int listen_port, max_concurrent_threads, max_pending_connections;
 extern string_array rulesets;
@@ -60,6 +60,8 @@ void chkArg(int argc, char *argv[])
             pref_path.assign(argv[++i]);
         else if(strcmp(argv[i], "-g") == 0 || strcmp(argv[i], "--gen") == 0)
             generator_mode = true;
+        else if(strcmp(argv[i], "--artifact") == 0)
+            gen_profile.assign(argv[++i]);
     }
 }
 
@@ -113,10 +115,7 @@ int main(int argc, char *argv[])
     generateBase();
 
     if(generator_mode)
-    {
-        simpleGenerator();
-        return 0;
-    }
+        return simpleGenerator();
 
     append_response("GET", "/", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
