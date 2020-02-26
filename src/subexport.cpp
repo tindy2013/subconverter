@@ -1415,11 +1415,13 @@ std::string netchToQuan(std::vector<nodeInfo> &nodes, std::string &base_conf, st
     if(ext.nodelist)
     {
         string_array allnodes;
+        std::string allLinks;
         ini.GetAll("SERVER", "{NONAME}", allnodes);
-        std::string allLinks = std::accumulate(std::next(allnodes.begin()), allnodes.end(), allnodes[0], [](std::string a, std::string b)
-        {
-            return std::move(a) + "\n" + std::move(b);
-        });
+        if(allnodes.size())
+            allLinks = std::accumulate(std::next(allnodes.begin()), allnodes.end(), allnodes[0], [](std::string a, std::string b)
+            {
+                return std::move(a) + "\n" + std::move(b);
+            });
         return base64_encode(allLinks);
     }
     return ini.ToString();
@@ -1639,11 +1641,13 @@ std::string netchToQuanX(std::vector<nodeInfo> &nodes, std::string &base_conf, s
     if(ext.nodelist)
     {
         string_array allnodes;
+        std::string allLinks;
         ini.GetAll("server_local", "{NONAME}", allnodes);
-        std::string allLinks = std::accumulate(std::next(allnodes.begin()), allnodes.end(), allnodes[0], [](std::string a, std::string b)
-        {
-            return std::move(a) + "\n" + std::move(b);
-        });
+        if(allnodes.size())
+            allLinks = std::accumulate(std::next(allnodes.begin()), allnodes.end(), allnodes[0], [](std::string a, std::string b)
+            {
+                return std::move(a) + "\n" + std::move(b);
+            });
         return allLinks;
     }
     return ini.ToString();
