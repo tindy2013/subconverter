@@ -521,12 +521,13 @@ bool regValid(const std::string &reg)
     }
 }
 
-bool regFind(const std::string &src, const std::string &target)
+bool regFind(const std::string &src, const std::string &match)
 {
     try
     {
         std::regex::flag_type flags = std::regex::extended | std::regex::ECMAScript;
-        if(target.find("(?i)") == 0)
+        std::string target = match;
+        if(match.find("(?i)") == 0)
         {
             target.erase(0, 4);
             flags |= std::regex::icase;
@@ -546,12 +547,13 @@ std::string regReplace(const std::string &src, const std::string &match, const s
     try
     {
         std::regex::flag_type flags = std::regex::extended | std::regex::ECMAScript;
+        std::string target = match;
         if(match.find("(?i)") == 0)
         {
-            match.erase(0, 4);
+            target.erase(0, 4);
             flags |= std::regex::icase;
         }
-        std::regex reg(match, flags);
+        std::regex reg(target, flags);
         regex_replace(back_inserter(result), src.begin(), src.end(), reg, rep);
     }
     catch (std::regex_error &e)
@@ -566,12 +568,13 @@ bool regMatch(const std::string &src, const std::string &match)
     try
     {
         std::regex::flag_type flags = std::regex::extended | std::regex::ECMAScript;
+        std::string target = match;
         if(match.find("(?i)") == 0)
         {
-            match.erase(0, 4);
+            target.erase(0, 4);
             flags |= std::regex::icase;
         }
-        std::regex reg(match, flags);
+        std::regex reg(target, flags);
         return regex_match(src, reg);
     }
     catch (std::regex_error &e)
