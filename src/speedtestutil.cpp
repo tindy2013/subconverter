@@ -556,6 +556,8 @@ void explodeSocks(std::string link, std::string custom_port, nodeInfo &node)
         }
         link = urlsafe_base64_decode(link.substr(8));
         arguments = split(link, ":");
+        if(arguments.size() < 2)
+            return;
         server = arguments[0];
         port = arguments[1];
     }
@@ -608,8 +610,11 @@ void explodeQuan(std::string quan, std::string custom_port, int local_port, node
     std::vector<std::string> configs, vArray;
     strTemp = regReplace(quan, "(.*?) = (.*)", "$1,$2");
     configs = split(strTemp, ",");
+
     if(configs[1] == "vmess")
     {
+        if(configs.size() < 6)
+            return;
         ps = trim(configs[0]);
         add = trim(configs[2]);
         port = custom_port.size() ? custom_port : trim(configs[3]);
@@ -939,6 +944,8 @@ void explodeShadowrocket(std::string rocket, std::string custom_port, int local_
     rocket = rocket.substr(0, rocket.find("?"));
 
     userinfo = split(regReplace(urlsafe_base64_decode(rocket), "(.*?):(.*?)@(.*):(.*)", "$1,$2,$3,$4"), ",");
+    if(userinfo.size() != 4) // broken link
+        return;
     cipher = userinfo[0];
     id = userinfo[1];
     add = userinfo[2];
@@ -994,6 +1001,8 @@ void explodeKitsunebi(std::string kit, std::string custom_port, int local_port, 
     kit = kit.substr(0, kit.find("?"));
 
     userinfo = split(regReplace(kit, "(.*?)@(.*):(.*)", "$1,$2,$3"), ",");
+    if(userinfo.size() != 3)
+        return;
     id = userinfo[0];
     add = userinfo[1];
     if(strFind(userinfo[2], "/"))

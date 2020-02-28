@@ -1762,6 +1762,33 @@ int simpleGenerator()
         }
         else
         {
+            if(ini.GetBool("direct") == true)
+            {
+                std::string url = ini.Get("url");
+                if(fileExist(url))
+                    content = fileGet(url, false);
+                else
+                {
+                    //check for proxy settings
+                    std::string proxy;
+                    if(proxy_subscription == "SYSTEM")
+                        proxy = getSystemProxy();
+                    else if(proxy_subscription == "NONE")
+                        proxy = "";
+                    else
+                        proxy = proxy_subscription;
+                    content = webGet(url, proxy);
+                }
+                if(content.empty())
+                {
+                    std::cerr<<"Artifact '"<<x<<"' generate ERROR! Please check your link.\n\n";
+                    if(sections.size() == 1)
+                        return -1;
+                }
+                // add UTF-8 BOM
+                fileWrite(path, "\xEF\xBB\xBF" + content, true);
+                continue;
+            }
             ini.GetItems(allItems);
             allItems.emplace("expand", "true");
             for(auto &y : allItems)
@@ -1776,6 +1803,8 @@ int simpleGenerator()
         if(ret_code != 200)
         {
             std::cerr<<"Artifact '"<<x<<"' generate ERROR! Reason: "<<content<<"\n\n";
+            if(sections.size() == 1)
+                return -1;
             continue;
         }
         fileWrite(path, content, true);

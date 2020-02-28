@@ -87,9 +87,10 @@ int main(int argc, char *argv[])
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(1, 1), &wsaData) != 0)
     {
-        fprintf(stderr, "WSAStartup failed.\n");
+        std::cerr<<"WSAStartup failed.\n";
         return 1;
     }
+    UINT origcp = GetConsoleOutputCP();
     SetConsoleOutputCP(65001);
 #else
     signal(SIGPIPE, SIG_IGN);
@@ -115,7 +116,13 @@ int main(int argc, char *argv[])
     generateBase();
 
     if(generator_mode)
-        return simpleGenerator();
+    {
+        int retVal = simpleGenerator();
+#ifdef _WIN32
+        SetConsoleOutputCP(origcp);
+#endif // _WIN32
+        return retVal;
+    }
 
     append_response("GET", "/", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
