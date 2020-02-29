@@ -47,7 +47,7 @@ std::string getFormData(const std::string &raw_data);
 
 void sleep(int interval);
 bool regValid(const std::string &target);
-bool regFind(const std::string &src, const std::string &target);
+bool regFind(const std::string &src, const std::string &match);
 std::string regReplace(const std::string &src, const std::string &match, const std::string &rep);
 bool regMatch(const std::string &src, const std::string &match);
 std::string speedCalc(double speed);

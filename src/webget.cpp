@@ -1,6 +1,7 @@
 #include <iostream>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <mutex>
 
 #include <curl/curl.h>
 
@@ -16,6 +17,9 @@
 #endif // _WIN32
 
 extern bool print_debug_info;
+
+typedef std::lock_guard<std::mutex> guarded_mutex;
+std::mutex cache_rw_lock;
 
 //std::string user_agent_str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36";
 std::string user_agent_str = "subconverter/" + std::string(VERSION) + " cURL/" + std::string(LIBCURL_VERSION);
@@ -124,6 +128,7 @@ std::string webGet(std::string url, std::string proxy, std::string &response_hea
             if(difftime(now, mtime) <= cache_ttl) // within TTL
             {
                 writeLog(0, "CACHE HIT: '" + url + "', using local cache.");
+                guarded_mutex guard(cache_rw_lock);
                 response_headers = fileGet(path_header, true);
                 return fileGet(path, true);
             }
@@ -134,6 +139,7 @@ std::string webGet(std::string url, std::string proxy, std::string &response_hea
         content = curlGet(url, proxy, response_headers, return_code); // try to fetch data
         if(return_code == CURLE_OK) // success, save new cache
         {
+            guarded_mutex guard(cache_rw_lock);
             fileWrite(path, content, true);
             fileWrite(path_header, response_headers, true);
         }
@@ -142,6 +148,7 @@ std::string webGet(std::string url, std::string proxy, std::string &response_hea
             if(fileExist(path)) // failed, check if cache exist
             {
                 writeLog(0, "Fetch failed. Serving cached content."); // cache exist, serving cache
+                guarded_mutex guard(cache_rw_lock);
                 content = fileGet(path, true);
                 response_headers = fileGet(path_header, true);
             }
