@@ -1,0 +1,2 @@
+#!/bin/bash
+curl -L https://github.com/multiarch/qemu-user-static/releases/download/v4.2.0-6/x86_64_qemu-aarch64-static.tar.gz | tar zxvf - -C .
