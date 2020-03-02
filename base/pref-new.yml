@@ -22,10 +22,12 @@ userinfo:
   - {match: "^剩余流量：(.*?) (.*)$", replace: "total=$1&left=$2"}
   - {match: "^Bandwidth: (.*?)/(.*)$", replace: "used=$1&total=$2"}
   - {match: "^.*剩余(.*?)(?:\\s*?)@(?:.*)$", replace: "total=$1"}
+  - {match: "^.*?流量:(.*?) 剩:(?:.*)$", replace: "total=$1"}
   time_rule:
   - {match: "^过期时间：(\\d+)-(\\d+)-(\\d+) (\\d+):(\\d+):(\\d+)$", replace: "$1:$2:$3:$4:$5:$6"}
   - {match: "^到期时间:(\\d+)-(\\d+)-(\\d+)$", replace: "$1:$2:$3:0:0:0"}
   - {match: "^Smart Access expire: (\\d+)/(\\d+)/(\\d+)$", replace: "$1:$2:$3:0:0:0"}
+  - {match: "^.*?流量:(?:.*?) 剩:(.*?)天$", replace: "left=$1d"}
 
 node_pref:
   udp_flag: false

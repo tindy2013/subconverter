@@ -27,6 +27,7 @@ typedef jpcre2::select<char> jp;
 #include "misc.h"
 
 #ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
 //#include <io.h>
 #include <windows.h>
 #include <winreg.h>

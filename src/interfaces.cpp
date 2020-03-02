@@ -418,13 +418,13 @@ void readYAMLConf(YAML::Node &node)
         section = node["userinfo"];
         if(section["stream_rule"].IsSequence())
         {
-            readRegexMatch(section["stream_rule"], "@", tempArray);
+            readRegexMatch(section["stream_rule"], "|", tempArray);
             safe_set_streams(tempArray);
             eraseElements(tempArray);
         }
         if(section["time_rule"].IsSequence())
         {
-            readRegexMatch(section["time_rule"], "@", tempArray);
+            readRegexMatch(section["time_rule"], "|", tempArray);
             safe_set_times(tempArray);
             eraseElements(tempArray);
         }
@@ -1697,6 +1697,67 @@ std::string getRewriteRemote(RESPONSE_CALLBACK_ARGS)
     return output_content;
 }
 
+static inline std::string intToStream(unsigned long long stream)
+{
+    char chrs[16] = {};
+    double streamval = stream;
+    int level = 0;
+    while(streamval > 1024.0)
+    {
+        if(level >= 5)
+            break;
+        level++;
+        streamval /= 1024.0;
+    }
+    switch(level)
+    {
+    case 3:
+        snprintf(chrs, 15, "%.2f GB", streamval);
+        break;
+    case 4:
+        snprintf(chrs, 15, "%.2f TB", streamval);
+        break;
+    case 5:
+        snprintf(chrs, 15, "%.2f PB", streamval);
+        break;
+    case 2:
+        snprintf(chrs, 15, "%.2f MB", streamval);
+        break;
+    case 1:
+        snprintf(chrs, 15, "%.2f KB", streamval);
+        break;
+    case 0:
+        snprintf(chrs, 15, "%.2f B", streamval);
+        break;
+    }
+    return std::string(chrs);
+}
+
+std::string subInfoToMessage(std::string subinfo)
+{
+    typedef unsigned long long ull;
+    subinfo = replace_all_distinct(subinfo, "; ", "&");
+    std::string retdata, useddata = "N/A", totaldata = "N/A", expirydata = "N/A";
+    std::string upload = getUrlArg(subinfo, "upload"), download = getUrlArg(subinfo, "download"), total = getUrlArg(subinfo, "total"), expire = getUrlArg(subinfo, "expire");
+    ull used = to_number<ull>(upload, 0) + to_number<ull>(download, 0), tot = to_number<ull>(total, 0);
+    time_t expiry = to_number<time_t>(expire, 0);
+    if(used != 0)
+        useddata = intToStream(used);
+    if(tot != 0)
+        totaldata = intToStream(tot);
+    if(expiry != 0)
+    {
+        char buffer[30];
+        struct tm *dt = localtime(&expiry);
+        strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M", dt);
+        expirydata.assign(buffer);
+    }
+    if(useddata == "N/A" && totaldata == "N/A" && expirydata == "N/A")
+        retdata = "Not Available";
+    else
+        retdata += "Stream Used: " + useddata + " Stream Total: " + totaldata + " Expiry Time: " + expirydata;
+    return retdata;
+}
 
 int simpleGenerator()
 {
@@ -1740,7 +1801,7 @@ int simpleGenerator()
 
     string_multimap allItems;
     std::string dummy_str;
-    std::map<std::string, std::string> dummy_map;
+    std::map<std::string, std::string> headers;
     int ret_code = 200;
     for(std::string &x : sections)
     {
@@ -1758,7 +1819,7 @@ int simpleGenerator()
         if(ini.ItemExist("profile"))
         {
             profile = ini.Get("profile");
-            content = getProfile("name=" + UrlEncode(profile) + "&token=" + access_token + "&expand=true", dummy_str, &ret_code, dummy_map);
+            content = getProfile("name=" + UrlEncode(profile) + "&token=" + access_token + "&expand=true", dummy_str, &ret_code, headers);
         }
         else
         {
@@ -1798,7 +1859,7 @@ int simpleGenerator()
                 arguments += y.first + "=" + UrlEncode(y.second) + "&";
             }
             arguments.erase(arguments.size() - 1);
-            content = subconverter(arguments, dummy_str, &ret_code, dummy_map);
+            content = subconverter(arguments, dummy_str, &ret_code, headers);
         }
         if(ret_code != 200)
         {
@@ -1808,7 +1869,16 @@ int simpleGenerator()
             continue;
         }
         fileWrite(path, content, true);
+        for(auto &y : headers)
+        {
+            if(regMatch(y.first, "(?i)Subscription-UserInfo"))
+            {
+                std::cerr<<"User Info for artifact '"<<x<<"': "<<subInfoToMessage(y.second)<<"\n";
+                break;
+            }
+        }
         std::cerr<<"Artifact '"<<x<<"' generate SUCCESS!\n\n";
+        eraseElements(headers);
     }
     std::cerr<<"All artifact generated. Exiting...\n";
     return 0;

@@ -1,9 +1,10 @@
 #include <fstream>
 #include <algorithm>
 #include <cmath>
-
 #include <time.h>
 
+#define PCRE2_CODE_UNIT_WIDTH 8
+#include <pcre2.h>
 #include <rapidjson/document.h>
 
 #include "misc.h"
@@ -1423,14 +1424,14 @@ bool chkIgnore(const nodeInfo &node, string_array &exclude_remarks, string_array
     bool excluded = false, included = false;
     //std::string remarks = UTF8ToACP(node.remarks);
     std::string remarks = node.remarks;
-    writeLog(LOG_TYPE_INFO, "Comparing exclude remarks...");
+    //writeLog(LOG_TYPE_INFO, "Comparing exclude remarks...");
     excluded = std::any_of(exclude_remarks.cbegin(), exclude_remarks.cend(), [&remarks](auto &x)
     {
         return regFind(remarks, x);
     });
     if(include_remarks.size() != 0)
     {
-        writeLog(LOG_TYPE_INFO, "Comparing include remarks...");
+        //writeLog(LOG_TYPE_INFO, "Comparing include remarks...");
         included = std::any_of(include_remarks.cbegin(), include_remarks.cend(), [&remarks](auto &x)
         {
             return regFind(remarks, x);
@@ -1582,8 +1583,9 @@ void explodeSub(std::string sub, bool sslibev, bool ssrlibev, std::string custom
 
 void filterNodes(std::vector<nodeInfo> &nodes, string_array &exclude_remarks, string_array &include_remarks, int groupID)
 {
-    int index = 0;
+    int node_index = 0;
     std::vector<nodeInfo>::iterator iter = nodes.begin();
+    /*
     while(iter != nodes.end())
     {
         if(chkIgnore(*iter, exclude_remarks, include_remarks))
@@ -1594,12 +1596,92 @@ void filterNodes(std::vector<nodeInfo> &nodes, string_array &exclude_remarks, st
         else
         {
             writeLog(LOG_TYPE_INFO, "Node  " + iter->group + " - " + iter->remarks + "  has been added.");
-            iter->id = index;
+            iter->id = node_index;
             iter->groupID = groupID;
-            ++index;
+            ++node_index;
             ++iter;
         }
     }
+    */
+
+    bool excluded = false, included = false;
+    std::vector<std::unique_ptr<pcre2_code, decltype(&pcre2_code_free)>> exclude_patterns, include_patterns;
+    std::vector<std::unique_ptr<pcre2_match_data, decltype(&pcre2_match_data_free)>> exclude_match_data, include_match_data;
+    unsigned int i = 0;
+    PCRE2_SIZE erroroffset;
+    int errornumber, rc;
+
+    for(i = 0; i < exclude_remarks.size(); i++)
+    {
+        std::unique_ptr<pcre2_code, decltype(&pcre2_code_free)> pattern(pcre2_compile(reinterpret_cast<const unsigned char*>(exclude_remarks[i].c_str()), PCRE2_ZERO_TERMINATED | PCRE2_MULTILINE, 0, &errornumber, &erroroffset, NULL), &pcre2_code_free);
+        if(!pattern)
+            return;
+        exclude_patterns.push_back(std::move(pattern));
+        pcre2_jit_compile(exclude_patterns[i].get(), 0);
+        std::unique_ptr<pcre2_match_data, decltype(&pcre2_match_data_free)> match_data(pcre2_match_data_create_from_pattern(exclude_patterns[i].get(), NULL), &pcre2_match_data_free);
+        exclude_match_data.push_back(std::move(match_data));
+    }
+    for(i = 0; i < include_remarks.size(); i++)
+    {
+        std::unique_ptr<pcre2_code, decltype(&pcre2_code_free)> pattern(pcre2_compile(reinterpret_cast<const unsigned char*>(include_remarks[i].c_str()), PCRE2_ZERO_TERMINATED | PCRE2_MULTILINE, 0, &errornumber, &erroroffset, NULL), &pcre2_code_free);
+        if(!pattern)
+            return;
+        include_patterns.push_back(std::move(pattern));
+        pcre2_jit_compile(include_patterns[i].get(), 0);
+        std::unique_ptr<pcre2_match_data, decltype(&pcre2_match_data_free)> match_data(pcre2_match_data_create_from_pattern(include_patterns[i].get(), NULL), &pcre2_match_data_free);
+        include_match_data.push_back(std::move(match_data));
+    }
+    writeLog(LOG_TYPE_INFO, "Filter started.");
+    while(iter != nodes.end())
+    {
+        excluded = false;
+        included = false;
+        for(i = 0; i < exclude_patterns.size(); i++)
+        {
+            rc = pcre2_match(exclude_patterns[i].get(), reinterpret_cast<const unsigned char*>(iter->remarks.c_str()), iter->remarks.size(), 0, 0, exclude_match_data[i].get(), NULL);
+            if (rc < 0)
+            {
+                switch(rc)
+                {
+                case PCRE2_ERROR_NOMATCH: break;
+                default: return;
+                }
+            }
+            else
+                excluded = true;
+        }
+        if(include_patterns.size() > 0)
+            for(i = 0; i < include_patterns.size(); i++)
+            {
+                rc = pcre2_match(include_patterns[i].get(), reinterpret_cast<const unsigned char*>(iter->remarks.c_str()), iter->remarks.size(), 0, 0, include_match_data[i].get(), NULL);
+                if (rc < 0)
+                {
+                    switch(rc)
+                    {
+                    case PCRE2_ERROR_NOMATCH: break;
+                    default: return;
+                    }
+                }
+                else
+                    included = true;
+            }
+        else
+            included = true;
+        if(excluded || !included)
+        {
+            writeLog(LOG_TYPE_INFO, "Node  " + iter->group + " - " + iter->remarks + "  has been ignored and will not be added.");
+            nodes.erase(iter);
+        }
+        else
+        {
+            writeLog(LOG_TYPE_INFO, "Node  " + iter->group + " - " + iter->remarks + "  has been added.");
+            iter->id = node_index;
+            iter->groupID = groupID;
+            ++node_index;
+            ++iter;
+        }
+    }
+    writeLog(LOG_TYPE_INFO, "Filter done.");
 }
 
 static inline unsigned long long streamToInt(std::string stream)
@@ -1629,20 +1711,35 @@ static inline double percentToDouble(std::string percent)
 
 time_t dateStringToTimestamp(std::string date)
 {
-    std::vector<std::string> date_array = split(date, ":");
-    if(date_array.size() != 6)
-        return 0;
     time_t rawtime;
-    struct tm *expire_time;
     time(&rawtime);
-    expire_time = localtime(&rawtime);
-    expire_time->tm_year = to_int(date_array[0], 1900) - 1900;
-    expire_time->tm_mon = to_int(date_array[1], 1) - 1;
-    expire_time->tm_mday = to_int(date_array[2]);
-    expire_time->tm_hour = to_int(date_array[3]);
-    expire_time->tm_min = to_int(date_array[4]);
-    expire_time->tm_sec = to_int(date_array[5]);
-    return mktime(expire_time);
+    if(startsWith(date, "left="))
+    {
+        time_t seconds_left = 0;
+        date.erase(0, 5);
+        if(endsWith(date, "d"))
+        {
+            date.erase(date.size() - 1);
+            seconds_left = to_number<double>(date, 0.0) * 86400.0;
+        }
+        return rawtime + seconds_left;
+    }
+    else
+    {
+        struct tm *expire_time;
+        std::vector<std::string> date_array = split(date, ":");
+        if(date_array.size() != 6)
+            return 0;
+
+        expire_time = localtime(&rawtime);
+        expire_time->tm_year = to_int(date_array[0], 1900) - 1900;
+        expire_time->tm_mon = to_int(date_array[1], 1) - 1;
+        expire_time->tm_mday = to_int(date_array[2]);
+        expire_time->tm_hour = to_int(date_array[3]);
+        expire_time->tm_min = to_int(date_array[4]);
+        expire_time->tm_sec = to_int(date_array[5]);
+        return mktime(expire_time);
+    }
 }
 
 bool getSubInfoFromHeader(std::string &header, std::string &result)
