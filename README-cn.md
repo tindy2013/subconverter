@@ -228,8 +228,8 @@ http://127.0.0.1:25500/sub?target=%TARGET%&url=%URL%&emoji=%EMOJI%····
 | exclude |  可选  | 详见下文中 `exclude_remarks`  | 指排除匹配到的节点，支持正则匹配，需要经过 [URLEncode](https://www.urlencoder.org/) 处理，会覆盖配置文件里的设置  |
 | filename |  可选  | MySS  | 指定该链接生成的配置文件的文件名，可以在 Clash For Windows 等支持文件名的软件中显示出来  |
 | append_type |  可选  | true / false  | 用于在节点名称前插入节点类型，如 [SS],[SSR] 等  |
-| append_info |  可选  | true / false  | 用于输出包含流量或到期信息的节点，  |
-| expand  |  可选  | true / false  | 用于展开 QuantumultX，Surge 等完整配置文件的 **规则列表**, 默认为false，即指向 API 的远程规则  |
+| append_info |  可选  | true / false  | 用于输出包含流量或到期信息的节点, 默认为 true，设置为 false 则取消输出 |
+| expand  |  可选  | true / false  | 用于展开 QuantumultX，Surge 等完整配置文件的 **规则列表**，默认为false，即指向 API 的远程规则  |
 | dev_id  |  可选  | 92DSAFA  | 用于设置 QuantumultX 的远程设备 ID, 以在某些版本上开启远程脚本  |
 | interval  |  可选  | 43200  | 用于设置托管配置更新间隔，确定配置将更新多长时间，单位为秒  |
 | strict |  可选  | true / false   | 如果设置为 true，则 Surge 将在上述间隔后要求强制更新  |
