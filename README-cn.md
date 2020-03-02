@@ -11,7 +11,7 @@
 
 **新增内容**
 
-2020/03/02 添加 [进阶链接](#进阶链接) 中 `append_type` `append_info` `expand` `dev_id` `interval` `strict` 描述
+2020/03/02 添加 [进阶链接](#进阶链接) 中关于 `append_type` `append_info` `expand` `dev_id` `interval` `strict` 等参数的描述
 
 ---
 
