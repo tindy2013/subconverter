@@ -1,0 +1,8 @@
+# OneDrive
+PROCESS-NAME,OneDrive
+PROCESS-NAME,OneDriveUpdater
+USER-AGENT,OneDrive*
+USER-AGENT,OneDriveiOSApp*
+DOMAIN-SUFFIX,onedrive.com
+DOMAIN-SUFFIX,oneclient.sfx.ms
+DOMAIN-KEYWORD,1drv

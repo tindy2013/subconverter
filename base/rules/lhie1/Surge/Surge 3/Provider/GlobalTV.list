@@ -13,6 +13,7 @@ DOMAIN-SUFFIX,hayabusa.io
 USER-AGENT,InstantVideo.US*
 USER-AGENT,Prime%20Video*
 DOMAIN-SUFFIX,aiv-cdn.net
+DOMAIN-SUFFIX,amazonaws.co.uk
 DOMAIN-SUFFIX,amazonaws.com
 DOMAIN-SUFFIX,amazonvideo.com
 DOMAIN-SUFFIX,llnwd.net
@@ -111,15 +112,6 @@ DOMAIN-KEYWORD,rthklive
 DOMAIN-SUFFIX,mytvsuper.com
 DOMAIN-SUFFIX,tvb.com
 
-# > Netflix
-DOMAIN-SUFFIX,netflix.com
-DOMAIN-SUFFIX,netflix.net
-DOMAIN-SUFFIX,nflxext.com
-DOMAIN-SUFFIX,nflximg.com
-DOMAIN-SUFFIX,nflximg.net
-DOMAIN-SUFFIX,nflxso.net
-DOMAIN-SUFFIX,nflxvideo.net
-
 # > Pandora
 DOMAIN-SUFFIX,pandora.com
 
@@ -130,12 +122,6 @@ DOMAIN-SUFFIX,skygo.co.nz
 
 # > SoundCloud
 USER-AGENT,SoundCloud*
-
-# > Spotify
-USER-AGENT,*Spotify*
-DOMAIN-KEYWORD,spotify
-DOMAIN-SUFFIX,scdn.co
-DOMAIN-SUFFIX,spoti.fi
 
 # > viuTV
 USER-AGENT,ViuTV*
