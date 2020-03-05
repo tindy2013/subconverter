@@ -8,6 +8,7 @@
 #include "misc.h"
 #include "socket.h"
 #include "webget.h"
+#include "logger.h"
 
 extern std::string pref_path, access_token, listen_address, gen_profile;
 extern bool api_mode, generator_mode, cfw_child_process, update_ruleset_on_request;
@@ -67,7 +68,8 @@ void chkArg(int argc, char *argv[])
 
 void signal_handler(int sig)
 {
-    std::cerr<<"Interrupt signal "<<sig<<" received. Exiting gracefully...\n";
+    //std::cerr<<"Interrupt signal "<<sig<<" received. Exiting gracefully...\n";
+    writeLog(0, "Interrupt signal " + std::to_string(sig) + " received. Exiting gracefully...", LOG_LEVEL_FATAL);
     switch(sig)
     {
 #ifndef _WIN32
@@ -83,11 +85,13 @@ void signal_handler(int sig)
 
 int main(int argc, char *argv[])
 {
+    writeLog(0, "SubConverter " VERSION " starting up..", LOG_LEVEL_INFO);
 #ifdef _WIN32
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(1, 1), &wsaData) != 0)
     {
-        std::cerr<<"WSAStartup failed.\n";
+        //std::cerr<<"WSAStartup failed.\n";
+        writeLog(0, "WSAStartup failed.", LOG_LEVEL_FATAL);
         return 1;
     }
     UINT origcp = GetConsoleOutputCP();
@@ -101,7 +105,7 @@ int main(int argc, char *argv[])
     signal(SIGTERM, signal_handler);
     signal(SIGINT, signal_handler);
 
-    SetConsoleTitle("subconverter " VERSION);
+    SetConsoleTitle("SubConverter " VERSION);
 #ifndef _DEBUG
     std::string prgpath = argv[0];
     setcd(prgpath); //first switch to program directory
@@ -287,7 +291,8 @@ int main(int argc, char *argv[])
     if(env_port.size())
         listen_port = to_int(env_port, listen_port);
     listener_args args = {listen_address, listen_port, max_pending_connections, max_concurrent_threads};
-    std::cout<<"Serving HTTP @ http://"<<listen_address<<":"<<listen_port<<std::endl;
+    //std::cout<<"Serving HTTP @ http://"<<listen_address<<":"<<listen_port<<std::endl;
+    writeLog(0, "Startup completed. Serving HTTP @ http://" + listen_address + ":" + std::to_string(listen_port), LOG_LEVEL_INFO);
     start_web_server_multi(&args);
 
 #ifdef _WIN32

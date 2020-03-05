@@ -16,6 +16,7 @@
 #include "misc.h"
 #include "webserver.h"
 #include "socket.h"
+#include "logger.h"
 
 extern std::string user_agent_str;
 std::atomic_bool SERVER_EXIT_FLAG(false);
@@ -41,7 +42,8 @@ static inline void buffer_cleanup(struct evbuffer *eb)
 static inline int process_request(const char *method_str, std::string uri, std::string &postdata, std::string &content_type, std::string &return_data, int *status_code, std::map<std::string, std::string> &extra_headers)
 {
     std::string path, arguments;
-    std::cerr << "handle_cmd:    " << method_str << std::endl << "handle_uri:    " << uri << std::endl;
+    //std::cerr << "handle_cmd:    " << method_str << std::endl << "handle_uri:    " << uri << std::endl;
+    writeLog(0, "handle_cmd:    " + std::string(method_str) + " handle_uri:    " + uri, LOG_LEVEL_VERBOSE);
 
     if(strFind(uri, "?"))
     {
@@ -77,7 +79,8 @@ void OnReq(evhttp_request *req, void *args)
     char *client_ip;
     u_short client_port;
     evhttp_connection_get_peer(evhttp_request_get_connection(req), &client_ip, &client_port);
-    std::cerr<<"Accept connection from client "<<client_ip<<":"<<client_port<<"\n";
+    //std::cerr<<"Accept connection from client "<<client_ip<<":"<<client_port<<"\n";
+    writeLog(0, "Accept connection from client " + std::string(client_ip) + ":" + std::to_string(client_port), LOG_LEVEL_DEBUG);
     int retVal;
     std::string postdata, content_type, return_data;
 
@@ -154,7 +157,8 @@ int start_web_server(void *argv)
     int port = args->port;
     if (!event_init())
     {
-        std::cerr << "Failed to init libevent." << std::endl;
+        //std::cerr << "Failed to init libevent." << std::endl;
+        writeLog(0, "Failed to init libevent.", LOG_LEVEL_FATAL);
         return -1;
     }
     const char *SrvAddress = listen_address.c_str();
@@ -162,7 +166,8 @@ int start_web_server(void *argv)
     std::unique_ptr<evhttp, decltype(&evhttp_free)> Server(evhttp_start(SrvAddress, SrvPort), &evhttp_free);
     if (!Server)
     {
-        std::cerr << "Failed to init http server." << std::endl;
+        //std::cerr << "Failed to init http server." << std::endl;
+        writeLog(0, "Failed to init http server.", LOG_LEVEL_FATAL);
         return -1;
     }
 
@@ -171,7 +176,8 @@ int start_web_server(void *argv)
     evhttp_set_timeout(Server.get(), 30);
     if (event_dispatch() == -1)
     {
-        std::cerr << "Failed to run message loop." << std::endl;
+        //std::cerr << "Failed to run message loop." << std::endl;
+        writeLog(0, "Failed to run message loop.", LOG_LEVEL_FATAL);
         return -1;
     }
 

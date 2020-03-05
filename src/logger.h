@@ -5,17 +5,30 @@
 
 #include "misc.h"
 
-#define LOG_TYPE_INFO 1
-#define LOG_TYPE_ERROR 2
-#define LOG_TYPE_RAW 3
-#define LOG_TYPE_WARN 4
-#define LOG_TYPE_TCPING 5
-#define LOG_TYPE_FILEDL 6
-#define LOG_TYPE_GEOIP 7
-#define LOG_TYPE_RULES 8
-#define LOG_TYPE_GPING 9
-#define LOG_TYPE_RENDER 10
-#define LOG_TYPE_FILEUL 11
+enum
+{
+    LOG_TYPE_INFO,
+    LOG_TYPE_ERROR,
+    LOG_TYPE_RAW,
+    LOG_TYPE_WARN,
+    LOG_TYPE_TCPING,
+    LOG_TYPE_FILEDL,
+    LOG_TYPE_GEOIP,
+    LOG_TYPE_RULES,
+    LOG_TYPE_GPING,
+    LOG_TYPE_RENDER,
+    LOG_TYPE_FILEUL
+};
+
+enum
+{
+    LOG_LEVEL_FATAL,
+    LOG_LEVEL_ERROR,
+    LOG_LEVEL_WARNING,
+    LOG_LEVEL_INFO,
+    LOG_LEVEL_DEBUG,
+    LOG_LEVEL_VERBOSE
+};
 
 extern std::string resultPath, logPath;
 
@@ -23,7 +36,7 @@ int makeDir(const char *path);
 std::string getTime(int type);
 void logInit(bool rpcmode);
 void resultInit();
-void writeLog(int type, std::string content);
+void writeLog(int type, std::string content, int level = LOG_LEVEL_VERBOSE);
 void logEOF();
 
 /*

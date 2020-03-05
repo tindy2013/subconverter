@@ -8,7 +8,7 @@ typedef uint64_t hash_t;
 constexpr hash_t prime = 0x100000001B3ull;
 constexpr hash_t basis = 0xCBF29CE484222325ull;
 
-hash_t hash_(char const* str)
+inline hash_t hash_(char const* str)
 {
     hash_t ret{basis};
     while(*str)
@@ -20,7 +20,7 @@ hash_t hash_(char const* str)
     return ret;
 }
 
-hash_t hash_(const std::string &str)
+inline hash_t hash_(const std::string &str)
 {
     return hash_(str.data());
 }

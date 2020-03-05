@@ -80,6 +80,7 @@ server:
   port: 25500
 
 advanced:
+  log_level: info
   print_debug_info: false
   max_pending_connections: 10240
   max_concurrent_threads: 2
