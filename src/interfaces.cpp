@@ -249,6 +249,7 @@ void readGroup(YAML::Node node, string_array &dest)
 
     for(i = 0; i < node.size(); i++)
     {
+        name.clear();
         eraseElements(tempArray);
         object = node[i];
         object["import"] >> name;
@@ -292,7 +293,8 @@ void readRuleset(YAML::Node node, string_array &dest)
 
     for(unsigned int i = 0; i < node.size(); i++)
     {
-        name = "";
+        url.clear();
+        name.clear();
         object = node[i];
         object["import"] >> name;
         if(name.size())

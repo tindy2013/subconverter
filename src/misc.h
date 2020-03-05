@@ -50,6 +50,7 @@ bool regValid(const std::string &target);
 bool regFind(const std::string &src, const std::string &match);
 std::string regReplace(const std::string &src, const std::string &match, const std::string &rep);
 bool regMatch(const std::string &src, const std::string &match);
+std::string regTrim(const std::string &src);
 std::string speedCalc(double speed);
 std::string getMD5(const std::string &data);
 bool isIPv4(const std::string &address);

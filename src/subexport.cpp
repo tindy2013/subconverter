@@ -403,10 +403,17 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset
         while(getline(strStrm, strLine, delimiter))
         {
             lineSize = strLine.size();
+            /*
             if(lineSize && strLine[lineSize - 1] == '\r') //remove line break
             {
                 strLine.erase(lineSize - 1);
                 lineSize--;
+            }
+            */
+            if(lineSize)
+            {
+                strLine = regTrim(strLine);
+                lineSize = strLine.size();
             }
             if(!lineSize || strLine[0] == ';' || strLine[0] == '#' || (lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')) //empty lines and comments are ignored
                 continue;
@@ -542,10 +549,17 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
             while(getline(strStrm, strLine, delimiter))
             {
                 lineSize = strLine.size();
+                /*
                 if(lineSize && strLine[lineSize - 1] == '\r') //remove line break
                 {
                     strLine.erase(lineSize - 1);
                     lineSize--;
+                }
+                */
+                if(lineSize)
+                {
+                    strLine = regTrim(strLine);
+                    lineSize = strLine.size();
                 }
                 if(!lineSize || strLine[0] == ';' || strLine[0] == '#' || (lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')) //empty lines and comments are ignored
                     continue;

@@ -618,7 +618,13 @@ bool regValid(const std::string &target)
     jp::Regex reg(target);
     return !!reg;
 }
+
 #endif // USE_STD_REGEX
+
+std::string regTrim(const std::string &src)
+{
+    return regReplace(src, "^\\s*?(.*?)\\s*$", "$1");
+}
 
 std::string speedCalc(double speed)
 {
