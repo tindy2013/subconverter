@@ -49,8 +49,8 @@ jobs:
           tags: true
     - name: "Linux ARMHF Build"
       services: docker
+      arch: arm64
       script:
-      - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
       - docker run --rm -v $TRAVIS_BUILD_DIR:/root/workdir multiarch/alpine:armhf-edge /bin/sh -c "apk add bash git && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
       before_deploy:
         - mv subconverter_linux64.tar.gz subconverter_armhf.tar.gz
