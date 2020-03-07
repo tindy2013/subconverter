@@ -204,6 +204,11 @@ int curlPost(std::string url, std::string data, std::string proxy, std::string a
     return retVal;
 }
 
+int webPost(std::string url, std::string data, std::string proxy, std::string auth_token, std::string *retData)
+{
+    return curlPost(url, data, proxy, auth_token, retData);
+}
+
 int curlPatch(std::string url, std::string data, std::string proxy, std::string auth_token, std::string *retData)
 {
     CURL *curl_handle;
@@ -240,4 +245,9 @@ int curlPatch(std::string url, std::string data, std::string proxy, std::string 
     curl_easy_cleanup(curl_handle);
 
     return retVal;
+}
+
+int webPatch(std::string url, std::string data, std::string proxy, std::string auth_token, std::string *retData)
+{
+    return curlPatch(url, data, proxy, auth_token, retData);
 }

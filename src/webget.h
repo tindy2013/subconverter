@@ -11,8 +11,8 @@
 
 std::string webGet(std::string url, std::string proxy);
 std::string webGet(std::string url, std::string proxy, std::string &response_headers, unsigned int cache_ttl = 0);
-int curlPost(std::string url, std::string data, std::string proxy, std::string auth_token, std::string *retData);
-int curlPatch(std::string url, std::string data, std::string proxy, std::string auth_token, std::string *retData);
+int webPost(std::string url, std::string data, std::string proxy, std::string auth_token, std::string *retData);
+int webPatch(std::string url, std::string data, std::string proxy, std::string auth_token, std::string *retData);
 std::string buildSocks5ProxyString(std::string addr, int port, std::string username, std::string password);
 
 // Unimplemented: (CURLOPT_HTTPHEADER: Host:)
