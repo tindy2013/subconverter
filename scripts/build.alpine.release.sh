@@ -1,5 +1,4 @@
 #!/bin/bash
-mkdir obj
 set -xe
 
 apk add gcc g++ build-base linux-headers cmake make autoconf automake libtool
@@ -13,10 +12,13 @@ cd ..
 
 cmake .
 make -j2
+rm subconverter
 g++ -o base/subconverter CMakeFiles/subconverter.dir/src/*.o  -static -lpcre2-8 -levent -lyaml-cpp -lcurl -lnghttp2 -lssl -lcrypto -lz -lbz2 -ldl -lpthread -O3 -s  
 
 cd base
 chmod +rx subconverter
 chmod +r *
+cd ..
+mv base subconverter
 
-tar czf ../subconverter_linux64.tar.gz *
+tar czf subconverter_linux64.tar.gz subconverter/

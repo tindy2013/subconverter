@@ -38,7 +38,7 @@ jobs:
     - name: "Linux x86_64 Build"
       services: docker
       script:
-      - docker run -v $TRAVIS_BUILD_DIR:/root/workdir alpine:latest /bin/sh -c "apk add bash git && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
+      - docker run -v $TRAVIS_BUILD_DIR:/root/workdir multiarch/alpine:amd64-edge /bin/sh -c "apk add bash git && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
       deploy:
         provider: releases
         token: "$GITHUB_OAUTH_TOKEN"
@@ -66,7 +66,7 @@ jobs:
       services: docker
       arch: arm64
       script:
-      - docker run -v $TRAVIS_BUILD_DIR:/root/workdir alpine:latest /bin/sh -c "apk add bash git && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
+      - docker run -v $TRAVIS_BUILD_DIR:/root/workdir multiarch/alpine:aarch64-edge /bin/sh -c "apk add bash git && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
       before_deploy:
         - mv subconverter_linux64.tar.gz subconverter_aarch64.tar.gz
       deploy:
@@ -76,4 +76,72 @@ jobs:
         skip_cleanup: true
         draft: true
         on:
+          tags: true    
+    - name: "Windows x86 Build"
+      os: windows
+      script:
+      - export shell="$mingw32"
+      - bash scripts/build.windows.sh
+      before_deploy:
+        - mv subconverter_win64.zip subconverter_win32.zip
+      deploy:
+        provider: releases
+        token: "$GITHUB_OAUTH_TOKEN"
+        file: "subconverter_win32.zip"
+        skip_cleanup: true
+        draft: true
+        on:
           tags: true
+    - name: "Windows x86_64 Build"
+      os: windows
+      script:
+      - export shell="$mingw64"
+      - bash scripts/build.windows.sh
+      deploy:
+        provider: releases
+        token: "$GITHUB_OAUTH_TOKEN"
+        file: "subconverter_win64.zip"
+        skip_cleanup: true
+        draft: true
+        on:
+          tags: true
+
+before_install:
+- |-
+    case $TRAVIS_OS_NAME in
+      windows)
+        [[ ! -f C:/tools/msys64/msys2_shell.cmd ]] && rm -rf C:/tools/msys64
+        choco uninstall -y mingw
+        choco upgrade --no-progress -y msys2
+        export msys2='cmd //C RefreshEnv.cmd '
+        export msys2+='& set MSYS=winsymlinks:nativestrict '
+        export msys2+='& C:\\tools\\msys64\\msys2_shell.cmd -defterm -no-start'
+        export mingw64="$msys2 -mingw64 -full-path -here -c "\"\$@"\" --"
+        export mingw32="$msys2 -mingw32 -full-path -here -c "\"\$@"\" --"
+        export msys2+=" -msys2 -c "\"\$@"\" --"
+        $msys2 pacman --sync --noconfirm --needed mingw-w64-i686-toolchain mingw-w64-x86_64-toolchain zip
+        $msys2 pacman --sync --noconfirm --needed mingw-w64-i686-cmake mingw-w64-x86_64-cmake
+        $msys2 pacman --sync --noconfirm --needed mingw-w64-i686-pcre2 mingw-w64-x86_64-pcre2 pcre2-devel
+        $msys2 pacman --sync --noconfirm --needed mingw-w64-i686-libevent mingw-w64-x86_64-libevent libevent-devel
+        $msys2 pacman --sync --noconfirm --needed mingw-w64-i686-yaml-cpp mingw-w64-x86_64-yaml-cpp
+        $msys2 pacman --sync --noconfirm --needed mingw-w64-i686-rapidjson mingw-w64-x86_64-rapidjson
+        $msys2 pacman --sync --noconfirm --needed mingw-w64-i686-zlib mingw-w64-x86_64-zlib zlib-devel
+        $msys2 pacman --sync --noconfirm --needed mingw-w64-i686-openssl mingw-w64-x86_64-openssl openssl-devel
+        taskkill //IM gpg-agent.exe //F
+        export PATH=/C/tools/msys64/mingw64/bin:/C/tools/msys64/mingw32/bin:$PATH
+        export MAKE=mingw32-make
+        ;;
+    esac
+
+before_cache:
+- |-
+    case $TRAVIS_OS_NAME in
+      windows)
+        $msys2 pacman --sync --clean --noconfirm
+        ;;
+    esac
+
+cache:
+    directories:
+    - $HOME/AppData/Local/Temp/chocolatey
+    - /C/tools/msys64
