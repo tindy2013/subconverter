@@ -223,7 +223,12 @@ public:
             content = UTF8ToACP(content); //do conversion if flag is set
 
         if(store_isolated_line)
+        {
             curSection = isolated_items_section; //items before any section define will be store in this section
+            //check this section first
+            inExcludedSection = __priv_chk_ignore(curSection); //check if this section is excluded
+            inDirectSaveSection = __priv_chk_direct_save(curSection); //check if this section requires direct-save
+        }
         strStrm<<content;
         last_error_index = 0; //reset error index
         while(getline(strStrm, strLine, delimiter)) //get one line of content
