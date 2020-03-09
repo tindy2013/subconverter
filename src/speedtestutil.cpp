@@ -1050,12 +1050,15 @@ bool explodeSurge(std::string surge, std::string custom_port, int local_port, st
     ini.keep_empty_section = false;
     ini.SetIsolatedItemsSection("Proxy");
     ini.IncludeSection("Proxy");
+    ini.AddDirectSaveSection("Proxy");
     ini.Parse(surge);
 
     if(!ini.SectionExist("Proxy"))
         return false;
     ini.EnterSection("Proxy");
     ini.GetItems(proxies);
+
+    const std::string proxystr = "(.*?)\\s*=\\s*(.*)";
 
     for(auto &x : proxies)
     {
@@ -1066,11 +1069,11 @@ bool explodeSurge(std::string surge, std::string custom_port, int local_port, st
         std::string itemName, itemVal;
         std::vector<std::string> configs, vArray, headers, header;
 
-        remarks = x.first;
-        configs = split(x.second, ",");
+        remarks = regReplace(x.second, proxystr, "$1");
+        configs = split(regReplace(x.second, proxystr, "$2"), ",");
         if(configs.size() < 2 || configs[0] == "direct")
             continue;
-        else if(configs[0] == "custom") //surge 2 style custom proxy
+        if(configs[0] == "custom") //surge 2 style custom proxy
         {
             //remove module detection to speed up parsing and compatible with broken module
             /*
