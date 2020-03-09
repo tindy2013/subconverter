@@ -1694,17 +1694,17 @@ static inline unsigned long long streamToInt(std::string stream)
         return 0;
     double streamval = 1.0;
     if(stream.find("GB") != std::string::npos)
-        streamval = std::pow(1024, 3) * stof(stream.substr(0, stream.size() - 2));
+        streamval = std::pow(1024, 3) * to_number<float>(stream.substr(0, stream.size() - 2), 0.0);
     else if(stream.find("TB") != std::string::npos)
-        streamval = std::pow(1024, 4) * stof(stream.substr(0, stream.size() - 2));
+        streamval = std::pow(1024, 4) * to_number<float>(stream.substr(0, stream.size() - 2), 0.0);
     else if(stream.find("PB") != std::string::npos)
-        streamval = std::pow(1024, 5) * stof(stream.substr(0, stream.size() - 2));
+        streamval = std::pow(1024, 5) * to_number<float>(stream.substr(0, stream.size() - 2), 0.0);
     else if(stream.find("MB") != std::string::npos)
-        streamval = std::pow(1024, 2) * stof(stream.substr(0, stream.size() - 2));
+        streamval = std::pow(1024, 2) * to_number<float>(stream.substr(0, stream.size() - 2), 0.0);
     else if(stream.find("KB") != std::string::npos)
-        streamval = 1024.0 * stof(stream.substr(0, stream.size() - 2));
+        streamval = 1024.0 * to_number<float>(stream.substr(0, stream.size() - 2), 0.0);
     else if(stream.find("B") != std::string::npos)
-        streamval = 1.0 * stof(stream.substr(0, stream.size() - 1));
+        streamval = 1.0 * to_number<float>(stream.substr(0, stream.size() - 1), 0.0);
     return (unsigned long long)streamval;
 }
 
@@ -1764,7 +1764,7 @@ bool getSubInfoFromHeader(std::string &header, std::string &result)
 bool getSubInfoFromNodes(std::vector<nodeInfo> &nodes, string_array &stream_rules, string_array &time_rules, std::string &result)
 {
     std::string remarks, pattern, target, stream_info, time_info, retStr;
-    string_array vArray;
+    string_size spos;
 
     for(nodeInfo &x : nodes)
     {
@@ -1773,11 +1773,11 @@ bool getSubInfoFromNodes(std::vector<nodeInfo> &nodes, string_array &stream_rule
         {
             for(std::string &y : stream_rules)
             {
-                vArray = split(y, "|");
-                if(vArray.size() != 2)
+                spos = y.rfind("|");
+                if(spos == y.npos)
                     continue;
-                pattern = vArray[0];
-                target = vArray[1];
+                pattern = y.substr(0, spos);
+                target = y.substr(spos + 1);
                 if(regMatch(remarks, pattern))
                 {
                     retStr = regReplace(remarks, pattern, target);
@@ -1797,11 +1797,11 @@ bool getSubInfoFromNodes(std::vector<nodeInfo> &nodes, string_array &stream_rule
         {
             for(std::string &y : time_rules)
             {
-                vArray = split(y, "|");
-                if(vArray.size() != 2)
+                spos = y.rfind("|");
+                if(spos == y.npos)
                     continue;
-                pattern = vArray[0];
-                target = vArray[1];
+                pattern = y.substr(0, spos);
+                target = y.substr(spos + 1);
                 if(regMatch(remarks, pattern))
                 {
                     retStr = regReplace(remarks, pattern, target);
