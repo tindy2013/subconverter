@@ -80,7 +80,7 @@ jobs:
     - name: "Windows x86 Build"
       os: windows
       script:
-      - export shell="$mingw32"
+      - export PATH="/c/tools/msys64/mingw32/bin:$PATH"
       - bash scripts/build.windows.sh
       before_deploy:
         - mv subconverter_win64.zip subconverter_win32.zip
@@ -95,7 +95,7 @@ jobs:
     - name: "Windows x86_64 Build"
       os: windows
       script:
-      - export shell="$mingw64"
+      - export PATH="/c/tools/msys64/mingw64/bin:$PATH"
       - bash scripts/build.windows.sh
       deploy:
         provider: releases
