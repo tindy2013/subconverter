@@ -1664,7 +1664,7 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
 std::string getProfile(RESPONSE_CALLBACK_ARGS)
 {
     std::string name = UrlDecode(getUrlArg(argument, "name")), token = UrlDecode(getUrlArg(argument, "token")), expand = getUrlArg(argument, "expand");
-    if(token != access_token)
+    if(token.empty() || name.empty())
     {
         *status_code = 403;
         return "Forbidden";
@@ -1694,6 +1694,24 @@ std::string getProfile(RESPONSE_CALLBACK_ARGS)
         writeLog(0, "Load profile failed! Reason: Empty Profile section", LOG_LEVEL_ERROR);
         *status_code = 500;
         return "Broken profile!";
+    }
+    auto profile_token = contents.find("profile_token");
+    if(profile_token != contents.end())
+    {
+        if(token != profile_token->second)
+        {
+            *status_code = 403;
+            return "Forbidden";
+        }
+        token = access_token;
+    }
+    else
+    {
+        if(token != access_token)
+        {
+            *status_code = 403;
+            return "Forbidden";
+        }
     }
     contents.emplace("token", token);
     contents.emplace("expand", expand);
