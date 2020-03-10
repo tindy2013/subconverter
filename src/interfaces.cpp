@@ -568,9 +568,13 @@ void readConf()
 
     try
     {
-        YAML::Node yaml = YAML::LoadFile(pref_path);
-        if(yaml.size() && yaml["common"])
-            return readYAMLConf(yaml);
+        std::string prefdata = fileGet(pref_path, false);
+        if(prefdata.find("common:") != prefdata.npos)
+        {
+            YAML::Node yaml = YAML::Load(prefdata);
+            if(yaml.size() && yaml["common"])
+                return readYAMLConf(yaml);
+        }
     }
     catch (YAML::Exception &e)
     {
