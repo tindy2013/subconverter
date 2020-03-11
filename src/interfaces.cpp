@@ -387,21 +387,27 @@ void readYAMLConf(YAML::Node &node)
     {
         section["default_url"] >> tempArray;
         if(tempArray.size())
-            strLine = std::accumulate(std::next(tempArray.begin()), tempArray.end(), tempArray[0], [](std::string a, std::string b)
         {
-            return std::move(a) + "|" + std::move(b);
-        });
-        default_url = strLine;
+            strLine = std::accumulate(std::next(tempArray.begin()), tempArray.end(), tempArray[0], [](std::string a, std::string b)
+            {
+                return std::move(a) + "|" + std::move(b);
+            });
+            default_url = strLine;
+            eraseElements(tempArray);
+        }
     }
     if(section["insert_url"].IsSequence())
     {
         section["insert_url"] >> tempArray;
         if(tempArray.size())
-            strLine = std::accumulate(std::next(tempArray.begin()), tempArray.end(), tempArray[0], [](std::string a, std::string b)
         {
-            return std::move(a) + "|" + std::move(b);
-        });
-        insert_url = strLine;
+            strLine = std::accumulate(std::next(tempArray.begin()), tempArray.end(), tempArray[0], [](std::string a, std::string b)
+            {
+                return std::move(a) + "|" + std::move(b);
+            });
+            insert_url = strLine;
+            eraseElements(tempArray);
+        }
     }
     if(section["exclude_remarks"].IsSequence())
         section["exclude_remarks"] >> def_exclude_remarks;

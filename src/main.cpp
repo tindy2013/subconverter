@@ -130,7 +130,12 @@ int main(int argc, char *argv[])
 
     append_response("GET", "/", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
-        return std::string("subconverter " VERSION " backend\n");
+        return "subconverter " VERSION " backend\n";
+    });
+
+    append_response("GET", "/version", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
+    {
+        return "subconverter " VERSION " backend\n";
     });
 
     append_response("GET", "/refreshrules", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string

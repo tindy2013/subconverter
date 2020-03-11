@@ -1204,9 +1204,9 @@ bool explodeSurge(std::string surge, std::string custom_port, int local_port, st
                     {
                         header = split(trim(y), ":");
                         if(regMatch(header[0], "(?i)host"))
-                            host = header[1];
+                            host = trim_quote(header[1]);
                         else if(regMatch(header[0], "(?i)edge"))
-                            edge = header[1];
+                            edge = trim_quote(header[1]);
                     }
                 }
             }

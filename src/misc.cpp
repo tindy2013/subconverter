@@ -438,19 +438,29 @@ std::string getSystemProxy()
 #endif // _WIN32
 }
 
-std::string trim(const std::string& str)
+std::string trim_of(const std::string& str, char target)
 {
-    std::string::size_type pos = str.find_first_not_of(' ');
+    std::string::size_type pos = str.find_first_not_of(target);
     if (pos == std::string::npos)
     {
         return str;
     }
-    std::string::size_type pos2 = str.find_last_not_of(' ');
+    std::string::size_type pos2 = str.find_last_not_of(target);
     if (pos2 != std::string::npos)
     {
         return str.substr(pos, pos2 - pos + 1);
     }
     return str.substr(pos);
+}
+
+std::string trim(const std::string& str)
+{
+    return trim_of(str, ' ');
+}
+
+std::string trim_quote(const std::string &str)
+{
+    return trim_of(str, '\"');
 }
 
 std::string getUrlArg(const std::string &url, const std::string &request)
