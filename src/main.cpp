@@ -278,6 +278,11 @@ int main(int argc, char *argv[])
         return subconverter(argument + "&target=ssd", postdata, status_code, extra_headers);
     });
 
+    append_response("GET", "/trojan", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
+    {
+        return subconverter(argument + "&target=trojan", postdata, status_code, extra_headers);
+    });
+
     if(!api_mode)
     {
         append_response("GET", "/get", "text/plain;charset=utf-8", [](RESPONSE_CALLBACK_ARGS) -> std::string

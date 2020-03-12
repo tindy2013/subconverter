@@ -215,6 +215,25 @@ std::string httpConstruct(std::string remarks, std::string server, std::string p
     return sb.GetString();
 }
 
+std::string trojanConstruct(std::string remarks, std::string server, std::string port, std::string password)
+{
+    rapidjson::StringBuffer sb;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
+    writer.StartObject();
+    writer.Key("Type");
+    writer.String("Trojan");
+    writer.Key("Remark");
+    writer.String(remarks.data());
+    writer.Key("Hostname");
+    writer.String(server.data());
+    writer.Key("Port");
+    writer.Int(to_int(port));
+    writer.Key("Password");
+    writer.String(password.data());
+    writer.EndObject();
+    return sb.GetString();
+}
+
 std::string vmessLinkConstruct(std::string remarks, std::string add, std::string port, std::string type, std::string id, std::string aid, std::string net, std::string path, std::string host, std::string tls)
 {
     rapidjson::StringBuffer sb;
@@ -1064,8 +1083,15 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
                 proxy += ", skip-cert-verify=1";
             break;
         case SPEEDTEST_MESSAGE_FOUNDHTTP:
-            proxy = "http," + hostname + "," + port + ", " + username + ", " + password;
+            proxy = "http, " + hostname + ", " + port + ", " + username + ", " + password;
             proxy += std::string(", tls=") + (type == "HTTPS" ? "true" : "false");
+            if(ext.skip_cert_verify)
+                proxy += ", skip-cert-verify=1";
+            break;
+        case SPEEDTEST_MESSAGE_FOUNDTROJAN:
+            if(surge_ver < 4)
+                continue;
+            proxy = "trojan, " + hostname + ", " + port + ", password=" + password;
             if(ext.skip_cert_verify)
                 proxy += ", skip-cert-verify=1";
             break;
@@ -1409,6 +1435,53 @@ std::string netchToVMess(std::vector<nodeInfo> &nodes, extra_settings &ext)
         {
         case SPEEDTEST_MESSAGE_FOUNDVMESS:
             proxyStr = "vmess://" + base64_encode(vmessLinkConstruct(remark, hostname, port, faketype, id, aid, transproto, path, host, tlssecure ? "tls" : ""));
+            break;
+        default:
+            continue;
+        }
+        allLinks += proxyStr + "\n";
+    }
+
+    return base64_encode(allLinks);
+}
+
+std::string netchToTrojan(std::vector<nodeInfo> &nodes, extra_settings &ext)
+{
+    rapidjson::Document json;
+    std::string server, port, psk, remark;
+    std::string proxyStr, allLinks;
+
+    std::for_each(nodes.begin(), nodes.end(), [ext](nodeInfo &x)
+    {
+        x.remarks = nodeRename(x.remarks, x.groupID, ext.rename_array);
+        if(ext.remove_emoji)
+            x.remarks = trim(removeEmoji(x.remarks));
+
+        if(ext.add_emoji)
+            x.remarks = addEmoji(x.remarks, x.groupID, ext.emoji_array);
+    });
+
+    if(ext.sort_flag)
+    {
+        std::sort(nodes.begin(), nodes.end(), [](const nodeInfo &a, const nodeInfo &b)
+        {
+            return a.remarks < b.remarks;
+        });
+    }
+
+    for(nodeInfo &x : nodes)
+    {
+        json.Parse(x.proxyStr.data());
+
+        remark = x.remarks;
+        server = GetMember(json, "Hostname");
+        port = std::to_string((unsigned short)stoi(GetMember(json, "Port")));
+        psk = GetMember(json, "Password");
+
+        switch(x.linkType)
+        {
+        case SPEEDTEST_MESSAGE_FOUNDTROJAN:
+            proxyStr = "trojan://" + psk + "@" + server + ":" + port + "#" + UrlEncode(remark);
             break;
         default:
             continue;
@@ -2291,7 +2364,7 @@ std::string netchToLoon(std::vector<nodeInfo> &nodes, std::string &base_conf, st
             pluginopts = GetMember(json, "PluginOption");
 
             proxy = "Shadowsocks," + hostname + "," + port + "," + method + ",\"" + password + "\"";
-            if(plugin == "simple-obfs")
+            if(plugin == "simple-obfs" || plugin == "obfs-local")
             {
                 if(pluginopts.size())
                     proxy += "," + replace_all_distinct(replace_all_distinct(pluginopts, ";obfs-host=", ","), "obfs=", "");

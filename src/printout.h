@@ -63,6 +63,7 @@ enum
     SPEEDTEST_MESSAGE_FOUNDSSTAP,
     SPEEDTEST_MESSAGE_FOUNDNETCH,
     SPEEDTEST_MESSAGE_FOUNDHTTP,
+    SPEEDTEST_MESSAGE_FOUNDTROJAN,
     SPEEDTEST_MESSAGE_EOF
 };
 
@@ -71,6 +72,7 @@ enum
 #define V2RAY_DEFAULT_GROUP "V2RayProvider"
 #define SOCKS_DEFAULT_GROUP "SocksProvider"
 #define HTTP_DEFAULT_GROUP "HTTPProvider"
+#define TROJAN_DEFAULT_GROUP "TrojanProvider"
 
 void printMsg(int index, nodeInfo *node, bool rpcmode);
 void printMsgWithDict(int index, bool rpcmode, std::vector<std::string> dict, std::vector<std::string> trans);

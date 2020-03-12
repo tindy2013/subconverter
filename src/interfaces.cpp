@@ -1198,8 +1198,10 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     std::vector<ruleset_content> dummy_ruleset;
 
     //std::cerr<<"Generate target: ";
-    if(target == "clash" || target == "clashr")
+    int surge_ver;
+    switch(hash_(target))
     {
+    case "clash"_hash: case "clashr"_hash:
         //std::cerr<<"Clash"<<((target == "clashr") ? "R" : "")<<std::endl;
         writeLog(0, target == "clashr" ? "Generate target: ClashR" : "Generate target: Clash", LOG_LEVEL_INFO);
         if(ext.nodelist)
@@ -1226,10 +1228,9 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
 
         if(upload == "true")
             uploadGist(target, upload_path, output_content, false);
-    }
-    else if(target == "surge")
-    {
-        int surge_ver = version.size() ? to_int(version, 3) : 3;
+        break;
+    case "surge"_hash:
+        surge_ver = version.size() ? to_int(version, 3) : 3;
         //std::cerr<<"Surge "<<surge_ver<<std::endl;
         writeLog(0, "Generate target: Surge " + std::to_string(surge_ver), LOG_LEVEL_INFO);
 
@@ -1252,9 +1253,8 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
                 output_content = "#!MANAGED-CONFIG " + managed_config_prefix + "/sub?" + argument + (interval ? " interval=" + std::to_string(interval) : "") \
                  + " strict=" + std::string(strict ? "true" : "false") + "\n\n" + output_content;
         }
-    }
-    else if(target == "surfboard")
-    {
+        break;
+    case "surfboard"_hash:
         //std::cerr<<"Surfboard"<<std::endl;
         writeLog(0, "Generate target: Surfboard", LOG_LEVEL_INFO);
         if(fileExist(ext_surfboard_base))
@@ -1269,9 +1269,8 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         if(write_managed_config && managed_config_prefix.size())
             output_content = "#!MANAGED-CONFIG " + managed_config_prefix + "/sub?" + argument + (interval ? " interval=" + std::to_string(interval) : "") \
                  + " strict=" + std::string(strict ? "true" : "false") + "\n\n" + output_content;
-    }
-    else if(target == "mellow")
-    {
+        break;
+    case "mellow"_hash:
         //std::cerr<<"Mellow"<<std::endl;
         writeLog(0, "Generate target: Mellow", LOG_LEVEL_INFO);
         // mellow base generator removed for now
@@ -1296,42 +1295,36 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
 
         if(upload == "true")
             uploadGist("mellow", upload_path, output_content, true);
-    }
-    else if(target == "ss")
-    {
+        break;
+    case "ss"_hash:
         //std::cerr<<"SS"<<std::endl;
         writeLog(0, "Generate target: SS", LOG_LEVEL_INFO);
         output_content = netchToSS(nodes, ext);
         if(upload == "true")
             uploadGist("ss", upload_path, output_content, false);
-        return output_content;
-    }
-    else if(target == "sssub")
-    {
+        break;
+    case "sssub"_hash:
         //std::cerr<<"SS Subscription"<<std::endl;
         writeLog(0, "Generate target: SS Subscription", LOG_LEVEL_INFO);
         output_content = netchToSSSub(nodes, ext);
         if(upload == "true")
             uploadGist("sssub", upload_path, output_content, false);
-    }
-    else if(target == "ssr")
-    {
+        break;
+    case "ssr"_hash:
         //std::cerr<<"SSR"<<std::endl;
         writeLog(0, "Generate target: SSR", LOG_LEVEL_INFO);
         output_content = netchToSSR(nodes, ext);
         if(upload == "true")
             uploadGist("ssr", upload_path, output_content, false);
-    }
-    else if(target == "v2ray")
-    {
+        break;
+    case "v2ray"_hash:
         //std::cerr<<"v2rayN"<<std::endl;
         writeLog(0, "Generate target: v2rayN", LOG_LEVEL_INFO);
         output_content = netchToVMess(nodes, ext);
         if(upload == "true")
             uploadGist("v2ray", upload_path, output_content, false);
-    }
-    else if(target == "quan")
-    {
+        break;
+    case "quan"_hash:
         //std::cerr<<"Quantumult"<<std::endl;
         writeLog(0, "Generate target: Quantumult", LOG_LEVEL_INFO);
         if(!ext.nodelist)
@@ -1346,9 +1339,8 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
 
         if(upload == "true")
             uploadGist("quan", upload_path, output_content, false);
-    }
-    else if(target == "quanx")
-    {
+        break;
+    case "quanx"_hash:
         //std::cerr<<"Quantumult X"<<std::endl;
         writeLog(0, "Generate target: Quantumult X", LOG_LEVEL_INFO);
         if(!ext.nodelist)
@@ -1363,9 +1355,8 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
 
         if(upload == "true")
             uploadGist("quanx", upload_path, output_content, false);
-    }
-    else if(target == "loon")
-    {
+        break;
+    case "loon"_hash:
         //std::cerr<<"Loon"<<std::endl;
         writeLog(0, "Generate target: Loon", LOG_LEVEL_INFO);
         if(!ext.nodelist)
@@ -1380,17 +1371,22 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
 
         if(upload == "true")
             uploadGist("loon", upload_path, output_content, false);
-    }
-    else if(target == "ssd")
-    {
+        break;
+    case "ssd"_hash:
         //std::cerr<<"SSD"<<std::endl;
         writeLog(0, "Generate target: SSD", LOG_LEVEL_INFO);
         output_content = netchToSSD(nodes, group, subInfo, ext);
         if(upload == "true")
             uploadGist("ssd", upload_path, output_content, false);
-    }
-    else
-    {
+        break;
+    case "trojan"_hash:
+        //std::cerr<<"Trojan"<<std::endl;
+        writeLog(0, "Generate target: Trojan", LOG_LEVEL_INFO);
+        output_content = netchToTrojan(nodes, ext);
+        if(upload == "true")
+            uploadGist("trojan", upload_path, output_content, false);
+        break;
+    default:
         //std::cerr<<"Unspecified"<<std::endl;
         writeLog(0, "Generate target: Unspecified", LOG_LEVEL_INFO);
         *status_code = 500;
