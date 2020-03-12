@@ -765,7 +765,6 @@ AND,((DOMAIN,photovms.tv.sohu.com), (NOT,((URL-REGEX,http))))
 AND,((USER-AGENT,osee2*), (NOT,((DOMAIN,static.zhihu.com))), (NOT,((DOMAIN,api.zhihu.com))), (NOT,((DOMAIN,link.zhihu.com))), (NOT,((DOMAIN,lens.zhihu.com))), (NOT,((DOMAIN,www.zhihu.com))), (NOT,((DOMAIN-SUFFIX,zhimg.com))))
 AND,((USER-AGENT,ZhihuHybrid*), (NOT,((DOMAIN-SUFFIX,zhihu.com))), (NOT,((DOMAIN-SUFFIX,zhimg.com))))
 URL-REGEX,https?://interface3?.music.163.com/eapi/(ad|abtest|sp|hot|store|mlog|search/(specialkeyword|defaultkeyword|hot))
-AND,((USER-AGENT, %E7%BD%91%E6%98%93%E4%BA%91%E9%9F%B3%E4%B9%90*),(OR,((NOT,((DOMAIN-SUFFIX,music.126.net))), (DOMAIN-KEYWORD,admusic))))
 AND,((USER-AGENT,pixiv*), (NOT,((DOMAIN-KEYWORD,pixiv))))
 URL-REGEX,^https?:\/\/capis-slb\.didapinche\.com\/ad\/
 URL-REGEX,^https://weibointl.api.weibo.cn/portal.php\?a=get_coopen_ads

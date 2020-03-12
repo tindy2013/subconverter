@@ -44,6 +44,12 @@ DOMAIN-SUFFIX,bbci.co.uk
 USER-AGENT,TwDramas*
 DOMAIN-SUFFIX,chocotv.com.tw
 
+# > DAZN
+DOMAIN-SUFFIX,d151l6v8er5bdm.cloudfront.net
+DOMAIN-SUFFIX,dazn.com
+DOMAIN-SUFFIX,dazn-api.com
+DOMAIN-SUFFIX,indazn.com
+
 # > Disney Plus
 USER-AGENT,Disney*
 DOMAIN,cdn.registerdisney.go.com
@@ -122,6 +128,8 @@ DOMAIN-SUFFIX,skygo.co.nz
 
 # > SoundCloud
 USER-AGENT,SoundCloud*
+DOMAIN-SUFFIX,sndcdn.com
+DOMAIN-SUFFIX,soundcloud.com
 
 # > viuTV
 USER-AGENT,ViuTV*
