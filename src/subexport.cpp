@@ -1021,9 +1021,9 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
             proxy = "vmess, " + hostname + ", " + port + ", username=" + id + ", tls=" + (tlssecure ? "true" : "false");
             if(transproto == "ws")
             {
-                proxy += ", ws=true, ws-path=" + path + ", ws-headers=Host:\"" + host + "\"";
+                proxy += ", ws=true, ws-path=" + path + ", ws-headers=Host:" + host;
                 if(edge.size())
-                    proxy += "|Edge:\"" + edge + "\"";
+                    proxy += "|Edge:" + edge;
             }
             if(ext.skip_cert_verify)
                 proxy += ", skip-cert-verify=1";
