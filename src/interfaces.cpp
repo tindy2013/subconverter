@@ -1169,7 +1169,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     string_array stream_temp = safe_get_streams(), time_temp = safe_get_times();
     for(std::string &x : urls)
     {
-        x = trim(x);
+        x = regTrim(x);
         //std::cerr<<"Fetching node data from url '"<<x<<"'."<<std::endl;
         writeLog(0, "Fetching node data from url '" + x + "'.", LOG_LEVEL_INFO);
         if(addNodes(x, nodes, groupID, proxy, exclude_remarks, include_remarks, stream_temp, time_temp, subInfo, authorized) == -1)
