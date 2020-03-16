@@ -18,6 +18,13 @@ DOMAIN-SUFFIX,office.com
 DOMAIN-SUFFIX,office.net
 DOMAIN-SUFFIX,skype.com
 
+# > Sony
+DOMAIN-SUFFIX,playstation.com
+DOMAIN-SUFFIX,playstation.net
+DOMAIN-SUFFIX,playstationnetwork.com
+DOMAIN-SUFFIX,sony.com
+DOMAIN-SUFFIX,sonyentertainmentnetwork.com
+
 # > Spark
 DOMAIN-SUFFIX,api.amplitude.com
 DOMAIN-SUFFIX,app.smartmailcloud.com
@@ -43,6 +50,7 @@ DOMAIN-SUFFIX,akamaihd.net
 DOMAIN-SUFFIX,airtable.com
 DOMAIN-SUFFIX,alfredapp.com
 DOMAIN-SUFFIX,allconnected.co
+DOMAIN-SUFFIX,amazon.co
 DOMAIN-SUFFIX,amazon.com
 DOMAIN-SUFFIX,amazonaws.com
 DOMAIN-SUFFIX,ampproject.com
@@ -610,7 +618,6 @@ DOMAIN-KEYWORD,dropbox
 DOMAIN-KEYWORD,facebook
 DOMAIN-KEYWORD,github
 DOMAIN-KEYWORD,instagram
-DOMAIN-KEYWORD,porn
 DOMAIN-KEYWORD,twitter
 DOMAIN-KEYWORD,whatsapp
 DOMAIN-KEYWORD,google

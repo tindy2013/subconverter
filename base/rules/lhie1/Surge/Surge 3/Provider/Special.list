@@ -1,3 +1,6 @@
+# > CN
+DOMAIN-SUFFIX,cn
+
 # > Google
 DOMAIN-KEYWORD,mtalk.google.com
 DOMAIN,safebrowsing.googleapis.com

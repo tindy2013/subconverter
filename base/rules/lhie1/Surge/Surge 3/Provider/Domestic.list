@@ -23,11 +23,6 @@ DOMAIN-SUFFIX,edu.cn
 
 # > Sony
 USER-AGENT,RemotePlay*
-DOMAIN-SUFFIX,playstation.com
-DOMAIN-SUFFIX,playstation.net
-DOMAIN-SUFFIX,playstationnetwork.com
-DOMAIN-SUFFIX,sony.com
-DOMAIN-SUFFIX,sonyentertainmentnetwork.com
 
 # > TeamViewer
 IP-CIDR,185.188.32.0/24,no-resolve
@@ -101,6 +96,7 @@ DOMAIN-SUFFIX,didialift.com
 DOMAIN-SUFFIX,digicert.com
 DOMAIN-SUFFIX,douban.com
 DOMAIN-SUFFIX,doubanio.com
+DOMAIN-SUFFIX,douyin.com
 DOMAIN-SUFFIX,douyu.com
 DOMAIN-SUFFIX,douyu.tv
 DOMAIN-SUFFIX,douyutv.com
@@ -181,8 +177,6 @@ DOMAIN-SUFFIX,nuomi.com
 DOMAIN-SUFFIX,ourbits.club
 DOMAIN-SUFFIX,ourdvs.com
 DOMAIN-SUFFIX,passthepopcorn.me
-DOMAIN-SUFFIX,paypal.com
-DOMAIN-SUFFIX,paypalobjects.com
 DOMAIN-SUFFIX,pgyer.com
 DOMAIN-SUFFIX,pniao.com
 DOMAIN-SUFFIX,privatehd.to
@@ -207,7 +201,6 @@ DOMAIN-SUFFIX,rrmj.tv
 DOMAIN-SUFFIX,ruguoapp.com
 DOMAIN-SUFFIX,sandai.net
 DOMAIN-SUFFIX,sf-express.com
-DOMAIN,safebrowsing.googleapis.com
 DOMAIN-SUFFIX,sinaapp.com
 DOMAIN-SUFFIX,sinaimg.cn
 DOMAIN-SUFFIX,sinaimg.com

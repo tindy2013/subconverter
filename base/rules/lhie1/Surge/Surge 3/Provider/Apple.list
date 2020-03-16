@@ -21,7 +21,9 @@ DOMAIN,apple.comscoreresearch.com
 DOMAIN-SUFFIX,apple.cn
 DOMAIN-SUFFIX,apple.com
 DOMAIN-SUFFIX,apple.news
+DOMAIN-SUFFIX,cdn-apple.com
 DOMAIN-SUFFIX,icloud.com
+DOMAIN-SUFFIX,icloud.com.cn
 DOMAIN-SUFFIX,icloud-content.com
 DOMAIN-SUFFIX,itunes.com
 DOMAIN-SUFFIX,me.com

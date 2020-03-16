@@ -72,7 +72,8 @@ experimental:
      #- 223.5.5.5 # 阿里DNS
      #- 180.76.76.76 # 百度DNS
      #- 119.29.29.29 # 腾讯DNS
-     #- 117.50.10.10 # ONE DNS纯净版
+     #- 117.50.11.11 # ONE DNS拦截版 恶意网站拦截、广告过滤
+     #- 117.50.10.10 # ONE DNS纯净版 直接返回其真实的响应结果
      #- 114.114.114.114 # 114DNS
   #fallback:
      #- 8.8.8.8 # 谷歌DNS
@@ -158,7 +159,7 @@ cfw-conn-break-strategy:
       #shell: true # 则在 shell 中运行 command
       #windowsHide: true # 隐藏子进程的控制台窗口
   # 启动网易云，端口号3333
-  #- command: "unblockneteasemusic.exe" # 启动网易云，端口号3333
+  #- command: "unblockneteasemusic.exe" # 启动网易云
     #args:
       #- "-p" # 运行参数1
       #- "3333" # 运行参数2
@@ -610,7 +611,6 @@ cfw-bypass:
   - "*.feng.com"
   - "*.fengkongcloud.com"
   - "*.fir.im"
-  - "*.firefox.com"
   - "*.frdic.com"
   - "*.fresh-ideas.cc"
   - "*.ganji.com"
@@ -678,7 +678,6 @@ cfw-bypass:
   - "*.mogujie.com"
   - "*.moji.com"
   - "*.moke.com"
-  - "*.mozilla.org"
   - "*.mubu.com"
   - "*.myunlu.com"
   - "*.nruan.com"
