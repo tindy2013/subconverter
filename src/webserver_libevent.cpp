@@ -187,7 +187,7 @@ int start_web_server(void *argv)
 void* httpserver_dispatch(void *arg)
 {
     event_base_dispatch((struct event_base*)arg);
-    event_base_free((struct event_base*)arg);
+    event_base_free((struct event_base*)arg); //free resources
     return NULL;
 }
 
@@ -269,10 +269,8 @@ int start_web_server_multi(void *argv)
         sleep(200); //block forever until receive stop signal
 
     for (i = 0; i < nthreads; i++)
-    {
         event_base_loopbreak(base[i]); //stop the loop
-        event_base_free(base[i]); //free resources
-    }
+
     closesocket(nfd); //close listener socket
 
     return 0;

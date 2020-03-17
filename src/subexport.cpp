@@ -1707,6 +1707,15 @@ void netchToQuanX(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rule
             if(obfsparam.size())
                 proxyStr += ", obfs-host=" + obfsparam;
             break;
+        case SPEEDTEST_MESSAGE_FOUNDHTTP:
+            id = GetMember(json, "Username");
+            password = GetMember(json, "Password");
+            tlssecure = GetMember(json, "TLSSecure") == "true";
+
+            proxyStr = "http = " + hostname + ":" + port + ", username=" + (id.size() ? id : "none") + ", password=" + (password.size() ? password : "none");
+            if(tlssecure)
+                proxyStr += ", over-tls=true";
+            break;
         case SPEEDTEST_MESSAGE_FOUNDTROJAN:
             password = GetMember(json, "Password");
             host = GetMember(json, "Host");

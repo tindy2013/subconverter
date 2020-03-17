@@ -1404,6 +1404,42 @@ bool explodeSurge(std::string surge, const std::string &custom_port, int local_p
             node.group = TROJAN_DEFAULT_GROUP;
             node.proxyStr = trojanConstruct(remarks, server, port, password, host, tls == "true");
         }
+        else if(remarks == "http") //quantumult x style http links
+        {
+            server = trim(configs[0].substr(0, configs[0].rfind(":")));
+            port = custom_port.empty() ? trim(configs[0].substr(configs[0].rfind(":") + 1)) : custom_port;
+
+            for(i = 1; i < configs.size(); i++)
+            {
+                vArray = split(trim(configs[i]), "=");
+                if(vArray.size() != 2)
+                    continue;
+                itemName = trim(vArray[0]);
+                itemVal = trim(vArray[1]);
+                switch(hash_(itemName))
+                {
+                    case "username"_hash: username = itemVal; break;
+                    case "password"_hash: password = itemVal; break;
+                    case "tag"_hash: remarks = itemVal; break;
+                    case "over-tls"_hash: tls = itemVal; break;
+                    default: continue;
+                }
+            }
+            if(remarks.empty())
+                remarks = server + ":" + port;
+
+            if(host.empty() && !isIPv4(server) && !isIPv6(server))
+                host = server;
+
+            if(username == "none")
+                username.clear();
+            if(password == "none")
+                password.clear();
+
+            node.linkType = SPEEDTEST_MESSAGE_FOUNDHTTP;
+            node.group = HTTP_DEFAULT_GROUP;
+            node.proxyStr = httpConstruct(remarks, server, port, username, password, tls == "true");
+        }
         else
             continue;
 
