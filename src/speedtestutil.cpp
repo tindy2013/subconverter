@@ -1174,7 +1174,7 @@ bool explodeSurge(std::string surge, const std::string &custom_port, int local_p
                 switch(hash_(itemName))
                 {
                     case "encrypt-method"_hash: method = itemVal; break;
-                    case "password"_hash: id = itemVal; break;
+                    case "password"_hash: password = itemVal; break;
                     case "obfs"_hash:
                         plugin = "simple-obfs";
                         pluginopts_mode = itemVal;
