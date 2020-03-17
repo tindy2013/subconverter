@@ -14,6 +14,7 @@
 #include "webget.h"
 #include "rapidjson_extra.h"
 #include "ini_reader.h"
+#include "string_hash.h"
 
 using namespace rapidjson;
 using namespace YAML;
@@ -634,7 +635,7 @@ void explodeTrojan(std::string trojan, const std::string &custom_port, int local
     node.remarks = remark;
     node.server = server;
     node.port = to_int(port, 0);
-    node.proxyStr = trojanConstruct(remark, server, port, psk);
+    node.proxyStr = trojanConstruct(remark, server, port, psk, "", false);
 }
 
 void explodeQuan(std::string quan, const std::string &custom_port, int local_port, nodeInfo &node)
@@ -1135,13 +1136,15 @@ bool explodeSurge(std::string surge, const std::string &custom_port, int local_p
                         continue;
                     itemName = trim(vArray[0]);
                     itemVal = trim(vArray[1]);
-                    if(itemName == "obfs")
+                    switch(hash_(itemName))
                     {
-                        plugin = "simple-obfs";
-                        pluginopts_mode = itemVal;
+                        case "obfs"_hash:
+                            plugin = "simple-obfs";
+                            pluginopts_mode = itemVal;
+                            break;
+                        case "obfs-host"_hash: pluginopts_host = itemVal; break;
+                        default: continue;
                     }
-                    else if(itemName == "obfs-host")
-                        pluginopts_host = itemVal;
                 }
                 if(plugin.size())
                 {
@@ -1168,17 +1171,17 @@ bool explodeSurge(std::string surge, const std::string &custom_port, int local_p
                     continue;
                 itemName = trim(vArray[0]);
                 itemVal = trim(vArray[1]);
-                if(itemName == "encrypt-method")
-                    method = itemVal;
-                else if(itemName == "password")
-                    password = itemVal;
-                else if(itemName == "obfs")
+                switch(hash_(itemName))
                 {
-                    plugin = "simple-obfs";
-                    pluginopts_mode = itemVal;
+                    case "encrypt-method"_hash: method = itemVal; break;
+                    case "password"_hash: id = itemVal; break;
+                    case "obfs"_hash:
+                        plugin = "simple-obfs";
+                        pluginopts_mode = itemVal;
+                        break;
+                    case "obfs-host"_hash: pluginopts_host = itemVal; break;
+                    default: continue;
                 }
-                else if(itemName == "obfs-host")
-                    pluginopts_host = itemVal;
             }
             if(plugin.size())
             {
@@ -1217,29 +1220,25 @@ bool explodeSurge(std::string surge, const std::string &custom_port, int local_p
                     continue;
                 itemName = trim(vArray[0]);
                 itemVal = trim(vArray[1]);
-                if(itemName == "username")
-                    id = itemVal;
-                else if(itemName == "ws")
+                switch(hash_(itemName))
                 {
-                    net = itemVal == "true" ? "ws" : "tcp";
-                }
-                else if(itemName == "tls")
-                {
-                    tls = itemVal == "true" ? "tls" : "";
-                }
-                else if(itemName == "ws-path")
-                    path = itemVal;
-                else if(itemName == "ws-headers")
-                {
-                    headers = split(itemVal, "|");
-                    for(auto &y : headers)
-                    {
-                        header = split(trim(y), ":");
-                        if(regMatch(header[0], "(?i)host"))
-                            host = trim_quote(header[1]);
-                        else if(regMatch(header[0], "(?i)edge"))
-                            edge = trim_quote(header[1]);
-                    }
+                    case "username"_hash: id = itemVal; break;
+                    case "ws"_hash: net = itemVal == "true" ? "ws" : "tcp"; break;
+                    case "tls"_hash: tls = itemVal == "true" ? "tls" : ""; break;
+                    case "ws-path"_hash: path = itemVal; break;
+                    case "obfs-host"_hash: host = itemVal; break;
+                    case "ws-headers"_hash:
+                        headers = split(itemVal, "|");
+                        for(auto &y : headers)
+                        {
+                            header = split(trim(y), ":");
+                            if(regMatch(header[0], "(?i)host"))
+                                host = trim_quote(header[1]);
+                            else if(regMatch(header[0], "(?i)edge"))
+                                edge = trim_quote(header[1]);
+                        }
+                        break;
+                    default: continue;
                 }
             }
             if(host.empty() && !isIPv4(server) && !isIPv6(server))
@@ -1279,7 +1278,10 @@ bool explodeSurge(std::string surge, const std::string &custom_port, int local_p
                 if(itemName == "password")
                     password = itemVal;
             }
-            node.proxyStr = trojanConstruct(remarks, server, port, password);
+            if(host.empty() && !isIPv4(server) && !isIPv6(server))
+                host = server;
+
+            node.proxyStr = trojanConstruct(remarks, server, port, password, host, false);
         }
         else if(remarks == "shadowsocks") //quantumult x style ss/ssr link
         {
@@ -1293,23 +1295,20 @@ bool explodeSurge(std::string surge, const std::string &custom_port, int local_p
                     continue;
                 itemName = trim(vArray[0]);
                 itemVal = trim(vArray[1]);
-                if(itemName == "method")
-                    method = itemVal;
-                else if(itemName == "password")
-                    password = itemVal;
-                else if(itemName == "tag")
-                    remarks = itemVal;
-                else if(itemName == "ssr-protocol")
-                    protocol = itemVal;
-                else if(itemName == "ssr-protocol-param")
-                    protoparam = itemVal;
-                else if(itemName == "obfs")
+                switch(hash_(itemName))
                 {
-                    plugin = "simple-obfs";
-                    pluginopts_mode = itemVal;
+                    case "method"_hash: method = itemVal; break;
+                    case "password"_hash: id = itemVal; break;
+                    case "tag"_hash: remarks = itemVal; break;
+                    case "ssr-protocol"_hash: protocol = itemVal; break;
+                    case "ssr-protocol-param"_hash: protoparam = itemVal; break;
+                    case "obfs"_hash:
+                        plugin = "simple-obfs";
+                        pluginopts_mode = itemVal;
+                        break;
+                    case "obfs-host"_hash: pluginopts_host = itemVal; break;
+                    default: continue;
                 }
-                else if(itemName == "obfs-host")
-                    pluginopts_host = itemVal;
             }
             if(remarks.empty())
                 remarks = server + ":" + port;
@@ -1346,25 +1345,23 @@ bool explodeSurge(std::string surge, const std::string &custom_port, int local_p
                     continue;
                 itemName = trim(vArray[0]);
                 itemVal = trim(vArray[1]);
-                if(itemName == "method")
-                    method = itemVal;
-                else if(itemName == "password")
-                    id = itemVal;
-                else if(itemName == "tag")
-                    remarks = itemVal;
-                else if(itemName == "obfs")
+                switch(hash_(itemName))
                 {
-                    if(itemVal == "ws")
-                        net = "ws";
-                    else if(itemVal == "over-tls")
-                        tls = "tls";
+                    case "method"_hash: method = itemVal; break;
+                    case "password"_hash: id = itemVal; break;
+                    case "tag"_hash: remarks = itemVal; break;
+                    case "obfs"_hash:
+                        switch(hash_(itemVal))
+                        {
+                            case "ws"_hash: net = "ws"; break;
+                            case "over-tls"_hash: tls = "tls"; break;
+                        }
+                        break;
+                    case "obfs-host"_hash: host = itemVal; break;
+                    case "obfs-uri"_hash: path = itemVal; break;
+                    case "over-tls"_hash: tls = itemVal == "true" ? "tls" : ""; break;
+                    default: continue;
                 }
-                else if(itemName == "obfs-host")
-                    host = itemVal;
-                else if(itemName == "obfs-uri")
-                    path = itemVal;
-                else if(itemName == "over-tls")
-                    tls = itemVal == "true" ? "tls" : "";
             }
             if(remarks.empty())
                 remarks = server + ":" + port;
@@ -1375,6 +1372,37 @@ bool explodeSurge(std::string surge, const std::string &custom_port, int local_p
             node.linkType = SPEEDTEST_MESSAGE_FOUNDVMESS;
             node.group = V2RAY_DEFAULT_GROUP;
             node.proxyStr = vmessConstruct(server, port, "", id, "0", net, method, path, host, "", tls, local_port);
+        }
+        else if(remarks == "trojan") //quantumult x style trojan link
+        {
+            server = trim(configs[0].substr(0, configs[0].rfind(":")));
+            port = custom_port.empty() ? trim(configs[0].substr(configs[0].rfind(":") + 1)) : custom_port;
+
+            for(i = 1; i < configs.size(); i++)
+            {
+                vArray = split(trim(configs[i]), "=");
+                if(vArray.size() != 2)
+                    continue;
+                itemName = trim(vArray[0]);
+                itemVal = trim(vArray[1]);
+                switch(hash_(itemName))
+                {
+                    case "password"_hash: password = itemVal; break;
+                    case "tag"_hash: remarks = itemVal; break;
+                    case "over-tls"_hash: tls = itemVal; break;
+                    case "tls-host"_hash: host = itemVal; break;
+                    default: continue;
+                }
+            }
+            if(remarks.empty())
+                remarks = server + ":" + port;
+
+            if(host.empty() && !isIPv4(server) && !isIPv6(server))
+                host = server;
+
+            node.linkType = SPEEDTEST_MESSAGE_FOUNDTROJAN;
+            node.group = TROJAN_DEFAULT_GROUP;
+            node.proxyStr = trojanConstruct(remarks, server, port, password, host, tls == "true");
         }
         else
             continue;

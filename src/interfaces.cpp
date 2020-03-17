@@ -1194,6 +1194,9 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     if(subInfo.size() && (append_sub_userinfo.size() ? append_sub_userinfo == "true" : append_userinfo))
         extra_headers.emplace("Subscription-UserInfo", subInfo);
 
+    //do pre-process now
+    preprocessNodes(nodes, ext);
+
     string_array dummy_group;
     std::vector<ruleset_content> dummy_ruleset;
 
