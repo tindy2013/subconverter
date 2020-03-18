@@ -1,7 +1,7 @@
 #!/bin/bash
 set -xe
 
-brew reinstall yaml-cpp rapidjson libevent zlib pcre2 bzip2 pkgconfig
+brew reinstall rapidjson libevent zlib pcre2 bzip2 pkgconfig
 
 git clone https://github.com/curl/curl
 cd curl
@@ -11,7 +11,14 @@ cmake -DHTTP_ONLY=ON -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=OFF -DOPENSSL_ROOT_
 make -j8 > /dev/null
 cd ..
 
+git clone https://github.com/jbeder/yaml-cpp
+cd yaml-cpp
+cmake -DYAML_CPP_BUILD_TESTS=OFF -DYAML_CPP_BUILD_TOOLS=OFF . > /dev/null
+make -j8 > /dev/null
+cd ..
+
 cp curl/lib/libcurl.a .
+cp yaml-cpp/libyaml-cpp.a .
 cp /usr/local/lib/libevent.a .
 cp /usr/local/opt/zlib/lib/libz.a .
 cp /usr/local/opt/openssl@1.1/lib/libssl.a .
