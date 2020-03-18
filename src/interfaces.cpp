@@ -661,7 +661,7 @@ void readConf()
         if(ini.ItemExist("append_sub_userinfo"))
             append_userinfo = ini.GetBool("append_sub_userinfo");
         if(ini.ItemExist("clash_use_new_field_name"))
-            clash_use_new_field_name = ini.Get("clash_use_new_field_name");
+            clash_use_new_field_name = ini.GetBool("clash_use_new_field_name");
         if(ini.ItemPrefixExist("rename_node"))
         {
             ini.GetAll("rename_node", tempArray);

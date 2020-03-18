@@ -12,8 +12,9 @@ jobs:
       compiler: clang
       osx_image: xcode10.3
       script:
-      - bash scripts/build.macos.release.sh
-      - tar czf subconverter_darwin64.tar.gz subconverter
+        - bash scripts/build.macos.release.sh
+      before_deploy:
+        - tar czf subconverter_darwin64.tar.gz subconverter
       deploy:
         provider: releases
         token: "$GITHUB_OAUTH_TOKEN"
@@ -25,8 +26,9 @@ jobs:
     - name: "Linux x86 Build"
       services: docker
       script:
-      - docker run --rm -v $TRAVIS_BUILD_DIR:/root/workdir multiarch/alpine:x86-edge /bin/sh -c "apk add bash git && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
-      - tar czf subconverter_linux32.tar.gz subconverter/
+        - docker run --rm -v $TRAVIS_BUILD_DIR:/root/workdir multiarch/alpine:x86-edge /bin/sh -c "apk add bash git && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
+      before_deploy:
+        - tar czf subconverter_linux32.tar.gz subconverter/
       deploy:
         provider: releases
         token: "$GITHUB_OAUTH_TOKEN"
@@ -38,8 +40,9 @@ jobs:
     - name: "Linux x86_64 Build"
       services: docker
       script:
-      - docker run -v $TRAVIS_BUILD_DIR:/root/workdir multiarch/alpine:amd64-edge /bin/sh -c "apk add bash git && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
-      - tar czf subconverter_linux64.tar.gz subconverter/
+        - docker run -v $TRAVIS_BUILD_DIR:/root/workdir multiarch/alpine:amd64-edge /bin/sh -c "apk add bash git && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
+      before_deploy:
+        - tar czf subconverter_linux64.tar.gz subconverter/
       deploy:
         provider: releases
         token: "$GITHUB_OAUTH_TOKEN"
@@ -52,8 +55,9 @@ jobs:
       services: docker
       arch: arm64
       script:
-      - docker run --rm -v $TRAVIS_BUILD_DIR:/root/workdir multiarch/alpine:armhf-edge /bin/sh -c "apk add bash git && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
-      - tar czf subconverter_armhf.tar.gz subconverter/
+        - docker run --rm -v $TRAVIS_BUILD_DIR:/root/workdir multiarch/alpine:armhf-edge /bin/sh -c "apk add bash git && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
+      before_deploy:
+        - tar czf subconverter_armhf.tar.gz subconverter/
       deploy:
         provider: releases
         token: "$GITHUB_OAUTH_TOKEN"
@@ -66,8 +70,9 @@ jobs:
       services: docker
       arch: arm64
       script:
-      - docker run -v $TRAVIS_BUILD_DIR:/root/workdir multiarch/alpine:aarch64-edge /bin/sh -c "apk add bash git && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
-      - tar czf subconverter_aarch64.tar.gz subconverter/
+        - docker run -v $TRAVIS_BUILD_DIR:/root/workdir multiarch/alpine:aarch64-edge /bin/sh -c "apk add bash git && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
+      before_deploy:
+        - tar czf subconverter_aarch64.tar.gz subconverter/
       deploy:
         provider: releases
         token: "$GITHUB_OAUTH_TOKEN"
