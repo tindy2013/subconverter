@@ -20,5 +20,3 @@ chmod +rx subconverter
 chmod +r *
 cd ..
 mv base subconverter
-
-tar czf subconverter_linux64.tar.gz subconverter/

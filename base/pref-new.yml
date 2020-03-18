@@ -36,6 +36,8 @@ node_pref:
   sort_flag: false
   skip_cert_verify_flag: false
   filter_deprecated_nodes: false
+  append_sub_userinfo: true
+  clash_use_new_field_name: false
   rename_node:
 #  - {match: "\\(?((x|X)?(\\d+)(\\.?\\d+)?)((\\s?倍率?)|(x|X))\\)?", replace: "$1x"}
   - {import: snippets/rename_node.txt}

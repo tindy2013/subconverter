@@ -1,0 +1,42 @@
+name: GitHub CI
+on: [push]
+
+jobs:
+  linux32_build:
+    name: Linux x86 Build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build
+      run: docker run --rm -v $GITHUB_WORKSPACE:/root/workdir multiarch/alpine:x86-edge /bin/sh -c "apk add bash git && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
+    - name: Upload
+      uses: actions/upload-artifact@v1
+      with:
+        name: subconverter_linux32
+        path: subconverter/
+
+  linux64_build:
+    name: Linux x86_64 Build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build
+      run: docker run -v $GITHUB_WORKSPACE:/root/workdir multiarch/alpine:amd64-edge /bin/sh -c "apk add bash git && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
+    - name: Upload
+      uses: actions/upload-artifact@v1
+      with:
+        name: subconverter_linux64
+        path: subconverter/
+
+  macos_build:
+    name: macOS Build
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build
+      run: bash scripts/build.macos.release.sh
+    - name: Upload
+      uses: actions/upload-artifact@v1
+      with:
+        name: subconverter_darwin64
+        path: subconverter/

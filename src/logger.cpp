@@ -42,25 +42,28 @@ void writeLog(int type, std::string content, int level)
     */
     if(level > global_log_level)
         return;
+    std::cerr<<getTime(2)<<" ["<<getpid()<<"]";
+
     switch(level)
     {
     case LOG_LEVEL_VERBOSE:
-        std::cerr<<getTime(2)<<" [VERBOSE] "<<content<<"\n";
+        std::cerr<<"[VERB]";
         break;
     case LOG_LEVEL_DEBUG:
-        std::cerr<<getTime(2)<<" [DEBUG] "<<content<<"\n";
+        std::cerr<<"[DEBG]";
         break;
     case LOG_LEVEL_INFO:
-        std::cerr<<getTime(2)<<" [INFO] "<<content<<"\n";
+        std::cerr<<"[INFO]";
         break;
     case LOG_LEVEL_WARNING:
-        std::cerr<<getTime(2)<<" [WARNING] "<<content<<"\n";
+        std::cerr<<"[WARN]";
         break;
     case LOG_LEVEL_ERROR:
-        std::cerr<<getTime(2)<<" [ERROR] "<<content<<"\n";
+        std::cerr<<"[ERRO]";
         break;
     case LOG_LEVEL_FATAL:
-        std::cerr<<getTime(2)<<" [FATAL] "<<content<<"\n";
+        std::cerr<<"[FATL]";
         break;
     }
+    std::cerr<<" "<<content<<"\n";
 }

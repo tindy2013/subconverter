@@ -393,15 +393,16 @@ std::string addEmoji(std::string remark, int groupID, const string_array &emoji_
     return remark;
 }
 
-void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset_content_array, bool overwrite_original_rules)
+void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset_content_array, bool overwrite_original_rules, bool new_field_name)
 {
     string_array allRules, vArray;
     std::string rule_group, retrived_rules, strLine;
     std::stringstream strStrm;
+    const std::string field_name = new_field_name ? "rules" : "Rule";
     YAML::Node Rules;
 
-    if(!overwrite_original_rules && base_rule["Rule"].IsDefined())
-        Rules = base_rule["Rule"];
+    if(!overwrite_original_rules && base_rule[field_name].IsDefined())
+        Rules = base_rule[field_name];
 
     for(ruleset_content &x : ruleset_content_array)
     {
@@ -461,7 +462,7 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset
         Rules.push_back(x);
     }
 
-    base_rule["Rule"] = Rules;
+    base_rule[field_name] = Rules;
 }
 
 void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_content_array, int surge_ver, bool overwrite_original_rules, std::string remote_path_prefix)
@@ -868,7 +869,11 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
         return;
     }
 
-    yamlnode["Proxy"] = proxies;
+    if(ext.clash_new_field_name)
+        yamlnode["proxies"] = proxies;
+    else
+        yamlnode["Proxy"] = proxies;
+
     std::string groupname;
 
     for(std::string &x : extra_proxy_group)
@@ -925,7 +930,10 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
             original_groups.push_back(singlegroup);
     }
 
-    yamlnode["Proxy Group"] = original_groups;
+    if(ext.clash_new_field_name)
+        yamlnode["proxy-groups"] = original_groups;
+    else
+        yamlnode["Proxy Group"] = original_groups;
 }
 
 std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, bool clashR, extra_settings &ext)
@@ -947,7 +955,7 @@ std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &base_conf, s
         return YAML::Dump(yamlnode);
 
     if(ext.enable_rule_generator)
-        rulesetToClash(yamlnode, ruleset_content_array, ext.overwrite_original_rules);
+        rulesetToClash(yamlnode, ruleset_content_array, ext.overwrite_original_rules, ext.clash_new_field_name);
 
     return YAML::Dump(yamlnode);
 }

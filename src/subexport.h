@@ -30,12 +30,13 @@ struct extra_settings
     bool sort_flag = false;
     bool skip_cert_verify = false;
     bool filter_deprecated = false;
+    bool clash_new_field_name = false;
     std::string surge_ssr_path;
     std::string managed_config_prefix;
     std::string quanx_dev_id;
 };
 
-void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset_content_array, bool overwrite_original_rules);
+void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset_content_array, bool overwrite_original_rules, bool new_field_name);
 void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_content_array, int surge_ver, bool overwrite_original_rules, std::string remote_path_prefix);
 void preprocessNodes(std::vector<nodeInfo> &nodes, extra_settings &ext);
 

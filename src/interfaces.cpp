@@ -40,6 +40,7 @@ std::mutex on_configuring;
 string_array renames, emojis;
 bool add_emoji = false, remove_old_emoji = false, append_proxy_type = false, filter_deprecated = true;
 bool udp_flag = false, tfo_flag = false, scv_flag = false, do_sort = false, config_update_strict = false;
+bool clash_use_new_field_name = false;
 std::string proxy_config, proxy_ruleset, proxy_subscription;
 int config_update_interval = 0;
 
@@ -452,6 +453,7 @@ void readYAMLConf(YAML::Node &node)
         section["skip_cert_verify_flag"] >> scv_flag;
         section["filter_deprecated_nodes"] >> filter_deprecated;
         section["append_sub_userinfo"] >> append_userinfo;
+        section["clash_use_new_field_name"] >> clash_use_new_field_name;
     }
 
     if(section["rename_node"].IsSequence())
@@ -658,6 +660,8 @@ void readConf()
             filter_deprecated = ini.GetBool("filter_deprecated_nodes");
         if(ini.ItemExist("append_sub_userinfo"))
             append_userinfo = ini.GetBool("append_sub_userinfo");
+        if(ini.ItemExist("clash_use_new_field_name"))
+            clash_use_new_field_name = ini.Get("clash_use_new_field_name");
         if(ini.ItemPrefixExist("rename_node"))
         {
             ini.GetAll("rename_node", tempArray);
@@ -952,7 +956,7 @@ void generateBase()
     try
     {
         clash_base = YAML::Load(base_content);
-        rulesetToClash(clash_base, ruleset_content_array, overwrite_original_rules);
+        rulesetToClash(clash_base, ruleset_content_array, overwrite_original_rules, clash_use_new_field_name);
     }
     catch (YAML::Exception &e)
     {
@@ -983,6 +987,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     std::string include = UrlDecode(getUrlArg(argument, "include")), exclude = UrlDecode(getUrlArg(argument, "exclude")), sort_flag = getUrlArg(argument, "sort");
     std::string scv = getUrlArg(argument, "scv"), fdn = getUrlArg(argument, "fdn"), expand = getUrlArg(argument, "expand"), append_sub_userinfo = getUrlArg(argument, "append_info");
     std::string dev_id = getUrlArg(argument, "dev_id"), filename = getUrlArg(argument, "filename"), interval_str = getUrlArg(argument, "interval"), strict_str = getUrlArg(argument, "strict");
+    std::string clash_new_field = getUrlArg(argument, "new_name");
     std::string base_content, output_content;
     string_array extra_group, extra_ruleset, include_remarks, exclude_remarks;
     std::string groups = urlsafe_base64_decode(getUrlArg(argument, "groups")), ruleset = urlsafe_base64_decode(getUrlArg(argument, "ruleset")), config = UrlDecode(getUrlArg(argument, "config"));
@@ -1047,6 +1052,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     ext.sort_flag = sort_flag.size() ? sort_flag == "true" : do_sort;
     ext.skip_cert_verify = scv.size() ? scv == "true" : scv_flag;
     ext.filter_deprecated = fdn.size() ? fdn == "true" : filter_deprecated;
+    ext.clash_new_field_name = clash_new_field.size() ? clash_new_field == "true" : clash_use_new_field_name;
 
     ext.nodelist = nodelist == "true";
     ext.surge_ssr_path = surge_ssr_path;
@@ -1483,6 +1489,8 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
     string_array dummy_str_array;
     std::vector<nodeInfo> nodes;
     std::string base_content, url = argument.size() <= 5 ? "" : argument.substr(5), dummy;
+    const std::string proxygroup_name = clash_use_new_field_name ? "proxy-groups" : "Proxy Group", rule_name = clash_use_new_field_name ? "rules" : "Rule";
+
     ini.store_any_line = true;
 
     if(!url.size())
@@ -1566,7 +1574,7 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
             else
                 singlegroup["proxies"].push_back(trim(dummy_str_array[i]));
         }
-        clash["Proxy Group"].push_back(singlegroup);
+        clash[proxygroup_name].push_back(singlegroup);
     }
 
     std::string subInfo;
@@ -1588,7 +1596,7 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
         return "No nodes were found!";
     }
 
-    extra_settings ext = {true, true, dummy_str_array, dummy_str_array, false, false, false, udp_flag, tfo_flag, false, do_sort, scv_flag, filter_deprecated, "", "", ""};
+    extra_settings ext = {true, true, dummy_str_array, dummy_str_array, false, false, false, udp_flag, tfo_flag, false, do_sort, scv_flag, filter_deprecated, clash_use_new_field_name, "", "", ""};
 
     netchToClash(nodes, clash, dummy_str_array, false, ext);
 
@@ -1617,7 +1625,7 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
         }
         else
             continue;
-        clash["Proxy Group"].push_back(singlegroup);
+        clash[proxygroup_name].push_back(singlegroup);
     }
 
     eraseElements(dummy_str_array);
@@ -1665,7 +1673,7 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
         }
         rule.push_back(x);
     }
-    clash["Rule"] = rule;
+    clash[rule_name] = rule;
 
     return YAML::Dump(clash);
 }
