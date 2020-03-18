@@ -23,7 +23,6 @@ cp /usr/local/lib/libevent.a .
 cp /usr/local/opt/zlib/lib/libz.a .
 cp /usr/local/opt/openssl@1.1/lib/libssl.a .
 cp /usr/local/opt/openssl@1.1/lib/libcrypto.a .
-cp /usr/local/lib/libyaml-cpp.a .
 cp /usr/local/lib/libpcre2-8.a .
 cp /usr/local/opt/bzip2/lib/libbz2.a .
 
