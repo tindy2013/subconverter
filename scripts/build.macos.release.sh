@@ -14,7 +14,7 @@ cd ..
 git clone https://github.com/jbeder/yaml-cpp
 cd yaml-cpp
 cmake -DYAML_CPP_BUILD_TESTS=OFF -DYAML_CPP_BUILD_TOOLS=OFF . > /dev/null
-make -j8 > /dev/null
+make install -j8 > /dev/null
 cd ..
 
 cp curl/lib/libcurl.a .

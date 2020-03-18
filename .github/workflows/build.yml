@@ -13,7 +13,7 @@ jobs:
     - name: Upload
       uses: actions/upload-artifact@v1
       with:
-        name: subconverter_linux32
+        name: subconverter_linux32.tar.gz
         path: subconverter_linux32.tar.gz
 
   linux64_build:
@@ -26,7 +26,7 @@ jobs:
     - name: Upload
       uses: actions/upload-artifact@v1
       with:
-        name: subconverter_linux64
+        name: subconverter_linux64.tar.gz
         path: subconverter_linux64.tar.gz
 
   macos_build:
@@ -39,6 +39,6 @@ jobs:
     - name: Upload
       uses: actions/upload-artifact@v1
       with:
-        name: subconverter_darwin64
+        name: subconverter_darwin64.tar.gz
         path: subconverter_darwin64.tar.gz
 
