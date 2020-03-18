@@ -1,6 +1,8 @@
 #include <string>
 #include <iostream>
 #include <sys/time.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "logger.h"
 
