@@ -849,6 +849,14 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
             if(ext.skip_cert_verify)
                 singleproxy["skip-cert-verify"] = true;
             break;
+        case SPEEDTEST_MESSAGE_FOUNDTROJAN:
+            singleproxy["type"] = "trojan";
+            singleproxy["password"] = password;
+            if(std::all_of(password.begin(), password.end(), ::isdigit))
+                singleproxy["password"].SetTag("str");
+            if(ext.skip_cert_verify)
+                singleproxy["skip-cert-verify"] = true;
+            break;
         default:
             continue;
         }

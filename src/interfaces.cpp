@@ -1446,7 +1446,7 @@ std::string simpleToClashR(RESPONSE_CALLBACK_ARGS)
         refreshRulesets(rulesets, ruleset_content_array);
     rca = ruleset_content_array;
 
-    extra_settings ext = {true, overwrite_original_rules, safe_get_renames(), safe_get_emojis(), add_emoji, remove_old_emoji, append_proxy_type, udp_flag, tfo_flag, false, do_sort, scv_flag, filter_deprecated, "", "", ""};
+    extra_settings ext = {true, overwrite_original_rules, safe_get_renames(), safe_get_emojis(), add_emoji, remove_old_emoji, append_proxy_type, udp_flag, tfo_flag, false, do_sort, scv_flag, filter_deprecated, clash_use_new_field_name, "", "", ""};
 
     std::string proxy;
     if(proxy_subscription == "SYSTEM")
