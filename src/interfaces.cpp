@@ -64,6 +64,13 @@ template <typename T> void operator >> (const YAML::Node& node, T& i)
         i = node.as<T>();
 };
 
+template <typename T> T safe_as (const YAML::Node& node)
+{
+    if(node.IsDefined() && !node.IsNull())
+        return node.as<T>();
+    return T();
+};
+
 std::string getRuleset(RESPONSE_CALLBACK_ARGS)
 {
     std::string url = urlsafe_base64_decode(getUrlArg(argument, "url")), type = getUrlArg(argument, "type"), group = urlsafe_base64_decode(getUrlArg(argument, "group"));
@@ -268,7 +275,7 @@ void readGroup(YAML::Node node, string_array &dest)
         object["url"] >> url;
         object["interval"] >> interval;
         for(j = 0; j < object["rule"].size(); j++)
-            tempArray.emplace_back(object["rule"][j].as<std::string>());
+            tempArray.emplace_back(safe_as<std::string>(object["rule"][j]));
         if(type != "select" && type != "ssid")
         {
             tempArray.emplace_back(url);
@@ -551,7 +558,7 @@ void readYAMLConf(YAML::Node &node)
         node["advanced"]["enable_base_gen"] >> enable_base_gen;
         if(node["advanced"]["enable_cache"].IsDefined())
         {
-            if(node["advanced"]["enable_cache"].as<bool>())
+            if(safe_as<bool>(node["advanced"]["enable_cache"]))
             {
                 node["advanced"]["cache_subscription"] >> cache_subscription;
                 node["advanced"]["cache_config"] >> cache_config;
@@ -837,8 +844,8 @@ int loadExternalYAML(YAML::Node &node, ExternalConfig &ext)
     section["quanx_rule_base"] >> ext.quanx_rule_base;
     section["loon_rule_base"] >> ext.loon_rule_base;
 
-    ext.enable_rule_generator = section["enable_rule_generator"].as<bool>();
-    ext.overwrite_original_rules = section["overwrite_original_rules"].as<bool>();
+    section["enable_rule_generator"] >> ext.enable_rule_generator;
+    section["overwrite_original_rules"] >> ext.overwrite_original_rules;
 
     if(section["custom_proxy_group"].size())
         readGroup(section["custom_proxy_group"], ext.custom_proxy_group);
