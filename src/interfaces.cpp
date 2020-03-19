@@ -24,7 +24,7 @@ std::vector<ruleset_content> ruleset_content_array;
 std::string listen_address = "127.0.0.1", default_url, insert_url, managed_config_prefix;
 int listen_port = 25500, max_pending_connections = 10, max_concurrent_threads = 4;
 bool api_mode = true, write_managed_config = false, enable_rule_generator = true, update_ruleset_on_request = false, overwrite_original_rules = true;
-bool print_debug_info = false, cfw_child_process = false, append_userinfo = true, enable_base_gen = false;
+bool print_debug_info = false, cfw_child_process = false, append_userinfo = true, enable_base_gen = false, async_fetch_ruleset = false;
 std::string access_token;
 extern std::string custom_group;
 extern int global_log_level;
@@ -71,6 +71,16 @@ template <typename T> T safe_as (const YAML::Node& node)
     return T();
 };
 
+std::string parseProxy(const std::string &source)
+{
+    std::string proxy = source;
+    if(source == "SYSTEM")
+        proxy = getSystemProxy();
+    else if(source == "NONE")
+        proxy = "";
+    return proxy;
+}
+
 std::string getRuleset(RESPONSE_CALLBACK_ARGS)
 {
     std::string url = urlsafe_base64_decode(getUrlArg(argument, "url")), type = getUrlArg(argument, "type"), group = urlsafe_base64_decode(getUrlArg(argument, "group"));
@@ -82,13 +92,7 @@ std::string getRuleset(RESPONSE_CALLBACK_ARGS)
         return "Invalid request!";
     }
 
-    std::string proxy;
-    if(proxy_ruleset == "SYSTEM")
-        proxy = getSystemProxy();
-    else if(proxy_ruleset == "NONE")
-        proxy = "";
-    else
-        proxy = proxy_ruleset;
+    std::string proxy = parseProxy(proxy_ruleset);
 
     if(fileExist(url))
         output_content = fileGet(url, true);
@@ -158,13 +162,7 @@ int importItems(string_array &target)
         path = x.substr(x.find(":") + 1);
         writeLog(0, "Trying to import items from " + path);
 
-        std::string proxy;
-        if(proxy_ruleset == "SYSTEM")
-            proxy = getSystemProxy();
-        else if(proxy_ruleset == "NONE")
-            proxy = "";
-        else
-            proxy = proxy_ruleset;
+        std::string proxy = parseProxy(proxy_config);
 
         if(fileExist(path))
             content = fileGet(path, api_mode);
@@ -331,13 +329,7 @@ void refreshRulesets(string_array &ruleset_list, std::vector<ruleset_content> &r
     std::string rule_group, rule_url, dummy;
     ruleset_content rc;
 
-    std::string proxy;
-    if(proxy_ruleset == "SYSTEM")
-        proxy = getSystemProxy();
-    else if(proxy_ruleset == "NONE")
-        proxy = "";
-    else
-        proxy = proxy_ruleset;
+    std::string proxy = parseProxy(proxy_ruleset);
 
     for(std::string &x : ruleset_list)
     {
@@ -356,7 +348,7 @@ void refreshRulesets(string_array &ruleset_list, std::vector<ruleset_content> &r
         {
             writeLog(0, "Adding rule '" + rule_url.substr(2) + "," + rule_group + "'.", LOG_LEVEL_INFO);
             //std::cerr<<"Adding rule '"<<rule_url.substr(2)<<","<<rule_group<<"'."<<std::endl;
-            rc = {rule_group, "", rule_url};
+            rc = {rule_group, "", std::move(std::async(std::launch::async, [rule_url](){return rule_url;}))};
             rca.emplace_back(rc);
             continue;
         }
@@ -364,22 +356,28 @@ void refreshRulesets(string_array &ruleset_list, std::vector<ruleset_content> &r
         {
             //std::cerr<<"Updating ruleset url '"<<rule_url<<"' with group '"<<rule_group<<"'."<<std::endl;
             writeLog(0, "Updating ruleset url '" + rule_url + "' with group '" + rule_group + "'.", LOG_LEVEL_INFO);
+            /*
             if(fileExist(rule_url))
             {
                 rc = {rule_group, rule_url, fileGet(rule_url)};
             }
-            else if(startsWith(rule_url, "http://") || startsWith(rule_url, "https://") || startsWith(rule_url, "data:"))
+            else if(startsWith(rule_url, "https://") || startsWith(rule_url, "http://") || startsWith(rule_url, "data:"))
             {
                 rc = {rule_group, rule_url, webGet(rule_url, proxy, dummy, cache_ruleset)};
             }
             else
                 continue;
+            */
+            rc = {rule_group, rule_url, fetchFileAsync(rule_url, proxy, cache_ruleset)};
         }
-        if(rc.rule_content.size())
+        rca.emplace_back(rc);
+        /*
+        if(rc.rule_content.get().size())
             rca.emplace_back(rc);
         else
             //std::cerr<<"Warning: No data was fetched from this link. Skipping..."<<std::endl;
             writeLog(0, "Warning: No data was fetched from ruleset '" + rule_url + "'. Skipping...", LOG_LEVEL_WARNING);
+        */
     }
 }
 
@@ -567,6 +565,7 @@ void readYAMLConf(YAML::Node &node)
             else
                 cache_subscription = cache_config = cache_ruleset = 0; //disable cache
         }
+        node["advanced"]["async_fetch_ruleset"] >> async_fetch_ruleset;
     }
 }
 
@@ -806,6 +805,8 @@ void readConf()
         else
             cache_subscription = cache_config = cache_ruleset = 0; //disable cache
     }
+    if(ini.ItemExist("async_fetch_ruleset"))
+        async_fetch_ruleset = ini.GetBool("async_fetch_ruleset");
 
     //std::cerr<<"Read preference settings completed."<<std::endl;
     writeLog(0, "Read preference settings completed.", LOG_LEVEL_INFO);
@@ -865,13 +866,7 @@ int loadExternalYAML(YAML::Node &node, ExternalConfig &ext)
 int loadExternalConfig(std::string &path, ExternalConfig &ext)
 {
     std::string base_content, dummy;
-    std::string proxy;
-    if(proxy_config == "SYSTEM")
-        proxy = getSystemProxy();
-    else if(proxy_config == "NONE")
-        proxy = "";
-    else
-        proxy = proxy_config;
+    std::string proxy = parseProxy(proxy_config);
 
     if(fileExist(path))
         base_content = fileGet(path, api_mode);
@@ -1027,13 +1022,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         readConf();
 
     //check for proxy settings
-    std::string proxy;
-    if(proxy_subscription == "SYSTEM")
-        proxy = getSystemProxy();
-    else if(proxy_subscription == "NONE")
-        proxy = "";
-    else
-        proxy = proxy_subscription;
+    std::string proxy = parseProxy(proxy_subscription);
 
     ext.emoji_array = safe_get_emojis();
     ext.rename_array = safe_get_renames();
@@ -1448,13 +1437,7 @@ std::string simpleToClashR(RESPONSE_CALLBACK_ARGS)
 
     extra_settings ext = {true, overwrite_original_rules, safe_get_renames(), safe_get_emojis(), add_emoji, remove_old_emoji, append_proxy_type, udp_flag, tfo_flag, false, do_sort, scv_flag, filter_deprecated, clash_use_new_field_name, "", "", ""};
 
-    std::string proxy;
-    if(proxy_subscription == "SYSTEM")
-        proxy = getSystemProxy();
-    else if(proxy_subscription == "NONE")
-        proxy = "";
-    else
-        proxy = proxy_subscription;
+    std::string proxy = parseProxy(proxy_subscription);
 
     include_remarks = def_include_remarks;
     exclude_remarks = def_exclude_remarks;
@@ -1513,13 +1496,7 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
         return "Please insert your subscription link instead of clicking the default link.";
     }
 
-    std::string proxy;
-    if(proxy_config == "SYSTEM")
-        proxy = getSystemProxy();
-    else if(proxy_config == "NONE")
-        proxy = "";
-    else
-        proxy = proxy_config;
+    std::string proxy = parseProxy(proxy_config);
 
     if(fileExist(url))
         base_content = fileGet(url);
@@ -1543,12 +1520,7 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
         return errmsg;
     }
 
-    if(proxy_subscription == "SYSTEM")
-        proxy = getSystemProxy();
-    else if(proxy_subscription == "NONE")
-        proxy = "";
-    else
-        proxy = proxy_subscription;
+    proxy = parseProxy(proxy_subscription);
 
     //scan groups first, get potential policy-path
     string_multimap section;
@@ -1753,13 +1725,7 @@ std::string getScript(RESPONSE_CALLBACK_ARGS)
     std::string url = urlsafe_base64_decode(getUrlArg(argument, "url")), dev_id = getUrlArg(argument, "id");
     std::string output_content, dummy;
 
-    std::string proxy;
-    if(proxy_config == "SYSTEM")
-        proxy = getSystemProxy();
-    else if(proxy_config == "NONE")
-        proxy = "";
-    else
-        proxy = proxy_config;
+    std::string proxy = parseProxy(proxy_config);
 
     if(fileExist(url))
         output_content = fileGet(url, true);
@@ -1785,13 +1751,7 @@ std::string getRewriteRemote(RESPONSE_CALLBACK_ARGS)
     std::string url = urlsafe_base64_decode(getUrlArg(argument, "url")), dev_id = getUrlArg(argument, "id");
     std::string output_content, dummy;
 
-    std::string proxy;
-    if(proxy_config == "SYSTEM")
-        proxy = getSystemProxy();
-    else if(proxy_config == "NONE")
-        proxy = "";
-    else
-        proxy = proxy_config;
+    std::string proxy = parseProxy(proxy_config);
 
     if(fileExist(url))
         output_content = fileGet(url, true);
@@ -1974,13 +1934,7 @@ int simpleGenerator()
                 else
                 {
                     //check for proxy settings
-                    std::string proxy;
-                    if(proxy_subscription == "SYSTEM")
-                        proxy = getSystemProxy();
-                    else if(proxy_subscription == "NONE")
-                        proxy = "";
-                    else
-                        proxy = proxy_subscription;
+                    std::string proxy = parseProxy(proxy_subscription);
                     content = webGet(url, proxy);
                 }
                 if(content.empty())
@@ -2016,7 +1970,7 @@ int simpleGenerator()
         fileWrite(path, content, true);
         for(auto &y : headers)
         {
-            if(regMatch(y.first, "(?i)Subscription-UserInfo"))
+            if(y.first == "Subscription-UserInfo")
             {
                 std::cerr<<"User Info for artifact '"<<x<<"': "<<subInfoToMessage(y.second)<<"\n";
                 break;

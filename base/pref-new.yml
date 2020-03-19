@@ -92,3 +92,4 @@ advanced:
   cache_subscription: 60
   cache_config: 300
   cache_ruleset: 21600
+  async_fetch_ruleset: false

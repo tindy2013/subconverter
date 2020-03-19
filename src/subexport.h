@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <future>
 
 #include "misc.h"
 #include "ini_reader.h"
@@ -12,7 +13,7 @@ struct ruleset_content
 {
     std::string rule_group;
     std::string rule_path;
-    std::string rule_content;
+    std::shared_future<std::string> rule_content;
 };
 
 struct extra_settings

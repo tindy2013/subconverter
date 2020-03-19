@@ -407,7 +407,7 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset
     for(ruleset_content &x : ruleset_content_array)
     {
         rule_group = x.rule_group;
-        retrived_rules = x.rule_content;
+        retrived_rules = x.rule_content.get();
         if(retrived_rules.find("[]") == 0)
         {
             strLine = retrived_rules.substr(2);
@@ -494,7 +494,7 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
     for(ruleset_content &x : ruleset_content_array)
     {
         rule_group = x.rule_group;
-        retrived_rules = x.rule_content;
+        retrived_rules = x.rule_content.get();
         if(retrived_rules.find("[]") == 0)
         {
             strLine = retrived_rules.substr(2);

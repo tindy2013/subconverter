@@ -1,3 +1,6 @@
+#include <future>
+#include <thread>
+#include "webget.h"
 #include "multithread.h"
 
 //safety lock for multi-thread
@@ -66,4 +69,18 @@ void safe_set_times(string_array &data)
 {
     guarded_mutex guard(on_time);
     time_rules.swap(data);
+}
+
+std::shared_future<std::string> fetchFileAsync(const std::string &path, const std::string &proxy, int cache_ttl, bool async)
+{
+    std::shared_future<std::string> retVal;
+    if(fileExist(path))
+        retVal = std::move(std::async(std::launch::async, [path](){return fileGet(path, true);}));
+    else if(startsWith(path, "https://") || startsWith(path, "http://"))
+        retVal = std::move(std::async(std::launch::async, [path, proxy, cache_ttl](){return webGet(path, proxy, cache_ttl);}));
+    else
+        return std::move(std::async(std::launch::async, [](){return std::string();}));
+    if(!async)
+        retVal.wait();
+    return retVal;
 }

@@ -167,6 +167,12 @@ std::string webGet(std::string url, std::string proxy)
     return webGet(url, proxy, dummy);
 }
 
+std::string webGet(std::string url, std::string proxy, unsigned int cache_ttl)
+{
+    std::string dummy;
+    return webGet(url, proxy, dummy, cache_ttl);
+}
+
 int curlPost(std::string url, std::string data, std::string proxy, std::string auth_token, std::string *retData)
 {
     CURL *curl_handle;

@@ -44,28 +44,28 @@ void writeLog(int type, std::string content, int level)
     */
     if(level > global_log_level)
         return;
-    std::cerr<<getTime(2)<<" ["<<getpid()<<"]";
+    //std::cerr<<getTime(2)<<" ["<<getpid()<<"]";
 
     switch(level)
     {
     case LOG_LEVEL_VERBOSE:
-        std::cerr<<"[VERB]";
+        std::cerr<<getTime(2)<<" ["<<getpid()<<"]"<<"[VERB]"<<" "<<content<<"\n";
         break;
     case LOG_LEVEL_DEBUG:
-        std::cerr<<"[DEBG]";
+        std::cerr<<getTime(2)<<" ["<<getpid()<<"]"<<"[DEBG]"<<" "<<content<<"\n";
         break;
     case LOG_LEVEL_INFO:
-        std::cerr<<"[INFO]";
+        std::cerr<<getTime(2)<<" ["<<getpid()<<"]"<<"[INFO]"<<" "<<content<<"\n";
         break;
     case LOG_LEVEL_WARNING:
-        std::cerr<<"[WARN]";
+        std::cerr<<getTime(2)<<" ["<<getpid()<<"]"<<"[WARN]"<<" "<<content<<"\n";
         break;
     case LOG_LEVEL_ERROR:
-        std::cerr<<"[ERRO]";
+        std::cerr<<getTime(2)<<" ["<<getpid()<<"]"<<"[ERRO]"<<" "<<content<<"\n";
         break;
     case LOG_LEVEL_FATAL:
-        std::cerr<<"[FATL]";
+        std::cerr<<getTime(2)<<" ["<<getpid()<<"]"<<"[FATL]"<<" "<<content<<"\n";
         break;
     }
-    std::cerr<<" "<<content<<"\n";
+    //std::cerr<<" "<<content<<"\n";
 }

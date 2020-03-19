@@ -2,6 +2,7 @@
 #define MULTITHREAD_H_INCLUDED
 
 #include <mutex>
+#include <future>
 
 #include <yaml-cpp/yaml.h>
 
@@ -20,5 +21,6 @@ void safe_set_emojis(string_array &data);
 void safe_set_renames(string_array &data);
 void safe_set_streams(string_array &data);
 void safe_set_times(string_array &data);
+std::shared_future<std::string> fetchFileAsync(const std::string &path, const std::string &proxy, int cache_ttl, bool async = false);
 
 #endif // MULTITHREAD_H_INCLUDED
