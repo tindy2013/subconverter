@@ -48,7 +48,7 @@ int setTimeout(SOCKET s, int timeout);
 int startConnect(SOCKET sHost, std::string addr, int port);
 int simpleSend(std::string addr, int port, std::string data);
 int send_simple(SOCKET sHost, std::string data);
-std::string hostnameToIPAddr(std::string host);
+std::string hostnameToIPAddr(const std::string &host);
 int connectSocks5(SOCKET sHost, std::string username, std::string password);
 int connectThruSocks(SOCKET sHost, std::string host, int port);
 int connectThruHTTP(SOCKET sHost, std::string username, std::string password, std::string dsthost, int dstport);

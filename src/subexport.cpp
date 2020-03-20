@@ -25,8 +25,7 @@ extern string_array ss_ciphers, ssr_ciphers;
 string_array clashr_protocols = {"auth_aes128_md5", "auth_aes128_sha1"};
 string_array clashr_obfs = {"plain", "http_simple", "http_post", "tls1.2_ticket_auth"};
 
-/*
-std::string hostnameToIPAddr(std::string host)
+std::string hostnameToIPAddr(const std::string &host)
 {
     int retVal;
     std::string retAddr;
@@ -60,7 +59,6 @@ std::string hostnameToIPAddr(std::string host)
     freeaddrinfo(retAddrInfo);
     return retAddr;
 }
-*/
 
 std::string vmessConstruct(std::string add, std::string port, std::string type, std::string id, std::string aid, std::string net, std::string cipher, std::string path, std::string host, std::string edge, std::string tls, int local_port)
 {
@@ -1087,9 +1085,8 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
             {
                 return std::move(a) + "\", args=\"" + std::move(b);
             });
-            //std::string ipaddr = (isIPv4(hostname) || isIPv6(hostname)) ? hostname : hostnameToIPAddr(hostname);
-            //proxy += "\", local-port=" + std::to_string(local_port) + ", addresses=" + ipaddr;
-            proxy += "\", local-port=" + std::to_string(local_port);
+            proxy += "\", local-port=" + std::to_string(local_port) + ", addresses=" + ((isIPv4(hostname) || isIPv6(hostname)) ? hostname : hostnameToIPAddr(hostname));
+            //proxy += "\", local-port=" + std::to_string(local_port);
             local_port++;
             break;
         case SPEEDTEST_MESSAGE_FOUNDSOCKS:
