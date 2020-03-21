@@ -25,6 +25,13 @@ extern string_array ss_ciphers, ssr_ciphers;
 string_array clashr_protocols = {"auth_aes128_md5", "auth_aes128_sha1"};
 string_array clashr_obfs = {"plain", "http_simple", "http_post", "tls1.2_ticket_auth"};
 
+template <typename T> T safe_as (const YAML::Node& node)
+{
+    if(node.IsDefined() && !node.IsNull())
+        return node.as<T>();
+    return T();
+};
+
 std::string hostnameToIPAddr(const std::string &host)
 {
     int retVal;
@@ -461,6 +468,62 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset
     }
 
     base_rule[field_name] = Rules;
+}
+
+std::string rulesetToClashStr(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset_content_array, bool overwrite_original_rules, bool new_field_name)
+{
+    string_array allRules, vArray;
+    std::string rule_group, retrived_rules, strLine;
+    std::stringstream strStrm;
+    const std::string field_name = new_field_name ? "rules" : "Rule";
+    std::string output_content = "\n" + field_name + ":\n";
+
+    if(!overwrite_original_rules && base_rule[field_name].IsDefined())
+    {
+        for(size_t i = 0; i < base_rule[field_name].size(); i++)
+            output_content += " - " + safe_as<std::string>(base_rule[field_name][i]) + "\n";
+    }
+    base_rule.remove(field_name);
+
+    for(ruleset_content &x : ruleset_content_array)
+    {
+        rule_group = x.rule_group;
+        retrived_rules = x.rule_content.get();
+        if(retrived_rules.find("[]") == 0)
+        {
+            strLine = retrived_rules.substr(2);
+            if(strLine.find("FINAL") == 0)
+                strLine.replace(0, 5, "MATCH");
+            strLine += "," + rule_group;
+            if(std::count(strLine.begin(), strLine.end(), ',') > 2)
+                strLine = regReplace(strLine, "^(.*?,.*?)(,.*)(,.*)$", "$1$3$2");
+            output_content += " - " + strLine + "\n";
+            continue;
+        }
+        char delimiter = count(retrived_rules.begin(), retrived_rules.end(), '\n') < 1 ? '\r' : '\n';
+
+        strStrm.clear();
+        strStrm<<retrived_rules;
+        std::string::size_type lineSize;
+        while(getline(strStrm, strLine, delimiter))
+        {
+            lineSize = strLine.size();
+            if(lineSize)
+            {
+                strLine = regTrim(strLine);
+                lineSize = strLine.size();
+            }
+            if(!lineSize || strLine[0] == ';' || strLine[0] == '#' || (lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')) //empty lines and comments are ignored
+                continue;
+            if(strLine.find("USER-AGENT") == 0 || strLine.find("URL-REGEX") == 0 || strLine.find("PROCESS-NAME") == 0 || strLine.find("AND") == 0 || strLine.find("OR") == 0) //remove unsupported types
+                continue;
+            strLine += "," + rule_group;
+            if(std::count(strLine.begin(), strLine.end(), ',') > 2)
+                strLine = regReplace(strLine, "^(.*?,.*?)(,.*)(,.*)$", "$1$3$2");
+            output_content += " - " + strLine + "\n";
+        }
+    }
+    return output_content;
 }
 
 void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_content_array, int surge_ver, bool overwrite_original_rules, std::string remote_path_prefix)
@@ -960,10 +1023,19 @@ std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &base_conf, s
     if(ext.nodelist)
         return YAML::Dump(yamlnode);
 
+    /*
     if(ext.enable_rule_generator)
         rulesetToClash(yamlnode, ruleset_content_array, ext.overwrite_original_rules, ext.clash_new_field_name);
 
     return YAML::Dump(yamlnode);
+    */
+    if(!ext.enable_rule_generator)
+        return YAML::Dump(yamlnode);
+
+    std::string output_content = rulesetToClashStr(yamlnode, ruleset_content_array, ext.overwrite_original_rules, ext.clash_new_field_name);
+    output_content.insert(0, YAML::Dump(yamlnode));
+
+    return output_content;
 }
 
 std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, int surge_ver, extra_settings &ext)

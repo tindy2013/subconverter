@@ -1226,7 +1226,9 @@ bool explodeSurge(std::string surge, const std::string &custom_port, int local_p
                         for(auto &y : headers)
                         {
                             header = split(trim(y), ":");
-                            if(regMatch(header[0], "(?i)host"))
+                            if(header.size() != 2)
+                                continue;
+                            else if(regMatch(header[0], "(?i)host"))
                                 host = trim_quote(header[1]);
                             else if(regMatch(header[0], "(?i)edge"))
                                 edge = trim_quote(header[1]);

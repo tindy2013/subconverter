@@ -84,3 +84,8 @@ std::shared_future<std::string> fetchFileAsync(const std::string &path, const st
         retVal.wait();
     return retVal;
 }
+
+std::string fetchFile(const std::string &path, const std::string &proxy, int cache_ttl)
+{
+    return fetchFileAsync(path, proxy, cache_ttl, false).get();
+}

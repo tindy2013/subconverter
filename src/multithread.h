@@ -22,5 +22,6 @@ void safe_set_renames(string_array &data);
 void safe_set_streams(string_array &data);
 void safe_set_times(string_array &data);
 std::shared_future<std::string> fetchFileAsync(const std::string &path, const std::string &proxy, int cache_ttl, bool async = false);
+std::string fetchFile(const std::string &path, const std::string &proxy, int cache_ttl);
 
 #endif // MULTITHREAD_H_INCLUDED
