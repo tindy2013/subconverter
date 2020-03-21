@@ -1,9 +1,7 @@
-# > CN
-DOMAIN-SUFFIX,cn
-
 # > Google
 DOMAIN-KEYWORD,mtalk.google.com
 DOMAIN,safebrowsing.googleapis.com
+DOMAIN-SUFFIX,dl.google.com
 
 # > Steam
 USER-AGENT,Steam*

@@ -1,4 +1,12 @@
-# Update > 2019.12.13 Go advertising rule Integration lhie1 and shenji
+# Update > 2020.3.20 Go advertising rule Integration lhie1 and ConnersHua
+DOMAIN,t7z.cupid.iqiyi.com
+DOMAIN,static-s.iqiyi.com
+DOMAIN,mobile2.da.mgtv.com
+DOMAIN,mobile.da.mgtv.com
+DOMAIN,gwp.xiaojukeji.com
+DOMAIN,ct.xiaojukeji.com
+DOMAIN,news.ssp.qq.com
+DOMAIN,news.l.qq.com
 DOMAIN-SUFFIX,idealads.net
 DOMAIN-SUFFIX,ironsrc.com
 DOMAIN-SUFFIX,apoll.m.taobao.com
@@ -8398,7 +8406,6 @@ DOMAIN-SUFFIX,4paradigm.com
 DOMAIN-KEYWORD,talkingdata
 DOMAIN-SUFFIX,catch.gift
 DOMAIN-SUFFIX,pubnative.net
-DOMAIN,suggestqueries.google.com
 DOMAIN,www.googleadservices.com
 DOMAIN,www.google-analytics.com
 DOMAIN,fusion.qq.com

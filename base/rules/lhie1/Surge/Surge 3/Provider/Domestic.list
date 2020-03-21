@@ -2,6 +2,8 @@
 DOMAIN-KEYWORD,beplay
 
 # > Blizzard
+USER-AGENT,hearthstone*
+DOMAIN,cdp.cloud.unity3d.com
 DOMAIN-SUFFIX,battle.net
 DOMAIN-SUFFIX,battlenet.com
 DOMAIN-SUFFIX,blizzard.com
@@ -11,6 +13,7 @@ DOMAIN-SUFFIX,azure.cn
 DOMAIN-SUFFIX,hotmail.com
 DOMAIN-SUFFIX,msn.com
 DOMAIN-SUFFIX,outlook.com
+DOMAIN-SUFFIX,sharepoint.com
 DOMAIN-SUFFIX,windows.com
 DOMAIN-SUFFIX,windows.net
 DOMAIN-SUFFIX,windowsupdate.com
@@ -114,6 +117,7 @@ DOMAIN-SUFFIX,fir.im
 DOMAIN-SUFFIX,firefox.com
 DOMAIN-SUFFIX,frdic.com
 DOMAIN-SUFFIX,fresh-ideas.cc
+DOMAIN-SUFFIX,gameloft.com
 DOMAIN-SUFFIX,geetest.com
 DOMAIN-SUFFIX,godic.net
 DOMAIN-SUFFIX,goodread.com
@@ -261,7 +265,6 @@ DOMAIN-SUFFIX,ximalaya.com
 DOMAIN-SUFFIX,xitek.com
 DOMAIN-SUFFIX,xmcdn.com
 DOMAIN-SUFFIX,xslb.net
-DOMAIN-SUFFIX,xteko.com
 DOMAIN-SUFFIX,xunlei.com
 DOMAIN-SUFFIX,yach.me
 DOMAIN-SUFFIX,yeepay.com
@@ -280,3 +283,6 @@ DOMAIN-SUFFIX,zimuzu.tv
 DOMAIN-SUFFIX,zmz002.com
 
 IP-CIDR,1.255.62.0/24,no-resolve
+
+# > CN
+DOMAIN-SUFFIX,cn
