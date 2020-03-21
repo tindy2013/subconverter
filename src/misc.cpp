@@ -262,9 +262,10 @@ std::string base64_decode(const std::string &encoded_string, bool accept_urlsafe
             dtable[uchar] = k;  // decode (find)
             itable[uchar] = 1;  // is_base64
         }
+        const unsigned char dash = '-', add = '+', under = '_', slash = '/';
         // Add urlsafe table
-        dtable['-'] = dtable['+']; itable['-'] = 2;
-        dtable['_'] = dtable['/']; itable['_'] = 2;
+        dtable[dash] = dtable[add]; itable[dash] = 2;
+        dtable[under] = dtable[slash]; itable[under] = 2;
         table_ready = 1;
     }
 

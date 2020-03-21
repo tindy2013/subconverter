@@ -344,7 +344,7 @@ void refreshRulesets(string_array &ruleset_list, std::vector<ruleset_content> &r
         {
             writeLog(0, "Adding rule '" + rule_url.substr(2) + "," + rule_group + "'.", LOG_LEVEL_INFO);
             //std::cerr<<"Adding rule '"<<rule_url.substr(2)<<","<<rule_group<<"'."<<std::endl;
-            rc = {rule_group, "", std::move(std::async(std::launch::async, [rule_url](){return rule_url;}))};
+            rc = {rule_group, "", std::async(std::launch::async, [rule_url](){return rule_url;})};
             rca.emplace_back(rc);
             continue;
         }

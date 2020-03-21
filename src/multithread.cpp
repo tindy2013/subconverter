@@ -75,11 +75,11 @@ std::shared_future<std::string> fetchFileAsync(const std::string &path, const st
 {
     std::shared_future<std::string> retVal;
     if(fileExist(path))
-        retVal = std::move(std::async(std::launch::async, [path](){return fileGet(path, true);}));
-    else if(startsWith(path, "https://") || startsWith(path, "http://"))
-        retVal = std::move(std::async(std::launch::async, [path, proxy, cache_ttl](){return webGet(path, proxy, cache_ttl);}));
+        retVal = std::async(std::launch::async, [path](){return fileGet(path, true);});
+    else if(startsWith(path, "https://") || startsWith(path, "http://") || startsWith(path, "data:"))
+        retVal = std::async(std::launch::async, [path, proxy, cache_ttl](){return webGet(path, proxy, cache_ttl);});
     else
-        return std::move(std::async(std::launch::async, [](){return std::string();}));
+        return std::async(std::launch::async, [](){return std::string();});
     if(!async)
         retVal.wait();
     return retVal;
