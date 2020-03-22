@@ -12,7 +12,7 @@ RUN apk add git g++ build-base linux-headers cmake && \
     mv base ../ && \
     cd .. && \
     rm -rf subconverter && \
-    apk add pcre2 libcurl yaml-cpp libevent libpcrecpp && \
+    apk add pcre2 libcurl yaml-cpp libevent && \
     apk del git gcc g++ build-base linux-headers cmake libressl-dev curl-dev rapidjson-dev libevent-dev pcre2-dev yaml-cpp-dev
 
 # set entry

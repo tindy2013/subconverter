@@ -110,7 +110,8 @@ void explodeVmessConf(std::string content, const std::string &custom_port, int l
 {
     nodeInfo node;
     Document json;
-    std::string group, ps, add, port, type, id, aid, net, path, host, tls, cipher, subid;
+    rapidjson::Value nodejson, settings;
+    std::string group, ps, add, port, type, id, aid, net, path, host, edge, tls, cipher, subid;
     int configType, index = nodes.size();
     std::map<std::string, std::string> subdata;
     std::map<std::string, std::string>::iterator iter;
@@ -118,23 +119,64 @@ void explodeVmessConf(std::string content, const std::string &custom_port, int l
     json.Parse(content.data());
     if(json.HasParseError())
         return;
-    /*
     if(json.HasMember("outbounds")) //single config
     {
         if(json["outbounds"].Size() > 0 && json["outbounds"][0].HasMember("settings") && json["outbounds"][0]["settings"].HasMember("vnext") && json["outbounds"][0]["settings"]["vnext"].Size() > 0)
         {
-            add = GetMember(json["outbounds"][0]["settings"]["vnext"][0], "address");
-            port = GetMember(json["outbounds"][0]["settings"]["vnext"][0], "port");
-            json["routing"].RemoveAllMembers();
-            json["routing"].AddMember("domainStrategy", "IPIfNonMatch", json.GetAllocator());
-            rapidjson::Value& inbounds = json["inbounds"];
-            rapidjson::Document newinbound(Type::kObjectType);
-            newinbound.AddMember("listen", "127.0.0.1", json.GetAllocator());
-            newinbound.AddMember("port", local_port, json.GetAllocator());
-            newinbound.AddMember("protocol", "socks", json.GetAllocator());
-            inbounds.Clear();
-            inbounds.PushBack(newinbound, json.GetAllocator());
-            node.proxyStr = SerializeObject(json);
+            nodejson = json["outbounds"][0];
+            add = GetMember(nodejson["settings"]["vnext"][0], "address");
+            port = GetMember(nodejson["settings"]["vnext"][0], "port");
+            if(nodejson["settings"]["vnext"][0]["users"].Size())
+            {
+                id = GetMember(nodejson["settings"]["vnext"][0]["users"][0], "id");
+                aid = GetMember(nodejson["settings"]["vnext"][0]["users"][0], "alterId");
+                cipher = GetMember(nodejson["settings"]["vnext"][0]["users"][0], "security");
+            }
+            if(nodejson.HasMember("streamSettings"))
+            {
+                net = GetMember(nodejson["streamSettings"], "network");
+                tls = GetMember(nodejson["streamSettings"], "security");
+                if(net == "ws")
+                {
+                    if(nodejson["streamSettings"].HasMember("wssettings"))
+                        settings = nodejson["streamSettings"]["wssettings"];
+                    else if(nodejson["streamSettings"].HasMember("wsSettings"))
+                        settings = nodejson["streamSettings"]["wsSettings"];
+                    else
+                        settings.Clear();
+                    path = GetMember(settings, "path");
+                    if(settings.HasMember("headers"))
+                    {
+                        host = GetMember(settings["headers"], "Host");
+                        edge = GetMember(settings["headers"], "Edge");
+                    }
+                }
+                if(nodejson["streamSettings"].HasMember("tcpSettings"))
+                    settings = nodejson["streamSettings"]["tcpSettings"];
+                else if(nodejson["streamSettings"].HasMember("tcpsettings"))
+                    settings = nodejson["streamSettings"]["tcpsettings"];
+                else
+                    settings.Clear();
+                if(settings.HasMember("header"))
+                {
+                    type = GetMember(settings["header"], "type");
+                    if(type == "http")
+                    {
+                        if(settings["header"].HasMember("request"))
+                        {
+                            if(settings["header"]["request"].HasMember("path") && settings["header"]["request"]["path"].Size())
+                                settings["header"]["request"]["path"][0] >> path;
+                            if(settings["header"]["request"].HasMember("headers"))
+                            {
+                                host = GetMember(settings["header"]["request"]["headers"], "Host");
+                                edge = GetMember(settings["header"]["request"]["headers"], "Edge");
+                            }
+                        }
+                    }
+                }
+            }
+            node.linkType = SPEEDTEST_MESSAGE_FOUNDVMESS;
+            node.proxyStr = vmessConstruct(add, port, type, id, aid, net, cipher, path, host, edge, tls, local_port);
             node.group = V2RAY_DEFAULT_GROUP;
             node.remarks = add + ":" + port;
             node.server = add;
@@ -143,7 +185,6 @@ void explodeVmessConf(std::string content, const std::string &custom_port, int l
         }
         return;
     }
-    */
     //read all subscribe remark as group name
     for(unsigned int i = 0; i < json["subItem"].Size(); i++)
         subdata.insert(std::pair<std::string, std::string>(json["subItem"][i]["id"].GetString(), json["subItem"][i]["remarks"].GetString()));
@@ -371,23 +412,7 @@ void explodeSSConf(std::string content, const std::string &custom_port, int loca
     json.Parse(content.data());
     if(json.HasParseError())
         return;
-    /*
-    if(json.HasMember("local_port") && json.HasMember("local_address")) //single libev config
-    {
-        server = GetMember(json, "server");
-        port = GetMember(json, "server_port");
-        json["local_port"].SetInt(local_port);
-        json["local_address"].SetString("127.0.0.1");
-        node.linkType = SPEEDTEST_MESSAGE_FOUNDSS;
-        node.group = SS_DEFAULT_GROUP;
-        node.remarks = server + ":" + port;
-        node.server = server;
-        node.port = to_int(port);
-        node.proxyStr = SerializeObject(json);
-        nodes.push_back(node);
-        return;
-    }
-    */
+
     for(unsigned int i = 0; i < json["configs"].Size(); i++)
     {
         json["configs"][i]["remarks"] >> ps;
@@ -478,37 +503,43 @@ void explodeSSRConf(std::string content, const std::string &custom_port, int loc
 {
     nodeInfo node;
     Document json;
-    std::string remarks, remarks_base64, group, server, port, method, password, protocol, protoparam, obfs, obfsparam;
+    std::string remarks, remarks_base64, group, server, port, method, password, protocol, protoparam, obfs, obfsparam, plugin, pluginopts;
     int index = nodes.size();
 
     json.Parse(content.data());
     if(json.HasParseError())
         return;
-    /*
+
     if(json.HasMember("local_port") && json.HasMember("local_address")) //single libev config
     {
+        server = GetMember(json, "server");
+        port = GetMember(json, "server_port");
+        node.remarks = server + ":" + port;
+        node.server = server;
+        node.port = to_int(port);
         method = GetMember(json, "method");
         obfs = GetMember(json, "obfs");
         protocol = GetMember(json, "protocol");
         if(find(ss_ciphers.begin(), ss_ciphers.end(), method) != ss_ciphers.end() && (obfs.empty() || obfs == "plain") && (protocol.empty() || protocol == "origin"))
         {
-            explodeSSConf(content, custom_port, local_port, ss_libev, nodes);
-            return;
+            plugin = GetMember(json, "plugin");
+            pluginopts = GetMember(json, "plugin_opts");
+            node.linkType = SPEEDTEST_MESSAGE_FOUNDSS;
+            node.group = SS_DEFAULT_GROUP;
+            node.proxyStr = ssConstruct(server, port, password, method, plugin, pluginopts, node.remarks, local_port, ss_libev);
         }
-        server = GetMember(json, "server");
-        port = GetMember(json, "server_port");
-        json["local_port"].SetInt(local_port);
-        json["local_address"].SetString("127.0.0.1");
-        node.linkType = SPEEDTEST_MESSAGE_FOUNDSSR;
-        node.group = SSR_DEFAULT_GROUP;
-        node.remarks = server + ":" + port;
-        node.server = server;
-        node.port = to_int(port);
-        node.proxyStr = SerializeObject(json);
+        else
+        {
+            protoparam = GetMember(json, "protocol_param");
+            obfsparam = GetMember(json, "obfs_param");
+            node.linkType = SPEEDTEST_MESSAGE_FOUNDSSR;
+            node.group = SSR_DEFAULT_GROUP;
+            node.proxyStr = ssrConstruct(node.group, node.remarks, base64_encode(node.remarks), server, port, protocol, method, obfs, password, obfsparam, protoparam, local_port, ssr_libev);
+        }
         nodes.push_back(node);
         return;
     }
-    */
+
     for(unsigned int i = 0; i < json["configs"].Size(); i++)
     {
         json["configs"][i]["group"] >> group;

@@ -32,7 +32,7 @@ void operator >> (const rapidjson::Value& value, int& i)
         i = 0;
 }
 
-std::string GetMember(const rapidjson::Value& value, std::string member)
+std::string GetMember(const rapidjson::Value& value, const std::string &member)
 {
     std::string retStr;
     if(value.HasMember(member.data()))
@@ -40,7 +40,7 @@ std::string GetMember(const rapidjson::Value& value, std::string member)
     return retStr;
 }
 
-void GetMember(const rapidjson::Value& value, std::string member, std::string& target)
+void GetMember(const rapidjson::Value& value, const std::string &member, std::string& target)
 {
     std::string retStr = GetMember(value, member);
     if(retStr.size())
