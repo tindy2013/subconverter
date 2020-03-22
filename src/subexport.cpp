@@ -1236,6 +1236,7 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
                 return std::move(a) + "," + std::move(b);
             });
             ini.Set("{NONAME}", vArray[0] + " = " + proxy); //insert order
+            continue;
         default:
             continue;
         }
@@ -1681,6 +1682,9 @@ void netchToQuan(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rules
             return std::move(a) + "\n" + std::move(b);
         });
 
+        if(filtered_nodelist.size() < 2) // force groups with 1 node to be static
+            type = "static";
+
         singlegroup = name + " : " + type;
         if(type == "static")
             singlegroup += ", " + filtered_nodelist[0];
@@ -1896,6 +1900,9 @@ void netchToQuanX(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rule
                     filtered_nodelist.emplace_back(trim(vArray[vArray.size() - 1]));
             }
         }
+
+        if(filtered_nodelist.size() < 2) // force groups with 1 node to be static
+            type = "static";
 
         proxies = std::accumulate(std::next(filtered_nodelist.begin()), filtered_nodelist.end(), filtered_nodelist[0], [](std::string a, std::string b)
         {
@@ -2399,6 +2406,7 @@ std::string netchToLoon(std::vector<nodeInfo> &nodes, std::string &base_conf, st
                 return std::move(a) + "," + std::move(b);
             });
             ini.Set("{NONAME}", vArray[0] + " = " + proxy); //insert order
+            continue;
         default:
             continue;
         }

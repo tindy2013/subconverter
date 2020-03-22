@@ -431,11 +431,15 @@ std::string getSystemProxy()
     //return 0;
     return std::string();
 #else
-    char* proxy = getenv("ALL_PROXY");
-    if(proxy != NULL)
-        return std::string(proxy);
-    else
-        return std::string();
+    string_array proxy_env = {"all_proxy", "ALL_PROXY", "http_proxy", "HTTP_PROXY", "https_proxy", "HTTPS_PROXY"};
+    char* proxy;
+    for(std::string &x : proxy_env)
+    {
+        proxy = getenv(x.c_str());
+        if(proxy != NULL)
+            return std::string(proxy);
+    }
+    return std::string();
 #endif // _WIN32
 }
 
@@ -728,6 +732,7 @@ std::string fileGet(const std::string &path, bool scope_limit)
     {
         std::fseek(fp, 0, SEEK_END);
         long tot = std::ftell(fp);
+        /*
         char *data = new char[tot + 1];
         data[tot] = '\0';
         std::rewind(fp);
@@ -735,6 +740,11 @@ std::string fileGet(const std::string &path, bool scope_limit)
         std::fclose(fp);
         content.assign(data, tot);
         delete[] data;
+        */
+        content.resize(tot);
+        std::rewind(fp);
+        std::fread(&content[0], 1, tot, fp);
+        std::fclose(fp);
     }
 
     /*
@@ -793,12 +803,19 @@ std::string fileGetMD5(const std::string &filepath)
 
 int fileWrite(const std::string &path, const std::string &content, bool overwrite)
 {
+    /*
     std::fstream outfile;
     std::ios_base::openmode mode = overwrite ? std::ios_base::out : std::ios_base::app;
     mode |= std::ios_base::binary;
     outfile.open(path, mode);
     outfile << content;
     outfile.close();
+    return 0;
+    */
+    const char *mode = overwrite ? "wb" : "ab";
+    std::FILE *fp = std::fopen(path.c_str(), mode);
+    std::fwrite(content.c_str(), 1, content.size(), fp);
+    std::fclose(fp);
     return 0;
 }
 
@@ -845,20 +862,23 @@ std::string rand_str(const int len)
 void urlParse(std::string &url, std::string &host, std::string &path, int &port, bool &isTLS)
 {
     std::vector<std::string> args;
+    string_size pos;
 
     if(regMatch(url, "^https://(.*)"))
         isTLS = true;
     url = regReplace(url, "^(http|https)://", "");
-    if(url.find("/") == url.npos)
+    pos = url.find("/");
+    if(pos == url.npos)
     {
         host = url;
         path = "/";
     }
     else
     {
-        host = url.substr(0, url.find("/"));
-        path = url.substr(url.find("/"));
+        host = url.substr(0, pos);
+        path = url.substr(pos);
     }
+    pos = host.rfind(":");
     if(regFind(host, "\\[(.*)\\]")) //IPv6
     {
         args = split(regReplace(host, "\\[(.*)\\](.*)", "$1,$2"), ",");
@@ -866,10 +886,10 @@ void urlParse(std::string &url, std::string &host, std::string &path, int &port,
             port = to_int(args[1].substr(1));
         host = args[0];
     }
-    else if(strFind(host, ":"))
+    else if(pos != host.npos)
     {
-        port = to_int(host.substr(host.rfind(":") + 1));
-        host = host.substr(0, host.rfind(":"));
+        port = to_int(host.substr(pos + 1));
+        host = host.substr(0, pos);
     }
     if(port == 0)
     {
