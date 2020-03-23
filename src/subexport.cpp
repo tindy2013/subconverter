@@ -1221,6 +1221,7 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
             break;
         case "url-test"_hash:
         case "fallback"_hash:
+        case "load-balance"_hash:
             if(rules_upper_bound < 5)
                 continue;
             rules_upper_bound -= 2;
@@ -1258,6 +1259,8 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
         });
         if(vArray[1] == "url-test" || vArray[1] == "fallback")
             proxy += ",url=" + url + ",interval=" + std::to_string(interval);
+        else if(vArray[1] == "load-balance")
+            proxy += ",url=" + url;
 
         ini.Set("{NONAME}", vArray[0] + " = " + proxy); //insert order
     }

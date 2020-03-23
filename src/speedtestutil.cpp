@@ -1325,7 +1325,7 @@ bool explodeSurge(std::string surge, const std::string &custom_port, int local_p
                     switch(hash_(itemName))
                     {
                         case "method"_hash: method = itemVal; break;
-                        case "password"_hash: id = itemVal; break;
+                        case "password"_hash: password = itemVal; break;
                         case "tag"_hash: remarks = itemVal; break;
                         case "ssr-protocol"_hash: protocol = itemVal; break;
                         case "ssr-protocol-param"_hash: protoparam = itemVal; break;
