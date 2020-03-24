@@ -16,7 +16,7 @@
 #endif // _stat
 #endif // _WIN32
 
-extern bool print_debug_info;
+extern bool print_debug_info, serve_cache_on_fetch_fail;
 extern int global_log_level;
 
 typedef std::lock_guard<std::mutex> guarded_mutex;
@@ -146,7 +146,7 @@ std::string webGet(std::string url, std::string proxy, std::string &response_hea
         }
         else
         {
-            if(fileExist(path)) // failed, check if cache exist
+            if(fileExist(path) && serve_cache_on_fetch_fail) // failed, check if cache exist
             {
                 writeLog(0, "Fetch failed. Serving cached content."); // cache exist, serving cache
                 guarded_mutex guard(cache_rw_lock);
@@ -154,7 +154,7 @@ std::string webGet(std::string url, std::string proxy, std::string &response_hea
                 response_headers = fileGet(path_header, true);
             }
             else
-                writeLog(0, "Fetch failed. No local cache available."); // cache not exist, serving nothing
+                writeLog(0, "Fetch failed. No local cache available."); // cache not exist or not allow to serve cache, serving nothing
         }
         return content;
     }

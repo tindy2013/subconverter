@@ -1321,7 +1321,7 @@ std::string netchToSS(std::vector<nodeInfo> &nodes, extra_settings &ext)
         return base64_encode(allLinks);
 }
 
-std::string netchToSSSub(std::vector<nodeInfo> &nodes, extra_settings &ext)
+std::string netchToSSSub(std::string &base_conf, std::vector<nodeInfo> &nodes, extra_settings &ext)
 {
     rapidjson::Document json;
     rapidjson::StringBuffer sb;
@@ -1329,7 +1329,32 @@ std::string netchToSSSub(std::vector<nodeInfo> &nodes, extra_settings &ext)
     std::string remark, hostname, password, method;
     std::string plugin, pluginopts;
     std::string protocol, obfs;
+    std::string route, remote_dns, ipv6, metered, proxy_apps_enabled, bypass, udpdns;
+    string_array android_list;
     int port;
+
+    json.Parse(base_conf.data());
+    if(!json.HasParseError())
+    {
+        route = GetMember(json, "route");
+        remote_dns = GetMember(json, "remote_dns");
+        ipv6 = GetMember(json, "ipv6");
+        metered = GetMember(json, "metered");
+        udpdns = GetMember(json, "udpdns");
+        if(json.HasMember("proxy_apps") && json["proxy_apps"].IsObject())
+        {
+            proxy_apps_enabled = GetMember(json["proxy_apps"], "enabled");
+            bypass = GetMember(json["proxy_apps"], "bypass");
+            if(json["proxy_apps"].HasMember("android_list") && json["proxy_apps"]["android_list"].IsArray())
+            {
+                for(size_t i = 0; i < json["proxy_apps"]["android_list"].Size(); i++)
+                {
+                    if(json["proxy_apps"]["android_list"][i].IsString())
+                        android_list.push_back(json["proxy_apps"]["android_list"][i].GetString());
+                }
+            }
+        }
+    }
 
     writer.StartArray();
     for(nodeInfo &x : nodes)
@@ -1374,6 +1399,56 @@ std::string netchToSSSub(std::vector<nodeInfo> &nodes, extra_settings &ext)
         writer.String(plugin.data());
         writer.Key("plugin_opts");
         writer.String(pluginopts.data());
+        if(route.size())
+        {
+            writer.Key("route");
+            writer.String(route.data());
+        }
+        if(remote_dns.size())
+        {
+            writer.Key("remote_dns");
+            writer.Bool(remote_dns == "true");
+        }
+        if(ipv6.size())
+        {
+            writer.Key("ipv6");
+            writer.Bool(ipv6 == "true");
+        }
+        if(metered.size())
+        {
+            writer.Key("metered");
+            writer.Bool(metered == "true");
+        }
+        if(udpdns.size())
+        {
+            writer.Key("udpdns");
+            writer.Bool(udpdns == "true");
+        }
+        if(proxy_apps_enabled.size())
+        {
+            bool enabled = proxy_apps_enabled == "true";
+            writer.Key("proxy_apps");
+            writer.StartObject();
+            writer.Key("enabled");
+            writer.Bool(enabled);
+            if(enabled)
+            {
+                if(bypass.size())
+                {
+                    writer.Key("bypass");
+                    writer.Bool(bypass == "true");
+                }
+            }
+            if(android_list.size())
+            {
+                writer.Key("android_list");
+                writer.StartArray();
+                for(const std::string &x : android_list)
+                    writer.String(x.data());
+                writer.EndArray();
+            }
+            writer.EndObject();
+        }
         writer.EndObject();
     }
     writer.EndArray();

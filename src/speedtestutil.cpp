@@ -964,9 +964,10 @@ void explodeClash(Node yamlnode, const std::string &custom_port, int local_port,
 
             singleproxy["username"] >> user;
             singleproxy["password"] >> password;
+            singleproxy["tls"] >> tls;
 
             node.linkType = SPEEDTEST_MESSAGE_FOUNDHTTP;
-            node.proxyStr = httpConstruct(ps, server, port, user, password);
+            node.proxyStr = httpConstruct(ps, server, port, user, password, tls == "true");
             break;
         case "trojan"_hash:
             group = TROJAN_DEFAULT_GROUP;

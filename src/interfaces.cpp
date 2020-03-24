@@ -46,7 +46,7 @@ int config_update_interval = 0;
 
 std::string clash_rule_base;
 string_array clash_extra_group;
-std::string surge_rule_base, surfboard_rule_base, mellow_rule_base, quan_rule_base, quanx_rule_base, loon_rule_base;
+std::string surge_rule_base, surfboard_rule_base, mellow_rule_base, quan_rule_base, quanx_rule_base, loon_rule_base, sssub_rule_base;
 std::string surge_ssr_path, quanx_script_id;
 
 //pre-compiled rule bases
@@ -54,6 +54,7 @@ YAML::Node clash_base;
 INIReader surge_base, mellow_base;
 
 //cache system
+bool serve_cache_on_fetch_fail = false;
 int cache_subscription = 60, cache_config = 300, cache_ruleset = 21600;
 
 string_array regex_blacklist = {"(.*)*"};
@@ -422,6 +423,7 @@ void readYAMLConf(YAML::Node &node)
     section["quan_rule_base"] >> quan_rule_base;
     section["quanx_rule_base"] >> quanx_rule_base;
     section["loon_rule_base"] >> loon_rule_base;
+    section["sssub_rule_base"] >> sssub_rule_base;
 
     section["append_proxy_type"] >> append_proxy_type;
     section["proxy_config"] >> proxy_config;
@@ -557,6 +559,7 @@ void readYAMLConf(YAML::Node &node)
                 node["advanced"]["cache_subscription"] >> cache_subscription;
                 node["advanced"]["cache_config"] >> cache_config;
                 node["advanced"]["cache_ruleset"] >> cache_ruleset;
+                node["advanced"]["serve_cache_on_fetch_fail"] >> serve_cache_on_fetch_fail;
             }
             else
                 cache_subscription = cache_config = cache_ruleset = 0; //disable cache
@@ -605,65 +608,42 @@ void readConf()
     string_array tempArray;
 
     ini.EnterSection("common");
-    if(ini.ItemExist("api_mode"))
-        api_mode = ini.GetBool("api_mode");
-    if(ini.ItemExist("api_access_token"))
-        access_token = ini.Get("api_access_token");
-    if(ini.ItemExist("default_url"))
-        default_url = ini.Get("default_url");
-    if(ini.ItemExist("insert_url"))
-        insert_url = ini.Get("insert_url");
+    ini.GetBoolIfExist("api_mode", api_mode);
+    ini.GetIfExist("api_access_token", access_token);
+    ini.GetIfExist("default_url", default_url);
+    ini.GetIfExist("insert_url", insert_url);
     if(ini.ItemPrefixExist("exclude_remarks"))
         ini.GetAll("exclude_remarks", def_exclude_remarks);
     if(ini.ItemPrefixExist("include_remarks"))
         ini.GetAll("include_remarks", def_include_remarks);
-    if(ini.ItemExist("clash_rule_base"))
-        clash_rule_base = ini.Get("clash_rule_base");
-    if(ini.ItemExist("surge_rule_base"))
-        surge_rule_base = ini.Get("surge_rule_base");
-    if(ini.ItemExist("surfboard_rule_base"))
-        surfboard_rule_base = ini.Get("surfboard_rule_base");
-    if(ini.ItemExist("mellow_rule_base"))
-        mellow_rule_base = ini.Get("mellow_rule_base");
-    if(ini.ItemExist("quan_rule_base"))
-        quan_rule_base = ini.Get("quan_rule_base");
-    if(ini.ItemExist("quanx_rule_base"))
-        quanx_rule_base = ini.Get("quanx_rule_base");
-    if(ini.ItemExist("loon_rule_base"))
-        loon_rule_base = ini.Get("loon_rule_base");
-    if(ini.ItemExist("append_proxy_type"))
-        append_proxy_type = ini.GetBool("append_proxy_type");
-    if(ini.ItemExist("proxy_config"))
-        proxy_config = ini.Get("proxy_config");
-    if(ini.ItemExist("proxy_ruleset"))
-        proxy_ruleset = ini.Get("proxy_ruleset");
-    if(ini.ItemExist("proxy_subscription"))
-        proxy_subscription = ini.Get("proxy_subscription");
+    ini.GetIfExist("clash_rule_base", clash_rule_base);
+    ini.GetIfExist("surge_rule_base", surge_rule_base);
+    ini.GetIfExist("surfboard_rule_base", surfboard_rule_base);
+    ini.GetIfExist("mellow_rule_base", mellow_rule_base);
+    ini.GetIfExist("quan_rule_base", quan_rule_base);
+    ini.GetIfExist("quanx_rule_base", quanx_rule_base);
+    ini.GetIfExist("loon_rule_base", loon_rule_base);
+    ini.GetBoolIfExist("append_proxy_type", append_proxy_type);
+    ini.GetIfExist("proxy_config", proxy_config);
+    ini.GetIfExist("proxy_ruleset", proxy_ruleset);
+    ini.GetIfExist("proxy_subscription", proxy_subscription);
 
     if(ini.SectionExist("surge_external_proxy"))
     {
         ini.EnterSection("surge_external_proxy");
-        if(ini.ItemExist("surge_ssr_path"))
-            surge_ssr_path = ini.Get("surge_ssr_path");
+        ini.GetIfExist("surge_ssr_path", surge_ssr_path);
     }
 
     if(ini.SectionExist("node_pref"))
     {
         ini.EnterSection("node_pref");
-        if(ini.ItemExist("udp_flag"))
-            udp_flag = ini.GetBool("udp_flag");
-        if(ini.ItemExist("tcp_fast_open_flag"))
-            tfo_flag = ini.GetBool("tcp_fast_open_flag");
-        if(ini.ItemExist("sort_flag"))
-            do_sort = ini.GetBool("sort_flag");
-        if(ini.ItemExist("skip_cert_verify_flag"))
-            scv_flag = ini.GetBool("skip_cert_verify_flag");
-        if(ini.ItemExist("filter_deprecated_nodes"))
-            filter_deprecated = ini.GetBool("filter_deprecated_nodes");
-        if(ini.ItemExist("append_sub_userinfo"))
-            append_userinfo = ini.GetBool("append_sub_userinfo");
-        if(ini.ItemExist("clash_use_new_field_name"))
-            clash_use_new_field_name = ini.GetBool("clash_use_new_field_name");
+        ini.GetBoolIfExist("udp_flag", udp_flag);
+        ini.GetBoolIfExist("tcp_fast_open_flag", tfo_flag);
+        ini.GetBoolIfExist("sort_flag", do_sort);
+        ini.GetBoolIfExist("skip_cert_verify_flag", scv_flag);
+        ini.GetBoolIfExist("filter_deprecated_nodes", filter_deprecated);
+        ini.GetBoolIfExist("append_sub_userinfo", append_userinfo);
+        ini.GetBoolIfExist("clash_use_new_field_name", clash_use_new_field_name);
         if(ini.ItemPrefixExist("rename_node"))
         {
             ini.GetAll("rename_node", tempArray);
@@ -693,22 +673,15 @@ void readConf()
     }
 
     ini.EnterSection("managed_config");
-    if(ini.ItemExist("write_managed_config"))
-        write_managed_config = ini.GetBool("write_managed_config");
-    if(ini.ItemExist("managed_config_prefix"))
-        managed_config_prefix = ini.Get("managed_config_prefix");
-    if(ini.ItemExist("config_update_interval"))
-        config_update_interval = ini.GetInt("config_update_interval");
-    if(ini.ItemExist("config_update_strict"))
-        config_update_strict = ini.GetBool("config_update_strict");
-    if(ini.ItemExist("quanx_device_id"))
-        quanx_script_id = ini.Get("quanx_device_id");
+    ini.GetBoolIfExist("write_managed_config", write_managed_config);
+    ini.GetIfExist("managed_config_prefix", managed_config_prefix);
+    ini.GetIntIfExist("config_update_interval", config_update_interval);
+    ini.GetBoolIfExist("config_update_strict", config_update_strict);
+    ini.GetIfExist("quanx_device_id", quanx_script_id);
 
     ini.EnterSection("emojis");
-    if(ini.ItemExist("add_emoji"))
-        add_emoji = ini.GetBool("add_emoji");
-    if(ini.ItemExist("remove_old_emoji"))
-        remove_old_emoji = ini.GetBool("remove_old_emoji");
+    ini.GetBoolIfExist("add_emoji", add_emoji);
+    ini.GetBoolIfExist("remove_old_emoji", remove_old_emoji);
     if(ini.ItemPrefixExist("rule"))
     {
         ini.GetAll("rule", tempArray);
@@ -721,10 +694,8 @@ void readConf()
     enable_rule_generator = ini.GetBool("enabled");
     if(enable_rule_generator)
     {
-        if(ini.ItemExist("overwrite_original_rules"))
-            overwrite_original_rules = ini.GetBool("overwrite_original_rules");
-        if(ini.ItemExist("update_ruleset_on_request"))
-            update_ruleset_on_request = ini.GetBool("update_ruleset_on_request");
+        ini.GetBoolIfExist("overwrite_original_rules", overwrite_original_rules);
+        ini.GetBoolIfExist("update_ruleset_on_request", update_ruleset_on_request);
         if(ini.ItemPrefixExist("surge_ruleset"))
         {
             ini.GetAll("surge_ruleset", rulesets);
@@ -745,17 +716,13 @@ void readConf()
     }
 
     ini.EnterSection("server");
-    if(ini.ItemExist("listen"))
-        listen_address = ini.Get("listen");
-    if(ini.ItemExist("port"))
-        listen_port = ini.GetInt("port");
+    ini.GetIfExist("listen", listen_address);
+    ini.GetIntIfExist("port", listen_port);
 
     ini.EnterSection("advanced");
     std::string log_level;
-    if(ini.ItemExist("log_level"))
-        log_level = ini.Get("log_level");
-    if(ini.ItemExist("print_debug_info"))
-        print_debug_info = ini.GetBool("print_debug_info");
+    ini.GetIfExist("log_level", log_level);
+    ini.GetBoolIfExist("print_debug_info", print_debug_info);
     if(print_debug_info)
         global_log_level = LOG_LEVEL_VERBOSE;
     else
@@ -781,28 +748,25 @@ void readConf()
             global_log_level = LOG_LEVEL_INFO;
         }
     }
-    if(ini.ItemExist("max_pending_connections"))
-        max_pending_connections = ini.GetInt("max_pending_connections");
-    if(ini.ItemExist("max_concurrent_threads"))
-        max_concurrent_threads = ini.GetInt("max_concurrent_threads");
-    if(ini.ItemExist("enable_base_gen"))
-        enable_base_gen = ini.GetBool("enable_base_gen");
+    ini.GetIntIfExist("max_pending_connections", max_pending_connections);
+    ini.GetIntIfExist("max_concurrent_threads", max_concurrent_threads);
+    ini.GetBoolIfExist("enable_base_gen", enable_base_gen);
     if(ini.ItemExist("enable_cache"))
     {
         if(ini.GetBool("enable_cache"))
         {
-            if(ini.ItemExist("cache_subscription"))
-                cache_subscription = ini.GetInt("cache_subscription");
-            if(ini.ItemExist("cache_config"))
-                cache_config = ini.GetInt("cache_config");
-            if(ini.ItemExist("cache_ruleset"))
-                cache_ruleset = ini.GetInt("cache_ruleset");
+            ini.GetIntIfExist("cache_subscription", cache_subscription);
+            ini.GetIntIfExist("cache_config", cache_config);
+            ini.GetIntIfExist("cache_ruleset", cache_ruleset);
+            ini.GetBoolIfExist("serve_cache_on_fetch_fail", serve_cache_on_fetch_fail);
         }
         else
+        {
             cache_subscription = cache_config = cache_ruleset = 0; //disable cache
+            serve_cache_on_fetch_fail = false;
+        }
     }
-    if(ini.ItemExist("async_fetch_ruleset"))
-        async_fetch_ruleset = ini.GetBool("async_fetch_ruleset");
+    ini.GetBoolIfExist("async_fetch_ruleset", async_fetch_ruleset);
 
     //std::cerr<<"Read preference settings completed."<<std::endl;
     writeLog(0, "Read preference settings completed.", LOG_LEVEL_INFO);
@@ -819,6 +783,7 @@ struct ExternalConfig
     std::string quan_rule_base;
     std::string quanx_rule_base;
     std::string loon_rule_base;
+    std::string sssub_rule_base;
     string_array rename;
     string_array emoji;
     string_array include;
@@ -840,6 +805,7 @@ int loadExternalYAML(YAML::Node &node, ExternalConfig &ext)
     section["quan_rule_base"] >> ext.quan_rule_base;
     section["quanx_rule_base"] >> ext.quanx_rule_base;
     section["loon_rule_base"] >> ext.loon_rule_base;
+    section["sssub_rule_base"] >> ext.sssub_rule_base;
 
     section["enable_rule_generator"] >> ext.enable_rule_generator;
     section["overwrite_original_rules"] >> ext.overwrite_original_rules;
@@ -898,25 +864,17 @@ int loadExternalConfig(std::string &path, ExternalConfig &ext)
         importItems(ext.surge_ruleset, api_mode);
     }
 
-    if(ini.ItemExist("clash_rule_base"))
-        ext.clash_rule_base = ini.Get("clash_rule_base");
-    if(ini.ItemExist("surge_rule_base"))
-        ext.surge_rule_base = ini.Get("surge_rule_base");
-    if(ini.ItemExist("surfboard_rule_base"))
-        ext.surfboard_rule_base = ini.Get("surfboard_rule_base");
-    if(ini.ItemExist("mellow_rule_base"))
-        ext.mellow_rule_base = ini.Get("mellow_rule_base");
-    if(ini.ItemExist("quan_rule_base"))
-        ext.quan_rule_base = ini.Get("quan_rule_base");
-    if(ini.ItemExist("quanx_rule_base"))
-        ext.quanx_rule_base = ini.Get("quanx_rule_base");
-    if(ini.ItemExist("loon_rule_base"))
-        ext.loon_rule_base = ini.Get("loon_rule_base");
+    ini.GetIfExist("clash_rule_base", ext.clash_rule_base);
+    ini.GetIfExist("surge_rule_base", ext.surge_rule_base);
+    ini.GetIfExist("surfboard_rule_base", ext.surfboard_rule_base);
+    ini.GetIfExist("mellow_rule_base", ext.mellow_rule_base);
+    ini.GetIfExist("quan_rule_base", ext.quan_rule_base);
+    ini.GetIfExist("quanx_rule_base", ext.quanx_rule_base);
+    ini.GetIfExist("loon_rule_base", ext.loon_rule_base);
+    ini.GetIfExist("sssub_rule_base", ext.sssub_rule_base);
 
-    if(ini.ItemExist("overwrite_original_rules"))
-        ext.overwrite_original_rules = ini.GetBool("overwrite_original_rules");
-    if(ini.ItemExist("enable_rule_generator"))
-        ext.enable_rule_generator = ini.GetBool("enable_rule_generator");
+    ini.GetBoolIfExist("overwrite_original_rules", ext.overwrite_original_rules);
+    ini.GetBoolIfExist("enable_rule_generator", ext.enable_rule_generator);
 
     if(ini.ItemPrefixExist("rename"))
     {
@@ -991,7 +949,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
 
     //for external configuration
     std::string ext_clash_base = clash_rule_base, ext_surge_base = surge_rule_base, ext_mellow_base = mellow_rule_base, ext_surfboard_base = surfboard_rule_base;
-    std::string ext_quan_base = quan_rule_base, ext_quanx_base = quanx_rule_base, ext_loon_base = loon_rule_base;
+    std::string ext_quan_base = quan_rule_base, ext_quanx_base = quanx_rule_base, ext_loon_base = loon_rule_base, ext_sssub_base = sssub_rule_base;
 
     //validate urls
     if(!url.size() && (!api_mode || authorized))
@@ -1070,6 +1028,8 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
             ext_quanx_base = extconf.quanx_rule_base;
         if(extconf.loon_rule_base.size())
             ext_loon_base = extconf.loon_rule_base;
+        if(extconf.sssub_rule_base.size())
+            ext_sssub_base = extconf.sssub_rule_base;
         if(extconf.rename.size())
             ext.rename_array = extconf.rename;
         if(extconf.emoji.size())
@@ -1285,7 +1245,9 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     case "sssub"_hash:
         //std::cerr<<"SS Subscription"<<std::endl;
         writeLog(0, "Generate target: SS Subscription", LOG_LEVEL_INFO);
-        output_content = netchToSSSub(nodes, ext);
+
+        base_content = fetchFile(ext_sssub_base, proxy, cache_config);
+        output_content = netchToSSSub(base_content, nodes, ext);
         if(upload == "true")
             uploadGist("sssub", upload_path, output_content, false);
         break;

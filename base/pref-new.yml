@@ -12,6 +12,7 @@ common:
   quan_rule_base: base/quan.conf
   quanx_rule_base: base/quanx.conf
   loon_rule_base: base/loon.conf
+  sssub_rule_base: base/shadowsocks_base.json
   proxy_config: SYSTEM
   proxy_ruleset: SYSTEM
   proxy_subscription: NONE
