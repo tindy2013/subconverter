@@ -1,5 +1,6 @@
 # > Bilibili
-USER-AGENT,*bili*
+USER-AGENT,bili*
+USER-AGENT,Bilibili*
 DOMAIN-SUFFIX,acg.tv
 DOMAIN-SUFFIX,acgvideo.com
 DOMAIN-SUFFIX,b23.tv
