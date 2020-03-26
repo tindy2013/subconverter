@@ -936,7 +936,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     std::string dev_id = getUrlArg(argument, "dev_id"), filename = getUrlArg(argument, "filename"), interval_str = getUrlArg(argument, "interval"), strict_str = getUrlArg(argument, "strict");
     std::string clash_new_field = getUrlArg(argument, "new_name");
     std::string base_content, output_content;
-    string_array extra_group, extra_ruleset, include_remarks, exclude_remarks;
+    string_array extra_group, extra_ruleset, include_remarks = def_include_remarks, exclude_remarks = def_exclude_remarks;
     std::string groups = urlsafe_base64_decode(getUrlArg(argument, "groups")), ruleset = urlsafe_base64_decode(getUrlArg(argument, "ruleset")), config = UrlDecode(getUrlArg(argument, "config"));
     std::vector<ruleset_content> rca;
     extra_settings ext;
@@ -1107,12 +1107,8 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     //check custom include/exclude settings
     if(include.size() && regValid(include))
         include_remarks.emplace_back(include);
-    else
-        include_remarks = def_include_remarks;
     if(exclude.size() && regValid(exclude))
         exclude_remarks.emplace_back(exclude);
-    else
-        exclude_remarks = def_exclude_remarks;
 
     //start parsing urls
     string_array stream_temp = safe_get_streams(), time_temp = safe_get_times();
