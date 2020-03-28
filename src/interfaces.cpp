@@ -1182,6 +1182,9 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         if(ext.nodelist)
         {
             output_content = netchToSurge(nodes, base_content, dummy_ruleset, dummy_group, surge_ver, ext);
+
+            if(upload == "true")
+                uploadGist("surge" + version + "list", upload_path, output_content, true);
         }
         else
         {
