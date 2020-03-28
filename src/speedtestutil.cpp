@@ -1716,6 +1716,11 @@ void explodeSub(std::string sub, bool sslibev, bool ssrlibev, const std::string 
     if(!processed)
     {
         sub = urlsafe_base64_decode(trim(sub));
+        if(regFind(sub, "(vmess|shadowsocks|http|trojan)\\s*?="))
+        {
+            if(explodeSurge(sub, custom_port, local_port, nodes, sslibev))
+                return;
+        }
         strstream << sub;
         char delimiter = count(sub.begin(), sub.end(), '\n') < 1 ? count(sub.begin(), sub.end(), '\r') < 1 ? ' ' : '\r' : '\n';
         while(getline(strstream, strLink, delimiter))
