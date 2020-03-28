@@ -1301,8 +1301,12 @@ bool explodeSurge(std::string surge, const std::string &custom_port, int local_p
                     continue;
                 itemName = trim(vArray[0]);
                 itemVal = trim(vArray[1]);
-                if(itemName == "password")
-                    password = itemVal;
+                switch(hash_(itemName))
+                {
+                    case "password"_hash: password = itemVal; break;
+                    case "sni"_hash: host = itemVal; break;
+                    default: continue;
+                }
             }
             if(host.empty() && !isIPv4(server) && !isIPv6(server))
                 host = server;
