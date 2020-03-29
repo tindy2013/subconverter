@@ -807,7 +807,7 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
             singleproxy["type"] = "ss";
             singleproxy["cipher"] = method;
             singleproxy["password"] = password;
-            if(std::all_of(password.begin(), password.end(), ::isdigit))
+            if(std::all_of(password.begin(), password.end(), ::isdigit) && !password.empty())
                 singleproxy["password"].SetTag("str");
             switch(hash_(plugin))
             {
@@ -852,12 +852,8 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
                 singleproxy["network"] = transproto;
                 singleproxy["ws-path"] = path;
                 singleproxy["ws-headers"]["Host"] = host;
-                singleproxy["headers"]["Host"] = host;
                 if(edge.size())
-                {
                     singleproxy["ws-headers"]["Edge"] = edge;
-                    singleproxy["headers"]["Edge"] = edge;
-                }
                 break;
             default:
                 continue;
@@ -884,7 +880,7 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
             singleproxy["type"] = "ssr";
             singleproxy["cipher"] = method;
             singleproxy["password"] = password;
-            if(std::all_of(password.begin(), password.end(), ::isdigit))
+            if(std::all_of(password.begin(), password.end(), ::isdigit) && !password.empty())
                 singleproxy["password"].SetTag("str");
             singleproxy["protocol"] = protocol;
             singleproxy["protocolparam"] = protoparam;
@@ -895,7 +891,7 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
             singleproxy["type"] = "socks5";
             singleproxy["username"] = username;
             singleproxy["password"] = password;
-            if(std::all_of(password.begin(), password.end(), ::isdigit))
+            if(std::all_of(password.begin(), password.end(), ::isdigit) && !password.empty())
                 singleproxy["password"].SetTag("str");
             if(ext.skip_cert_verify)
                 singleproxy["skip-cert-verify"] = true;
@@ -904,7 +900,7 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
             singleproxy["type"] = "http";
             singleproxy["username"] = username;
             singleproxy["password"] = password;
-            if(std::all_of(password.begin(), password.end(), ::isdigit))
+            if(std::all_of(password.begin(), password.end(), ::isdigit) && !password.empty())
                 singleproxy["password"].SetTag("str");
             singleproxy["tls"] = type == "HTTPS";
             if(ext.skip_cert_verify)
@@ -913,7 +909,7 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
         case SPEEDTEST_MESSAGE_FOUNDTROJAN:
             singleproxy["type"] = "trojan";
             singleproxy["password"] = password;
-            if(std::all_of(password.begin(), password.end(), ::isdigit))
+            if(std::all_of(password.begin(), password.end(), ::isdigit) && !password.empty())
                 singleproxy["password"].SetTag("str");
             if(ext.skip_cert_verify)
                 singleproxy["skip-cert-verify"] = true;
