@@ -47,7 +47,7 @@ std::string hostnameToIPAddr(const std::string &host)
         return std::string();
     }
 
-    for(cur = retAddrInfo; cur != NULL; cur=cur->ai_next)
+    for(cur = retAddrInfo; cur != NULL; cur = cur->ai_next)
     {
         if(cur->ai_family == AF_INET)
         {
@@ -907,8 +907,11 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
                 singleproxy["skip-cert-verify"] = true;
             break;
         case SPEEDTEST_MESSAGE_FOUNDTROJAN:
+            host = GetMember(json, "Host");
             singleproxy["type"] = "trojan";
             singleproxy["password"] = password;
+            if(host.size())
+                singleproxy["sni"] = host;
             if(std::all_of(password.begin(), password.end(), ::isdigit) && !password.empty())
                 singleproxy["password"].SetTag("str");
             if(ext.skip_cert_verify)
