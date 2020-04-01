@@ -644,6 +644,58 @@ void explodeHTTP(std::string link, const std::string &custom_port, nodeInfo &nod
     node.proxyStr = httpConstruct(remarks, server, port, username, password, strFind(link, "/https"));
 }
 
+void explodeHTTPSub(std::string link, const std::string &custom_port, nodeInfo &node)
+{
+    std::string group, remarks, server, port, username, password;
+    std::string addition;
+    string_array configs;
+    bool tls = strFind(link, "https://");
+    string_size pos = link.find("?");
+    if(pos != link.npos)
+    {
+        addition = link.substr(pos + 1);
+        link.erase(pos);
+        remarks = UrlDecode(getUrlArg(addition, "remarks"));
+        group = UrlDecode(getUrlArg(addition, "group"));
+    }
+    link.erase(0, link.find("://") + 3);
+    link = urlsafe_base64_decode(link);
+    if(strFind(link, "@"))
+    {
+        link = regReplace(link, "(.*?):(.*?)@(.*):(.*)", "$1|$2|$3|$4");
+        configs = split(link, "|");
+        if(configs.size() != 4)
+            return;
+        username = configs[0];
+        password = configs[1];
+        server = configs[2];
+        port = configs[3];
+    }
+    else
+    {
+        link = regReplace(link, "(.*):(.*)", "$1|$2");
+        configs = split(link, "|");
+        if(configs.size() != 2)
+            return;
+        server = configs[1];
+        port = configs[2];
+    }
+
+    if(group.empty())
+        group = HTTP_DEFAULT_GROUP;
+    if(remarks.empty())
+        remarks = server + ":" + port;
+    if(custom_port.size())
+        port = custom_port;
+
+    node.linkType = SPEEDTEST_MESSAGE_FOUNDHTTP;
+    node.group = group;
+    node.remarks = remarks;
+    node.server = server;
+    node.port = to_int(port, 0);
+    node.proxyStr = httpConstruct(remarks, server, port, username, password, tls);
+}
+
 void explodeTrojan(std::string trojan, const std::string &custom_port, int local_port, nodeInfo &node)
 {
     std::string server, port, psk, addition, remark;
@@ -1687,6 +1739,8 @@ void explode(std::string link, bool sslibev, bool ssrlibev, const std::string &c
         explodeNetch(link, sslibev, ssrlibev, custom_port, local_port, node);
     else if(strFind(link, "trojan://"))
         explodeTrojan(link, custom_port, local_port, node);
+    else if(strFind(link, "http://") || strFind(link, "https://"))
+        explodeHTTPSub(link, custom_port, node);
 }
 
 void explodeSub(std::string sub, bool sslibev, bool ssrlibev, const std::string &custom_port, int local_port, std::vector<nodeInfo> &nodes)
