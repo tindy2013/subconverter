@@ -604,7 +604,7 @@ bool regMatch(const std::string &src, const std::string &match)
 bool regMatch(const std::string &src, const std::string &target)
 {
     jp::Regex reg;
-    reg.setPattern(target).addModifier("gm").addPcre2Option(PCRE2_ANCHORED|PCRE2_ENDANCHORED).compile();
+    reg.setPattern(target).addModifier("gm").addPcre2Option(PCRE2_ANCHORED|PCRE2_ENDANCHORED|PCRE2_UTF).compile();
     if(!reg)
         return false;
     return reg.match(src);
@@ -613,7 +613,7 @@ bool regMatch(const std::string &src, const std::string &target)
 bool regFind(const std::string &src, const std::string &target)
 {
     jp::Regex reg;
-    reg.setPattern(target).addModifier("gm").compile();
+    reg.setPattern(target).addModifier("gm").addPcre2Option(PCRE2_UTF).compile();
     if(!reg)
         return false;
     return reg.match(src);
@@ -622,7 +622,7 @@ bool regFind(const std::string &src, const std::string &target)
 std::string regReplace(const std::string &src, const std::string &target, const std::string &rep)
 {
     jp::Regex reg;
-    reg.setPattern(target).addModifier("gm").compile();
+    reg.setPattern(target).addModifier("gm").addPcre2Option(PCRE2_UTF).compile();
     if(!reg)
         return src;
     return reg.replace(src, rep);
