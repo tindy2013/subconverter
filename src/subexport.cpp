@@ -1193,8 +1193,8 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
         {
             ini.Set("{NONAME}", remark + " = " + proxy);
             nodelist.emplace_back(x);
-            remarks_list.emplace_back(remark);
         }
+        remarks_list.emplace_back(remark);
     }
 
     if(ext.nodelist)
