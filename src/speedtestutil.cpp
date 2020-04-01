@@ -144,7 +144,7 @@ void explodeVmessConf(std::string content, const std::string &custom_port, int l
                     else if(nodejson["streamSettings"].HasMember("wsSettings"))
                         settings = nodejson["streamSettings"]["wsSettings"];
                     else
-                        settings.Clear();
+                        settings.RemoveAllMembers();
                     path = GetMember(settings, "path");
                     if(settings.HasMember("headers"))
                     {
@@ -157,7 +157,7 @@ void explodeVmessConf(std::string content, const std::string &custom_port, int l
                 else if(nodejson["streamSettings"].HasMember("tcpsettings"))
                     settings = nodejson["streamSettings"]["tcpsettings"];
                 else
-                    settings.Clear();
+                    settings.RemoveAllMembers();
                 if(settings.HasMember("header"))
                 {
                     type = GetMember(settings["header"], "type");
