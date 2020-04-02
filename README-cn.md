@@ -9,37 +9,6 @@
 
 ---
 
-## 新增内容
-
-2020/04/02
-
-- 新增 [本地生成](#本地生成) 用于在本地生成具体的配置文件
-- 添加 [支持类型](#支持类型) 中 `mellow` & `trojan` 参数
-- 添加 [进阶链接](#进阶链接) 中 `new_name` 参数的描述
-- 添加 [配置文件](#配置文件) 中 `append_sub_userinfo` `clash_use_new_field_name` 参数的描述
-
-2020/03/02
-
-- 添加 [进阶链接](#进阶链接) 中关于 `append_type` `append_info` `expand` `dev_id` `interval` `strict` 等参数的描述
-
----
-
-## 说明目录
-
-- [支持类型](#支持类型)
-- [简易用法](#简易用法)
-  - [调用地址](#调用地址)
-  - [调用说明](#调用说明)
-  - [简易转换](#简易转换)
-- [进阶用法](#进阶用法)
-  - [阅前提示](#阅前提示)
-  - [进阶链接](#进阶链接)
-  - [配置档案](#配置档案)
-  - [配置文件](#配置文件)
-  - [外部配置](#外部配置)
-- [本地生成](#本地生成)
-- [自动上传](#自动上传)
-
 ## 支持类型
 
 | 类型         | 作为源类型 | 作为目标类型 | 参数        |
@@ -491,7 +460,7 @@ exclude=(流量|官网)
 
     - **请勿随意将此设置修改为 true**
 
-1. **filter deprecated nodes**
+1. **filter_deprecated_nodes**
 
    > 排除当前 **`target=`** 不支持的节点类型，设置为 true 时打开，默认为 false
 
@@ -667,13 +636,17 @@ custom_proxy_group=🇯🇵 JP`select`沪日`日本`[]🇯🇵 日本延迟最�
 # 表示创建一个叫 🇯🇵 JP 的 select 策略组,并向其中**依次**添加名字含'沪日','日本'的节点，以及引用上述所创建的 🇯🇵 日本延迟最低 策略组
 ```
 
-- 还可使用一些特殊筛选条件
+- 还可使用一些特殊筛选条件(GROUPID 匹配支持range,如 1,!2,3-4,!5-6,7+,8-)
 
   ```ini
   custom_proxy_group=g1`select`!!GROUPID=0
   # 指订阅链接中的第一条订阅
   custom_proxy_group=g2`select`!!GROUPID=1
   # 指订阅链接中的第二条订阅
+  custom_proxy_group=g2`select`!!GROUPID=!2
+  # 指除了订阅链接中的第三条订阅
+  custom_proxy_group=g2`select`!!GROUPID=3-5
+  # 指订阅链接中的第四条到第六条订阅
   custom_proxy_group=v2ray`select`!!GROUP=V2RayProvider
   # 指订阅链接中组名为 V2RayProvider 的节点
   ```
