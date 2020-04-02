@@ -491,7 +491,7 @@ exclude=(流量|官网)
 
     - **请勿随意将此设置修改为 true**
 
-1. **filter deprecated nodes**
+1. **filter_deprecated_nodes**
 
    > 排除当前 **`target=`** 不支持的节点类型，设置为 true 时打开，默认为 false
 
