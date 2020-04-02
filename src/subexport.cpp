@@ -855,6 +855,13 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
                 if(edge.size())
                     singleproxy["ws-headers"]["Edge"] = edge;
                 break;
+            case "http"_hash:
+                singleproxy["network"] = transproto;
+                singleproxy["http-opts"]["method"] = "GET";
+                singleproxy["http-opts"]["path"].push_back(path);
+                singleproxy["http-opts"]["headers"]["Host"].push_back(host);
+                if(edge.size())
+                    singleproxy["http-opts"]["headers"]["Edge"].push_back(edge);
             default:
                 continue;
             }
@@ -1591,7 +1598,7 @@ void netchToQuan(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rules
 {
     rapidjson::Document json;
     std::string type;
-    std::string remark, hostname, port, method, password;
+    std::string remark, hostname, port, method, username, password;
     std::string plugin, pluginopts;
     std::string protocol, protoparam, obfs, obfsparam;
     std::string id, aid, transproto, faketype, host, edge, path, quicsecure, quicsecret;
@@ -1644,6 +1651,8 @@ void netchToQuan(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rules
                     proxyStr += "[Rr][Nn]Edge: " + edge;
                 proxyStr += "\"";
             }
+            if(ext.skip_cert_verify)
+                proxyStr += ", certificate=0";
 
             if(ext.nodelist)
                 proxyStr = "vmess://" + urlsafe_base64_encode(proxyStr);
@@ -1690,6 +1699,52 @@ void netchToQuan(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rules
                     proxyStr += ", " + replace_all_distinct(pluginopts, ";", ", ");
                 }
             }
+            break;
+        case SPEEDTEST_MESSAGE_FOUNDHTTP:
+            username = GetMember(json, "Username");
+            host = GetMember(json, "Host");
+            tlssecure = GetMember(json, "TLSSecure") == "true";
+
+            proxyStr = remark + " = http, upstream-proxy-address=" + hostname + ", upstream-proxy-port=" + port + ", group=" + x.group;
+            if(username.size() && password.size())
+                proxyStr += ", upstream-proxy-auth=true, upstream-proxy-username=" + username + ", upstream-proxy-password=" + password;
+            else
+                proxyStr += ", upstream-proxy-auth=false";
+
+            if(tlssecure)
+            {
+                proxyStr += ", over-tls=true";
+                if(host.size())
+                    proxyStr += ", tls-host=" + host;
+            }
+            if(ext.skip_cert_verify)
+                proxyStr += ", certificate=0";
+
+            if(ext.nodelist)
+                proxyStr = "http://" + urlsafe_base64_encode(proxyStr);
+            break;
+        case SPEEDTEST_MESSAGE_FOUNDSOCKS:
+            username = GetMember(json, "Username");
+            host = GetMember(json, "Host");
+            tlssecure = GetMember(json, "TLSSecure") == "true";
+
+            proxyStr = remark + " = socks, upstream-proxy-address=" + hostname + ", upstream-proxy-port=" + port + ", group=" + x.group;
+            if(username.size() && password.size())
+                proxyStr += ", upstream-proxy-auth=true, upstream-proxy-username=" + username + ", upstream-proxy-password=" + password;
+            else
+                proxyStr += ", upstream-proxy-auth=false";
+
+            if(tlssecure)
+            {
+                proxyStr += ", over-tls=true";
+                if(host.size())
+                    proxyStr += ", tls-host=" + host;
+            }
+            if(ext.skip_cert_verify)
+                proxyStr += ", certificate=0";
+
+            if(ext.nodelist)
+                proxyStr = "socks://" + urlsafe_base64_encode(proxyStr);
             break;
         default:
             continue;

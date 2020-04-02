@@ -16,6 +16,7 @@
 #include "multithread.h"
 #include "logger.h"
 #include "string_hash.h"
+#include "templates.h"
 
 //common settings
 std::string pref_path = "pref.ini";
@@ -28,6 +29,10 @@ bool print_debug_info = false, cfw_child_process = false, append_userinfo = true
 std::string access_token;
 extern std::string custom_group;
 extern int global_log_level;
+
+//global variables for template
+std::string template_path;
+string_map global_vars;
 
 //generator settings
 bool generator_mode = false;
@@ -513,6 +518,22 @@ void readYAMLConf(YAML::Node &node)
     if(node["proxy_group"].IsDefined() && node["proxy_group"]["custom_proxy_group"].IsDefined())
         readGroup(node["proxy_group"]["custom_proxy_group"], clash_extra_group, false);
 
+    if(node["template"].IsDefined())
+    {
+        node["template"]["template_path"] >> template_path;
+        if(node["template"]["globals"].IsSequence())
+        {
+            eraseElements(global_vars);
+            std::string key, value;
+            for(size_t i = 0; i < node["template"]["globals"].size(); i++)
+            {
+                node["template"]["globals"][i]["key"] >> key;
+                node["template"]["globals"][i]["value"] >> value;
+                global_vars[key] = value;
+            }
+        }
+    }
+
     if(node["server"].IsDefined())
     {
         node["server"]["listen"] >> listen_address;
@@ -715,6 +736,18 @@ void readConf()
         importItems(clash_extra_group, false);
     }
 
+    ini.EnterSection("template");
+    ini.GetIfExist("template_path", template_path);
+    string_multimap tempmap;
+    ini.GetItems(tempmap);
+    eraseElements(global_vars);
+    for(auto &x : tempmap)
+    {
+        if(x.first == "template_path")
+            continue;
+        global_vars[x.first] = x.second;
+    }
+
     ini.EnterSection("server");
     ini.GetIfExist("listen", listen_address);
     ini.GetIntIfExist("port", listen_port);
@@ -788,6 +821,7 @@ struct ExternalConfig
     string_array emoji;
     string_array include;
     string_array exclude;
+    string_map template_args;
     bool overwrite_original_rules = false;
     bool enable_rule_generator = true;
 };
@@ -821,6 +855,17 @@ int loadExternalYAML(YAML::Node &node, ExternalConfig &ext)
 
     section["include_remarks"] >> ext.include;
     section["exclude_remarks"] >> ext.exclude;
+
+    if(node["template_args"].IsSequence())
+    {
+        std::string key, value;
+        for(size_t i = 0; i < node["template_args"].size(); i++)
+        {
+            node["template_args"][i]["key"] >> key;
+            node["template_args"][i]["value"] >> value;
+            ext.template_args[key] = value;
+        }
+    }
 
     return 0;
 }
@@ -890,6 +935,15 @@ int loadExternalConfig(std::string &path, ExternalConfig &ext)
         ini.GetAll("include_remarks", ext.include);
     if(ini.ItemPrefixExist("exclude_remarks"))
         ini.GetAll("exclude_remarks", ext.exclude);
+
+    if(ini.SectionExist("template"))
+    {
+        ini.EnterSection("template");
+        string_multimap tempmap;
+        ini.GetItems(tempmap);
+        for(auto &x : tempmap)
+            ext.template_args[x.first] = x.second;
+    }
 
     return 0;
 }
@@ -961,6 +1015,23 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         *status_code = 400;
         return "Invalid request!";
     }
+
+    //load request arguments as template variables
+    string_array req_args = split(argument, "&");
+    string_size pos;
+    string_map req_arg_map;
+    for(std::string &x : req_args)
+    {
+        pos = x.find("=");
+        if(pos == x.npos)
+            continue;
+        req_arg_map[x.substr(0, pos)] = x.substr(pos + 1);
+    }
+
+    //save template variables
+    template_args tpl_args;
+    tpl_args.global_vars = global_vars;
+    tpl_args.request_params = req_arg_map;
 
     //check if we need to read configuration
     if((!api_mode || cfw_child_process) && !generator_mode)
@@ -1034,6 +1105,8 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
             ext.rename_array = extconf.rename;
         if(extconf.emoji.size())
             ext.emoji_array = extconf.emoji;
+        if(extconf.template_args.size())
+            tpl_args.local_vars = extconf.template_args;
         ext.enable_rule_generator = extconf.enable_rule_generator;
         //load custom group
         if(extconf.custom_proxy_group.size())
@@ -1153,6 +1226,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     case "clash"_hash: case "clashr"_hash:
         //std::cerr<<"Clash"<<((target == "clashr") ? "R" : "")<<std::endl;
         writeLog(0, target == "clashr" ? "Generate target: ClashR" : "Generate target: Clash", LOG_LEVEL_INFO);
+        tpl_args.local_vars["clash.new_field_name"] = ext.clash_new_field_name ? "true" : "false";
         if(ext.nodelist)
         {
             YAML::Node yamlnode;
@@ -1161,7 +1235,12 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         }
         else if(ruleset_updated || update_ruleset_on_request || ext_clash_base != clash_rule_base || !enable_base_gen)
         {
-            base_content = fetchFile(ext_clash_base, proxy, cache_config);
+            if(render_template(fetchFile(ext_clash_base, proxy, cache_config), tpl_args, base_content, template_path) != 0)
+            {
+                *status_code = 400;
+                return base_content;
+            }
+            //base_content = fetchFile(ext_clash_base, proxy, cache_config);
             output_content = netchToClash(nodes, base_content, rca, extra_group, target == "clashr", ext);
         }
         else
@@ -1188,7 +1267,12 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         }
         else
         {
-            base_content = fetchFile(ext_surge_base, proxy, cache_config);
+            if(render_template(fetchFile(ext_surge_base, proxy, cache_config), tpl_args, base_content, template_path) != 0)
+            {
+                *status_code = 400;
+                return base_content;
+            }
+            //base_content = fetchFile(ext_surge_base, proxy, cache_config);
             output_content = netchToSurge(nodes, base_content, rca, extra_group, surge_ver, ext);
 
             if(upload == "true")
@@ -1203,7 +1287,12 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         //std::cerr<<"Surfboard"<<std::endl;
         writeLog(0, "Generate target: Surfboard", LOG_LEVEL_INFO);
 
-        base_content = fetchFile(ext_surfboard_base, proxy, cache_config);
+        if(render_template(fetchFile(ext_surfboard_base, proxy, cache_config), tpl_args, base_content, template_path) != 0)
+        {
+            *status_code = 400;
+            return base_content;
+        }
+        //base_content = fetchFile(ext_surfboard_base, proxy, cache_config);
         output_content = netchToSurge(nodes, base_content, rca, extra_group, -3, ext);
         if(upload == "true")
             uploadGist("surfboard", upload_path, output_content, true);
@@ -1218,7 +1307,12 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         // mellow base generator removed for now
         //if(ruleset_updated || update_ruleset_on_request || ext_mellow_base != mellow_rule_base || !enable_base_gen)
         {
-            base_content = fetchFile(ext_mellow_base, proxy, cache_config);
+            if(render_template(fetchFile(ext_mellow_base, proxy, cache_config), tpl_args, base_content, template_path) != 0)
+            {
+                *status_code = 400;
+                return base_content;
+            }
+            //base_content = fetchFile(ext_mellow_base, proxy, cache_config);
             output_content = netchToMellow(nodes, base_content, rca, extra_group, ext);
         }
         /*
@@ -1245,7 +1339,12 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         //std::cerr<<"SS Subscription"<<std::endl;
         writeLog(0, "Generate target: SS Subscription", LOG_LEVEL_INFO);
 
-        base_content = fetchFile(ext_sssub_base, proxy, cache_config);
+        if(render_template(fetchFile(ext_sssub_base, proxy, cache_config), tpl_args, base_content, template_path) != 0)
+        {
+            *status_code = 400;
+            return base_content;
+        }
+        //base_content = fetchFile(ext_sssub_base, proxy, cache_config);
         output_content = netchToSSSub(base_content, nodes, ext);
         if(upload == "true")
             uploadGist("sssub", upload_path, output_content, false);
@@ -1268,7 +1367,14 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         //std::cerr<<"Quantumult"<<std::endl;
         writeLog(0, "Generate target: Quantumult", LOG_LEVEL_INFO);
         if(!ext.nodelist)
-            base_content = fetchFile(ext_quan_base, proxy, cache_config);
+        {
+            if(render_template(fetchFile(ext_quan_base, proxy, cache_config), tpl_args, base_content, template_path) != 0)
+            {
+                *status_code = 400;
+                return base_content;
+            }
+            //base_content = fetchFile(ext_quan_base, proxy, cache_config);
+        }
 
         output_content = netchToQuan(nodes, base_content, rca, extra_group, ext);
 
@@ -1279,7 +1385,15 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         //std::cerr<<"Quantumult X"<<std::endl;
         writeLog(0, "Generate target: Quantumult X", LOG_LEVEL_INFO);
         if(!ext.nodelist)
-            base_content = fetchFile(ext_quanx_base, proxy, cache_config);
+        {
+            if(render_template(fetchFile(ext_quanx_base, proxy, cache_config), tpl_args, base_content, template_path) != 0)
+            {
+                *status_code = 400;
+                return base_content;
+            }
+            //base_content = fetchFile(ext_quanx_base, proxy, cache_config);
+        }
+
 
         output_content = netchToQuanX(nodes, base_content, rca, extra_group, ext);
 
@@ -1290,7 +1404,14 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         //std::cerr<<"Loon"<<std::endl;
         writeLog(0, "Generate target: Loon", LOG_LEVEL_INFO);
         if(!ext.nodelist)
-            base_content = fetchFile(ext_loon_base, proxy, cache_config);
+        {
+            if(render_template(fetchFile(ext_loon_base, proxy, cache_config), tpl_args, base_content, template_path) != 0)
+            {
+                *status_code = 400;
+                return base_content;
+            }
+            //base_content = fetchFile(ext_loon_base, proxy, cache_config);
+        }
 
         output_content = netchToLoon(nodes, base_content, rca, extra_group, ext);
 
@@ -1385,17 +1506,35 @@ std::string simpleToClashR(RESPONSE_CALLBACK_ARGS)
         return "No nodes were found!";
     }
 
-    std::cerr<<"Generate target: ClashR\n";
+    writeLog(0, "Generate target: ClashR", LOG_LEVEL_INFO);
 
-    YAML::Node yamlnode = safe_get_clash_base();
-    netchToClash(nodes, yamlnode, extra_group, true, ext);
-    return YAML::Dump(yamlnode);
+    template_args tpl_args;
+    tpl_args.global_vars = global_vars;
+    tpl_args.local_vars["clash.new_field_name"] = clash_use_new_field_name ? "true" : "false";
+    tpl_args.request_params["target"] = "clashr";
+    tpl_args.request_params["url"] = url;
+
+    if(!enable_base_gen)
+    {
+        if(render_template(fetchFile(clash_rule_base, proxy, cache_config), tpl_args, base_content, template_path) != 0)
+        {
+            *status_code = 400;
+            return base_content;
+        }
+        //base_content = fetchFile(clash_rule_base, proxy, cache_config);
+        return netchToClash(nodes, base_content, rca, extra_group, true, ext);
+    }
+    else
+    {
+        YAML::Node yamlnode = safe_get_clash_base();
+        netchToClash(nodes, yamlnode, extra_group, true, ext);
+        return YAML::Dump(yamlnode);
+    }
 }
 
 std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
 {
     INIReader ini;
-    YAML::Node clash = safe_get_clash_base();
     string_array dummy_str_array;
     std::vector<nodeInfo> nodes;
     std::string base_content, url = argument.size() <= 5 ? "" : argument.substr(5), dummy;
@@ -1417,6 +1556,28 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
     }
 
     std::string proxy = parseProxy(proxy_config);
+    YAML::Node clash;
+    template_args tpl_args;
+    tpl_args.global_vars = global_vars;
+    tpl_args.local_vars["clash.new_field_name"] = clash_use_new_field_name ? "true" : "false";
+    tpl_args.request_params["target"] = "clash";
+    tpl_args.request_params["url"] = url;
+
+    if(!enable_base_gen)
+    {
+        if(render_template(fetchFile(clash_rule_base, proxy, cache_config), tpl_args, base_content, template_path) != 0)
+        {
+            *status_code = 400;
+            return base_content;
+        }
+        //base_content = fetchFile(clash_rule_base, proxy, cache_config);
+        clash = YAML::Load(base_content);
+    }
+    else
+    {
+        clash = safe_get_clash_base();
+    }
+
     base_content = fetchFile(url, proxy, cache_config);
 
     if(ini.Parse(base_content) != INIREADER_EXCEPTION_NONE)
@@ -1435,8 +1596,6 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
         *status_code = 400;
         return errmsg;
     }
-
-    proxy = parseProxy(proxy_subscription);
 
     //scan groups first, get potential policy-path
     string_multimap section;
@@ -1472,12 +1631,15 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
         clash[proxygroup_name].push_back(singlegroup);
     }
 
+    proxy = parseProxy(proxy_subscription);
+    eraseElements(dummy_str_array);
+
     std::string subInfo;
     for(std::string &x : links)
     {
         //std::cerr<<"Fetching node data from url '"<<x<<"'."<<std::endl;
         writeLog(0, "Fetching node data from url '" + x + "'.", LOG_LEVEL_INFO);
-        if(addNodes(x, nodes, 0, proxy, dummy_str_array, dummy_str_array, dummy_str_array, dummy_str_array, subInfo, false) == -1)
+        if(addNodes(x, nodes, 0, proxy, dummy_str_array, dummy_str_array, dummy_str_array, dummy_str_array, subInfo, !api_mode) == -1)
         {
             *status_code = 400;
             return std::string("The following link doesn't contain any valid node info: " + x);
@@ -1703,9 +1865,9 @@ std::string getRewriteRemote(RESPONSE_CALLBACK_ARGS)
 
 static inline std::string intToStream(unsigned long long stream)
 {
-    char chrs[16] = {};
+    char chrs[16] = {}, units[6] = {' ', 'K', 'M', 'G', 'T', 'P'};
     double streamval = stream;
-    int level = 0;
+    unsigned int level = 0;
     while(streamval > 1024.0)
     {
         if(level >= 5)
@@ -1713,27 +1875,7 @@ static inline std::string intToStream(unsigned long long stream)
         level++;
         streamval /= 1024.0;
     }
-    switch(level)
-    {
-    case 3:
-        snprintf(chrs, 15, "%.2f GB", streamval);
-        break;
-    case 4:
-        snprintf(chrs, 15, "%.2f TB", streamval);
-        break;
-    case 5:
-        snprintf(chrs, 15, "%.2f PB", streamval);
-        break;
-    case 2:
-        snprintf(chrs, 15, "%.2f MB", streamval);
-        break;
-    case 1:
-        snprintf(chrs, 15, "%.2f KB", streamval);
-        break;
-    case 0:
-        snprintf(chrs, 15, "%.2f B", streamval);
-        break;
-    }
+    snprintf(chrs, 15, "%.2f %cB", streamval, units[level]);
     return std::string(chrs);
 }
 
@@ -1813,7 +1955,7 @@ int simpleGenerator()
     string_multimap allItems;
     std::string dummy_str;
     std::string proxy = parseProxy(proxy_subscription);
-    std::map<std::string, std::string> headers;
+    string_map headers;
     int ret_code = 200;
     for(std::string &x : sections)
     {

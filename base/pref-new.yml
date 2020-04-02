@@ -5,14 +5,14 @@ common:
   insert_url: []
   exclude_remarks: ["(到期|剩余流量|时间|官网|产品)"]
   include_remarks: []
-  clash_rule_base: base/simple_base.yml
-  surge_rule_base: base/surge.conf
-  surfboard_rule_base: base/surfboard.conf
-  mellow_rule_base: base/mellow.conf
-  quan_rule_base: base/quan.conf
-  quanx_rule_base: base/quanx.conf
-  loon_rule_base: base/loon.conf
-  sssub_rule_base: base/shadowsocks_base.json
+  clash_rule_base: base/all_base.tpl
+  surge_rule_base: base/all_base.tpl
+  surfboard_rule_base: base/all_base.tpl
+  mellow_rule_base: base/all_base.tpl
+  quan_rule_base: base/all_base.tpl
+  quanx_rule_base: base/all_base.tpl
+  loon_rule_base: base/all_base.tpl
+  sssub_rule_base: base/all_base.tpl
   proxy_config: SYSTEM
   proxy_ruleset: SYSTEM
   proxy_subscription: NONE
@@ -78,6 +78,14 @@ proxy_group:
 #  - {import: snippets/groups_forcerule.txt}
 #  - {name: ssid group, type: ssid, rule: ["default_group", "celluar=group0,ssid1=group1,ssid2=group2"]}
   - {import: snippets/groups.txt}
+
+template:
+  template_path: "template"
+  globals:
+  - {key: clash.http_port, value: 7890}
+  - {key: clash.socks_port, value: 7891}
+  - {key: clash.allow_lan, value: true}
+  - {key: clash.log_level, value: info}
 
 server:
   listen: 0.0.0.0

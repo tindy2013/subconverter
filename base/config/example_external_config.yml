@@ -23,3 +23,5 @@ custom:
 
 #  include_remarks: []
 #  exclude_remarks: []
+#  template_args:
+#  - {key: clash.dns.port, value: 5353}
