@@ -9,25 +9,36 @@
 
 ---
 
-**新增内容**
+## 新增内容
 
-2020/03/02 添加 [进阶链接](#进阶链接) 中关于 `append_type` `append_info` `expand` `dev_id` `interval` `strict` 等参数的描述
+2020/04/02
+
+- 新增 [本地生成](#本地生成) 用于在本地生成具体的配置文件
+- 添加 [支持类型](#支持类型) 中 `mellow` & `trojan` 参数
+- 添加 [进阶链接](#进阶链接) 中 `new_name` 参数的描述
+- 添加 [配置文件](#配置文件) 中 `append_sub_userinfo` `clash_use_new_field_name` 参数的描述
+
+2020/03/02
+
+- 添加 [进阶链接](#进阶链接) 中关于 `append_type` `append_info` `expand` `dev_id` `interval` `strict` 等参数的描述
 
 ---
 
-- [subconverter](#subconverter)
-  - [支持类型](#支持类型)
-  - [简易用法](#简易用法)
-    - [调用地址](#调用地址)
-    - [调用说明](#调用说明)
-    - [简易转换](#简易转换)
-  - [进阶用法](#进阶用法)
-    - [阅前提示](#阅前提示)
-    - [进阶链接](#进阶链接)
-    - [配置档案](#配置档案)
-    - [配置文件](#配置文件)
-    - [外部配置](#外部配置)
-  - [自动上传](#自动上传)
+## 说明目录
+
+- [支持类型](#支持类型)
+- [简易用法](#简易用法)
+  - [调用地址](#调用地址)
+  - [调用说明](#调用说明)
+  - [简易转换](#简易转换)
+- [进阶用法](#进阶用法)
+  - [阅前提示](#阅前提示)
+  - [进阶链接](#进阶链接)
+  - [配置档案](#配置档案)
+  - [配置文件](#配置文件)
+  - [外部配置](#外部配置)
+- [本地生成](#本地生成)
+- [自动上传](#自动上传)
 
 ## 支持类型
 
@@ -38,14 +49,16 @@
 | Quantumult (完整配置)   |     ✓      |      ✓       | quan        |
 | Quantumult X (完整配置) |     ✓      |      ✓       | quanx       |
 | Loon         |     ✓      |      ✓       | loon        |
+| Mellow       |     ✓      |      ✓       | mellow      |
 | SS (SIP002)  |     ✓      |      ✓       | ss          |
-| SS (软件订阅)|     ✓      |      ✓       | sssub       |
+| SS (软件订阅) |     ✓      |      ✓       | sssub       |
 | SSD          |     ✓      |      ✓       | ssd         |
 | SSR          |     ✓      |      ✓       | ssr         |
 | Surfboard    |     ✓      |      ✓       | surfboard   |
 | Surge 2      |     ✓      |      ✓       | surge&ver=2 |
 | Surge 3      |     ✓      |      ✓       | surge&ver=3 |
 | Surge 4      |     ✓      |      ✓       | surge&ver=4 |
+| Trojan       |     ✓      |      ✓       | trojan      |
 | V2Ray        |     ✓      |      ✓       | v2ray       |
 | 类 TG 代理的 HTTP/Socks 链接 |     ✓      |      ×       | 仅支持 `&url=` 调用    |
 
@@ -233,6 +246,7 @@ http://127.0.0.1:25500/sub?target=%TARGET%&url=%URL%&emoji=%EMOJI%····
 | dev_id  |  可选  | 92DSAFA  | 用于设置 QuantumultX 的远程设备 ID, 以在某些版本上开启远程脚本  |
 | interval  |  可选  | 43200  | 用于设置托管配置更新间隔，确定配置将更新多长时间，单位为秒  |
 | strict |  可选  | true / false   | 如果设置为 true，则 Surge 将在上述间隔后要求强制更新  |
+| new_name |  可选  | true / false   | 如果设置为 true，则将启用 Clash 的新组名称 (proxies, proxy-groups, rules)  |
 
 举个例子：
 
@@ -482,6 +496,16 @@ exclude=(流量|官网)
    > 排除当前 **`target=`** 不支持的节点类型，设置为 true 时打开，默认为 false
 
     - 可以考虑设置为 true，从而在**一定程度上避免出现兼容问题**
+
+1. **append_sub_userinfo**
+
+   > 在 header 里的加入流量信息 (Quanx, Surge 等读取后可以显示流量信息通知)，设置为 true 时打开，默认为 true
+
+1. **clash_use_new_field_name**
+  
+   > 启用 Clash 的新区块名称 (proxies, proxy-groups, rules)，设置为 true 时打开，默认为 false
+
+   - 使用前**务必确认当前使用 Clash core 已经支持**新的区块名称
 
 1. **rename_node**
 
@@ -761,6 +785,28 @@ clash_rule_base=base/forcerule.yml
 ```
 
 </details>
+
+## 本地生成
+
+> 启动程序后，在本地生成对应的配置文件文本
+
+在程序目录内的 [generate.ini](./base/generate.ini) 中设定要生成的文件名(path=xxx)以及其所需要包含的参数，例如：
+
+```ini
+[test]
+path=output.conf
+target=surge
+ver=4
+url=ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpwYXNzd29yZA@www.example.com:1080#Example
+
+[test_profile]
+path=output.yml
+profile=profiles/example_profile.ini
+```
+
+使用 `subconverter -g` 启动本程序时，即可在程序根目录内生成名为 `output.conf` `output.yml` 的配置文件文本。
+
+使用 `subconverter -g --artifact "test"` 启动本程序时，即可在程序根目录内仅生成名为 `output.conf` 的配置文件文本。
 
 ## 自动上传
 
