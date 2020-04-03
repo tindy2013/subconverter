@@ -1181,7 +1181,10 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
         case SPEEDTEST_MESSAGE_FOUNDTROJAN:
             if(surge_ver < 4)
                 continue;
+            host = GetMember(json, "Host");
             proxy = "trojan, " + hostname + ", " + port + ", password=" + password;
+            if(host.size())
+                proxy += ", sni=" + host;
             if(ext.skip_cert_verify)
                 proxy += ", skip-cert-verify=1";
             break;

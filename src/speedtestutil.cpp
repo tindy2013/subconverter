@@ -1374,7 +1374,7 @@ bool explodeSurge(std::string surge, const std::string &custom_port, int local_p
             if(host.empty() && !isIPv4(server) && !isIPv6(server))
                 host = server;
 
-            node.proxyStr = trojanConstruct(remarks, server, port, password, host, false);
+            node.proxyStr = trojanConstruct(remarks, server, port, password, host, true);
             break;
         default:
             switch(hash_(remarks))
