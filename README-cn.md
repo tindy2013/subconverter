@@ -890,7 +890,7 @@ clash_rule_base=base/forcerule.yml
    # 当外部配置中设定了 `clash.new_field_name=true` 时，该判断生效，其包含的···内容被引用
    ```
 
-1. 从 URL 链接中获取，判断前缀为 `request`，例如 `http://127.0.0.1:25500/target=clash&url=www.xxx.com&clash.dns=1`
+1. 从 URL 链接中获取，判断前缀为 `request`，例如 `http://127.0.0.1:25500/sub?target=clash&url=www.xxx.com&clash.dns=1`
 
    - 从 URL 中所获得**包含**在 [进阶链接](#进阶链接) 内的参数进行判断
 
