@@ -11,6 +11,11 @@
 
 ## 新增内容
 
+2020/04/03
+
+- 新增 [模板介绍](#模板介绍) 用于对所引用的 `base` 基础模板进行高度个性化自定义
+- 调整 [说明目录](#说明目录) 层次
+
 2020/04/02
 
 - 新增 [本地生成](#本地生成) 用于在本地生成具体的配置文件
@@ -37,8 +42,10 @@
   - [配置档案](#配置档案)
   - [配置文件](#配置文件)
   - [外部配置](#外部配置)
-- [本地生成](#本地生成)
-- [自动上传](#自动上传)
+  - [模板介绍](#模板介绍)
+- [特别用法](#特别用法)
+  - [本地生成](#本地生成)
+  - [自动上传](#自动上传)
 
 ## 支持类型
 
@@ -790,7 +797,100 @@ clash_rule_base=base/forcerule.yml
 
 </details>
 
-## 本地生成
+### 模板介绍
+
+> `0.5.0` 版本中引进了模板功能，可以通过设置不同的条件参数来获取对应的模板内容
+>
+> 从而做到将多个模板文件合成为一个，或者在不改动模板内容的前提下修改其中的某个参数等
+
+示例文件可以参看 [all_base.tpl](./base/base/all_base.tpl)
+
+模板内的写法有以下几类：
+
+1. 取值
+
+   ```inja
+   {{ global.clash.http_port }}
+   # 获取 配置文件 中 clash.http_port 的值
+   ```
+
+1. 单判断
+
+   ```inja
+   {% if request.clash.dns == "1" %}
+   ···
+   {% endif %}
+   # 如果 URL 中的 clash.dns=1 时，判断成立
+   ```
+
+1. 或判断
+
+   ```inja
+   {% if request.target == "clash" or request.target == "clashr" %}
+   ···
+   {% endif %}
+   # 如果 URL 中的 target 为 clash 或者 clashr 时，判断成立
+   ```
+
+1. 如果...否则...
+
+   ```inja
+   {% if local.clash.new_field_name == "true" %}
+   proxies: ~
+   proxy-groups: ~
+   rules: ~
+   {% else %}
+   Proxy: ~
+   Proxy Group: ~
+   Rule: ~
+   {% endif %}
+   # 如果 外部配置中 clash.new_field_name=true 时，启用 新的 Clash 块名称，否则使用旧的名称
+   ```
+
+
+模板内的引用有以下几类：
+
+1. 从 配置文件 中获取，判断前缀为 `global`
+
+   ```inja
+   socks-port: {{ global.clash.socks_port }}
+   # 当配置文件中设定了 `clash.socks_port` 值时，将被引用
+   ```
+
+1. 从 外部配置 中获取，判断前缀为 `local`
+
+   ```inja
+   {% if local.clash.new_field_name =="true" %}
+   ···
+   {% endif %}
+   # 当外部配置中设定了 `clash.new_field_name=true` 时，该判断生效，其包含的···内容被引用
+   ```
+
+1. 从 URL 链接中获取，判断前缀为 `request`，例如 `http://127.0.0.1:25500/target=clash&url=www.xxx.com&clash.dns=1`
+
+   - 从 URL 中所获得**包含**在 [进阶链接](#进阶链接) 内的参数进行判断
+
+      ```inja
+      {% if request.target == "clash" %}
+      ···
+      {% endif %}
+      # 当 target=clash 时，该判断生效，其包含的··· 内容被引用
+      ```
+
+   - 从 URL 中所获得**不包含**在 [进阶链接](#进阶链接) 内的参数进行判断 (从上述链接可以看出 clash.dns 属于额外参数)
+
+      ```inja
+      {% if request.clash.dns == "1" %}
+      dns:
+        enabled: true
+        listen: 1053
+      {% endif %}
+      # 当 clash.dns=1 时，该判断生效，其包含的 dns 内容被引用
+      ```
+
+## 特别用法
+
+### 本地生成
 
 > 启动程序后，在本地生成对应的配置文件文本
 
@@ -812,7 +912,7 @@ profile=profiles/example_profile.ini
 
 使用 `subconverter -g --artifact "test"` 启动本程序时，即可在程序根目录内仅生成名为 `output.conf` 的配置文件文本。
 
-## 自动上传
+### 自动上传
 
 > 自动上传 gist ，可以用于 Clash For Android / Surge 等进行远程订阅
 
