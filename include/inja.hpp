@@ -1594,6 +1594,9 @@ struct LexerConfig {
  */
 struct ParserConfig {
   ElementNotation notation {ElementNotation::Dot};
+  /// Extra options for limiting included files' scope
+  bool include_scope_limit = false;
+  std::string include_scope = "templates";
 };
 
 }  // namespace inja
@@ -2684,7 +2687,7 @@ class Parser {
       }
       // sys::path::remove_dots(pathname, true, sys::path::Style::posix);
 
-      if(include_scope_limit)
+      if(m_config.include_scope_limit)
       {
 #ifdef _WIN32
         if(pathname.find(":\\") != pathname.npos || pathname.find("..") != pathname.npos)
@@ -2693,7 +2696,7 @@ class Parser {
         if(pathname.find("/") == 0 || pathname.find("..") != pathname.npos)
           inja_throw("file_error", "access denied when trying to include '" + pathname + "': out of scope");
 #endif // _WIN32
-        if(include_scope.size() && pathname.find(include_scope) != 0)
+        if(m_config.include_scope.size() && pathname.find(m_config.include_scope) != 0)
           inja_throw("file_error", "access denied when trying to include '" + pathname + "': out of scope");
       }
 
@@ -2824,11 +2827,6 @@ class Parser {
     std::string text((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     return text;
   }
-
- public:
-  /// Extra options for limiting included files' scope
-  bool include_scope_limit = false;
-  std::string include_scope = "templates";
 
  private:
   const ParserConfig& m_config;
@@ -3324,7 +3322,18 @@ class Renderer {
         }
         case Bytecode::Op::Exists: {
           auto&& name = get_args(bc)[0]->get_ref<const std::string&>();
-          bool result = (data.find(name) != data.end());
+          //bool result = (data.find(name) != data.end());
+          bool result = false;
+          try
+          {
+            const std::string pointer = "/" + [](std::string str){std::string new_value = "/", old_value = ".";for(std::string::size_type pos(0); pos != std::string::npos; pos += new_value.length()){if((pos = str.find(old_value, pos)) != std::string::npos)str.replace(pos, old_value.length(), new_value);else break;}return str;}(name);
+            data.at(json::json_pointer(pointer));
+            result = true;
+          }
+          catch (json::out_of_range &e)
+          {
+            result = false;
+          }
           pop_args(bc);
           m_stack.emplace_back(result);
           break;

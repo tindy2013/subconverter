@@ -48,10 +48,10 @@ int render_template(const std::string &content, const template_args &vars, std::
         std::string data = args.at(0)->get<std::string>();
         return trim(data);
     });
+    m_parser_config.include_scope_limit = true;
+    m_parser_config.include_scope = include_scope;
 
     inja::Parser parser(m_parser_config, m_lexer_config, m_included_templates);
-    parser.include_scope_limit = true;
-    parser.include_scope = include_scope;
     inja::Renderer renderer(m_included_templates, m_callbacks);
 
     try
