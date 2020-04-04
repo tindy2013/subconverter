@@ -11,23 +11,20 @@
 
 ## 新增内容
 
-2020/04/03
+2020/04/04
 
 - 新增 [模板介绍](#模板介绍) 用于对所引用的 `base` 基础模板进行高度个性化自定义
 - 新增 [配置文件](#配置文件) 中 `[template]` 参数的描述
 - 新增 [外部配置](#外部配置) 中 `[template]` 参数的描述
-- 调整 [说明目录](#说明目录) 层次
-
-2020/04/02
-
 - 新增 [本地生成](#本地生成) 用于在本地生成具体的配置文件
-- 添加 [支持类型](#支持类型) 中 `mellow` & `trojan` 参数
-- 添加 [进阶链接](#进阶链接) 中 `new_name` 参数的描述
-- 添加 [配置文件](#配置文件) 中 `append_sub_userinfo` `clash_use_new_field_name` 参数的描述
+- 新增 [支持类型](#支持类型) 中 `mellow` & `trojan` 参数
+- 新增 [进阶链接](#进阶链接) 中 `new_name` 参数的描述
+- 新增 [配置文件](#配置文件) 中 `append_sub_userinfo` `clash_use_new_field_name` 参数的描述
+- 调整 [说明目录](#说明目录) 层次
 
 2020/03/02
 
-- 添加 [进阶链接](#进阶链接) 中关于 `append_type` `append_info` `expand` `dev_id` `interval` `strict` 等参数的描述
+- 新增 [进阶链接](#进阶链接) 中关于 `append_type` `append_info` `expand` `dev_id` `interval` `strict` 等参数的描述
 
 ---
 
@@ -729,7 +726,7 @@ custom_proxy_group=🇯🇵 JP`select`沪日`日本`[]🇯🇵 日本延迟最�
 
 1. **clash.dns 等**
 
-   > 名称可以为任意非本程序默认的参数，用来对模板中的值进行判断
+   > 名称可以为任意非本程序默认的参数，用来对模板中的值进行判断或在模板中使用其定义的参数
 
 </details>
 
@@ -832,6 +829,8 @@ clash_rule_base=base/forcerule.yml
 
 模板内的常用写法有以下几类：
 
+> 各种判断可以嵌套使用，但需要确保逻辑关系没有问题，即有 `if` 就要有 `endif`
+>
 > 更多的使用方式可以参照 [INJA 语法](https://github.com/pantor/inja)
 
 1. 取值
@@ -872,6 +871,17 @@ clash_rule_base=base/forcerule.yml
    Rule: ~
    {% endif %}
    # 如果 外部配置中 clash.new_field_name=true 时，启用 新的 Clash 块名称，否则使用旧的名称
+   ```
+
+1. 如果存在...则...(可避免请求中无对应参数时发生的报错)
+
+   ```inja
+   {% if exists("request.clash.dns") %}
+   dns:
+     enabled: true
+     listen: 1053
+   {% endif %}
+   # 如果 URL 中存在对 clash.dns 参数的任意指定时，判断成立 (可以和 如果···否则··· 等判断一起使用)
    ```
 
 模板内的引用有以下几类：
