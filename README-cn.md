@@ -9,24 +9,41 @@
 
 ---
 
-**新增内容**
+## 新增内容
 
-2020/03/02 添加 [进阶链接](#进阶链接) 中关于 `append_type` `append_info` `expand` `dev_id` `interval` `strict` 等参数的描述
+2020/04/04
+
+- 新增 [模板介绍](#模板介绍) 用于对所引用的 `base` 基础模板进行高度个性化自定义
+- 新增 [配置文件](#配置文件) 中 `[template]` 参数的描述
+- 新增 [外部配置](#外部配置) 中 `[template]` 参数的描述
+- 新增 [本地生成](#本地生成) 用于在本地生成具体的配置文件
+- 新增 [支持类型](#支持类型) 中 `mellow` & `trojan` 参数
+- 新增 [进阶链接](#进阶链接) 中 `new_name` 参数的描述
+- 新增 [配置文件](#配置文件) 中 `append_sub_userinfo` `clash_use_new_field_name` 参数的描述
+- 调整 [说明目录](#说明目录) 层次
+
+2020/03/02
+
+- 新增 [进阶链接](#进阶链接) 中关于 `append_type` `append_info` `expand` `dev_id` `interval` `strict` 等参数的描述
 
 ---
 
-- [subconverter](#subconverter)
-  - [支持类型](#支持类型)
-  - [简易用法](#简易用法)
-    - [调用地址](#调用地址)
-    - [调用说明](#调用说明)
-    - [简易转换](#简易转换)
-  - [进阶用法](#进阶用法)
-    - [阅前提示](#阅前提示)
-    - [进阶链接](#进阶链接)
-    - [配置档案](#配置档案)
-    - [配置文件](#配置文件)
-    - [外部配置](#外部配置)
+## 说明目录
+
+- [支持类型](#支持类型)
+- [简易用法](#简易用法)
+  - [调用地址](#调用地址)
+  - [调用说明](#调用说明)
+  - [简易转换](#简易转换)
+- [进阶用法](#进阶用法)
+  - [阅前提示](#阅前提示)
+  - [进阶链接](#进阶链接)
+  - [配置档案](#配置档案)
+  - [配置文件](#配置文件)
+  - [外部配置](#外部配置)
+  - [模板介绍](#模板介绍)
+- [特别用法](#特别用法)
+  - [本地生成](#本地生成)
   - [自动上传](#自动上传)
 
 ## 支持类型
@@ -38,14 +55,16 @@
 | Quantumult (完整配置)   |     ✓      |      ✓       | quan        |
 | Quantumult X (完整配置) |     ✓      |      ✓       | quanx       |
 | Loon         |     ✓      |      ✓       | loon        |
+| Mellow       |     ✓      |      ✓       | mellow      |
 | SS (SIP002)  |     ✓      |      ✓       | ss          |
-| SS (软件订阅)|     ✓      |      ✓       | sssub       |
+| SS (软件订阅) |     ✓      |      ✓       | sssub       |
 | SSD          |     ✓      |      ✓       | ssd         |
 | SSR          |     ✓      |      ✓       | ssr         |
 | Surfboard    |     ✓      |      ✓       | surfboard   |
 | Surge 2      |     ✓      |      ✓       | surge&ver=2 |
 | Surge 3      |     ✓      |      ✓       | surge&ver=3 |
 | Surge 4      |     ✓      |      ✓       | surge&ver=4 |
+| Trojan       |     ✓      |      ✓       | trojan      |
 | V2Ray        |     ✓      |      ✓       | v2ray       |
 | 类 TG 代理的 HTTP/Socks 链接 |     ✓      |      ×       | 仅支持 `&url=` 调用    |
 
@@ -194,9 +213,10 @@ http://127.0.0.1:25500/surge2clash?link=Surge的订阅链接
 在进行下一步操作前，十分推荐您阅读以下内容：
 
 1. 与 `pref.ini` 相关的：[INI 语法介绍](https://zh.wikipedia.org/wiki/INI%E6%96%87%E4%BB%B6)
-1. 与 `Clash` 配置相关的： [YAML 语法介绍](https://zh.wikipedia.org/wiki/YAML#%E8%AA%9E%E6%B3%95)
+1. 与 `Clash` 配置相关的：[YAML 语法介绍](https://zh.wikipedia.org/wiki/YAML#%E8%AA%9E%E6%B3%95)
+1. 与 `模板` 配置相关的：[INJA 语法介绍](https://github.com/pantor/inja)
 1. 会经常涉及到的： [正则表达式入门](https://github.com/ziishaned/learn-regex/blob/master/translations/README-cn.md)
-1. 当遇到问题需要提交 ISSUE 时的： [提问的智慧](https://github.com/ryanhanwu/How-To-Ask-Questions-The-Smart-Way/blob/master/README-zh_CN.md)
+1. 当遇到问题需要提交 ISSUE 时的：[提问的智慧](https://github.com/ryanhanwu/How-To-Ask-Questions-The-Smart-Way/blob/master/README-zh_CN.md)
 
 当您尝试进行进阶操作时，即默认您有相关的操作能力，本程序仅保证在默认配置文件下能够正常运行。
 
@@ -233,6 +253,7 @@ http://127.0.0.1:25500/sub?target=%TARGET%&url=%URL%&emoji=%EMOJI%····
 | dev_id  |  可选  | 92DSAFA  | 用于设置 QuantumultX 的远程设备 ID, 以在某些版本上开启远程脚本  |
 | interval  |  可选  | 43200  | 用于设置托管配置更新间隔，确定配置将更新多长时间，单位为秒  |
 | strict |  可选  | true / false   | 如果设置为 true，则 Surge 将在上述间隔后要求强制更新  |
+| new_name |  可选  | true / false   | 如果设置为 true，则将启用 Clash 的新组名称 (proxies, proxy-groups, rules)  |
 
 举个例子：
 
@@ -477,11 +498,21 @@ exclude=(流量|官网)
 
     - **请勿随意将此设置修改为 true**
 
-1. **filter deprecated nodes**
+1. **filter_deprecated_nodes**
 
    > 排除当前 **`target=`** 不支持的节点类型，设置为 true 时打开，默认为 false
 
     - 可以考虑设置为 true，从而在**一定程度上避免出现兼容问题**
+
+1. **append_sub_userinfo**
+
+   > 在 header 里的加入流量信息 (Quanx, Surge 等读取后可以显示流量信息通知)，设置为 true 时打开，默认为 true
+
+1. **clash_use_new_field_name**
+  
+   > 启用 Clash 的新区块名称 (proxies, proxy-groups, rules)，设置为 true 时打开，默认为 false
+
+   - 使用前**务必确认当前使用 Clash core 已经支持**新的区块名称
 
 1. **rename_node**
 
@@ -643,13 +674,17 @@ custom_proxy_group=🇯🇵 JP`select`沪日`日本`[]🇯🇵 日本延迟最�
 # 表示创建一个叫 🇯🇵 JP 的 select 策略组,并向其中**依次**添加名字含'沪日','日本'的节点，以及引用上述所创建的 🇯🇵 日本延迟最低 策略组
 ```
 
-- 还可使用一些特殊筛选条件
+- 还可使用一些特殊筛选条件(GROUPID 匹配支持range,如 1,!2,3-4,!5-6,7+,8-)
 
   ```ini
   custom_proxy_group=g1`select`!!GROUPID=0
   # 指订阅链接中的第一条订阅
   custom_proxy_group=g2`select`!!GROUPID=1
   # 指订阅链接中的第二条订阅
+  custom_proxy_group=g2`select`!!GROUPID=!2
+  # 指除了订阅链接中的第三条订阅
+  custom_proxy_group=g2`select`!!GROUPID=3-5
+  # 指订阅链接中的第四条到第六条订阅
   custom_proxy_group=v2ray`select`!!GROUP=V2RayProvider
   # 指订阅链接中组名为 V2RayProvider 的节点
   ```
@@ -662,18 +697,36 @@ custom_proxy_group=🇯🇵 JP`select`沪日`日本`[]🇯🇵 日本延迟最�
   ```
 
 </details>
+
 <details>
+
 <summary><b>[server] 部分</b></summary>
 
 > 此部分通常**保持默认**即可
 
 1. **listen**
 
-   > 绑定到 Web 服务器的地址，将地址设为 0.0.0.0，则局域网内设备均可使用。
+   > 绑定到 Web 服务器的地址，将地址设为 0.0.0.0，则局域网内设备均可使用
 
 1. **port**
 
    > 绑定到 Web 服务器地址的端口，默认为 25500
+
+</details>
+
+<details>
+
+<summary><b>[template] 部分</b></summary>
+
+> 此部分用于指定 模板 中的部分值
+
+1. **template_path**
+
+   > 对**子模板**文件的所在位置(即模板文件中使用 `{% include "xxx.tpl" %}` 引入的模板)做出路径限制
+
+1. **clash.dns 等**
+
+   > 名称可以为任意非本程序默认的参数，用来对模板中的值进行判断或在模板中使用其定义的参数
 
 </details>
 
@@ -758,11 +811,144 @@ clash_rule_base=base/forcerule.yml
 ;用于包含或排除节点关键词的选项 会覆盖 pref.ini 里的内容
 ;include_remarks=
 ;exclude_remarks=
+
+;[template]
+;;局部作用于模板中的变量
+;clash.dns.port=5353
 ```
 
 </details>
 
-## 自动上传
+### 模板介绍
+
+> `0.5.0` 版本中引进了模板功能，可以通过设置不同的条件参数来获取对应的模板内容
+>
+> 从而做到将多个模板文件合成为一个，或者在不改动模板内容的前提下修改其中的某个参数等
+
+示例文件可以参看 [all_base.tpl](./base/base/all_base.tpl)
+
+模板内的常用写法有以下几类：
+
+> 各种判断可以嵌套使用，但需要确保逻辑关系没有问题，即有 `if` 就要有 `endif`
+>
+> 更多的使用方式可以参照 [INJA 语法](https://github.com/pantor/inja)
+
+1. 取值
+
+   ```inja
+   {{ global.clash.http_port }}
+   # 获取 配置文件 中 clash.http_port 的值
+   ```
+
+1. 单判断
+
+   ```inja
+   {% if request.clash.dns == "1" %}
+   ···
+   {% endif %}
+   # 如果 URL 中的 clash.dns=1 时，判断成立
+   ```
+
+1. 或判断
+
+   ```inja
+   {% if request.target == "clash" or request.target == "clashr" %}
+   ···
+   {% endif %}
+   # 如果 URL 中的 target 为 clash 或者 clashr 时，判断成立
+   ```
+
+1. 如果...否则...
+
+   ```inja
+   {% if local.clash.new_field_name == "true" %}
+   proxies: ~
+   proxy-groups: ~
+   rules: ~
+   {% else %}
+   Proxy: ~
+   Proxy Group: ~
+   Rule: ~
+   {% endif %}
+   # 如果 外部配置中 clash.new_field_name=true 时，启用 新的 Clash 块名称，否则使用旧的名称
+   ```
+
+1. 如果存在...则...(可避免请求中无对应参数时发生的报错)
+
+   ```inja
+   {% if exists("request.clash.dns") %}
+   dns:
+     enabled: true
+     listen: 1053
+   {% endif %}
+   # 如果 URL 中存在对 clash.dns 参数的任意指定时，判断成立 (可以和 如果···否则··· 等判断一起使用)
+   ```
+
+模板内的引用有以下几类：
+
+1. 从 配置文件 中获取，判断前缀为 `global`
+
+   ```inja
+   socks-port: {{ global.clash.socks_port }}
+   # 当配置文件中设定了 `clash.socks_port` 值时，将被引用
+   ```
+
+1. 从 外部配置 中获取，判断前缀为 `local`
+
+   ```inja
+   {% if local.clash.new_field_name =="true" %}
+   ···
+   {% endif %}
+   # 当外部配置中设定了 `clash.new_field_name=true` 时，该判断生效，其包含的···内容被引用
+   ```
+
+1. 从 URL 链接中获取，判断前缀为 `request`，例如 `http://127.0.0.1:25500/sub?target=clash&url=www.xxx.com&clash.dns=1`
+
+   - 从 URL 中所获得**包含**在 [进阶链接](#进阶链接) 内的参数进行判断
+
+      ```inja
+      {% if request.target == "clash" %}
+      ···
+      {% endif %}
+      # 当 target=clash 时，该判断生效，其包含的··· 内容被引用
+      ```
+
+   - 从 URL 中所获得**不包含**在 [进阶链接](#进阶链接) 内的参数进行判断 (从上述链接可以看出 clash.dns 属于额外参数)
+
+      ```inja
+      {% if request.clash.dns == "1" %}
+      dns:
+        enabled: true
+        listen: 1053
+      {% endif %}
+      # 当 clash.dns=1 时，该判断生效，其包含的 dns 内容被引用
+      ```
+
+## 特别用法
+
+### 本地生成
+
+> 启动程序后，在本地生成对应的配置文件文本
+
+在程序目录内的 [generate.ini](./base/generate.ini) 中设定文件块([xxx])，生成的文件名(path=xxx)以及其所需要包含的参数，例如：
+
+```ini
+[test]
+path=output.conf
+target=surge
+ver=4
+url=ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpwYXNzd29yZA@www.example.com:1080#Example
+
+[test_profile]
+path=output.yml
+profile=profiles/example_profile.ini
+```
+
+使用 `subconverter -g` 启动本程序时，即可在程序根目录内生成名为 `output.conf` `output.yml` 的配置文件文本。
+
+使用 `subconverter -g --artifact "test"` 启动本程序时，即可在程序根目录内仅生成上述示例中 [test] 文件块所指代的 `output.conf` 的配置文件文本。
+
+### 自动上传
 
 > 自动上传 gist ，可以用于 Clash For Android / Surge 等进行远程订阅
 
