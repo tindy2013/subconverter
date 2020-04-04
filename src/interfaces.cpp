@@ -1737,7 +1737,7 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
 
 std::string getProfile(RESPONSE_CALLBACK_ARGS)
 {
-    std::string name = UrlDecode(getUrlArg(argument, "name")), token = UrlDecode(getUrlArg(argument, "token")), expand = getUrlArg(argument, "expand");
+    std::string name = UrlDecode(getUrlArg(argument, "name")), token = UrlDecode(getUrlArg(argument, "token"));
     if(token.empty() || name.empty())
     {
         *status_code = 403;
@@ -1787,10 +1787,24 @@ std::string getProfile(RESPONSE_CALLBACK_ARGS)
             return "Forbidden";
         }
     }
-    contents.emplace("token", token);
-    contents.emplace("expand", expand);
-    std::string query;
+
+    string_map sub_args;
     for(auto &x : contents)
+    {
+        sub_args[x.first] = x.second;
+    }
+    string_array args = split(argument, "&");
+    string_size pos;
+    for(std::string &x : args)
+    {
+        pos = x.find("=");
+        if(pos == x.npos)
+            continue;
+        sub_args[x.substr(0, pos)] = UrlDecode(x.substr(pos + 1));
+    }
+    sub_args["token"] = token;
+    std::string query;
+    for(auto &x : sub_args)
     {
         query += x.first + "=" + UrlEncode(x.second) + "&";
     }
