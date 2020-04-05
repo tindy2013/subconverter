@@ -8,16 +8,6 @@ DOMAIN-SUFFIX,battle.net
 DOMAIN-SUFFIX,battlenet.com
 DOMAIN-SUFFIX,blizzard.com
 
-# > Microsoft
-DOMAIN-SUFFIX,azure.cn
-DOMAIN-SUFFIX,hotmail.com
-DOMAIN-SUFFIX,msn.com
-DOMAIN-SUFFIX,outlook.com
-DOMAIN-SUFFIX,sharepoint.com
-DOMAIN-SUFFIX,windows.com
-DOMAIN-SUFFIX,windows.net
-DOMAIN-SUFFIX,windowsupdate.com
-
 # > Prior
 DOMAIN,client.amplifi.com
 DOMAIN,ip.bjango.com

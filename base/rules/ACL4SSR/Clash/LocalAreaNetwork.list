@@ -20,6 +20,7 @@ IP-CIDR6,fe80::/10
 IP-CIDR6,fd00::/8
 
 # Router managed 路由器管理域名
+DOMAIN,router.asus.com
 DOMAIN-SUFFIX,hiwifi.com
 DOMAIN-SUFFIX,leike.cc
 DOMAIN-SUFFIX,miwifi.com
@@ -30,4 +31,3 @@ DOMAIN-SUFFIX,phicomm.me
 DOMAIN-SUFFIX,routerlogin.com
 DOMAIN-SUFFIX,tendawifi.com
 DOMAIN-SUFFIX,zte.home
-DOMAIN,router.asus.com

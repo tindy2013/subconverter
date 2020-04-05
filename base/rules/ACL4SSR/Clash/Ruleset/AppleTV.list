@@ -1,0 +1,5 @@
+# 内容：AppleTV
+# 数量：3条
+DOMAIN,np-edge.itunes.apple.com
+DOMAIN,play-edge.itunes.apple.com
+DOMAIN-SUFFIX,tv.apple.com

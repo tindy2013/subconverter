@@ -1,0 +1,8 @@
+# 内容：EncoreTVB
+# 数量：6条
+USER-AGENT,encoreTVB*
+DOMAIN,bcbolt446c5271-a.akamaihd.net
+DOMAIN,content.jwplatform.com
+DOMAIN,edge.api.brightcove.com
+DOMAIN,videos-f.jwpsrv.com
+DOMAIN-SUFFIX,encoretvb.com

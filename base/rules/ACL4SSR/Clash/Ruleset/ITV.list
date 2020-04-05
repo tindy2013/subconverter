@@ -1,0 +1,6 @@
+# 内容：ITV
+# 数量：4条
+USER-AGENT,ITV_Player*
+DOMAIN,itvpnpmobile-a.akamaihd.net
+DOMAIN-SUFFIX,itv.com
+DOMAIN-SUFFIX,itvstatic.com

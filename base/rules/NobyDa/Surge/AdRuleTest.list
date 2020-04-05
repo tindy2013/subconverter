@@ -1,4 +1,4 @@
-#Update 2020.1.10 Self-use for testing only, there may be a lot of manslaughter.
+#Update 2020.4.1 Self-use for testing only, there may be a lot of manslaughter.
 DOMAIN-SUFFIX,admaster.com
 DOMAIN-SUFFIX,0z5jn.cn
 DOMAIN-SUFFIX,114so.cn
@@ -136,7 +136,6 @@ DOMAIN-SUFFIX,adfilter.imtt.qq.com
 DOMAIN-SUFFIX,adsrich.qq.com
 DOMAIN-SUFFIX,aexception.bugly.qq.com
 DOMAIN-SUFFIX,android.bugly.qq.com
-DOMAIN-SUFFIX,appsupport.qq.com
 DOMAIN-SUFFIX,astat.bugly.qq.com
 DOMAIN-SUFFIX,beacon.qq.com
 DOMAIN-SUFFIX,bs.l.qq.com
@@ -147,7 +146,6 @@ DOMAIN-SUFFIX,c2.l.qq.com
 DOMAIN-SUFFIX,cb.l.qq.com
 DOMAIN-SUFFIX,cdn.ark.qq.com
 DOMAIN-SUFFIX,cfg.imtt.qq.com
-DOMAIN-SUFFIX,cgi.connect.qq.com
 DOMAIN-SUFFIX,client.show.qq.com
 DOMAIN-SUFFIX,cm.e.qq.com
 DOMAIN-SUFFIX,cm.l.qq.com
@@ -927,7 +925,6 @@ DOMAIN-SUFFIX,uimg.123hala.com
 DOMAIN-SUFFIX,uma.gtags.net
 DOMAIN-SUFFIX,ums.adtechjp.com
 DOMAIN-SUFFIX,ums.adtechus.com
-DOMAIN-SUFFIX,umtrack.com
 DOMAIN-SUFFIX,union2.50bang.org
 DOMAIN-SUFFIX,up1.tj.u2.ucweb.com
 DOMAIN-SUFFIX,update.123juzi.net
@@ -1147,7 +1144,6 @@ DOMAIN-SUFFIX,catch.gift
 DOMAIN-SUFFIX,dfp.suning.com
 DOMAIN-SUFFIX,ggs.myzaker.com
 DOMAIN-SUFFIX,huodonghezi.com
-DOMAIN-SUFFIX,iadmat.nosdn.127.net
 DOMAIN-SUFFIX,iadmusicmat.music.126.net
 DOMAIN-SUFFIX,imgad0.pconline.com.cn
 DOMAIN-SUFFIX,imgadpai.thepaper.cn
@@ -1198,7 +1194,6 @@ DOMAIN-KEYWORD,supersonicads
 DOMAIN-KEYWORD,taboola
 DOMAIN-KEYWORD,traffic
 DOMAIN-KEYWORD,uedas
-DOMAIN-KEYWORD,umtrack
 DOMAIN-KEYWORD,wlmonitor
 DOMAIN-KEYWORD,zjtoolbar
 DOMAIN-KEYWORD,admarvel

@@ -1,0 +1,8 @@
+# 内容：TikTok
+# 数量：6条
+USER-AGENT,TikTok*
+DOMAIN-KEYWORD,-tiktokcdn-com
+DOMAIN-SUFFIX,muscdn.com
+DOMAIN-SUFFIX,musical.ly
+DOMAIN-SUFFIX,tiktokcdn.com
+DOMAIN-SUFFIX,tiktokv.com

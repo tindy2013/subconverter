@@ -1,0 +1,6 @@
+# 内容：SoundCloud
+# 数量：4条
+USER-AGENT,SoundCloud*
+DOMAIN-SUFFIX,p-cdn.us
+DOMAIN-SUFFIX,sndcdn.com
+DOMAIN-SUFFIX,soundcloud.com

@@ -1,4 +1,7 @@
-# Update > 2020.3.20 Go advertising rule Integration lhie1 and ConnersHua
+# Update > 2020.4.1 Go advertising rule Integration lhie1 and ConnersHua
+DOMAIN,mcupdate.gstarcad.com
+DOMAIN,adx.open-adx.com
+DOMAIN,adservice.sigmob.cn
 DOMAIN,t7z.cupid.iqiyi.com
 DOMAIN,static-s.iqiyi.com
 DOMAIN,mobile2.da.mgtv.com
@@ -7,6 +10,7 @@ DOMAIN,gwp.xiaojukeji.com
 DOMAIN,ct.xiaojukeji.com
 DOMAIN,news.ssp.qq.com
 DOMAIN,news.l.qq.com
+DOMAIN,unidesk.alicdn.com
 DOMAIN-SUFFIX,idealads.net
 DOMAIN-SUFFIX,ironsrc.com
 DOMAIN-SUFFIX,apoll.m.taobao.com
@@ -5097,7 +5101,6 @@ DOMAIN-SUFFIX,maw.wnbfw.com
 DOMAIN-SUFFIX,maxwebsearch.com
 DOMAIN-SUFFIX,maysunmedia.com
 DOMAIN-SUFFIX,mb.hockeybuzz.com
-DOMAIN-SUFFIX,mb.yidianzixun.com
 DOMAIN-SUFFIX,mb.zam.com
 DOMAIN-SUFFIX,mbai.cn
 DOMAIN-SUFFIX,mbd.weathercn.com
@@ -8200,7 +8203,6 @@ DOMAIN,v1.log.moji.com
 DOMAIN,ad.bn.netease.com
 DOMAIN,ad.yixin.im
 DOMAIN,admusicpic.music.126.net
-DOMAIN,iadmat.nosdn.127.net
 DOMAIN,iadmusicmat.music.126.net
 DOMAIN,iadmusicmatvideo.music.126.net
 DOMAIN,impservice.dictapp.youdao.com

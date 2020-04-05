@@ -1,0 +1,12 @@
+# 内容：DisneyPlus
+# 数量：10条
+USER-AGENT,Disney*
+USER-AGENT,Disney+*
+DOMAIN,cdn.registerdisney.go.com
+DOMAIN-SUFFIX,bamgrid.com
+DOMAIN-SUFFIX,conviva.com
+DOMAIN-SUFFIX,disney-plus.net
+DOMAIN-SUFFIX,disney.demdex.net
+DOMAIN-SUFFIX,disneyplus.com
+DOMAIN-SUFFIX,dssott.com
+DOMAIN-SUFFIX,execute-api.us-east-1.amazonaws.com
