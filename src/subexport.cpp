@@ -1212,6 +1212,7 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
         if(ext.udp)
             proxy += ", udp-relay=true";
 
+        remarks_list.emplace_back(remark);
         if(ext.nodelist)
             output_nodelist += remark + " = " + proxy + "\n";
         else
@@ -1219,7 +1220,6 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
             ini.Set("{NONAME}", remark + " = " + proxy);
             nodelist.emplace_back(x);
         }
-        remarks_list.emplace_back(remark);
     }
 
     if(ext.nodelist)
@@ -1769,6 +1769,7 @@ void netchToQuan(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rules
         }
 
         ini.Set("{NONAME}", proxyStr);
+        remarks_list.emplace_back(remark);
         nodelist.emplace_back(x);
     }
 
@@ -1975,8 +1976,8 @@ void netchToQuanX(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rule
             proxyStr += ", udp-relay=true";
         proxyStr += ", tag=" + remark;
 
-        remarks_list.push_back(remark);
         ini.Set("{NONAME}", proxyStr);
+        remarks_list.emplace_back(remark);
         nodelist.emplace_back(x);
     }
 
