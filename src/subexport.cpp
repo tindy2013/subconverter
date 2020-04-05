@@ -413,6 +413,11 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset
     {
         rule_group = x.rule_group;
         retrived_rules = x.rule_content.get();
+        if(retrived_rules.empty())
+        {
+            writeLog(0, "Failed to fetch ruleset or ruleset is empty: '" + x.rule_path + "'!", LOG_LEVEL_WARNING);
+            continue;
+        }
         if(retrived_rules.find("[]") == 0)
         {
             strLine = retrived_rules.substr(2);
@@ -489,6 +494,11 @@ std::string rulesetToClashStr(YAML::Node &base_rule, std::vector<ruleset_content
     {
         rule_group = x.rule_group;
         retrived_rules = x.rule_content.get();
+        if(retrived_rules.empty())
+        {
+            writeLog(0, "Failed to fetch ruleset or ruleset is empty: '" + x.rule_path + "'!", LOG_LEVEL_WARNING);
+            continue;
+        }
         if(retrived_rules.find("[]") == 0)
         {
             strLine = retrived_rules.substr(2);
@@ -556,6 +566,11 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
     {
         rule_group = x.rule_group;
         retrived_rules = x.rule_content.get();
+        if(retrived_rules.empty())
+        {
+            writeLog(0, "Failed to fetch ruleset or ruleset is empty: '" + x.rule_path + "'!", LOG_LEVEL_WARNING);
+            continue;
+        }
         if(retrived_rules.find("[]") == 0)
         {
             strLine = retrived_rules.substr(2);
