@@ -316,9 +316,11 @@ void explodeSSD(std::string link, bool libev, const std::string &custom_port, in
 {
     Document jsondata;
     nodeInfo node;
-    unsigned int index = nodes.size();
+    unsigned int index = nodes.size(), listType = 0, listCount = 0;;
     std::string group, port, method, password, server, remarks;
     std::string plugin, pluginopts;
+    std::map<unsigned int, std::string> node_map;
+
     link = urlsafe_base64_decode(link.substr(6));
     jsondata.Parse(link.c_str());
     if(jsondata.HasParseError())
@@ -326,7 +328,28 @@ void explodeSSD(std::string link, bool libev, const std::string &custom_port, in
     if(!jsondata.HasMember("servers"))
         return;
     GetMember(jsondata, "airport", group);
-    for(unsigned int i = 0; i < jsondata["servers"].Size(); i++)
+
+    if(jsondata["servers"].IsArray())
+    {
+        listType = 0;
+        listCount = jsondata["servers"].Size();
+    }
+    else if(jsondata["servers"].IsObject())
+    {
+        listType = 1;
+        listCount = jsondata["servers"].MemberCount();
+        unsigned int node_index = 0;
+        for(rapidjson::Value::MemberIterator iter = jsondata["servers"].MemberBegin(); iter != jsondata["servers"].MemberEnd(); iter++)
+        {
+            node_map.emplace(node_index, iter->name.GetString());
+            node_index++;
+        }
+    }
+    else
+        return;
+
+    rapidjson::Value singlenode;
+    for(unsigned int i = 0; i < listCount; i++)
     {
         //get default info
         GetMember(jsondata, "port", port);
@@ -336,13 +359,25 @@ void explodeSSD(std::string link, bool libev, const std::string &custom_port, in
         GetMember(jsondata, "plugin_options", pluginopts);
 
         //get server-specific info
-        jsondata["servers"][i]["server"] >> server;
-        GetMember(jsondata["servers"][i], "remarks", remarks);
-        GetMember(jsondata["servers"][i], "port", port);
-        GetMember(jsondata["servers"][i], "encryption", method);
-        GetMember(jsondata["servers"][i], "password", password);
-        GetMember(jsondata["servers"][i], "plugin", plugin);
-        GetMember(jsondata["servers"][i], "plugin_options", pluginopts);
+        switch(listType)
+        {
+        case 0:
+            singlenode = jsondata["servers"][i];
+            break;
+        case 1:
+            singlenode = jsondata["servers"].FindMember(node_map[i].data())->value;
+            break;
+        default:
+            continue;
+        }
+        singlenode["server"] >> server;
+        GetMember(singlenode, "remarks", remarks);
+        GetMember(singlenode, "port", port);
+        GetMember(singlenode, "encryption", method);
+        GetMember(singlenode, "password", password);
+        GetMember(singlenode, "plugin", plugin);
+        GetMember(singlenode, "plugin_options", pluginopts);
+
 
         if(custom_port.size())
             port = custom_port;
@@ -626,7 +661,7 @@ void explodeHTTP(std::string link, const std::string &custom_port, nodeInfo &nod
     port = getUrlArg(link, "port");
     username = getUrlArg(link, "user");
     password = getUrlArg(link, "pass");
-    remarks = UrlDecode(getUrlArg(link, "remark"));
+    remarks = UrlDecode(getUrlArg(link, "remarks"));
     group = UrlDecode(getUrlArg(link, "group"));
 
     if(group.empty())

@@ -31,6 +31,7 @@ int render_template(const std::string &content, const template_args &vars, std::
 
     m_lexer_config.trim_blocks = true;
     m_lexer_config.lstrip_blocks = true;
+    m_lexer_config.line_statement = "#~#";
     m_callbacks.add_callback("UrlDecode", 1, [](inja::Arguments &args)
     {
         std::string data = args.at(0)->get<std::string>();

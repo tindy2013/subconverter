@@ -6,12 +6,10 @@ allow-lan: {{ global.clash.allow_lan }}
 mode: Rule
 log-level: {{ global.clash.log_level }}
 external-controller: :9090
-{% if exists("request.clash.dns") %}
 {% if request.clash.dns == "1" %}
 dns:
   enabled: true
   listen: 1053
-{% endif %}
 {% endif %}
 {% if local.clash.new_field_name == "true" %}
 proxies: ~

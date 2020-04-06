@@ -1085,22 +1085,25 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         //then load external configuration
         ExternalConfig extconf;
         loadExternalConfig(config, extconf);
-        if(extconf.clash_rule_base.size())
-            ext_clash_base = extconf.clash_rule_base;
-        if(extconf.surge_rule_base.size())
-            ext_surge_base = extconf.surge_rule_base;
-        if(extconf.surfboard_rule_base.size())
-            ext_surfboard_base = extconf.surfboard_rule_base;
-        if(extconf.mellow_rule_base.size())
-            ext_mellow_base = extconf.mellow_rule_base;
-        if(extconf.quan_rule_base.size())
-            ext_quan_base = extconf.quan_rule_base;
-        if(extconf.quanx_rule_base.size())
-            ext_quanx_base = extconf.quanx_rule_base;
-        if(extconf.loon_rule_base.size())
-            ext_loon_base = extconf.loon_rule_base;
-        if(extconf.sssub_rule_base.size())
-            ext_sssub_base = extconf.sssub_rule_base;
+        if(!ext.nodelist)
+        {
+            if(extconf.clash_rule_base.size())
+                ext_clash_base = extconf.clash_rule_base;
+            if(extconf.surge_rule_base.size())
+                ext_surge_base = extconf.surge_rule_base;
+            if(extconf.surfboard_rule_base.size())
+                ext_surfboard_base = extconf.surfboard_rule_base;
+            if(extconf.mellow_rule_base.size())
+                ext_mellow_base = extconf.mellow_rule_base;
+            if(extconf.quan_rule_base.size())
+                ext_quan_base = extconf.quan_rule_base;
+            if(extconf.quanx_rule_base.size())
+                ext_quanx_base = extconf.quanx_rule_base;
+            if(extconf.loon_rule_base.size())
+                ext_loon_base = extconf.loon_rule_base;
+            if(extconf.sssub_rule_base.size())
+                ext_sssub_base = extconf.sssub_rule_base;
+        }
         if(extconf.rename.size())
             ext.rename_array = extconf.rename;
         if(extconf.emoji.size())
@@ -1179,9 +1182,9 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
 
     //check custom include/exclude settings
     if(include.size() && regValid(include))
-        include_remarks.emplace_back(include);
+        include_remarks = string_array{include};
     if(exclude.size() && regValid(exclude))
-        exclude_remarks.emplace_back(exclude);
+        exclude_remarks = string_array{exclude};
 
     //start parsing urls
     string_array stream_temp = safe_get_streams(), time_temp = safe_get_times();

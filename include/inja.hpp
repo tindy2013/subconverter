@@ -3130,7 +3130,9 @@ class Renderer {
           break;
         }
         case Bytecode::Op::Push: {
-          m_stack.emplace_back(*get_imm(bc));
+          try{m_stack.emplace_back(*get_imm(bc));}
+          catch(std::exception &e){m_stack.emplace_back(json());}
+          //m_stack.emplace_back(*get_imm(bc));
           break;
         }
         case Bytecode::Op::Upper: {
