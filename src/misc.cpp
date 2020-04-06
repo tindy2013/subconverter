@@ -502,11 +502,21 @@ std::string getUrlArg(const std::string &url, const std::string &request)
     }
     */
     std::string pattern = request + "=";
-    std::string::size_type pos = url.rfind(pattern);
-    if(pos != url.npos)
+    std::string::size_type pos = url.size();
+    while(pos)
     {
-        pos += pattern.size();
-        return url.substr(pos, url.find("&", pos) - pos);
+        pos = url.rfind(pattern, pos);
+        if(pos != url.npos)
+        {
+            if(pos == 0 || url[pos - 1] == '&' || url[pos - 1] == '?')
+            {
+                pos += pattern.size();
+                return url.substr(pos, url.find("&", pos) - pos);
+            }
+        }
+        else
+            break;
+        pos--;
     }
     return std::string();
 }
