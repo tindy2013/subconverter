@@ -634,8 +634,8 @@ void explodeSocks(std::string link, const std::string &custom_port, nodeInfo &no
     {
         server = getUrlArg(link, "server");
         port = getUrlArg(link, "port");
-        username = getUrlArg(link, "user");
-        password = getUrlArg(link, "pass");
+        username = UrlDecode(getUrlArg(link, "user"));
+        password = UrlDecode(getUrlArg(link, "pass"));
         remarks = UrlDecode(getUrlArg(link, "remarks"));
         group = UrlDecode(getUrlArg(link, "group"));
     }
@@ -659,8 +659,8 @@ void explodeHTTP(std::string link, const std::string &custom_port, nodeInfo &nod
     std::string group, remarks, server, port, username, password;
     server = getUrlArg(link, "server");
     port = getUrlArg(link, "port");
-    username = getUrlArg(link, "user");
-    password = getUrlArg(link, "pass");
+    username = UrlDecode(getUrlArg(link, "user"));
+    password = UrlDecode(getUrlArg(link, "pass"));
     remarks = UrlDecode(getUrlArg(link, "remarks"));
     group = UrlDecode(getUrlArg(link, "group"));
 

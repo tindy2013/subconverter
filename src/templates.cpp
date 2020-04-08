@@ -4,6 +4,7 @@
 #include <inja.hpp>
 #include <nlohmann/json.hpp>
 
+#include "interfaces.h"
 #include "templates.h"
 #include "logger.h"
 #include "misc.h"
@@ -49,6 +50,31 @@ int render_template(const std::string &content, const template_args &vars, std::
         std::string data = args.at(0)->get<std::string>();
         return trim(data);
     });
+    m_callbacks.add_callback("replace", 3, [](inja::Arguments &args)
+    {
+        std::string src = args.at(0)->get<std::string>(), target = args.at(1)->get<std::string>(), rep = args.at(2)->get<std::string>();
+        if(target.empty() || src.empty())
+            return src;
+        return regReplace(src, target, rep);
+    });
+    m_callbacks.add_callback("set", 2, [&data](inja::Arguments &args)
+    {
+        std::string key = args.at(0)->get<std::string>(), value = args.at(1)->get<std::string>();
+        parse_json_pointer(data, key, value);
+        return std::string();
+    });
+    m_callbacks.add_callback("join", 2, [](inja::Arguments &args)
+    {
+        std::string str1 = args.at(0)->get<std::string>(), str2 = args.at(1)->get<std::string>();
+        return std::move(str1) + std::move(str2);
+    });
+    m_callbacks.add_callback("join", 3, [](inja::Arguments &args)
+    {
+        std::string str1 = args.at(0)->get<std::string>(), str2 = args.at(1)->get<std::string>(), delim = args.at(2)->get<std::string>();
+        return std::move(str1) + std::move(delim) + std::move(str2);
+    });
+    m_callbacks.add_callback("fetch", 1, template_webGet);
+    m_callbacks.add_callback("parseHostname", 1, parseHostname);
     m_parser_config.include_scope_limit = true;
     m_parser_config.include_scope = include_scope;
 

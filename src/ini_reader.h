@@ -240,7 +240,7 @@ public:
                 strLine.erase(lineSize - 1);
                 lineSize--;
             }
-            if(!lineSize || strLine[0] == ';' || strLine[0] == '#' || (lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')) //empty lines and comments are ignored
+            if((!lineSize || strLine[0] == ';' || strLine[0] == '#' || (lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')) && !inDirectSaveSection) //empty lines and comments are ignored
                 continue;
             if(strLine[0] == '[' && strLine[lineSize - 1] == ']') //is a section title
             {

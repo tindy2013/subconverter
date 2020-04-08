@@ -565,15 +565,10 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
     for(ruleset_content &x : ruleset_content_array)
     {
         rule_group = x.rule_group;
-        retrived_rules = x.rule_content.get();
-        if(retrived_rules.empty())
+        rule_path = x.rule_path;
+        if(rule_path.empty())
         {
-            writeLog(0, "Failed to fetch ruleset or ruleset is empty: '" + x.rule_path + "'!", LOG_LEVEL_WARNING);
-            continue;
-        }
-        if(retrived_rules.find("[]") == 0)
-        {
-            strLine = retrived_rules.substr(2);
+            strLine = x.rule_content.get().substr(2);
             if(strLine == "MATCH")
                 strLine = "FINAL";
             strLine += "," + rule_group;
@@ -595,7 +590,6 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
         }
         else
         {
-            rule_path = x.rule_path;
             if(!fileExist(rule_path))
             {
                 if(surge_ver > 2)
@@ -639,6 +633,12 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
                     base_rule.Set("Remote Rule", "{NONAME}", strLine);
                     continue;
                 }
+            }
+            retrived_rules = x.rule_content.get();
+            if(retrived_rules.empty())
+            {
+                writeLog(0, "Failed to fetch ruleset or ruleset is empty: '" + x.rule_path + "'!", LOG_LEVEL_WARNING);
+                continue;
             }
 
             char delimiter = count(retrived_rules.begin(), retrived_rules.end(), '\n') < 1 ? '\r' : '\n';
@@ -1081,6 +1081,8 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
 
     ini.store_any_line = true;
     // filter out sections that requires direct-save
+    ini.AddDirectSaveSection("General");
+    ini.AddDirectSaveSection("Replica");
     ini.AddDirectSaveSection("Rule");
     ini.AddDirectSaveSection("MITM");
     ini.AddDirectSaveSection("Script");

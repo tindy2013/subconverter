@@ -3,6 +3,7 @@
 #include <mutex>
 #include <numeric>
 
+#include <inja.hpp>
 #include <yaml-cpp/yaml.h>
 
 #include "misc.h"
@@ -342,10 +343,11 @@ void refreshRulesets(string_array &ruleset_list, std::vector<ruleset_content> &r
         rule_group = trim(vArray[0]);
         rule_url = trim(vArray[1]);
         */
-        if(x.find(",") == x.npos)
+        string_size pos = x.find(",");
+        if(pos == x.npos)
             continue;
-        rule_group = trim(x.substr(0, x.find(",")));
-        rule_url = trim(x.substr(x.find(",") + 1));
+        rule_group = trim(x.substr(0, pos));
+        rule_url = trim(x.substr(pos + 1));
         if(rule_url.find("[]") == 0)
         {
             writeLog(0, "Adding rule '" + rule_url.substr(2) + "," + rule_group + "'.", LOG_LEVEL_INFO);
@@ -1878,6 +1880,42 @@ std::string getRewriteRemote(RESPONSE_CALLBACK_ARGS)
         }
     }
     return output_content;
+}
+
+std::string parseHostname(inja::Arguments &args)
+{
+    std::string data = args.at(0)->get<std::string>();
+    string_array urls = split(data, ",");
+    if(!urls.size())
+        return std::string();
+
+    std::string input_content, output_content, proxy = parseProxy(proxy_config);
+    for(std::string &x : urls)
+    {
+        input_content = webGet(x, proxy, cache_config);
+        output_content += regReplace(input_content, "(?:[\\s\\S]*?)^(?i:hostname\\s*?=\\s*?)(.*?)\\s$(?:[\\s\\S]*)", "$1") + ",";
+    }
+    string_array vArray = split(output_content, ",");
+    std::set<std::string> hostnames;
+    for(std::string &x : vArray)
+        hostnames.emplace(trim(x));
+    output_content = std::accumulate(hostnames.begin(), hostnames.end(), std::string(), [](std::string a, std::string b)
+    {
+        return std::move(a) + "," + std::move(b);
+    });
+    return output_content;
+}
+
+std::string template_webGet(inja::Arguments &args)
+{
+    std::string data = args.at(0)->get<std::string>(), proxy = parseProxy(proxy_config);
+    return webGet(data, proxy, cache_config);
+}
+
+std::string jinja2_webGet(const std::string &url)
+{
+    std::string proxy = parseProxy(proxy_config);
+    return webGet(url, proxy, cache_config);
 }
 
 static inline std::string intToStream(unsigned long long stream)
