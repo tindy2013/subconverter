@@ -22,8 +22,15 @@
 extern bool api_mode;
 extern string_array ss_ciphers, ssr_ciphers;
 
-string_array clashr_protocols = {"auth_aes128_md5", "auth_aes128_sha1"};
-string_array clashr_obfs = {"plain", "http_simple", "http_post", "tls1.2_ticket_auth"};
+const string_array clashr_protocols = {"auth_aes128_md5", "auth_aes128_sha1"};
+const string_array clashr_obfs = {"plain", "http_simple", "http_post", "tls1.2_ticket_auth"};
+
+/// rule type lists
+#define basic_types "DOMAIN", "DOMAIN-SUFFIX", "DOMAIN-KEYWORD", "IP-CIDR", "SRC-IP-CIDR", "GEOIP", "MATCH", "FINAL"
+const string_array clash_rule_type = {basic_types, "IP-CIDR6", "SRC-PORT", "DST-PORT"};
+const string_array surge_rule_type = {basic_types, "IP-CIDR6", "USER-AGENT", "URL-REGEX", "AND", "OR", "NOT", "PROCESS-NAME", "IN-PORT", "DEST-PORT", "SRC-IP"};
+const string_array quanx_rule_type = {basic_types, "USER-AGENT", "URL-REGEX", "PROCESS-NAME", "HOST", "HOST-SUFFIX", "HOST-KEYWORD"};
+const string_array surfb_rule_type = {basic_types, "IP-CIDR6", "PROCESS-NAME", "IN-PORT", "DEST-PORT", "SRC-IP"};
 
 template <typename T> T safe_as (const YAML::Node& node)
 {
@@ -451,7 +458,11 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset
             }
             if(!lineSize || strLine[0] == ';' || strLine[0] == '#' || (lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')) //empty lines and comments are ignored
                 continue;
+            /*
             if(strLine.find("USER-AGENT") == 0 || strLine.find("URL-REGEX") == 0 || strLine.find("PROCESS-NAME") == 0 || strLine.find("AND") == 0 || strLine.find("OR") == 0) //remove unsupported types
+                continue;
+            */
+            if(!std::any_of(clash_rule_type.begin(), clash_rule_type.end(), [strLine](std::string type){return startsWith(strLine, type);}))
                 continue;
             /*
             if(strLine.find("IP-CIDR") == 0)
@@ -525,7 +536,7 @@ std::string rulesetToClashStr(YAML::Node &base_rule, std::vector<ruleset_content
             }
             if(!lineSize || strLine[0] == ';' || strLine[0] == '#' || (lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')) //empty lines and comments are ignored
                 continue;
-            if(strLine.find("USER-AGENT") == 0 || strLine.find("URL-REGEX") == 0 || strLine.find("PROCESS-NAME") == 0 || strLine.find("AND") == 0 || strLine.find("OR") == 0) //remove unsupported types
+            if(!std::any_of(clash_rule_type.begin(), clash_rule_type.end(), [strLine](std::string type){return startsWith(strLine, type);}))
                 continue;
             strLine += "," + rule_group;
             if(std::count(strLine.begin(), strLine.end(), ',') > 2)
@@ -558,7 +569,19 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
     }
 
     if(overwrite_original_rules)
+    {
         base_rule.EraseSection();
+        switch(surge_ver)
+        {
+        case -1:
+            base_rule.EraseSection("filter_remote");
+            break;
+        case -4:
+            base_rule.EraseSection("Remote Rule");
+            break;
+        }
+    }
+
 
     const std::string rule_match_regex = "^(.*?,.*?)(,.*)(,.*)$";
 
@@ -663,7 +686,13 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
                 }
                 if(!lineSize || strLine[0] == ';' || strLine[0] == '#' || (lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')) //empty lines and comments are ignored
                     continue;
-                if((surge_ver == -1 || surge_ver == -2) && (strLine.find("IP-CIDR6") == 0 || strLine.find("URL-REGEX") == 0 || strLine.find("PROCESS-NAME") == 0 || strLine.find("AND") == 0 || strLine.find("OR") == 0)) //remove unsupported types
+
+                /// remove unsupported types
+                if((surge_ver == -1 || surge_ver == -2) && !std::any_of(quanx_rule_type.begin(), quanx_rule_type.end(), [strLine](std::string type){return startsWith(strLine, type);}))
+                    continue;
+                else if(surge_ver == -3 && !std::any_of(surfb_rule_type.begin(), surfb_rule_type.end(), [strLine](std::string type){return startsWith(strLine, type);}))
+                    continue;
+                else if(!std::any_of(surge_rule_type.begin(), surge_rule_type.end(), [strLine](std::string type){return startsWith(strLine, type);}))
                     continue;
 
                 strLine += "," + rule_group;
@@ -688,6 +717,28 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
     {
         base_rule.Set("{NONAME}", x);
     }
+}
+
+void parseGroupTimes(const std::string &src, int *interval, int *tolerance, int *timeout)
+{
+    std::vector<int*> ptrs;
+    ptrs.push_back(interval);
+    ptrs.push_back(timeout);
+    ptrs.push_back(tolerance);
+    string_size bpos = 0, epos = src.find(",");
+    for(int *x : ptrs)
+    {
+        if(x != NULL)
+            *x = to_int(src.substr(bpos, epos - bpos), 0);
+        if(epos != src.npos)
+        {
+            bpos = epos + 1;
+            epos = src.find(",", bpos);
+        }
+        else
+            return;
+    }
+    return;
 }
 
 void groupGenerate(std::string &rule, std::vector<nodeInfo> &nodelist, std::vector<std::string> &filtered_nodelist, bool add_direct)
@@ -980,6 +1031,7 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
         singlegroup["name"] = vArray[0];
         singlegroup["type"] = vArray[1];
 
+        int interval = -1;
         rules_upper_bound = vArray.size();
         switch(hash_(vArray[1]))
         {
@@ -992,7 +1044,8 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
                 continue;
             rules_upper_bound -= 2;
             singlegroup["url"] = vArray[rules_upper_bound];
-            singlegroup["interval"] = to_int(vArray[rules_upper_bound + 1]);
+            parseGroupTimes(vArray[rules_upper_bound + 1], &interval, NULL, NULL);
+            singlegroup["interval"] = interval;
             break;
         default:
             continue;
@@ -1072,10 +1125,6 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
     std::vector<nodeInfo> nodelist;
     unsigned short local_port = 1080;
     bool tlssecure;
-    //group pref
-    std::string url;
-    int interval = 0;
-    std::string ssid_default;
 
     string_array vArray, remarks_list, filtered_nodelist, args;
 
@@ -1231,6 +1280,10 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
     ini.EraseSection();
     for(std::string &x : extra_proxy_group)
     {
+        //group pref
+        std::string url;
+        int interval = 0, tolerance = 0, timeout = 0;
+        std::string ssid_default;
         eraseElements(filtered_nodelist);
         unsigned int rules_upper_bound = 0;
         url.clear();
@@ -1252,7 +1305,7 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
                 continue;
             rules_upper_bound -= 2;
             url = vArray[rules_upper_bound];
-            interval = to_int(vArray[rules_upper_bound + 1]);
+            parseGroupTimes(vArray[rules_upper_bound + 1], &interval, &tolerance, &timeout);
             break;
         case "ssid"_hash:
             if(rules_upper_bound < 4)
@@ -1284,7 +1337,13 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
             return std::move(a) + "," + std::move(b);
         });
         if(vArray[1] == "url-test" || vArray[1] == "fallback")
+        {
             proxy += ",url=" + url + ",interval=" + std::to_string(interval);
+            if(tolerance > 0)
+                proxy += ",tolerance=" + std::to_string(tolerance);
+            if(timeout > 0)
+                proxy += ",timeout=" + std::to_string(timeout);
+        }
         else if(vArray[1] == "load-balance")
             proxy += ",url=" + url;
 
@@ -1853,7 +1912,12 @@ std::string netchToQuanX(std::vector<nodeInfo> &nodes, std::string &base_conf, s
 {
     INIReader ini;
     ini.store_any_line = true;
+    ini.AddDirectSaveSection("general");
+    ini.AddDirectSaveSection("dns");
+    ini.AddDirectSaveSection("rewrite_remote");
     ini.AddDirectSaveSection("rewrite_local");
+    ini.AddDirectSaveSection("task_local");
+    ini.AddDirectSaveSection("mitm");
     if(!ext.nodelist && ini.Parse(base_conf) != 0)
         return std::string();
 
@@ -2548,7 +2612,7 @@ std::string netchToLoon(std::vector<nodeInfo> &nodes, std::string &base_conf, st
                 continue;
             rules_upper_bound -= 2;
             url = vArray[rules_upper_bound];
-            interval = to_int(vArray[rules_upper_bound + 1]);
+            parseGroupTimes(vArray[rules_upper_bound + 1], &interval, NULL, NULL);
             break;
         case "ssid"_hash:
             if(vArray.size() < 4)

@@ -71,7 +71,7 @@ ruleset:
 
 proxy_group:
   custom_proxy_group:
-#  - {name: UrlTest, type: url-test, rule: [".*"], url: http://www.gstatic.com/generate_204, interval: 300}
+#  - {name: UrlTest, type: url-test, rule: [".*"], url: http://www.gstatic.com/generate_204, interval: 300, tolerance: 100, timeout: 5}
 #  - {name: Proxy, type: select, rule: [".*"]}
 #  - {name: group1, type: select, rule: ["!!GROUPID=0"]}
 #  - {name: v2ray, type: select, rule: ["!!GROUP=V2RayProvider"]}
