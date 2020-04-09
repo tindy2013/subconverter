@@ -70,8 +70,8 @@ int render_template(const std::string &content, const template_args &vars, std::
     });
     m_callbacks.add_callback("join", 3, [](inja::Arguments &args)
     {
-        std::string str1 = args.at(0)->get<std::string>(), str2 = args.at(1)->get<std::string>(), delim = args.at(2)->get<std::string>();
-        return std::move(str1) + std::move(delim) + std::move(str2);
+        std::string str1 = args.at(0)->get<std::string>(), str2 = args.at(1)->get<std::string>(), str3 = args.at(2)->get<std::string>();
+        return std::move(str1) + std::move(str2) + std::move(str3);
     });
     m_callbacks.add_callback("fetch", 1, template_webGet);
     m_callbacks.add_callback("parseHostname", 1, parseHostname);

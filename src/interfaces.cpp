@@ -125,9 +125,12 @@ std::string getRuleset(RESPONSE_CALLBACK_ARGS)
 
     while(getline(ss, strLine, delimiter))
     {
-        if(type_int == 2 && !std::any_of(quanx_rule_type.begin(), quanx_rule_type.end(), [strLine](std::string type){return startsWith(strLine, type);}))
-            continue;
-        else if(!std::any_of(surge_rule_type.begin(), surge_rule_type.end(), [strLine](std::string type){return startsWith(strLine, type);}))
+        if(type_int == 2)
+        {
+            if(!std::any_of(quanx_rule_type.begin(), quanx_rule_type.end(), [&strLine](std::string type){return startsWith(strLine, type);}))
+                continue;
+        }
+        else if(!std::any_of(surge_rule_type.begin(), surge_rule_type.end(), [&strLine](std::string type){return startsWith(strLine, type);}))
             continue;
 
         lineSize = strLine.size();
@@ -175,8 +178,10 @@ int importItems(string_array &target, bool scope_limit = true)
 
         if(fileExist(path))
             content = fileGet(path, scope_limit);
-        else
+        else if(startsWith(path, "http://") || startsWith(path, "https://") || startsWith(path, "data:"))
             content = webGet(path, proxy, dummy, cache_config);
+        else
+            writeLog(0, "File not found or not a valid URL: " + path, LOG_LEVEL_ERROR);
         if(!content.size())
             return -1;
 
@@ -831,7 +836,7 @@ struct ExternalConfig
     string_array emoji;
     string_array include;
     string_array exclude;
-    string_map template_args;
+    template_args *tpl_args = NULL;
     bool overwrite_original_rules = false;
     bool enable_rule_generator = true;
 };
@@ -866,14 +871,14 @@ int loadExternalYAML(YAML::Node &node, ExternalConfig &ext)
     section["include_remarks"] >> ext.include;
     section["exclude_remarks"] >> ext.exclude;
 
-    if(node["template_args"].IsSequence())
+    if(node["template_args"].IsSequence() && ext.tpl_args != NULL)
     {
         std::string key, value;
         for(size_t i = 0; i < node["template_args"].size(); i++)
         {
             node["template_args"][i]["key"] >> key;
             node["template_args"][i]["value"] >> value;
-            ext.template_args[key] = value;
+            ext.tpl_args->local_vars[key] = value;
         }
     }
 
@@ -882,9 +887,9 @@ int loadExternalYAML(YAML::Node &node, ExternalConfig &ext)
 
 int loadExternalConfig(std::string &path, ExternalConfig &ext)
 {
-    std::string base_content, dummy;
-    std::string proxy = parseProxy(proxy_config);
-    base_content = fetchFile(path, proxy, cache_config);
+    std::string base_content, dummy, proxy = parseProxy(proxy_config), config = fetchFile(path, proxy, cache_config);
+    if(render_template(config, *ext.tpl_args, base_content, template_path) != 0)
+        base_content = config;
 
     try
     {
@@ -946,13 +951,13 @@ int loadExternalConfig(std::string &path, ExternalConfig &ext)
     if(ini.ItemPrefixExist("exclude_remarks"))
         ini.GetAll("exclude_remarks", ext.exclude);
 
-    if(ini.SectionExist("template"))
+    if(ini.SectionExist("template") && ext.tpl_args != NULL)
     {
         ini.EnterSection("template");
         string_multimap tempmap;
         ini.GetItems(tempmap);
         for(auto &x : tempmap)
-            ext.template_args[x.first] = x.second;
+            ext.tpl_args->local_vars[x.first] = x.second;
     }
 
     return 0;
@@ -1094,6 +1099,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         extra_ruleset = rulesets;
         //then load external configuration
         ExternalConfig extconf;
+        extconf.tpl_args = &tpl_args;
         loadExternalConfig(config, extconf);
         if(!ext.nodelist)
         {
@@ -1118,8 +1124,6 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
             ext.rename_array = extconf.rename;
         if(extconf.emoji.size())
             ext.emoji_array = extconf.emoji;
-        if(extconf.template_args.size())
-            tpl_args.local_vars = extconf.template_args;
         ext.enable_rule_generator = extconf.enable_rule_generator;
         //load custom group
         if(extconf.custom_proxy_group.size())
@@ -1230,6 +1234,9 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
 
     string_array dummy_group;
     std::vector<ruleset_content> dummy_ruleset;
+    std::string managed_url = base64_decode(UrlDecode(getUrlArg(argument, "profile_data")));
+    if(managed_url.empty())
+        managed_url = managed_config_prefix + "/sub?" + argument;
 
     //std::cerr<<"Generate target: ";
     int surge_ver;
@@ -1292,7 +1299,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
                 uploadGist("surge" + version, upload_path, output_content, true);
 
             if(write_managed_config && managed_config_prefix.size())
-                output_content = "#!MANAGED-CONFIG " + managed_config_prefix + "/sub?" + argument + (interval ? " interval=" + std::to_string(interval) : "") \
+                output_content = "#!MANAGED-CONFIG " + managed_url + (interval ? " interval=" + std::to_string(interval) : "") \
                  + " strict=" + std::string(strict ? "true" : "false") + "\n\n" + output_content;
         }
         break;
@@ -1311,7 +1318,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
             uploadGist("surfboard", upload_path, output_content, true);
 
         if(write_managed_config && managed_config_prefix.size())
-            output_content = "#!MANAGED-CONFIG " + managed_config_prefix + "/sub?" + argument + (interval ? " interval=" + std::to_string(interval) : "") \
+            output_content = "#!MANAGED-CONFIG " + managed_url + (interval ? " interval=" + std::to_string(interval) : "") \
                  + " strict=" + std::string(strict ? "true" : "false") + "\n\n" + output_content;
         break;
     case "mellow"_hash:
@@ -1801,27 +1808,14 @@ std::string getProfile(RESPONSE_CALLBACK_ARGS)
         }
     }
 
-    string_map sub_args;
-    for(auto &x : contents)
-    {
-        sub_args[x.first] = x.second;
-    }
-    string_array args = split(argument, "&");
-    string_size pos;
-    for(std::string &x : args)
-    {
-        pos = x.find("=");
-        if(pos == x.npos)
-            continue;
-        sub_args[x.substr(0, pos)] = UrlDecode(x.substr(pos + 1));
-    }
-    sub_args["token"] = token;
+    contents.emplace("token", token);
+    contents.emplace("profile_data", base64_encode(managed_config_prefix + "/getprofile?" + argument));
     std::string query;
-    for(auto &x : sub_args)
+    for(auto &x : contents)
     {
         query += x.first + "=" + UrlEncode(x.second) + "&";
     }
-    query.erase(query.size() - 1);
+    query += argument;
     return subconverter(query, postdata, status_code, extra_headers);
 }
 

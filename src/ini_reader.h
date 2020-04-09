@@ -22,6 +22,7 @@ enum
 typedef std::map<std::string, std::multimap<std::string, std::string>> ini_data_struct;
 typedef std::multimap<std::string, std::string> string_multimap;
 typedef std::vector<std::string> string_array;
+typedef std::string::size_type string_size;
 
 class INIReader
 {
@@ -898,6 +899,7 @@ public:
     std::string ToString()
     {
         std::string content;
+        string_size strsize;
 
         if(!parsed)
             return std::string();
@@ -907,16 +909,19 @@ public:
             content += "[" + x + "]\n";
             if(ini_content.find(x) != ini_content.end())
             {
-                for(auto &y : ini_content.at(x))
+                auto section = ini_content.at(x);
+                for(auto iter = section.begin(); iter != section.end(); iter++)
                 {
-                    if(y.first != "{NONAME}")
-                        content += y.first + "=";
-                    content += y.second + "\n";
+                    if(iter->first != "{NONAME}")
+                        content += iter->first + "=";
+                    content += iter->second + "\n";
+                    if(std::next(iter) == section.end())
+                        strsize = iter->second.size();
                 }
             }
-            content += "\n";
+            if(strsize)
+                content += "\n";
         }
-
         return content.erase(content.size() - 2);
     }
 

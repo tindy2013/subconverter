@@ -28,6 +28,7 @@ const string_array clashr_obfs = {"plain", "http_simple", "http_post", "tls1.2_t
 /// rule type lists
 #define basic_types "DOMAIN", "DOMAIN-SUFFIX", "DOMAIN-KEYWORD", "IP-CIDR", "SRC-IP-CIDR", "GEOIP", "MATCH", "FINAL"
 const string_array clash_rule_type = {basic_types, "IP-CIDR6", "SRC-PORT", "DST-PORT"};
+const string_array surge2_rule_type = {basic_types, "IP-CIDR6", "USER-AGENT", "URL-REGEX", "PROCESS-NAME", "IN-PORT", "DEST-PORT", "SRC-IP"};
 const string_array surge_rule_type = {basic_types, "IP-CIDR6", "USER-AGENT", "URL-REGEX", "AND", "OR", "NOT", "PROCESS-NAME", "IN-PORT", "DEST-PORT", "SRC-IP"};
 const string_array quanx_rule_type = {basic_types, "USER-AGENT", "URL-REGEX", "PROCESS-NAME", "HOST", "HOST-SUFFIX", "HOST-KEYWORD"};
 const string_array surfb_rule_type = {basic_types, "IP-CIDR6", "PROCESS-NAME", "IN-PORT", "DEST-PORT", "SRC-IP"};
@@ -688,12 +689,29 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
                     continue;
 
                 /// remove unsupported types
-                if((surge_ver == -1 || surge_ver == -2) && !std::any_of(quanx_rule_type.begin(), quanx_rule_type.end(), [strLine](std::string type){return startsWith(strLine, type);}))
-                    continue;
-                else if(surge_ver == -3 && !std::any_of(surfb_rule_type.begin(), surfb_rule_type.end(), [strLine](std::string type){return startsWith(strLine, type);}))
-                    continue;
-                else if(!std::any_of(surge_rule_type.begin(), surge_rule_type.end(), [strLine](std::string type){return startsWith(strLine, type);}))
-                    continue;
+                switch(surge_ver)
+                {
+                case -1:
+                case -2:
+                    if(!std::any_of(quanx_rule_type.begin(), quanx_rule_type.end(), [strLine](std::string type){return startsWith(strLine, type);}))
+                        continue;
+                    break;
+                case -3:
+                    if(!std::any_of(surfb_rule_type.begin(), surfb_rule_type.end(), [strLine](std::string type){return startsWith(strLine, type);}))
+                        continue;
+                    break;
+                default:
+                    if(surge_ver > 2)
+                    {
+                        if(!std::any_of(surge_rule_type.begin(), surge_rule_type.end(), [strLine](std::string type){return startsWith(strLine, type);}))
+                            continue;
+                    }
+                    else
+                    {
+                        if(!std::any_of(surge2_rule_type.begin(), surge2_rule_type.end(), [strLine](std::string type){return startsWith(strLine, type);}))
+                            continue;
+                    }
+                }
 
                 strLine += "," + rule_group;
                 if(surge_ver == -1 || surge_ver == -2)
@@ -1036,6 +1054,7 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
         switch(hash_(vArray[1]))
         {
         case "select"_hash:
+        case "relay"_hash:
             break;
         case "url-test"_hash:
         case "fallback"_hash:
@@ -1298,9 +1317,11 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
         {
         case "select"_hash:
             break;
+        case "load-balance"_hash:
+            if(surge_ver < 1)
+                continue;
         case "url-test"_hash:
         case "fallback"_hash:
-        case "load-balance"_hash:
             if(rules_upper_bound < 5)
                 continue;
             rules_upper_bound -= 2;
