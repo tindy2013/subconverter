@@ -636,7 +636,7 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
                     continue;
                 }
             }
-            else
+            else if(startsWith(rule_path, "https://") || startsWith(rule_path, "http://") || startsWith(rule_path, "data:"))
             {
                 if(surge_ver > 2 && remote_path_prefix.size())
                 {
@@ -658,6 +658,8 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
                     continue;
                 }
             }
+            else
+                continue;
             retrived_rules = x.rule_content.get();
             if(retrived_rules.empty())
             {
@@ -1320,6 +1322,7 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
         case "load-balance"_hash:
             if(surge_ver < 1)
                 continue;
+            [[fallthrough]];
         case "url-test"_hash:
         case "fallback"_hash:
             if(rules_upper_bound < 5)
@@ -1910,13 +1913,13 @@ void netchToQuan(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rules
         if(!filtered_nodelist.size())
             filtered_nodelist.emplace_back("direct");
 
+        if(filtered_nodelist.size() < 2) // force groups with 1 node to be static
+            type = "static";
+
         proxies = std::accumulate(std::next(filtered_nodelist.begin()), filtered_nodelist.end(), filtered_nodelist[0], [](std::string a, std::string b)
         {
             return std::move(a) + "\n" + std::move(b);
         });
-
-        if(filtered_nodelist.size() < 2) // force groups with 1 node to be static
-            type = "static";
 
         singlegroup = name + " : " + type;
         if(type == "static")
@@ -2120,6 +2123,9 @@ void netchToQuanX(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rule
         if(!filtered_nodelist.size())
             filtered_nodelist.emplace_back("direct");
 
+        if(filtered_nodelist.size() < 2) // force groups with 1 node to be static
+            type = "static";
+
         auto iter = std::find_if(original_groups.begin(), original_groups.end(), [name](const string_multimap::value_type &n)
         {
             std::string groupdata = n.second;
@@ -2138,9 +2144,6 @@ void netchToQuanX(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rule
                     filtered_nodelist.emplace_back(trim(vArray[vArray.size() - 1]));
             }
         }
-
-        if(filtered_nodelist.size() < 2) // force groups with 1 node to be static
-            type = "static";
 
         proxies = std::accumulate(std::next(filtered_nodelist.begin()), filtered_nodelist.end(), filtered_nodelist[0], [](std::string a, std::string b)
         {

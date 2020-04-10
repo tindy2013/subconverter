@@ -20,7 +20,7 @@
 #include "templates.h"
 
 //common settings
-std::string pref_path = "pref.ini";
+std::string pref_path = "pref.ini", def_ext_config;
 string_array def_exclude_remarks, def_include_remarks, rulesets, stream_rules, time_rules;
 std::vector<ruleset_content> ruleset_content_array;
 std::string listen_address = "127.0.0.1", default_url, insert_url, managed_config_prefix;
@@ -445,6 +445,7 @@ void readYAMLConf(YAML::Node &node)
     section["loon_rule_base"] >> loon_rule_base;
     section["sssub_rule_base"] >> sssub_rule_base;
 
+    section["default_external_config"] >> def_ext_config;
     section["append_proxy_type"] >> append_proxy_type;
     section["proxy_config"] >> proxy_config;
     section["proxy_ruleset"] >> proxy_ruleset;
@@ -659,6 +660,7 @@ void readConf()
     ini.GetIfExist("quan_rule_base", quan_rule_base);
     ini.GetIfExist("quanx_rule_base", quanx_rule_base);
     ini.GetIfExist("loon_rule_base", loon_rule_base);
+    ini.GetIfExist("default_external_config", def_ext_config);
     ini.GetBoolIfExist("append_proxy_type", append_proxy_type);
     ini.GetIfExist("proxy_config", proxy_config);
     ini.GetIfExist("proxy_ruleset", proxy_ruleset);
@@ -1090,6 +1092,8 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         ext.managed_config_prefix = managed_config_prefix;
 
     //load external configuration
+    if(config.empty())
+        config = def_ext_config;
     if(config.size())
     {
         //std::cerr<<"External configuration file provided. Loading...\n";

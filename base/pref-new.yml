@@ -5,6 +5,7 @@ common:
   insert_url: []
   exclude_remarks: ["(到期|剩余流量|时间|官网|产品)"]
   include_remarks: []
+  default_external_config: "" # config/example_external_config.yml
   clash_rule_base: base/all_base.tpl
   surge_rule_base: base/all_base.tpl
   surfboard_rule_base: base/all_base.tpl

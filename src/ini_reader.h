@@ -899,17 +899,22 @@ public:
     std::string ToString()
     {
         std::string content;
-        string_size strsize;
 
         if(!parsed)
             return std::string();
 
         for(auto &x : section_order)
         {
+            string_size strsize = 0;
             content += "[" + x + "]\n";
             if(ini_content.find(x) != ini_content.end())
             {
                 auto section = ini_content.at(x);
+                if(section.empty())
+                {
+                    content += "\n";
+                    continue;
+                }
                 for(auto iter = section.begin(); iter != section.end(); iter++)
                 {
                     if(iter->first != "{NONAME}")
@@ -922,7 +927,7 @@ public:
             if(strsize)
                 content += "\n";
         }
-        return content.erase(content.size() - 2);
+        return content;
     }
 
     /**
