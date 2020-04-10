@@ -268,6 +268,11 @@ int main(int argc, char *argv[])
         return subconverter(argument + "&target=quanx", postdata, status_code, extra_headers);
     });
 
+    append_response("GET", "/quanxsub", "text/plain;charset=utf-8", [](RESPONSE_CALLBACK_ARGS) -> std::string
+    {
+        return subconverter(argument + "&target=quanxsub", postdata, status_code, extra_headers);
+    });
+
     append_response("GET", "/loon", "text/plain;charset=utf-8", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
         return subconverter(argument + "&target=loon", postdata, status_code, extra_headers);

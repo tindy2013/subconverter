@@ -2211,6 +2211,114 @@ void netchToQuanX(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rule
     }
 }
 
+std::string netchToQuanXSub(std::vector<nodeInfo> &nodes, extra_settings &ext)
+{
+    rapidjson::Document json;
+    std::string type;
+    std::string remark, hostname, port, method;
+    std::string password, plugin, pluginopts;
+    std::string id, transproto, host, path;
+    std::string protocol, protoparam, obfs, obfsparam;
+    std::string proxyStr, allLinks;
+    bool tlssecure;
+    string_array remarks_list;
+
+    for(nodeInfo &x : nodes)
+    {
+        json.Parse(x.proxyStr.data());
+        type = GetMember(json, "Type");
+
+        if(ext.append_proxy_type)
+            x.remarks = "[" + type + "] " + x.remarks;
+
+        while(std::count(remarks_list.begin(), remarks_list.end(), x.remarks) > 0)
+            x.remarks += "$";
+
+        remark = x.remarks;
+
+        hostname = GetMember(json, "Hostname");
+        port = std::to_string((unsigned short)stoi(GetMember(json, "Port")));
+        method = GetMember(json, "EncryptMethod");
+
+        switch(x.linkType)
+        {
+        case SPEEDTEST_MESSAGE_FOUNDVMESS:
+            id = GetMember(json, "UserID");
+            transproto = GetMember(json, "TransferProtocol");
+            host = GetMember(json, "Host");
+            path = GetMember(json, "Path");
+            tlssecure = GetMember(json, "TLSSecure") == "true";
+            if(method == "auto")
+                method = "chacha20-ietf-poly1305";
+            proxyStr = "vmess = " + hostname + ":" + port + ", method=" + method + ", password=" + id;
+            if(transproto == "ws")
+            {
+                if(tlssecure)
+                    proxyStr += ", obfs=wss";
+                else
+                    proxyStr += ", obfs=ws";
+                proxyStr += ", obfs-host=" + host + ", obfs-uri=" + path;
+            }
+            else if(tlssecure)
+                proxyStr += ", obfs=over-tls, obfs-host=" + host;
+            break;
+        case SPEEDTEST_MESSAGE_FOUNDSS:
+            password = GetMember(json, "Password");
+            plugin = GetMember(json, "Plugin");
+            pluginopts = GetMember(json, "PluginOption");
+            proxyStr = "shadowsocks = " + hostname + ":" + port + ", method=" + method + ", password=" + password;
+            if(plugin.size() && pluginopts.size())
+                proxyStr += ", " + replace_all_distinct(pluginopts, ";", ", ");
+            break;
+        case SPEEDTEST_MESSAGE_FOUNDSSR:
+            password = GetMember(json, "Password");
+            protocol = GetMember(json, "Protocol");
+            protoparam = GetMember(json, "ProtocolParam");
+            obfs = GetMember(json, "OBFS");
+            obfsparam = GetMember(json, "OBFSParam");
+            proxyStr = "shadowsocks = " + hostname + ":" + port + ", method=" + method + ", password=" + password + ", ssr-protocol=" + protocol;
+            if(protoparam.size())
+                proxyStr += ", ssr-protocol-param=" + protoparam;
+            proxyStr += ", obfs=" + obfs;
+            if(obfsparam.size())
+                proxyStr += ", obfs-host=" + obfsparam;
+            break;
+        case SPEEDTEST_MESSAGE_FOUNDHTTP:
+            id = GetMember(json, "Username");
+            password = GetMember(json, "Password");
+            tlssecure = GetMember(json, "TLSSecure") == "true";
+
+            proxyStr = "http = " + hostname + ":" + port + ", username=" + (id.size() ? id : "none") + ", password=" + (password.size() ? password : "none");
+            if(tlssecure)
+                proxyStr += ", over-tls=true";
+            break;
+        case SPEEDTEST_MESSAGE_FOUNDTROJAN:
+            password = GetMember(json, "Password");
+            host = GetMember(json, "Host");
+            tlssecure = GetMember(json, "TLSSecure") == "true";
+
+            proxyStr = "trojan = " + hostname + ":" + port + ", password=" + password;
+            if(tlssecure)
+            {
+                proxyStr += ", over-tls=true, tls-host=" + host;
+            }
+            break;
+        default:
+            continue;
+        }
+        if(ext.tfo)
+            proxyStr += ", fast-open=true";
+        if(ext.udp)
+            proxyStr += ", udp-relay=true";
+        proxyStr += ", tag=" + remark;
+
+        allLinks += proxyStr + "\n";
+    }
+
+    return allLinks;
+}
+
+
 std::string netchToSSD(std::vector<nodeInfo> &nodes, std::string &group, std::string &userinfo, extra_settings &ext)
 {
     rapidjson::Document json;

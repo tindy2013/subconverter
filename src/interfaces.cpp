@@ -1420,6 +1420,13 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         if(upload == "true")
             uploadGist("quanx", upload_path, output_content, false);
         break;
+    case "quanxsub"_hash:
+        //std::cerr<<"Quantumult X Sub"<<std::endl;
+        writeLog(0, "Generate target: Quantumult X Sub", LOG_LEVEL_INFO);
+        output_content = netchToQuanXSub(nodes, ext);
+        if(upload == "true")
+            uploadGist("quanxsub", upload_path, output_content, false);
+        break;
     case "loon"_hash:
         //std::cerr<<"Loon"<<std::endl;
         writeLog(0, "Generate target: Loon", LOG_LEVEL_INFO);
