@@ -30,7 +30,7 @@ const string_array clashr_obfs = {"plain", "http_simple", "http_post", "tls1.2_t
 const string_array clash_rule_type = {basic_types, "IP-CIDR6", "SRC-PORT", "DST-PORT"};
 const string_array surge2_rule_type = {basic_types, "IP-CIDR6", "USER-AGENT", "URL-REGEX", "PROCESS-NAME", "IN-PORT", "DEST-PORT", "SRC-IP"};
 const string_array surge_rule_type = {basic_types, "IP-CIDR6", "USER-AGENT", "URL-REGEX", "AND", "OR", "NOT", "PROCESS-NAME", "IN-PORT", "DEST-PORT", "SRC-IP"};
-const string_array quanx_rule_type = {basic_types, "USER-AGENT", "URL-REGEX", "PROCESS-NAME", "HOST", "HOST-SUFFIX", "HOST-KEYWORD"};
+const string_array quanx_rule_type = {basic_types, "USER-AGENT", "HOST", "HOST-SUFFIX", "HOST-KEYWORD"};
 const string_array surfb_rule_type = {basic_types, "IP-CIDR6", "PROCESS-NAME", "IN-PORT", "DEST-PORT", "SRC-IP"};
 
 template <typename T> T safe_as (const YAML::Node& node)
@@ -614,29 +614,7 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
         }
         else
         {
-            if(!fileExist(rule_path))
-            {
-                if(surge_ver > 2)
-                {
-                    strLine = "RULE-SET," + rule_path + "," + rule_group;
-                    allRules.emplace_back(strLine);
-                    continue;
-                }
-                else if(surge_ver == -1 && remote_path_prefix.size())
-                {
-                    strLine = remote_path_prefix + "/getruleset?type=2&url=" + urlsafe_base64_encode(rule_path) + "&group=" + urlsafe_base64_encode(rule_group);
-                    strLine += ", tag=" + rule_group + ", enabled=true";
-                    base_rule.Set("filter_remote", "{NONAME}", strLine);
-                    continue;
-                }
-                else if(surge_ver == -4)
-                {
-                    strLine = rule_path + "," + rule_group;
-                    base_rule.Set("Remote Rule", "{NONAME}", strLine);
-                    continue;
-                }
-            }
-            else if(startsWith(rule_path, "https://") || startsWith(rule_path, "http://") || startsWith(rule_path, "data:"))
+            if(fileExist(rule_path))
             {
                 if(surge_ver > 2 && remote_path_prefix.size())
                 {
@@ -654,6 +632,28 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
                 else if(surge_ver == -4 && remote_path_prefix.size())
                 {
                     strLine = remote_path_prefix + "/getruleset?type=1&url=" + urlsafe_base64_encode(rule_path) + "," + rule_group;
+                    base_rule.Set("Remote Rule", "{NONAME}", strLine);
+                    continue;
+                }
+            }
+            else if(startsWith(rule_path, "https://") || startsWith(rule_path, "http://") || startsWith(rule_path, "data:"))
+            {
+                if(surge_ver > 2)
+                {
+                    strLine = "RULE-SET," + rule_path + "," + rule_group;
+                    allRules.emplace_back(strLine);
+                    continue;
+                }
+                else if(surge_ver == -1 && remote_path_prefix.size())
+                {
+                    strLine = remote_path_prefix + "/getruleset?type=2&url=" + urlsafe_base64_encode(rule_path) + "&group=" + urlsafe_base64_encode(rule_group);
+                    strLine += ", tag=" + rule_group + ", enabled=true";
+                    base_rule.Set("filter_remote", "{NONAME}", strLine);
+                    continue;
+                }
+                else if(surge_ver == -4)
+                {
+                    strLine = rule_path + "," + rule_group;
                     base_rule.Set("Remote Rule", "{NONAME}", strLine);
                     continue;
                 }
@@ -695,7 +695,7 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
                 {
                 case -1:
                 case -2:
-                    if(!std::any_of(quanx_rule_type.begin(), quanx_rule_type.end(), [strLine](std::string type){return startsWith(strLine, type);}))
+                    if(!std::any_of(quanx_rule_type.begin(), quanx_rule_type.end(), [strLine](std::string type){return startsWith(strLine, type);}) || startsWith(strLine, "IP-CIDR6"))
                         continue;
                     break;
                 case -3:
