@@ -90,7 +90,7 @@ std::string parseProxy(const std::string &source)
 
 #define basic_types "DOMAIN", "DOMAIN-SUFFIX", "DOMAIN-KEYWORD", "IP-CIDR", "SRC-IP-CIDR", "GEOIP", "MATCH", "FINAL"
 const string_array surge_rule_type = {basic_types, "IP-CIDR6", "USER-AGENT", "URL-REGEX", "AND", "OR", "NOT", "PROCESS-NAME", "IN-PORT", "DEST-PORT", "SRC-IP"};
-const string_array quanx_rule_type = {basic_types, "USER-AGENT", "URL-REGEX", "PROCESS-NAME", "HOST", "HOST-SUFFIX", "HOST-KEYWORD"};
+const string_array quanx_rule_type = {basic_types, "USER-AGENT", "HOST", "HOST-SUFFIX", "HOST-KEYWORD"};
 
 std::string getRuleset(RESPONSE_CALLBACK_ARGS)
 {
@@ -127,7 +127,7 @@ std::string getRuleset(RESPONSE_CALLBACK_ARGS)
     {
         if(type_int == 2)
         {
-            if(!std::any_of(quanx_rule_type.begin(), quanx_rule_type.end(), [&strLine](std::string type){return startsWith(strLine, type);}))
+            if(!std::any_of(quanx_rule_type.begin(), quanx_rule_type.end(), [&strLine](std::string type){return startsWith(strLine, type);}) || startsWith(strLine, "IP-CIDR6"))
                 continue;
         }
         else if(!std::any_of(surge_rule_type.begin(), surge_rule_type.end(), [&strLine](std::string type){return startsWith(strLine, type);}))
