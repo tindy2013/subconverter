@@ -1,4 +1,4 @@
-#Update 2020.4.1 Self-use for testing only, there may be a lot of manslaughter.
+#Update 2020.4.9 Self-use for testing only, there may be a lot of manslaughter.
 DOMAIN-SUFFIX,admaster.com
 DOMAIN-SUFFIX,0z5jn.cn
 DOMAIN-SUFFIX,114so.cn
@@ -1148,7 +1148,6 @@ DOMAIN-SUFFIX,iadmusicmat.music.126.net
 DOMAIN-SUFFIX,imgad0.pconline.com.cn
 DOMAIN-SUFFIX,imgadpai.thepaper.cn
 DOMAIN-SUFFIX,impservice.dictapp.youdao.com
-DOMAIN-SUFFIX,lbs.map.qq.com
 DOMAIN-SUFFIX,miniapp.bilibili.com
 DOMAIN-SUFFIX,mmstat.com
 DOMAIN-SUFFIX,mobilead.kuwo.cn
@@ -1267,7 +1266,6 @@ DOMAIN,e.crashlytics.com
 DOMAIN,unidesk.alicdn.com
 DOMAIN,cdn-adphone.wenhua.com.cn
 DOMAIN,api.e.qq.com
-DOMAIN,mi.gdt.qq.com
 DOMAIN,net.rayjump.com
 DOMAIN,report.adview.cn
 DOMAIN-SUFFIX,doubleclick.net

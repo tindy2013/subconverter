@@ -3,8 +3,8 @@
 USER-AGENT,*youtube*
 USER-AGENT,YouTube*
 USER-AGENT,com.google.ios.youtube*
-DOMAIN,youtubei.googleapis.com
 DOMAIN-KEYWORD,youtube
+DOMAIN,youtubei.googleapis.com
 DOMAIN-SUFFIX,googlevideo.com
 DOMAIN-SUFFIX,gvt2.com
 DOMAIN-SUFFIX,youtu.be

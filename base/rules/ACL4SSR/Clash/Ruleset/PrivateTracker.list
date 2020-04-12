@@ -1,5 +1,5 @@
-# 内容： Private Tracker
-# 数量：36条
+# 内容：Private Tracker
+# 数量：37条
 DOMAIN-KEYWORD,announce
 DOMAIN-KEYWORD,torrent
 DOMAIN-KEYWORD,tracker
@@ -36,3 +36,4 @@ DOMAIN-SUFFIX,redacted.ch
 DOMAIN-SUFFIX,springsunday.net
 DOMAIN-SUFFIX,tjupt.org
 DOMAIN-SUFFIX,totheglory.im
+DOMAIN-SUFFIX,trontv.com

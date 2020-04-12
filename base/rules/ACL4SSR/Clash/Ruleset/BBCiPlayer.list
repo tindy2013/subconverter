@@ -1,7 +1,14 @@
 # 内容：BBCiPlayer
-# 数量：5条
+# 数量：12条
 USER-AGENT,BBCiPlayer*
 DOMAIN-KEYWORD,bbcfmt
 DOMAIN-KEYWORD,uk-live
+DOMAIN,vod-dash-uk-live.akamaized.net
+DOMAIN,vod-dash-uk-live.bbcfmt.hs.llnwd.net
+DOMAIN,vod-thumb-uk-live.akamaized.net
+DOMAIN,vod-thumb-uk-live.bbcfmt.hs.llnwd.net
+DOMAIN-SUFFIX,bbc.co
 DOMAIN-SUFFIX,bbc.co.uk
+DOMAIN-SUFFIX,bbc.com
+DOMAIN-SUFFIX,bbci.co
 DOMAIN-SUFFIX,bbci.co.uk

@@ -8,6 +8,9 @@ DOMAIN,dl.google.com
 DOMAIN,mtalk.google.com
 DOMAIN-SUFFIX,googletraveladservices.com
 
+# Mozilla
+DOMAIN-SUFFIX,tracking-protection.cdn.mozilla.net
+
 # Tencent
 DOMAIN,livew.l.qq.com
 DOMAIN,vd.l.qq.com

@@ -18,6 +18,7 @@ DOMAIN-SUFFIX,gamecenter.iqiyi.com
 DOMAIN-SUFFIX,ifacelog.iqiyi.com
 DOMAIN-SUFFIX,mbdlog.iqiyi.com
 DOMAIN-SUFFIX,msg.71.am
+DOMAIN-SUFFIX,msg.qy.net
 DOMAIN-SUFFIX,msg.iqiyi.com
 DOMAIN-SUFFIX,msg.video.qiyi.com
 DOMAIN-SUFFIX,msg2.video.qiyi.com
@@ -29,7 +30,6 @@ DOMAIN-SUFFIX,notice.iqiyi.com
 DOMAIN-SUFFIX,noxagile.duapp.com
 DOMAIN-SUFFIX,paopao.iqiyi.com
 DOMAIN-SUFFIX,policy.video.iqiyi.com
-DOMAIN-SUFFIX,qosp.msg.71.am
 DOMAIN-SUFFIX,static.g.iqiyi.com
 DOMAIN-SUFFIX,static.g.ppstream.com
 DOMAIN-SUFFIX,store.iqiyi.com
@@ -102,7 +102,7 @@ IP-CIDR,223.87.182.101/32,no-resolve
 IP-CIDR,223.87.182.102/32,no-resolve
 IP-CIDR,223.87.182.11/32,no-resolve
 IP-CIDR,223.87.182.52/32,no-resolve
-URL-REGEX,https?://.+.atm.youku.com
+URL-REGEX,https?:\/\/.+.atm.youku.com
 
 # > MGTV
 DOMAIN-SUFFIX,ads-api.videojj.com
@@ -2363,7 +2363,6 @@ DOMAIN-SUFFIX,cloudcdn.yousee.com
 DOMAIN-SUFFIX,cloudmobi.net
 DOMAIN-SUFFIX,cm.adgrx.com
 DOMAIN-SUFFIX,cm.baidu.com
-DOMAIN-SUFFIX,cm.bilibili.com
 DOMAIN-SUFFIX,cm.ctnsnet.com
 DOMAIN-SUFFIX,cm.eyereturn.com
 DOMAIN-SUFFIX,cm.mct01.com
@@ -3917,8 +3916,6 @@ DOMAIN-SUFFIX,hl.quw18.com
 DOMAIN-SUFFIX,hl2rcv.adobe.com
 DOMAIN-SUFFIX,hldwmly.com
 DOMAIN-SUFFIX,hlrcv.stage.adobe.com
-DOMAIN-SUFFIX,hm.baidu.com
-DOMAIN-SUFFIX,hmma.baidu.com
 DOMAIN-SUFFIX,hmp33.com
 DOMAIN-SUFFIX,hmttoly.com
 DOMAIN-SUFFIX,hmyangshengji.com
@@ -5417,7 +5414,6 @@ DOMAIN-SUFFIX,mini.eastday.com
 DOMAIN-SUFFIX,mini.hao123.com
 DOMAIN-SUFFIX,mini.jijiplayer.com
 DOMAIN-SUFFIX,mini2015.qq.com
-DOMAIN-SUFFIX,miniapp.bilibili.com
 DOMAIN-SUFFIX,minidcsc.kugou.com
 DOMAIN-SUFFIX,minipage.2345.com
 DOMAIN-SUFFIX,minisite.vidown.cn
@@ -5461,8 +5457,6 @@ DOMAIN-SUFFIX,moatads.com
 DOMAIN-SUFFIX,mob.huimee.net
 DOMAIN-SUFFIX,mobad.ijinshan.com
 DOMAIN-SUFFIX,mobadme.jp
-DOMAIN-SUFFIX,mobads.baidu.com
-DOMAIN-SUFFIX,mobads-logs.baidu.com
 DOMAIN-SUFFIX,mobclix.com
 DOMAIN-SUFFIX,mobfox.com
 DOMAIN-SUFFIX,mobgi.com
@@ -5513,7 +5507,6 @@ DOMAIN-SUFFIX,mqq.zgdmsj.cn
 DOMAIN-SUFFIX,mqqad.cs0309.html5.qq.com
 DOMAIN-SUFFIX,mqqad.html5.qq.com
 DOMAIN-SUFFIX,mqqadr.reader.qq.com
-DOMAIN-SUFFIX,mr.da.netease.com
 DOMAIN-SUFFIX,mrelko.com
 DOMAIN-SUFFIX,mrksys.com
 DOMAIN-SUFFIX,ms.awqsaged.cn
@@ -5621,7 +5614,6 @@ DOMAIN-SUFFIX,new.ltheanine.cn
 DOMAIN-SUFFIX,new.yokaunion.com
 DOMAIN-SUFFIX,new.zhqiu.com
 DOMAIN-SUFFIX,newapi.com
-DOMAIN-SUFFIX,newloc.map.n.shifen.com
 DOMAIN-SUFFIX,newrelic.com
 DOMAIN-SUFFIX,news.51y5.net
 DOMAIN-SUFFIX,news.58.com
@@ -5682,7 +5674,6 @@ DOMAIN-SUFFIX,nowskip.com
 DOMAIN-SUFFIX,npdaqy6x1j.me
 DOMAIN-SUFFIX,nr1234.com
 DOMAIN-SUFFIX,nryiou.cn
-DOMAIN-SUFFIX,nsclick.baidu.com
 DOMAIN-SUFFIX,nsclickvideo.baidu.com
 DOMAIN-SUFFIX,nsnmiaomu.cn
 DOMAIN-SUFFIX,nsy.hnzyfs.com
@@ -6049,7 +6040,6 @@ DOMAIN-SUFFIX,poppyta.com
 DOMAIN-SUFFIX,popup.jointreport-switch.com
 DOMAIN-SUFFIX,popup.msn.com
 DOMAIN-SUFFIX,popupad.cn
-DOMAIN-SUFFIX,pos.baidu.com
 DOMAIN-SUFFIX,post.ra.icast.cn
 DOMAIN-SUFFIX,poster.weather.com.cn
 DOMAIN-SUFFIX,powergg.top
@@ -6062,7 +6052,6 @@ DOMAIN-SUFFIX,ppoi.org
 DOMAIN-SUFFIX,ppurifier.game.xiaomi.com
 DOMAIN-SUFFIX,ppx.hgo7r.cn
 DOMAIN-SUFFIX,pr.atwola.com
-DOMAIN-SUFFIX,pr.da.netease.com
 DOMAIN-SUFFIX,pr.ybp.yahoo.com
 DOMAIN-SUFFIX,pr00001.com
 DOMAIN-SUFFIX,practivate.adobe.com
@@ -6310,7 +6299,6 @@ DOMAIN-SUFFIX,rcv.union-wifi.com
 DOMAIN-SUFFIX,rcyy3.kaopuwangjz.com
 DOMAIN-SUFFIX,rd.ane.yahoo.co.jp
 DOMAIN-SUFFIX,rd.autohome.com.cn
-DOMAIN-SUFFIX,rd.da.netease.com
 DOMAIN-SUFFIX,rd.e.sogou.com
 DOMAIN-SUFFIX,rdiqt.cn
 DOMAIN-SUFFIX,rdtuijian.com
@@ -6962,7 +6950,6 @@ DOMAIN-SUFFIX,sub.powerapple.com
 DOMAIN-SUFFIX,sub.topber.com
 DOMAIN-SUFFIX,subswin.com
 DOMAIN-SUFFIX,sucodb.com
-DOMAIN-SUFFIX,sugar.zhihu.com
 DOMAIN-SUFFIX,sunjianhao.com
 DOMAIN-SUFFIX,suoooi.cn
 DOMAIN-SUFFIX,super.cat898.com
@@ -7158,7 +7145,6 @@ DOMAIN-SUFFIX,thejesperbay.com
 DOMAIN-SUFFIX,themis.yahoo.com
 DOMAIN-SUFFIX,thescenseproject.com
 DOMAIN-SUFFIX,thetestpage.39.net
-DOMAIN-SUFFIX,thirdparty.biliapi.com
 DOMAIN-SUFFIX,thoughtleadr.com
 DOMAIN-SUFFIX,thxnr.com
 DOMAIN-SUFFIX,thyvjboy.com
@@ -7357,7 +7343,6 @@ DOMAIN-SUFFIX,uk3oi.adgze.cn
 DOMAIN-SUFFIX,ukeiae.com
 DOMAIN-SUFFIX,ulic.baidu.com
 DOMAIN-SUFFIX,ulink.cc
-DOMAIN-SUFFIX,ulog.imap.baidu.com
 DOMAIN-SUFFIX,ultraiso.net
 DOMAIN-SUFFIX,um.simpli.fi
 DOMAIN-SUFFIX,um0592.com
@@ -7723,7 +7708,6 @@ DOMAIN-SUFFIX,wpwdf.com
 DOMAIN-SUFFIX,wqmobile.com
 DOMAIN-SUFFIX,wqqsa.puzihua.com
 DOMAIN-SUFFIX,wqsph.net
-DOMAIN-SUFFIX,wr.da.netease.com
 DOMAIN-SUFFIX,wrvdmh.cn
 DOMAIN-SUFFIX,ws.ksmobile.net
 DOMAIN-SUFFIX,ws.progrss.yahoo.com
@@ -8267,6 +8251,74 @@ DOMAIN-SUFFIX,zzy1.quyaoya.com
 DOMAIN-SUFFIX,zzz7.52896368.com
 DOMAIN-SUFFIX,zzzzz4.52896368.com
 
+# > Baidu
+DOMAIN-SUFFIX,baidustatic.com
+DOMAIN,duclick.baidu.com
+DOMAIN,hm.baidu.com
+DOMAIN,hmma.baidu.com
+DOMAIN,mobads.baidu.com
+DOMAIN,mobads-logs.baidu.com
+DOMAIN,nsclick.baidu.com
+DOMAIN,wn.pos.baidu.com
+DOMAIN,ps.map.baidu.com
+DOMAIN,sv.map.baidu.com
+DOMAIN,offnavi.map.baidu.com
+DOMAIN,newvector.map.baidu.com
+DOMAIN,ulog.imap.baidu.com
+DOMAIN,newloc.map.n.shifen.com
+URL-REGEX,^http:\/\/[\s\S]*baidu\.com/.*ad[xs]\.php
+URL-REGEX,^http:\/\/c\.tieba\.baidu\.com\/c\/s\/splashSchedule$
+
+# > Bilibili
+DOMAIN,cm.bilibili.com
+DOMAIN,dataflow.biliapi.com
+DOMAIN,data.bilibili.com
+DOMAIN,miniapp.bilibili.com
+DOMAIN,thirdparty.biliapi.com
+URL-REGEX,https://app.bilibili.com/x/v2/param
+URL-REGEX,https://app.bilibili.com/x/resource/abtest
+URL-REGEX,http://app.bilibili.com/x/v2/dataflow/report-TINYGIF
+URL-REGEX,https://app.bilibili.com/x/v2/search/(defaultword|hot|recommend|resource)
+URL-REGEX,https://app.bilibili.com/x/v2/rank.*rid=(168|5)
+URL-REGEX,https://api.bilibili.com/pgc/season/rank/cn
+
+# > Didi
+URL-REGEX,^https:\/\/img-ys011\.didistatic\.com\/static\/ad_oss\/image-\d{4}-\d{4}\/
+
+# > ele
+DOMAIN,log.star.ele.me
+
+# >> Netease
+DOMAIN,ad.bn.netease.com
+DOMAIN,ad.yixin.im
+DOMAIN,iadmat.nosdn.127.net
+DOMAIN,iadmusicmat.music.126.net
+DOMAIN,iadmusicmatvideo.music.126.net
+DOMAIN,impservice.dictapp.youdao.com
+DOMAIN,impservice.youdao.com
+DOMAIN,log.yex.youdao.com
+DOMAIN,log-yex.youdao.com
+DOMAIN,mr.da.netease.com
+DOMAIN,n.3g.163.com
+DOMAIN,nex.163.com
+DOMAIN,pr.da.netease.com
+DOMAIN,rd.da.netease.com
+DOMAIN,wr.da.netease.com
+DOMAIN,yt-adp.nosdn.127.net
+URL-REGEX,^http:\/\/p\d\.music\.126\.net\/\w+==\/\d+\.jpg$
+URL-REGEX,^http:\/\/iad.*mat\.[a-z]*\.12[67]\.net/\w+\.(jpg|mp4)$
+
+# > Zhihu
+DOMAIN,mqtt.zhihu.com
+DOMAIN,sugar.zhihu.com
+DOMAIN-SUFFIX,xdrig.com
+URL-REGEX,https://api.zhihu.com/(fringe|zst|real_time|ad-style-service|banners|topstory/hot-lists|market/popover|mqtt|me|.*launch|.*featured-comment-ad|search/(top|tabs|preset)
+URL-REGEX,https://api.zhihu.com.*(launch|recommendations)
+URL-REGEX,https://api.zhihu.com/search/(top|tabs|preset)
+URL-REGEX,https://api.zhihu.com/answers/.*/comments/featured-comment-ad
+AND,((USER-AGENT,ZhihuHybrid*), (NOT,((DOMAIN,www.zhihu.com))), (NOT,((DOMAIN,static.zhihu.com))), (NOT,((DOMAIN-SUFFIX,zhimg.com))), (NOT,((DOMAIN,daily.zhihu.com))))
+AND,((USER-AGENT,osee2*), (NOT,((DOMAIN,api.zhihu.com))), (NOT,((DOMAIN,lens.zhihu.com))), (NOT,((DOMAIN,static.zhihu.com))), (NOT,((DOMAIN,www.zhihu.com))), (NOT,((DOMAIN-SUFFIX,zhimg.com))))
+
 URL-REGEX,https?://(e|m).+/((uu|oo).php.+|\d+.x?html\?$)
 URL-REGEX,https?://[^(apple|10010)]+.(com|cn)\/(a|A)d(s|v)?(/|.js)
 URL-REGEX,https?://[^bbs].tianya\.cn
@@ -8279,19 +8331,14 @@ URL-REGEX,https?://\w+.kingsoft-office-service.com
 URL-REGEX,https?://9377\w{2}.com
 URL-REGEX,https?://a0b\w{2}.com
 URL-REGEX,https?://(a?d|sax)\d.sina.com
-URL-REGEX,https?://api\d.tuisong.baidu.com
 URL-REGEX,https?://d\d.sinaimg.cn
 URL-REGEX,https?://dl.app.gtja.com/.+\d+.jpg$
 URL-REGEX,https?://impservice.+?youdao.com
-URL-REGEX,https?://log.+?baidu.com
 URL-REGEX,https?://notice.send-anywhere.com/banner
-URL-REGEX,https?://sa\d.tuisong.baidu.com
 URL-REGEX,https?://sax\w?.sina.cn
 URL-REGEX,https?://sax\w?.sina.com.cn
 URL-REGEX,https?://server-\w+.imrworldwide.com
-URL-REGEX,https?://t\d{2}.baidu.com
 URL-REGEX,https?://www.bldimg.com/(background|splash)/.+.png$
-URL-REGEX,https?://api.zhihu.com/(fringe|zst|real_time|ad-style-service|banners|topstory/hot-lists|market/popover|mqtt|me|.*launch|.*featured-comment-ad|search/(top|tabs|preset))
 
 IP-CIDR,1.3.0.10/32,no-resolve
 IP-CIDR,10.72.25.0/24,no-resolve

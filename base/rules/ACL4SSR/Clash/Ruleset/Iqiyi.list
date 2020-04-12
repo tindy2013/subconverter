@@ -1,9 +1,16 @@
-# 内容：IQiyi 爱奇艺
-# 数量：7条
+# 内容：Iqiyi 爱奇艺
+# 数量：14条
+USER-AGENT,QIYI*
+USER-AGENT,iQiYi*
 DOMAIN-KEYWORD,qiyi
+DOMAIN-SUFFIX,71.am
+DOMAIN-SUFFIX,71edge.com
+DOMAIN-SUFFIX,iqiyi.com
+DOMAIN-SUFFIX,iqiyipic.com
+DOMAIN-SUFFIX,ppsimg.com
+DOMAIN-SUFFIX,qiyi.com
+DOMAIN-SUFFIX,qiyipic.com
 DOMAIN-SUFFIX,qy.net
 IP-CIDR,101.224.0.0/13,no-resolve
 IP-CIDR,101.227.0.0/16,no-resolve
 IP-CIDR,119.176.0.0/12,no-resolve
-USER-AGENT,QIYI*
-USER-AGENT,iQiYi*

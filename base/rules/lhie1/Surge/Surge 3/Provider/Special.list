@@ -10,6 +10,16 @@ DOMAIN-SUFFIX,dl.google.com
 USER-AGENT,Steam*
 DOMAIN-SUFFIX,steamcontent.com
 
+# > Windows
+DOMAIN-SUFFIX,windows.com
+DOMAIN-SUFFIX,windows.net
+DOMAIN-SUFFIX,windowsupdate.com
+
+# > Xunlei
+PROCESS-NAME,Thunder
+USER-AGENT,%E8%BF%85%E9%9B%B7
+DOMAIN-SUFFIX,xunlei.com
+
 # > Private Tracker
 DOMAIN-SUFFIX,awesome-hd.me
 DOMAIN-SUFFIX,broadcasthe.net

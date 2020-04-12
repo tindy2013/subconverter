@@ -1,5 +1,5 @@
 # 内容：中国媒体列表
-# 更新：2020-04-01 00:43:16
+# 更新：2020-04-06 14:18:15
 # 数量：25条
 
 # Bilibili 哔哩哔哩
@@ -17,7 +17,7 @@ DOMAIN-SUFFIX,bilivideo.com
 DOMAIN-SUFFIX,hdslb.com
 DOMAIN-SUFFIX,im9.com
 
-# IQiyi 爱奇艺
+# Iqiyi 爱奇艺
 USER-AGENT,QIYI*
 USER-AGENT,iQiYi*
 DOMAIN-KEYWORD,qiyi

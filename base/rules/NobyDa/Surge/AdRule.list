@@ -1,4 +1,4 @@
-# Update > 2020.4.1 Go advertising rule Integration lhie1 and ConnersHua
+# Update > 2020.4.9 Go advertising rule Integration lhie1 and ConnersHua
 DOMAIN,mcupdate.gstarcad.com
 DOMAIN,adx.open-adx.com
 DOMAIN,adservice.sigmob.cn
@@ -3807,7 +3807,6 @@ DOMAIN-SUFFIX,i.bigmir.net
 DOMAIN-SUFFIX,i.clkservice.youdao.com
 DOMAIN-SUFFIX,i.dreamfull.cn
 DOMAIN-SUFFIX,i.flow.browser.oppomobile.com
-DOMAIN-SUFFIX,i.gdt.qq.com
 DOMAIN-SUFFIX,i.go.sohu.com
 DOMAIN-SUFFIX,i.haloapps.com
 DOMAIN-SUFFIX,i.hao61.net

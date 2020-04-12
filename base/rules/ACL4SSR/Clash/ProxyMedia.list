@@ -1,6 +1,6 @@
 # 内容：国外媒体列表
-# 更新：2020-04-02 21:48:57
-# 数量：242条
+# 更新：2020-04-10 13:39:43
+# 数量：249条
 
 # ABC
 DOMAIN-SUFFIX,edgedatg.com
@@ -25,12 +25,12 @@ DOMAIN-SUFFIX,channel4.com
 # Amazon
 USER-AGENT,InstantVideo.US*
 USER-AGENT,Prime%20Video*
+DOMAIN-KEYWORD,avoddashs
 DOMAIN,avodmp4s3ww-a.akamaihd.net
 DOMAIN,d1v5ir2lpwr8os.cloudfront.net
 DOMAIN,d22qjgkvxw22r6.cloudfront.net
 DOMAIN,d25xi40x97liuc.cloudfront.net
 DOMAIN,dmqdd6hw24ucf.cloudfront.net
-DOMAIN-KEYWORD,avoddashs
 DOMAIN-SUFFIX,aiv-cdn.net
 DOMAIN-SUFFIX,aiv-delivery.net
 DOMAIN-SUFFIX,amazonaws.co.uk
@@ -39,21 +39,28 @@ DOMAIN-SUFFIX,amazonvideo.com
 DOMAIN-SUFFIX,llnwd.net
 DOMAIN-SUFFIX,primevideo.com
 
-# Apple News
+# AppleNews
 USER-AGENT,AppleNews*
 USER-AGENT,com.apple.news*
 DOMAIN,gspe1-ssl.ls.apple.com
 
-# Apple TV
+# AppleTV
 DOMAIN,np-edge.itunes.apple.com
 DOMAIN,play-edge.itunes.apple.com
 DOMAIN-SUFFIX,tv.apple.com
 
-# BBC iPlayer
+# BBCiPlayer
 USER-AGENT,BBCiPlayer*
 DOMAIN-KEYWORD,bbcfmt
 DOMAIN-KEYWORD,uk-live
+DOMAIN,vod-dash-uk-live.akamaized.net
+DOMAIN,vod-dash-uk-live.bbcfmt.hs.llnwd.net
+DOMAIN,vod-thumb-uk-live.akamaized.net
+DOMAIN,vod-thumb-uk-live.bbcfmt.hs.llnwd.net
+DOMAIN-SUFFIX,bbc.co
 DOMAIN-SUFFIX,bbc.co.uk
+DOMAIN-SUFFIX,bbc.com
+DOMAIN-SUFFIX,bbci.co
 DOMAIN-SUFFIX,bbci.co.uk
 
 # Bahamut
@@ -66,8 +73,8 @@ DOMAIN-SUFFIX,hinet.net
 
 # DAZN
 USER-AGENT,DAZN*
-DOMAIN,d151l6v8er5bdm.cloudfront.net
 DOMAIN-KEYWORD,voddazn
+DOMAIN,d151l6v8er5bdm.cloudfront.net
 DOMAIN-SUFFIX,d151l6v8er5bdm.cloudfront.net
 DOMAIN-SUFFIX,dazn-api.com
 DOMAIN-SUFFIX,dazn.com
@@ -80,7 +87,7 @@ USER-AGENT,Deezer*
 DOMAIN-SUFFIX,deezer.com
 DOMAIN-SUFFIX,dzcdn.net
 
-# Disney Plus
+# DisneyPlus
 USER-AGENT,Disney*
 USER-AGENT,Disney+*
 DOMAIN,cdn.registerdisney.go.com
@@ -100,14 +107,14 @@ DOMAIN,edge.api.brightcove.com
 DOMAIN,videos-f.jwpsrv.com
 DOMAIN-SUFFIX,encoretvb.com
 
-# Fox Now
+# FoxNow
 USER-AGENT,FOX%20NOW*
 DOMAIN-SUFFIX,fox.com
 DOMAIN-SUFFIX,foxdcg.com
 DOMAIN-SUFFIX,theplatform.com
 DOMAIN-SUFFIX,uplynk.com
 
-# Fox+
+# FoxPlus
 USER-AGENT,FOXPlus*
 DOMAIN-SUFFIX,akamaized.net
 DOMAIN-SUFFIX,foxplus.com
@@ -149,7 +156,7 @@ DOMAIN-SUFFIX,hulu.com
 DOMAIN-SUFFIX,huluim.com
 DOMAIN-SUFFIX,hulustream.com
 
-# Hulu_Japan
+# HuluJapan
 DOMAIN-SUFFIX,happyon.jp
 DOMAIN-SUFFIX,hulu.jp
 
@@ -192,7 +199,7 @@ DOMAIN-SUFFIX,kktv.me
 DOMAIN,litvfreemobile-hichannel.cdn.hinet.net
 DOMAIN-SUFFIX,litv.tv
 
-# Line TV
+# LineTV
 USER-AGENT,LINE%20TV*
 USER-AGENT,LINE*
 DOMAIN,d3c7rimkq79yfu.cloudfront.net
@@ -205,7 +212,7 @@ DOMAIN,d349g9zuie06uo.cloudfront.net
 DOMAIN-SUFFIX,channel5.com
 DOMAIN-SUFFIX,my5.tv
 
-# MyTV SUPER
+# MyTVSuper
 USER-AGENT,mytv*
 DOMAIN-SUFFIX,mytvsuper.com
 DOMAIN-SUFFIX,tvb.com
@@ -230,15 +237,15 @@ DOMAIN-SUFFIX,nflximg.com
 DOMAIN-SUFFIX,nflximg.net
 DOMAIN-SUFFIX,nflxso.net
 DOMAIN-SUFFIX,nflxvideo.net
-IP-CIDR,108.175.32.0/20,no-resolve
-IP-CIDR,192.173.64.0/18,no-resolve
-IP-CIDR,198.38.96.0/19,no-resolve
-IP-CIDR,198.45.48.0/20,no-resolve
 IP-CIDR,23.246.0.0/18,no-resolve
 IP-CIDR,37.77.184.0/21,no-resolve
 IP-CIDR,45.57.0.0/17,no-resolve
 IP-CIDR,64.120.128.0/17,no-resolve
 IP-CIDR,66.197.128.0/17,no-resolve
+IP-CIDR,108.175.32.0/20,no-resolve
+IP-CIDR,192.173.64.0/18,no-resolve
+IP-CIDR,198.38.96.0/19,no-resolve
+IP-CIDR,198.45.48.0/20,no-resolve
 
 # Niconico
 USER-AGENT,Niconico*
@@ -315,8 +322,8 @@ DOMAIN-SUFFIX,viu.tv
 USER-AGENT,*youtube*
 USER-AGENT,YouTube*
 USER-AGENT,com.google.ios.youtube*
-DOMAIN,youtubei.googleapis.com
 DOMAIN-KEYWORD,youtube
+DOMAIN,youtubei.googleapis.com
 DOMAIN-SUFFIX,googlevideo.com
 DOMAIN-SUFFIX,gvt2.com
 DOMAIN-SUFFIX,youtu.be

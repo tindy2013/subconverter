@@ -1,8 +1,8 @@
 # 广告列表 adblock rules
 # 内容：EasyPrivacy列表，隐私保护，屏蔽隐私追踪
 # 来源：https://easylist-downloads.adblockplus.org/easyprivacy.txt
-# 更新：2020-04-05 15:15:28
-# 数量：2533条
+# 更新：2020-04-10 13:39:38
+# 数量：2541条
 
 DOMAIN-SUFFIX,0sbm.consobaby.co.uk
 DOMAIN-SUFFIX,0x1f4b0.com
@@ -19,6 +19,7 @@ DOMAIN-SUFFIX,7mx.eider.com
 DOMAIN-SUFFIX,913nd.dieti-natura.es
 DOMAIN-SUFFIX,a.20minutes.fr
 DOMAIN-SUFFIX,a.mobify.com
+DOMAIN-SUFFIX,a.o2u.jp
 DOMAIN-SUFFIX,a.tovarro.com
 DOMAIN-SUFFIX,a8ht.hipp.fr
 DOMAIN-SUFFIX,aa.avvo.com
@@ -485,6 +486,7 @@ DOMAIN-SUFFIX,cmp.osano.com
 DOMAIN-SUFFIX,cmp.pcworld.co.nz
 DOMAIN-SUFFIX,cmp.pcworld.com
 DOMAIN-SUFFIX,cmp.pcworld.idg.com.au
+DOMAIN-SUFFIX,cmp.tech426.com
 DOMAIN-SUFFIX,cmp.techadvisor.co.uk
 DOMAIN-SUFFIX,cmp.techhive.com
 DOMAIN-SUFFIX,cmstool.youku.com
@@ -634,6 +636,7 @@ DOMAIN-SUFFIX,cx.atdmt.com
 DOMAIN-SUFFIX,cxt.deutsche-bank.de
 DOMAIN-SUFFIX,d.adrolays.de
 DOMAIN-SUFFIX,d.finative.eu
+DOMAIN-SUFFIX,d.ghostery.com
 DOMAIN-SUFFIX,d.haberler.com
 DOMAIN-SUFFIX,d.nativendo.de
 DOMAIN-SUFFIX,d.omsnative.de
@@ -921,6 +924,7 @@ DOMAIN-SUFFIX,geo.kontagent.net
 DOMAIN-SUFFIX,geo.metronews.ca
 DOMAIN-SUFFIX,geo.mezr.com
 DOMAIN-SUFFIX,geo.mtvnn.com
+DOMAIN-SUFFIX,geo.nbcsports.com
 DOMAIN-SUFFIX,geo.play.it
 DOMAIN-SUFFIX,geo.q5media.net
 DOMAIN-SUFFIX,geo.xcel.io
@@ -1081,6 +1085,7 @@ DOMAIN-SUFFIX,licensing.bitmovin.com
 DOMAIN-SUFFIX,lift.acquia.com
 DOMAIN-SUFFIX,lilb2.shutterstock.com
 DOMAIN-SUFFIX,link.informer.com
+DOMAIN-SUFFIX,link.kogan.com
 DOMAIN-SUFFIX,link.subscribe.ru
 DOMAIN-SUFFIX,linkpuls.idg.no
 DOMAIN-SUFFIX,links.boom.ge
@@ -1595,6 +1600,7 @@ DOMAIN-SUFFIX,serv1swork.com
 DOMAIN-SUFFIX,servedby.o2.co.uk
 DOMAIN-SUFFIX,service-stat.tbn.ru
 DOMAIN-SUFFIX,service4refresh.info
+DOMAIN-SUFFIX,services.hmhost.co.uk
 DOMAIN-SUFFIX,servicetick.com
 DOMAIN-SUFFIX,session-tracker.badcreditloans.com
 DOMAIN-SUFFIX,session.timecommerce.net
@@ -1610,7 +1616,6 @@ DOMAIN-SUFFIX,sitelife.ehow.com
 DOMAIN-SUFFIX,ski1.skiset.com
 DOMAIN-SUFFIX,slipstream.skyscanner.net
 DOMAIN-SUFFIX,sls2.loisirsencheres.com
-DOMAIN-SUFFIX,sm.pcmag.com
 DOMAIN-SUFFIX,smetrics.delta.com
 DOMAIN-SUFFIX,smrt.as
 DOMAIN-SUFFIX,snowplow.swm.digital
@@ -1618,6 +1623,9 @@ DOMAIN-SUFFIX,snr4.canalplus.com
 DOMAIN-SUFFIX,somniture.theglobeandmail.com
 DOMAIN-SUFFIX,soodatmish.com
 DOMAIN-SUFFIX,soso.mymederback.com
+DOMAIN-SUFFIX,sourcepoint-mms.aetv.com
+DOMAIN-SUFFIX,sourcepoint-mms.history.com
+DOMAIN-SUFFIX,sourcepoint-mms.mylifetime.com
 DOMAIN-SUFFIX,sourcepoint.vice.com
 DOMAIN-SUFFIX,sp-mms.weather.com
 DOMAIN-SUFFIX,sp.app.com
