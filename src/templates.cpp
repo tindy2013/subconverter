@@ -50,6 +50,11 @@ int render_template(const std::string &content, const template_args &vars, std::
         std::string data = args.at(0)->get<std::string>();
         return trim(data);
     });
+    m_callbacks.add_callback("find", 1, [](inja::Arguments &args)
+    {
+        std::string src = args.at(0)->get<std::string>(), target = args.at(1)->get<std::string>();
+        return regFind(src, target);
+    });
     m_callbacks.add_callback("replace", 3, [](inja::Arguments &args)
     {
         std::string src = args.at(0)->get<std::string>(), target = args.at(1)->get<std::string>(), rep = args.at(2)->get<std::string>();

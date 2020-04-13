@@ -283,6 +283,8 @@ int main(int argc, char *argv[])
         return subconverter(argument + "&target=trojan", postdata, status_code, extra_headers);
     });
 
+    append_response("GET", "/render", "text/plain", renderTemplate);
+
     if(!api_mode)
     {
         append_response("GET", "/get", "text/plain;charset=utf-8", [](RESPONSE_CALLBACK_ARGS) -> std::string

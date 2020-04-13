@@ -1042,6 +1042,8 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         pos = x.find("=");
         if(pos == x.npos)
             continue;
+        if(x.substr(0, pos) == "token")
+            continue;
         req_arg_map[x.substr(0, pos)] = x.substr(pos + 1);
     }
 
@@ -2090,4 +2092,46 @@ int simpleGenerator()
     //std::cerr<<"All artifact generated. Exiting...\n";
     writeLog(0, "All artifact generated. Exiting...", LOG_LEVEL_INFO);
     return 0;
+}
+
+std::string renderTemplate(RESPONSE_CALLBACK_ARGS)
+{
+    std::string path = UrlDecode(getUrlArg(argument, "path"));
+
+    if(path.find(template_path) != 0)
+    {
+        *status_code = 403;
+        return "Out of scope";
+    }
+    if(!fileExist(path))
+    {
+        *status_code = 404;
+        return "Not found";
+    }
+    std::string template_content = fetchFile(path, parseProxy(proxy_config), cache_config);
+    if(template_content.empty())
+    {
+        *status_code = 400;
+        return "File empty or out of scope";
+    }
+    template_args tpl_args;
+    tpl_args.global_vars = global_vars;
+
+    //load request arguments as template variables
+    string_array req_args = split(argument, "&");
+    string_size pos;
+    string_map req_arg_map;
+    for(std::string &x : req_args)
+    {
+        pos = x.find("=");
+        if(pos == x.npos)
+            continue;
+        req_arg_map[x.substr(0, pos)] = x.substr(pos + 1);
+    }
+    tpl_args.request_params = req_arg_map;
+
+    std::string output_content;
+    if(render_template(template_content, tpl_args, output_content, template_path) != 0)
+        *status_code = 400;
+    return output_content;
 }

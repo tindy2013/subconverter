@@ -22,6 +22,8 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS);
 std::string simpleToClashR(RESPONSE_CALLBACK_ARGS);
 std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS);
 
+std::string renderTemplate(RESPONSE_CALLBACK_ARGS);
+
 std::string template_webGet(inja::Arguments &args);
 std::string jinja2_webGet(const std::string &url);
 std::string parseHostname(inja::Arguments &args);
