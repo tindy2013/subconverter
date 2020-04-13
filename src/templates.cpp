@@ -68,6 +68,14 @@ int render_template(const std::string &content, const template_args &vars, std::
         parse_json_pointer(data, key, value);
         return std::string();
     });
+    m_callbacks.add_callback("split", 3, [&data](inja::Arguments &args)
+    {
+        std::string content = args.at(0)->get<std::string>(), delim = args.at(1)->get<std::string>(), dest = args.at(2)->get<std::string>();
+        string_array vArray = split(content, delim);
+        for(size_t index = 0; index < vArray.size(); index++)
+            parse_json_pointer(data, dest + "." + std::to_string(index), vArray[index]);
+        return std::string();
+    });
     m_callbacks.add_callback("join", 2, [](inja::Arguments &args)
     {
         std::string str1 = args.at(0)->get<std::string>(), str2 = args.at(1)->get<std::string>();
