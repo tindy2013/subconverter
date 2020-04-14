@@ -58,7 +58,4 @@ std::string netchToQuan(std::vector<nodeInfo> &nodes, std::string &base_conf, st
 void netchToQuan(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, extra_settings &ext);
 std::string netchToSSD(std::vector<nodeInfo> &nodes, std::string &group, std::string &userinfo, extra_settings &ext);
 
-std::string buildGistData(std::string name, std::string content);
-int uploadGist(std::string name, std::string path, std::string content, bool writeManageURL);
-
 #endif // SUBEXPORT_H_INCLUDED

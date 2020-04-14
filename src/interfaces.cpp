@@ -18,6 +18,7 @@
 #include "logger.h"
 #include "string_hash.h"
 #include "templates.h"
+#include "upload.h"
 
 //common settings
 std::string pref_path = "pref.ini", def_ext_config;
@@ -1580,6 +1581,7 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
         *status_code = 400;
         return "Please insert your subscription link instead of clicking the default link.";
     }
+    writeLog(0, "SurgeConfToClash called with url '" + url + "'.", LOG_LEVEL_INFO);
 
     std::string proxy = parseProxy(proxy_config);
     YAML::Node clash;
@@ -1758,6 +1760,7 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
     }
     clash[rule_name] = rule;
 
+    writeLog(0, "Conversion completed.", LOG_LEVEL_INFO);
     return YAML::Dump(clash);
 }
 
@@ -1917,12 +1920,14 @@ std::string parseHostname(inja::Arguments &args)
 std::string template_webGet(inja::Arguments &args)
 {
     std::string data = args.at(0)->get<std::string>(), proxy = parseProxy(proxy_config);
+    writeLog(0, "Template called fetch with url '" + data + "'.", LOG_LEVEL_INFO);
     return webGet(data, proxy, cache_config);
 }
 
 std::string jinja2_webGet(const std::string &url)
 {
     std::string proxy = parseProxy(proxy_config);
+    writeLog(0, "Template called fetch with url '" + url + "'.", LOG_LEVEL_INFO);
     return webGet(url, proxy, cache_config);
 }
 
@@ -2097,6 +2102,7 @@ int simpleGenerator()
 std::string renderTemplate(RESPONSE_CALLBACK_ARGS)
 {
     std::string path = UrlDecode(getUrlArg(argument, "path"));
+    writeLog(0, "Trying to render template '" + path + "'...", LOG_LEVEL_INFO);
 
     if(path.find(template_path) != 0)
     {
@@ -2132,6 +2138,12 @@ std::string renderTemplate(RESPONSE_CALLBACK_ARGS)
 
     std::string output_content;
     if(render_template(template_content, tpl_args, output_content, template_path) != 0)
+    {
         *status_code = 400;
+        writeLog(0, "Render failed with error.", LOG_LEVEL_WARNING);
+    }
+    else
+        writeLog(0, "Render completed.", LOG_LEVEL_INFO);
+
     return output_content;
 }

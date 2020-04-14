@@ -48,6 +48,7 @@ ADD_EXECUTABLE(subconverter
     src/speedtestutil.cpp
     src/subexport.cpp
     src/templates.cpp
+    src/upload.cpp
     src/webget.cpp
     src/webserver_libevent.cpp)
 INCLUDE_DIRECTORIES(src)
