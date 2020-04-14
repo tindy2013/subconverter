@@ -765,6 +765,7 @@ void readConf()
             continue;
         global_vars[x.first] = x.second;
     }
+    global_vars["managed_config_prefix"] = managed_config_prefix;
 
     ini.EnterSection("server");
     ini.GetIfExist("listen", listen_address);
