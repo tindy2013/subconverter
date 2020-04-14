@@ -5,7 +5,12 @@
 🛑 全球拦截,rules/ConnersHua/Surge/Ruleset/Hijacking.list
 ;🎥 NETFLIX,rules/ConnersHua/Surge/Ruleset/Media/Netflix.list
 🌍 国外媒体,rules/ConnersHua/Surge/Ruleset/GlobalMedia.list
-🌏 国内媒体,rules/lhie1/Surge/Surge 3/Provider/AsianTV.list
+🌏 国内媒体,rules/lhie1/Surge/Surge 3/Provider/Media/Bilibili.list
+🌏 国内媒体,rules/lhie1/Surge/Surge 3/Provider/Media/iQiyi.list
+🌏 国内媒体,rules/lhie1/Surge/Surge 3/Provider/Media/Letv.list
+🌏 国内媒体,rules/lhie1/Surge/Surge 3/Provider/Media/MOO.list
+🌏 国内媒体,rules/lhie1/Surge/Surge 3/Provider/Media/Tencent Video.list
+🌏 国内媒体,rules/lhie1/Surge/Surge 3/Provider/Media/Youku.list
 📲 电报信息,rules/ConnersHua/Surge/Ruleset/Telegram.list
 🔰 节点选择,rules/ConnersHua/Surge/Ruleset/Global.list
 🍎 苹果服务,rules/ConnersHua/Surge/Ruleset/Apple.list
