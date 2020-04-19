@@ -283,7 +283,7 @@ int main(int argc, char *argv[])
         return subconverter(argument + "&target=trojan", postdata, status_code, extra_headers);
     });
 
-    append_response("GET", "/render", "text/plain", renderTemplate);
+    append_response("GET", "/render", "text/plain;charset=utf-8", renderTemplate);
 
     if(!api_mode)
     {

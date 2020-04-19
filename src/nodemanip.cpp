@@ -10,7 +10,6 @@
 #include "speedtestutil.h"
 
 std::string override_conf_port;
-int socksport;
 bool ss_libev, ssr_libev;
 extern int cache_subscription;
 
@@ -67,7 +66,7 @@ int addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID, std
         if(strSub.size())
         {
             writeLog(LOG_TYPE_INFO, "Parsing subscription data...");
-            if(explodeConfContent(strSub, override_conf_port, socksport, ss_libev, ssr_libev, nodes) == SPEEDTEST_ERROR_UNRECOGFILE)
+            if(explodeConfContent(strSub, override_conf_port, ss_libev, ssr_libev, nodes) == SPEEDTEST_ERROR_UNRECOGFILE)
             {
                 writeLog(LOG_TYPE_ERROR, "Invalid subscription!");
                 return -1;
@@ -96,7 +95,7 @@ int addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID, std
         if(!authorized)
             return -1;
         writeLog(LOG_TYPE_INFO, "Parsing configuration file data...");
-        if(explodeConf(link, override_conf_port, socksport, ss_libev, ssr_libev, nodes) == SPEEDTEST_ERROR_UNRECOGFILE)
+        if(explodeConf(link, override_conf_port, ss_libev, ssr_libev, nodes) == SPEEDTEST_ERROR_UNRECOGFILE)
         {
             writeLog(LOG_TYPE_ERROR, "Invalid configuration file!");
             return -1;
@@ -115,7 +114,7 @@ int addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID, std
         copyNodes(nodes, allNodes);
         break;
     default:
-        explode(link, ss_libev, ssr_libev, override_conf_port, socksport, node);
+        explode(link, ss_libev, ssr_libev, override_conf_port, node);
         if(node.linkType == -1)
         {
             writeLog(LOG_TYPE_ERROR, "No valid link found.");

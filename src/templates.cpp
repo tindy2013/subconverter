@@ -86,6 +86,23 @@ int render_template(const std::string &content, const template_args &vars, std::
         std::string str1 = args.at(0)->get<std::string>(), str2 = args.at(1)->get<std::string>(), str3 = args.at(2)->get<std::string>();
         return std::move(str1) + std::move(str2) + std::move(str3);
     });
+    m_callbacks.add_callback("append", 2, [&data](inja::Arguments &args)
+    {
+        std::string path = args.at(0)->get<std::string>(), value = args.at(1)->get<std::string>();
+        std::string pointer = "/" + replace_all_distinct(path, ".", "/");
+        std::string output_content;
+        try
+        {
+            output_content = data[nlohmann::json::json_pointer(pointer)].get<std::string>();
+        }
+        catch (std::exception &e)
+        {
+            // non-exist path, ignore
+        }
+        output_content.append(value);
+        data[nlohmann::json::json_pointer(pointer)] = output_content;
+        return std::string();
+    });
     m_callbacks.add_callback("fetch", 1, template_webGet);
     m_callbacks.add_callback("parseHostname", 1, parseHostname);
     m_parser_config.include_scope_limit = true;
