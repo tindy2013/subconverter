@@ -429,6 +429,18 @@ std::string addEmoji(std::string remark, int groupID, const string_array &emoji_
     return remark;
 }
 
+void processRemark(std::string &oldremark, std::string &newremark, string_array &remarks_list)
+{
+    newremark = oldremark;
+    int cnt = 2;
+    while(std::find(remarks_list.begin(), remarks_list.end(), newremark) != remarks_list.end())
+    {
+        newremark = oldremark + " " + std::to_string(cnt);
+        cnt++;
+    }
+    oldremark = newremark;
+}
+
 void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset_content_array, bool overwrite_original_rules, bool new_field_name)
 {
     string_array allRules, vArray;
@@ -890,14 +902,7 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
         if(ext.append_proxy_type)
             x.remarks = "[" + type + "] " + x.remarks;
 
-        remark = x.remarks;
-        int cnt = 2;
-        while(std::count(remarks_list.begin(), remarks_list.end(), remark) > 0)
-        {
-            remark = x.remarks + " " + std::to_string(cnt);
-            cnt++;
-        }
-        x.remarks = remark;
+        processRemark(x.remarks, remark, remarks_list);
 
         hostname = GetMember(json, "Hostname");
         port = GetMember(json, "Port");
@@ -1212,15 +1217,8 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
 
         if(ext.append_proxy_type)
             x.remarks = "[" + type + "] " + x.remarks;
-        remark = x.remarks;
 
-        int cnt = 2;
-        while(std::count(remarks_list.begin(), remarks_list.end(), remark) > 0)
-        {
-            remark = x.remarks + " " + std::to_string(cnt);
-            cnt++;
-        }
-        x.remarks = remark;
+        processRemark(x.remarks, remark, remarks_list);
 
         hostname = GetMember(json, "Hostname");
         port = std::to_string((unsigned short)stoi(GetMember(json, "Port")));
@@ -1771,14 +1769,7 @@ void netchToQuan(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rules
         if(ext.append_proxy_type)
             x.remarks = "[" + type + "] " + x.remarks;
 
-        remark = x.remarks;
-        int cnt = 2;
-        while(std::count(remarks_list.begin(), remarks_list.end(), remark) > 0)
-        {
-            remark = x.remarks + " " + std::to_string(cnt);
-            cnt++;
-        }
-        x.remarks = remark;
+        processRemark(x.remarks, remark, remarks_list);
 
         hostname = GetMember(json, "Hostname");
         port = std::to_string((unsigned short)stoi(GetMember(json, "Port")));
@@ -2040,14 +2031,7 @@ void netchToQuanX(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rule
         if(ext.append_proxy_type)
             x.remarks = "[" + type + "] " + x.remarks;
 
-        remark = x.remarks;
-        int cnt = 2;
-        while(std::count(remarks_list.begin(), remarks_list.end(), remark) > 0)
-        {
-            remark = x.remarks + " " + std::to_string(cnt);
-            cnt++;
-        }
-        x.remarks = remark;
+        processRemark(x.remarks, remark, remarks_list);
 
         hostname = GetMember(json, "Hostname");
         port = std::to_string((unsigned short)stoi(GetMember(json, "Port")));
@@ -2432,14 +2416,7 @@ void netchToMellow(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rul
         if(ext.append_proxy_type)
             x.remarks = "[" + type + "] " + x.remarks;
 
-        remark = x.remarks;
-        int cnt = 2;
-        while(std::count(remarks_list.begin(), remarks_list.end(), remark) > 0)
-        {
-            remark = x.remarks + " " + std::to_string(cnt);
-            cnt++;
-        }
-        x.remarks = remark;
+        processRemark(x.remarks, remark, remarks_list);
 
         hostname = GetMember(json, "Hostname");
         port = std::to_string((unsigned short)stoi(GetMember(json, "Port")));
@@ -2591,14 +2568,7 @@ std::string netchToLoon(std::vector<nodeInfo> &nodes, std::string &base_conf, st
         if(ext.append_proxy_type)
             x.remarks = "[" + type + "] " + x.remarks;
 
-        remark = x.remarks;
-        int cnt = 2;
-        while(std::count(remarks_list.begin(), remarks_list.end(), remark) > 0)
-        {
-            remark = x.remarks + " " + std::to_string(cnt);
-            cnt++;
-        }
-        x.remarks = remark;
+        processRemark(x.remarks, remark, remarks_list);
 
         hostname = GetMember(json, "Hostname");
         port = std::to_string((unsigned short)stoi(GetMember(json, "Port")));
