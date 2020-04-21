@@ -13,6 +13,7 @@ std::string ssConstruct(std::string server, std::string port, std::string passwo
 std::string socksConstruct(std::string remarks, std::string server, std::string port, std::string username, std::string password);
 std::string httpConstruct(std::string remarks, std::string server, std::string port, std::string username, std::string password, bool tls = false);
 std::string trojanConstruct(std::string remarks, std::string server, std::string port, std::string password, std::string host, bool tlssecure);
+std::string snellConstruct(std::string remarks, std::string server, std::string port, std::string password, std::string obfs, std::string host);
 void explodeVmess(std::string vmess, const std::string &custom_port, nodeInfo &node);
 void explodeSSR(std::string ssr, bool ss_libev, bool libev, const std::string &custom_port, nodeInfo &node);
 void explodeSS(std::string ss, bool libev, const std::string &custom_port, nodeInfo &node);

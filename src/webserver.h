@@ -14,6 +14,8 @@ struct listener_args
 };
 
 void append_response(std::string method, std::string uri, std::string content_type, response_callback response);
+void append_redirect(std::string uri, std::string target);
+void reset_redirect();
 int start_web_server(void *argv);
 int start_web_server_multi(void *argv);
 void stop_web_server();

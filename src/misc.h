@@ -18,6 +18,7 @@
 
 typedef std::string::size_type string_size;
 typedef std::vector<std::string> string_array;
+typedef std::map<std::string, std::string> string_map;
 typedef const std::string &refCnstStr;
 
 static const std::string base64_chars =

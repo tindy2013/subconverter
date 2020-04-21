@@ -87,6 +87,9 @@ template:
   - {key: clash.socks_port, value: 7891}
   - {key: clash.allow_lan, value: true}
   - {key: clash.log_level, value: info}
+  
+aliases:
+  - {uri: /v, target: /version}
 
 server:
   listen: 0.0.0.0

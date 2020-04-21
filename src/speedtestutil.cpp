@@ -1079,6 +1079,18 @@ void explodeClash(Node yamlnode, const std::string &custom_port, std::vector<nod
             node.linkType = SPEEDTEST_MESSAGE_FOUNDTROJAN;
             node.proxyStr = trojanConstruct(ps, server, port, password, host, true);
             break;
+        case "snell"_hash:
+            group = SNELL_DEFAULT_GROUP;
+            singleproxy["psk"] >> password;
+            if(singleproxy["obfs-opts"].IsDefined())
+            {
+                singleproxy["obfs-opts"]["mode"] >> obfs;
+                singleproxy["obfs-opts"]["host"] >> host;
+            }
+
+            node.linkType = SPEEDTEST_MESSAGE_FOUNDSNELL;
+            node.proxyStr = snellConstruct(ps, server, port, password, obfs, host);
+            break;
         default:
             continue;
         }
@@ -1417,6 +1429,33 @@ bool explodeSurge(std::string surge, const std::string &custom_port, std::vector
                 host = server;
 
             node.proxyStr = trojanConstruct(remarks, server, port, password, host, true);
+            break;
+        case "snell"_hash:
+            node.linkType = SPEEDTEST_MESSAGE_FOUNDSNELL;
+            node.group = SNELL_DEFAULT_GROUP;
+
+            server = trim(configs[1]);
+            port = custom_port.empty() ? trim(configs[2]) : custom_port;
+
+            for(i = 3; i < configs.size(); i++)
+            {
+                vArray = split(configs[i], "=");
+                if(vArray.size() != 2)
+                    continue;
+                itemName = trim(vArray[0]);
+                itemVal = trim(vArray[1]);
+                switch(hash_(itemName))
+                {
+                    case "psk"_hash: password = itemVal; break;
+                    case "obfs"_hash: plugin = itemVal; break;
+                    case "obfs-host"_hash: host = itemVal; break;
+                    default: continue;
+                }
+            }
+            if(host.empty() && !isIPv4(server) && !isIPv6(server))
+                host = server;
+
+            node.proxyStr = snellConstruct(remarks, server, port, password, plugin, host);
             break;
         default:
             switch(hash_(remarks))

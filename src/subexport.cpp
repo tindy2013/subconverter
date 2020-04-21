@@ -251,6 +251,29 @@ std::string trojanConstruct(std::string remarks, std::string server, std::string
     return sb.GetString();
 }
 
+std::string snellConstruct(std::string remarks, std::string server, std::string port, std::string password, std::string obfs, std::string host)
+{
+    rapidjson::StringBuffer sb;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
+    writer.StartObject();
+    writer.Key("Type");
+    writer.String("Snell");
+    writer.Key("Remark");
+    writer.String(remarks.data());
+    writer.Key("Hostname");
+    writer.String(server.data());
+    writer.Key("Port");
+    writer.Int(to_int(port));
+    writer.Key("Password");
+    writer.String(password.data());
+    writer.Key("OBFS");
+    writer.String(obfs.data());
+    writer.Key("Host");
+    writer.String(host.data());
+    writer.EndObject();
+    return sb.GetString();
+}
+
 std::string vmessLinkConstruct(std::string remarks, std::string add, std::string port, std::string type, std::string id, std::string aid, std::string net, std::string path, std::string host, std::string tls)
 {
     rapidjson::StringBuffer sb;
@@ -867,10 +890,15 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
         if(ext.append_proxy_type)
             x.remarks = "[" + type + "] " + x.remarks;
 
-        while(std::count(remarks_list.begin(), remarks_list.end(), x.remarks) > 0)
-            x.remarks += "$";
-
         remark = x.remarks;
+        int cnt = 2;
+        while(std::count(remarks_list.begin(), remarks_list.end(), remark) > 0)
+        {
+            remark = x.remarks + " " + std::to_string(cnt);
+            cnt++;
+        }
+        x.remarks = remark;
+
         hostname = GetMember(json, "Hostname");
         port = GetMember(json, "Port");
         username = GetMember(json, "Username");
@@ -1008,6 +1036,19 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
                 singleproxy["password"].SetTag("str");
             if(ext.skip_cert_verify)
                 singleproxy["skip-cert-verify"] = true;
+            break;
+        case SPEEDTEST_MESSAGE_FOUNDSNELL:
+            obfs = GetMember(json, "OBFS");
+            host = GetMember(json, "Host");
+            singleproxy["type"] = "snell";
+            singleproxy["psk"] = password;
+            if(obfs.size())
+            {
+                singleproxy["obfs-opts"]["mode"] = obfs;
+                singleproxy["obfs-opts"]["host"] = host;
+            }
+            if(std::all_of(password.begin(), password.end(), ::isdigit) && !password.empty())
+                singleproxy["password"].SetTag("str");
             break;
         default:
             continue;
@@ -1173,10 +1214,14 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
             x.remarks = "[" + type + "] " + x.remarks;
         remark = x.remarks;
 
-        while(std::count(remarks_list.begin(), remarks_list.end(), x.remarks) > 0)
-            x.remarks += "$";
+        int cnt = 2;
+        while(std::count(remarks_list.begin(), remarks_list.end(), remark) > 0)
+        {
+            remark = x.remarks + " " + std::to_string(cnt);
+            cnt++;
+        }
+        x.remarks = remark;
 
-        remark = x.remarks;
         hostname = GetMember(json, "Hostname");
         port = std::to_string((unsigned short)stoi(GetMember(json, "Port")));
         username = GetMember(json, "Username");
@@ -1273,6 +1318,13 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
                 proxy += ", sni=" + host;
             if(ext.skip_cert_verify)
                 proxy += ", skip-cert-verify=1";
+            break;
+        case SPEEDTEST_MESSAGE_FOUNDSNELL:
+            obfs = GetMember(json, "OBFS");
+            host = GetMember(json, "Host");
+            proxy = "snell, " + hostname + ", " + port + ", psk=" + password;
+            if(obfs.size())
+                proxy += ", obfs=" + obfs + ", obfs-host=" + host;
             break;
         default:
             continue;
@@ -1719,10 +1771,14 @@ void netchToQuan(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rules
         if(ext.append_proxy_type)
             x.remarks = "[" + type + "] " + x.remarks;
 
-        while(std::count(remarks_list.begin(), remarks_list.end(), x.remarks) > 0)
-            x.remarks += "$";
-
         remark = x.remarks;
+        int cnt = 2;
+        while(std::count(remarks_list.begin(), remarks_list.end(), remark) > 0)
+        {
+            remark = x.remarks + " " + std::to_string(cnt);
+            cnt++;
+        }
+        x.remarks = remark;
 
         hostname = GetMember(json, "Hostname");
         port = std::to_string((unsigned short)stoi(GetMember(json, "Port")));
@@ -1984,10 +2040,14 @@ void netchToQuanX(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rule
         if(ext.append_proxy_type)
             x.remarks = "[" + type + "] " + x.remarks;
 
-        while(std::count(remarks_list.begin(), remarks_list.end(), x.remarks) > 0)
-            x.remarks += "$";
-
         remark = x.remarks;
+        int cnt = 2;
+        while(std::count(remarks_list.begin(), remarks_list.end(), remark) > 0)
+        {
+            remark = x.remarks + " " + std::to_string(cnt);
+            cnt++;
+        }
+        x.remarks = remark;
 
         hostname = GetMember(json, "Hostname");
         port = std::to_string((unsigned short)stoi(GetMember(json, "Port")));
@@ -2110,6 +2170,16 @@ void netchToQuanX(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rule
                 continue;
             rules_upper_bound -= 2;
             break;
+        case "ssid"_hash:
+            if(rules_upper_bound < 4)
+                continue;
+            proxies = vArray[0] + ",";
+            proxies += std::accumulate(vArray.begin() + 3, vArray.end(), vArray[2], [](std::string a, std::string b)
+            {
+                return std::move(a) + "," + std::move(replace_all_distinct(b, "=", ":"));
+            });
+            ini.Set("{NONAME}", vArray[1] + "=" + proxies); //insert order
+            continue;
         default:
             continue;
         }
@@ -2361,10 +2431,16 @@ void netchToMellow(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rul
 
         if(ext.append_proxy_type)
             x.remarks = "[" + type + "] " + x.remarks;
-        remark = x.remarks;
 
+        remark = x.remarks;
+        int cnt = 2;
         while(std::count(remarks_list.begin(), remarks_list.end(), remark) > 0)
-            remark = x.remarks = x.remarks + "$";
+        {
+            remark = x.remarks + " " + std::to_string(cnt);
+            cnt++;
+        }
+        x.remarks = remark;
+
         hostname = GetMember(json, "Hostname");
         port = std::to_string((unsigned short)stoi(GetMember(json, "Port")));
         username = GetMember(json, "Username");
@@ -2514,12 +2590,16 @@ std::string netchToLoon(std::vector<nodeInfo> &nodes, std::string &base_conf, st
 
         if(ext.append_proxy_type)
             x.remarks = "[" + type + "] " + x.remarks;
-        remark = x.remarks;
-
-        while(std::count(remarks_list.begin(), remarks_list.end(), x.remarks) > 0)
-            x.remarks += "$";
 
         remark = x.remarks;
+        int cnt = 2;
+        while(std::count(remarks_list.begin(), remarks_list.end(), remark) > 0)
+        {
+            remark = x.remarks + " " + std::to_string(cnt);
+            cnt++;
+        }
+        x.remarks = remark;
+
         hostname = GetMember(json, "Hostname");
         port = std::to_string((unsigned short)stoi(GetMember(json, "Port")));
         username = GetMember(json, "Username");

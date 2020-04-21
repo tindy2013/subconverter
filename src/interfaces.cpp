@@ -31,6 +31,7 @@ bool print_debug_info = false, cfw_child_process = false, append_userinfo = true
 std::string access_token;
 extern std::string custom_group;
 extern int global_log_level;
+string_map aliases_map;
 
 //global variables for template
 std::string template_path;
@@ -541,13 +542,25 @@ void readYAMLConf(YAML::Node &node)
         if(node["template"]["globals"].IsSequence())
         {
             eraseElements(global_vars);
-            std::string key, value;
             for(size_t i = 0; i < node["template"]["globals"].size(); i++)
             {
+                std::string key, value;
                 node["template"]["globals"][i]["key"] >> key;
                 node["template"]["globals"][i]["value"] >> value;
                 global_vars[key] = value;
             }
+        }
+    }
+
+    if(node["aliases"].IsSequence())
+    {
+        reset_redirect();
+        for(size_t i = 0; i < node["aliases"].size(); i++)
+        {
+            std::string uri, target;
+            node["aliases"][i]["uri"] >> uri;
+            node["aliases"][i]["target"] >> target;
+            append_redirect(uri, target);
         }
     }
 
@@ -766,6 +779,16 @@ void readConf()
         global_vars[x.first] = x.second;
     }
     global_vars["managed_config_prefix"] = managed_config_prefix;
+
+    if(ini.SectionExist("aliases"))
+    {
+        ini.EnterSection("aliases");
+        string_multimap tempmap;
+        ini.GetItems(tempmap);
+        reset_redirect();
+        for(auto &x : tempmap)
+            append_redirect(x.first, x.second);
+    }
 
     ini.EnterSection("server");
     ini.GetIfExist("listen", listen_address);
