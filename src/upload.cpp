@@ -73,7 +73,7 @@ int uploadGist(std::string name, std::string path, std::string content, bool wri
     {
         //std::cerr<<"No gist id is provided. Creating new gist...\n";
         writeLog(0, "No Gist id is provided. Creating new Gist...", LOG_LEVEL_ERROR);
-        retVal = webPost("https://api.github.com/gists", buildGistData(path, content), getSystemProxy(), token, &retData);
+        retVal = webPost("https://api.github.com/gists", buildGistData(path, content), getSystemProxy(), {"Authorization: token " + token}, &retData);
         if(retVal != 201)
         {
             //std::cerr<<"Create new Gist failed! Return data:\n"<<retData<<"\n";
@@ -88,7 +88,7 @@ int uploadGist(std::string name, std::string path, std::string content, bool wri
         writeLog(0, "Gist id provided. Modifying Gist...", LOG_LEVEL_INFO);
         if(writeManageURL)
             content = "#!MANAGED-CONFIG " + url + "\n" + content;
-        retVal = webPatch("https://api.github.com/gists/" + id, buildGistData(path, content), getSystemProxy(), token, &retData);
+        retVal = webPatch("https://api.github.com/gists/" + id, buildGistData(path, content), getSystemProxy(), {"Authorization: token " + token}, &retData);
         if(retVal != 200)
         {
             //std::cerr<<"Modify gist failed! Return data:\n"<<retData<<"\n";

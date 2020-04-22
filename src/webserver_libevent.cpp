@@ -69,10 +69,17 @@ static inline int process_request(const char *method_str, std::string uri, std::
         }
     }
 
-    auto iter = redirect_map.find(uri);
+    auto iter = redirect_map.find(path);
     if(iter != redirect_map.end())
     {
         return_data = iter->second;
+        if(arguments.size())
+        {
+            if(return_data.find("?") != return_data.npos)
+                return_data += "&" + arguments;
+            else
+                return_data += "?" + arguments;
+        }
         content_type = "REDIRECT";
         return 0;
     }

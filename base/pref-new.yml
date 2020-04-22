@@ -81,7 +81,7 @@ proxy_group:
   - {import: snippets/groups.txt}
 
 template:
-  template_path: "template"
+  template_path: "templates"
   globals:
   - {key: clash.http_port, value: 7890}
   - {key: clash.socks_port, value: 7891}
@@ -90,6 +90,20 @@ template:
   
 aliases:
   - {uri: /v, target: /version}
+  - {uri: /clash, target: "/sub?target=clash"}
+  - {uri: /clashr, target: "/sub?target=clashr"}
+  - {uri: /surge, target: "/sub?target=surge"}
+  - {uri: /quan, target: "/sub?target=quan"}
+  - {uri: /quanx, target: "/sub?target=quanx"}
+  - {uri: /mellow, target: "/sub?target=mellow"}
+  - {uri: /surfboard, target: "/sub?target=surfboard"}
+  - {uri: /loon, target: "/sub?target=loon"}
+  - {uri: /ss, target: "/sub?target=ss"}
+  - {uri: /ssd, target: "/sub?target=ssd"}
+  - {uri: /sssub, target: "/sub?target=sssub"}
+  - {uri: /ssr, target: "/sub?target=ssr"}
+  - {uri: /v2ray, target: "/sub?target=v2ray"}
+  - {uri: /trojan, target: "/sub?target=trojan"}
 
 server:
   listen: 0.0.0.0

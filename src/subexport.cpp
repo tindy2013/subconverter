@@ -2160,7 +2160,7 @@ void netchToQuanX(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rule
             proxies = vArray[0] + ",";
             proxies += std::accumulate(vArray.begin() + 3, vArray.end(), vArray[2], [](std::string a, std::string b)
             {
-                return std::move(a) + "," + std::move(replace_all_distinct(b, "=", ":"));
+                return std::move(a) + "," + replace_all_distinct(b, "=", ":");
             });
             ini.Set("{NONAME}", vArray[1] + "=" + proxies); //insert order
             continue;
