@@ -16,6 +16,10 @@
 #define PATH_SLASH "//"
 #endif // _WIN32
 
+#define concat(a,b) a ## b
+#define do_concat(a,b) concat(a,b)
+#define defer(x) std::shared_ptr<void> do_concat(__defer_deleter_,__LINE__) (nullptr, [&](...){x});
+
 typedef std::string::size_type string_size;
 typedef std::vector<std::string> string_array;
 typedef std::map<std::string, std::string> string_map;
@@ -58,7 +62,7 @@ std::string speedCalc(double speed);
 std::string getMD5(const std::string &data);
 bool isIPv4(const std::string &address);
 bool isIPv6(const std::string &address);
-void urlParse(const std::string &url, std::string &host, std::string &path, int &port, bool &isTLS);
+void urlParse(std::string &url, std::string &host, std::string &path, int &port, bool &isTLS);
 void removeUTF8BOM(std::string &data);
 int shortAssemble(unsigned short num_a, unsigned short num_b);
 void shortDisassemble(int source, unsigned short &num_a, unsigned short &num_b);

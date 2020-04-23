@@ -45,17 +45,26 @@ static int writer(char *data, size_t size, size_t nmemb, std::string *writerData
     return size * nmemb;
 }
 
+static int size_checker(void *clientp, double dltotal, double dlnow, double ultotal, double ulnow)
+{
+    if(dltotal > 1048576.0)
+        return 1;
+    return 0;
+}
+
 static inline void curl_set_common_options(CURL *curl_handle, const char *url)
 {
     curl_easy_setopt(curl_handle, CURLOPT_URL, url);
     curl_easy_setopt(curl_handle, CURLOPT_VERBOSE, global_log_level == LOG_LEVEL_VERBOSE ? 1L : 0L);
-    curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 1L);
+    curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 0L);
     curl_easy_setopt(curl_handle, CURLOPT_NOSIGNAL, 1L);
     curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1L);
     curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYPEER, 0L);
     curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYHOST, 0L);
     curl_easy_setopt(curl_handle, CURLOPT_TIMEOUT, 15L);
     curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, user_agent_str.data());
+    curl_easy_setopt(curl_handle, CURLOPT_MAXFILESIZE, 1048576L);
+    curl_easy_setopt(curl_handle, CURLOPT_PROGRESSFUNCTION, size_checker);
 }
 
 static std::string curlGet(const std::string &url, const std::string &proxy, std::string &response_headers, CURLcode &return_code)

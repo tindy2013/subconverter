@@ -28,13 +28,13 @@ std::string listen_address = "127.0.0.1", default_url, insert_url, managed_confi
 int listen_port = 25500, max_pending_connections = 10, max_concurrent_threads = 4;
 bool api_mode = true, write_managed_config = false, enable_rule_generator = true, update_ruleset_on_request = false, overwrite_original_rules = true;
 bool print_debug_info = false, cfw_child_process = false, append_userinfo = true, enable_base_gen = false, async_fetch_ruleset = false;
-std::string access_token;
+std::string access_token, base_path = "base";
 extern std::string custom_group;
 extern int global_log_level;
 string_map aliases_map;
 
 //global variables for template
-std::string template_path;
+std::string template_path = "templates";
 string_map global_vars;
 
 //generator settings
@@ -96,11 +96,12 @@ const string_array quanx_rule_type = {basic_types, "USER-AGENT", "HOST", "HOST-S
 
 std::string getRuleset(RESPONSE_CALLBACK_ARGS)
 {
+    /// type: 1 for Surge, 2 for Quantumult X, 3 for Clash domain rule-provider, 4 for Clash ipcidr rule-provider
     std::string url = urlsafe_base64_decode(getUrlArg(argument, "url")), type = getUrlArg(argument, "type"), group = urlsafe_base64_decode(getUrlArg(argument, "group"));
     std::string output_content, dummy;
     int type_int = to_int(type, 0);
 
-    if(!url.size() || !type.size() || (type_int == 2 && !group.size()) || (type_int != 1 && type_int != 2))
+    if(!url.size() || !type.size() || (type_int == 2 && !group.size()) || (type_int < 1 && type_int > 4))
     {
         *status_code = 400;
         return "Invalid request!";
@@ -125,15 +126,49 @@ std::string getRuleset(RESPONSE_CALLBACK_ARGS)
 
     output_content.clear();
 
+    if(type_int == 3 || type_int == 4)
+        output_content = "payload:\n";
+
+    string_array vArray;
     while(getline(ss, strLine, delimiter))
     {
-        if(type_int == 2)
+        switch(type_int)
         {
+        case 2:
             if(!std::any_of(quanx_rule_type.begin(), quanx_rule_type.end(), [&strLine](std::string type){return startsWith(strLine, type);}) || startsWith(strLine, "IP-CIDR6"))
                 continue;
-        }
-        else if(!std::any_of(surge_rule_type.begin(), surge_rule_type.end(), [&strLine](std::string type){return startsWith(strLine, type);}))
+            break;
+        case 1:
+            if(!std::any_of(surge_rule_type.begin(), surge_rule_type.end(), [&strLine](std::string type){return startsWith(strLine, type);}))
+                continue;
+            break;
+        case 3:
+            if(!startsWith(strLine, "DOMAIN-SUFFIX,") && !startsWith(strLine, "DOMAIN,"))
+                continue;
+            vArray = split(strLine, ",");
+            if(vArray.size() < 2)
+                continue;
+            vArray[1] = regTrim(vArray[1]);
+            switch(hash_(vArray[0]))
+            {
+            case "DOMAIN-SUFFIX"_hash:
+                strLine = " - '." + vArray[1] + "'";
+                break;
+            case "DOMAIN"_hash:
+                strLine = " - '" + vArray[1] + "'";
+                break;
+            }
+            output_content += strLine + "\n";
             continue;
+        case 4:
+            if(!startsWith(strLine, "IP-CIDR,") && !startsWith(strLine, "IP-CIDR6,"))
+                continue;
+            vArray = split(strLine, ",");
+            if(vArray.size() < 2)
+                continue;
+            output_content += " - " + vArray[1] + "\n";
+            continue;
+        }
 
         lineSize = strLine.size();
         if(lineSize && strLine[lineSize - 1] == '\r') //remove line break
@@ -438,6 +473,7 @@ void readYAMLConf(YAML::Node &node)
         section["exclude_remarks"] >> def_exclude_remarks;
     if(section["include_remarks"].IsSequence())
         section["include_remarks"] >> def_include_remarks;
+    section["base_path"] >> base_path;
     section["clash_rule_base"] >> clash_rule_base;
     section["surge_rule_base"] >> surge_rule_base;
     section["surfboard_rule_base"] >> surfboard_rule_base;
@@ -667,6 +703,7 @@ void readConf()
         ini.GetAll("exclude_remarks", def_exclude_remarks);
     if(ini.ItemPrefixExist("include_remarks"))
         ini.GetAll("include_remarks", def_include_remarks);
+    ini.GetIfExist("base_path", base_path);
     ini.GetIfExist("clash_rule_base", clash_rule_base);
     ini.GetIfExist("surge_rule_base", surge_rule_base);
     ini.GetIfExist("surfboard_rule_base", surfboard_rule_base);
@@ -990,6 +1027,12 @@ int loadExternalConfig(std::string &path, ExternalConfig &ext)
     return 0;
 }
 
+void checkExternalBase(const std::string &path, std::string &dest)
+{
+    if(startsWith(path, "https://") || startsWith(path, "http://") || startsWith(path, "data:") || (startsWith(path, base_path) && fileExist(path)))
+        dest = path;
+}
+
 void generateBase()
 {
     if(!enable_base_gen)
@@ -1134,22 +1177,14 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         loadExternalConfig(config, extconf);
         if(!ext.nodelist)
         {
-            if(extconf.clash_rule_base.size())
-                ext_clash_base = extconf.clash_rule_base;
-            if(extconf.surge_rule_base.size())
-                ext_surge_base = extconf.surge_rule_base;
-            if(extconf.surfboard_rule_base.size())
-                ext_surfboard_base = extconf.surfboard_rule_base;
-            if(extconf.mellow_rule_base.size())
-                ext_mellow_base = extconf.mellow_rule_base;
-            if(extconf.quan_rule_base.size())
-                ext_quan_base = extconf.quan_rule_base;
-            if(extconf.quanx_rule_base.size())
-                ext_quanx_base = extconf.quanx_rule_base;
-            if(extconf.loon_rule_base.size())
-                ext_loon_base = extconf.loon_rule_base;
-            if(extconf.sssub_rule_base.size())
-                ext_sssub_base = extconf.sssub_rule_base;
+            checkExternalBase(extconf.clash_rule_base, ext_clash_base);
+            checkExternalBase(extconf.surge_rule_base, ext_surge_base);
+            checkExternalBase(extconf.surfboard_rule_base, ext_surfboard_base);
+            checkExternalBase(extconf.mellow_rule_base, ext_mellow_base);
+            checkExternalBase(extconf.quan_rule_base, ext_quan_base);
+            checkExternalBase(extconf.quanx_rule_base, ext_quanx_base);
+            checkExternalBase(extconf.loon_rule_base, ext_loon_base);
+            checkExternalBase(extconf.sssub_rule_base, ext_sssub_base);
         }
         if(extconf.rename.size())
             ext.rename_array = extconf.rename;
