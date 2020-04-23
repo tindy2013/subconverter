@@ -2107,7 +2107,7 @@ void netchToQuanX(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rule
             proxyStr += ", fast-open=true";
         if(ext.udp)
             proxyStr += ", udp-relay=true";
-        if(ext.skip_cert_verify)
+        if(ext.skip_cert_verify && (x.linkType == SPEEDTEST_MESSAGE_FOUNDHTTP || x.linkType == SPEEDTEST_MESSAGE_FOUNDTROJAN))
             proxyStr += ", tls-verification=false";
         proxyStr += ", tag=" + remark;
 
