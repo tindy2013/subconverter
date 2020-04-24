@@ -14,5 +14,6 @@ struct template_args
 };
 
 int render_template(const std::string &content, const template_args &vars, std::string &output, const std::string &include_scope = "template");
+int renderClashScript(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset_content_array, std::string remote_path_prefix);
 
 #endif // TEMPLATES_H_INCLUDED

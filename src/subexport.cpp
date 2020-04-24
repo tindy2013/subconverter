@@ -9,6 +9,7 @@
 #include "socket.h"
 #include "string_hash.h"
 #include "logger.h"
+#include "templates.h"
 
 #include <algorithm>
 #include <iostream>
@@ -586,7 +587,7 @@ std::string rulesetToClashStr(YAML::Node &base_rule, std::vector<ruleset_content
 void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_content_array, int surge_ver, bool overwrite_original_rules, std::string remote_path_prefix)
 {
     string_array allRules;
-    std::string rule_group, rule_path, retrived_rules, strLine;
+    std::string rule_group, rule_path, retrieved_rules, strLine;
     std::stringstream strStrm;
 
     switch(surge_ver) //other version: -3 for Surfboard, -4 for Loon
@@ -694,17 +695,17 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
             }
             else
                 continue;
-            retrived_rules = x.rule_content.get();
-            if(retrived_rules.empty())
+            retrieved_rules = x.rule_content.get();
+            if(retrieved_rules.empty())
             {
                 writeLog(0, "Failed to fetch ruleset or ruleset is empty: '" + x.rule_path + "'!", LOG_LEVEL_WARNING);
                 continue;
             }
 
-            char delimiter = count(retrived_rules.begin(), retrived_rules.end(), '\n') < 1 ? '\r' : '\n';
+            char delimiter = count(retrieved_rules.begin(), retrieved_rules.end(), '\n') < 1 ? '\r' : '\n';
 
             strStrm.clear();
-            strStrm<<retrived_rules;
+            strStrm<<retrieved_rules;
             std::string::size_type lineSize;
             while(getline(strStrm, strLine, delimiter))
             {
@@ -1171,6 +1172,12 @@ std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &base_conf, s
     */
     if(!ext.enable_rule_generator)
         return YAML::Dump(yamlnode);
+
+    if(ext.clash_script)
+    {
+        renderClashScript(yamlnode, ruleset_content_array, ext.managed_config_prefix);
+        return YAML::Dump(yamlnode);
+    }
 
     std::string output_content = rulesetToClashStr(yamlnode, ruleset_content_array, ext.overwrite_original_rules, ext.clash_new_field_name);
     output_content.insert(0, YAML::Dump(yamlnode));
@@ -2107,7 +2114,7 @@ void netchToQuanX(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rule
             proxyStr += ", fast-open=true";
         if(ext.udp)
             proxyStr += ", udp-relay=true";
-        if(ext.skip_cert_verify && (x.linkType == SPEEDTEST_MESSAGE_FOUNDHTTP || x.linkType == SPEEDTEST_MESSAGE_FOUNDTROJAN))
+        if(ext.skip_cert_verify)
             proxyStr += ", tls-verification=false";
         proxyStr += ", tag=" + remark;
 

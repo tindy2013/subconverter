@@ -108,7 +108,9 @@ std::string getRuleset(RESPONSE_CALLBACK_ARGS)
     }
 
     std::string proxy = parseProxy(proxy_ruleset);
-    output_content = fetchFile(url, proxy, cache_ruleset);
+    string_array vArray = split(url, "|");
+    for(std::string &x : vArray)
+        output_content += fetchFile(x, proxy, cache_ruleset) + "\n";
 
     if(!output_content.size())
     {
@@ -129,7 +131,6 @@ std::string getRuleset(RESPONSE_CALLBACK_ARGS)
     if(type_int == 3 || type_int == 4)
         output_content = "payload:\n";
 
-    string_array vArray;
     while(getline(ss, strLine, delimiter))
     {
         switch(type_int)
@@ -152,11 +153,14 @@ std::string getRuleset(RESPONSE_CALLBACK_ARGS)
             switch(hash_(vArray[0]))
             {
             case "DOMAIN-SUFFIX"_hash:
-                strLine = " - '." + vArray[1] + "'";
+                strLine = "  - '." + vArray[1] + "'";
                 break;
             case "DOMAIN"_hash:
-                strLine = " - '" + vArray[1] + "'";
+                strLine = "  - '" + vArray[1] + "'";
                 break;
+            //case "DOMAIN_KEYWORD"_hash:
+                //strLine = "  - '." + vArray[1] + ".*'";
+                //break;
             }
             output_content += strLine + "\n";
             continue;
@@ -166,7 +170,7 @@ std::string getRuleset(RESPONSE_CALLBACK_ARGS)
             vArray = split(strLine, ",");
             if(vArray.size() < 2)
                 continue;
-            output_content += " - " + vArray[1] + "\n";
+            output_content += "  - '" + vArray[1] + "'\n";
             continue;
         }
 
@@ -192,6 +196,10 @@ std::string getRuleset(RESPONSE_CALLBACK_ARGS)
         output_content.append(strLine + "\n");
     }
 
+    if(type_int == 3 && output_content == "payload:\n")
+        output_content += "  - '--placeholder--'";
+    if(type_int == 4 && output_content == "payload:\n")
+        output_content += "  - '255.255.255.255/32'";
     return output_content;
 }
 
@@ -1073,7 +1081,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     std::string include = UrlDecode(getUrlArg(argument, "include")), exclude = UrlDecode(getUrlArg(argument, "exclude")), sort_flag = getUrlArg(argument, "sort");
     std::string scv = getUrlArg(argument, "scv"), fdn = getUrlArg(argument, "fdn"), expand = getUrlArg(argument, "expand"), append_sub_userinfo = getUrlArg(argument, "append_info");
     std::string dev_id = getUrlArg(argument, "dev_id"), filename = getUrlArg(argument, "filename"), interval_str = getUrlArg(argument, "interval"), strict_str = getUrlArg(argument, "strict");
-    std::string clash_new_field = getUrlArg(argument, "new_name");
+    std::string clash_new_field = getUrlArg(argument, "new_name"), clash_script = getUrlArg(argument, "script");
     std::string base_content, output_content;
     string_array extra_group, extra_ruleset, include_remarks = def_include_remarks, exclude_remarks = def_exclude_remarks;
     std::string groups = urlsafe_base64_decode(getUrlArg(argument, "groups")), ruleset = urlsafe_base64_decode(getUrlArg(argument, "ruleset")), config = UrlDecode(getUrlArg(argument, "config"));
@@ -1152,6 +1160,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     ext.skip_cert_verify = scv.size() ? scv == "true" : scv_flag;
     ext.filter_deprecated = fdn.size() ? fdn == "true" : filter_deprecated;
     ext.clash_new_field_name = clash_new_field.size() ? clash_new_field == "true" : clash_use_new_field_name;
+    ext.clash_script = clash_script == "true";
 
     ext.nodelist = nodelist == "true";
     ext.surge_ssr_path = surge_ssr_path;

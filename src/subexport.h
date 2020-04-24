@@ -32,6 +32,7 @@ struct extra_settings
     bool skip_cert_verify = false;
     bool filter_deprecated = false;
     bool clash_new_field_name = false;
+    bool clash_script = false;
     std::string surge_ssr_path;
     std::string managed_config_prefix;
     std::string quanx_dev_id;
