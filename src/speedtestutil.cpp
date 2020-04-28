@@ -2051,7 +2051,7 @@ time_t dateStringToTimestamp(std::string date)
 
 bool getSubInfoFromHeader(std::string &header, std::string &result)
 {
-    std::string pattern = "(?:[\\s\\S]*?)^(?i:Subscription-UserInfo): (.*?)\\s$(?:[\\s\\S]*)", retStr;
+    std::string pattern = R"((?:[\s\S]*?)^(?i:Subscription-UserInfo): (.*?)\s$(?:[\s\S]*))", retStr;
     if(regFind(header, pattern))
     {
         retStr = regReplace(header, pattern, "$1");

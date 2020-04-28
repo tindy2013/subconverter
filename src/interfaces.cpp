@@ -96,12 +96,12 @@ const string_array quanx_rule_type = {basic_types, "USER-AGENT", "HOST", "HOST-S
 
 std::string getRuleset(RESPONSE_CALLBACK_ARGS)
 {
-    /// type: 1 for Surge, 2 for Quantumult X, 3 for Clash domain rule-provider, 4 for Clash ipcidr rule-provider
+    /// type: 1 for Surge, 2 for Quantumult X, 3 for Clash domain rule-provider, 4 for Clash ipcidr rule-provider, 5 for Surge DOMAIN-SET
     std::string url = urlsafe_base64_decode(getUrlArg(argument, "url")), type = getUrlArg(argument, "type"), group = urlsafe_base64_decode(getUrlArg(argument, "group"));
     std::string output_content, dummy;
     int type_int = to_int(type, 0);
 
-    if(!url.size() || !type.size() || (type_int == 2 && !group.size()) || (type_int < 1 && type_int > 4))
+    if(!url.size() || !type.size() || (type_int == 2 && !group.size()) || (type_int < 1 && type_int > 5))
     {
         *status_code = 400;
         return "Invalid request!";
@@ -172,6 +172,25 @@ std::string getRuleset(RESPONSE_CALLBACK_ARGS)
                 continue;
             output_content += "  - '" + vArray[1] + "'\n";
             continue;
+        case 5:
+            if(!startsWith(strLine, "DOMAIN-SUFFIX,") && !startsWith(strLine, "DOMAIN,"))
+                continue;
+            vArray = split(strLine, ",");
+            if(vArray.size() < 2)
+                continue;
+            vArray[1] = regTrim(vArray[1]);
+            switch(hash_(vArray[0]))
+            {
+            case "DOMAIN-SUFFIX"_hash:
+            case "DOMAIN"_hash:
+                strLine = vArray[1];
+                break;
+            //case "DOMAIN_KEYWORD"_hash:
+                //strLine = "  - '." + vArray[1] + ".*'";
+                //break;
+            }
+            output_content += strLine + "\n";
+            continue;
         }
 
         lineSize = strLine.size();
@@ -199,7 +218,7 @@ std::string getRuleset(RESPONSE_CALLBACK_ARGS)
     if(type_int == 3 && output_content == "payload:\n")
         output_content += "  - '--placeholder--'";
     if(type_int == 4 && output_content == "payload:\n")
-        output_content += "  - '255.255.255.255/32'";
+        output_content += "  - '0.0.0.0/32'";
     return output_content;
 }
 
@@ -471,7 +490,7 @@ void readYAMLConf(YAML::Node &node)
         {
             strLine = std::accumulate(std::next(tempArray.begin()), tempArray.end(), tempArray[0], [](std::string a, std::string b)
             {
-                return std::move(a) + "|" + std::move(b);
+                return std::move(b) + "|" + std::move(a); // add in reverse order
             });
             insert_url = strLine;
             eraseElements(tempArray);
@@ -707,6 +726,12 @@ void readConf()
     ini.GetIfExist("api_access_token", access_token);
     ini.GetIfExist("default_url", default_url);
     ini.GetIfExist("insert_url", insert_url);
+    tempArray = split(insert_url, "|");
+    if(tempArray.size())
+        insert_url = std::accumulate(std::next(tempArray.begin()), tempArray.end(), tempArray[0], [](std::string a, std::string b)
+        {
+            return std::move(b) + "|" + std::move(a);
+        });
     if(ini.ItemPrefixExist("exclude_remarks"))
         ini.GetAll("exclude_remarks", def_exclude_remarks);
     if(ini.ItemPrefixExist("include_remarks"))
@@ -1075,13 +1100,16 @@ void generateBase()
 
 std::string subconverter(RESPONSE_CALLBACK_ARGS)
 {
+    //check if we need to read configuration
+    if((!api_mode || cfw_child_process) && !generator_mode)
+        readConf();
     std::string target = getUrlArg(argument, "target"), url = UrlDecode(getUrlArg(argument, "url")), emoji = getUrlArg(argument, "emoji");
     std::string group = UrlDecode(getUrlArg(argument, "group")), upload = getUrlArg(argument, "upload"), upload_path = getUrlArg(argument, "upload_path"), version = getUrlArg(argument, "ver");
     std::string append_type = getUrlArg(argument, "append_type"), tfo = getUrlArg(argument, "tfo"), udp = getUrlArg(argument, "udp"), nodelist = getUrlArg(argument, "list");
     std::string include = UrlDecode(getUrlArg(argument, "include")), exclude = UrlDecode(getUrlArg(argument, "exclude")), sort_flag = getUrlArg(argument, "sort");
     std::string scv = getUrlArg(argument, "scv"), fdn = getUrlArg(argument, "fdn"), expand = getUrlArg(argument, "expand"), append_sub_userinfo = getUrlArg(argument, "append_info");
     std::string dev_id = getUrlArg(argument, "dev_id"), filename = getUrlArg(argument, "filename"), interval_str = getUrlArg(argument, "interval"), strict_str = getUrlArg(argument, "strict");
-    std::string clash_new_field = getUrlArg(argument, "new_name"), clash_script = getUrlArg(argument, "script");
+    std::string clash_new_field = getUrlArg(argument, "new_name"), clash_script = getUrlArg(argument, "script"), add_insert = getUrlArg(argument, "insert");
     std::string base_content, output_content;
     string_array extra_group, extra_ruleset, include_remarks = def_include_remarks, exclude_remarks = def_exclude_remarks;
     std::string groups = urlsafe_base64_decode(getUrlArg(argument, "groups")), ruleset = urlsafe_base64_decode(getUrlArg(argument, "ruleset")), config = UrlDecode(getUrlArg(argument, "config"));
@@ -1090,6 +1118,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     std::string subInfo, dummy;
     int interval = interval_str.size() ? to_int(interval_str, config_update_interval) : config_update_interval;
     bool ruleset_updated = false, authorized = !api_mode || getUrlArg(argument, "token") == access_token, strict = strict_str.size() ? strict_str == "true" : config_update_strict;
+    bool insert_flag = add_insert.empty() || add_insert == "true";
 
     if(std::find(regex_blacklist.cbegin(), regex_blacklist.cend(), include) != regex_blacklist.cend() || std::find(regex_blacklist.cbegin(), regex_blacklist.cend(), exclude) != regex_blacklist.cend())
         return "Invalid request!";
@@ -1101,7 +1130,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     //validate urls
     if(!url.size() && (!api_mode || authorized))
         url = default_url;
-    if(insert_url.size())
+    if(insert_url.size() && insert_flag)
         url = insert_url + "|" + url;
     if(!url.size() || !target.size())
     {
@@ -1127,10 +1156,6 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     template_args tpl_args;
     tpl_args.global_vars = global_vars;
     tpl_args.request_params = req_arg_map;
-
-    //check if we need to read configuration
-    if((!api_mode || cfw_child_process) && !generator_mode)
-        readConf();
 
     //check for proxy settings
     std::string proxy = parseProxy(proxy_subscription);
@@ -1268,6 +1293,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     string_array urls = split(url, "|");
     std::vector<nodeInfo> nodes;
     int groupID = 0;
+    groupID -= insert_url.empty() || !insert_flag ? 0 : std::count(insert_url.begin(), insert_url.end(), '|') + 1;
 
     //check custom include/exclude settings
     if(include.size() && regValid(include))
