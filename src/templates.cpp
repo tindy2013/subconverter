@@ -12,7 +12,14 @@
 static inline void parse_json_pointer(nlohmann::json &json, const std::string &path, const std::string &value)
 {
     std::string pointer = "/" + replace_all_distinct(path, ".", "/");
-    json[nlohmann::json::json_pointer(pointer)] = value;
+    try
+    {
+        json[nlohmann::json::json_pointer(pointer)] = value;
+    }
+    catch (std::exception&)
+    {
+        //ignore broken pointer
+    }
 }
 
 int render_template(const std::string &content, const template_args &vars, std::string &output, const std::string &include_scope)

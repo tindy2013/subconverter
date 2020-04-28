@@ -1100,25 +1100,40 @@ void generateBase()
 
 std::string subconverter(RESPONSE_CALLBACK_ARGS)
 {
+    std::string target = getUrlArg(argument, "target");
+    switch(hash_(target))
+    {
+    case "clash"_hash: case "clashr"_hash: case "surge"_hash: case "quan"_hash: case "quanx"_hash: case "loon"_hash: case "surfboard"_hash: case "mellow"_hash: case "ss"_hash: case "ssd"_hash: case "ssr"_hash: case "sssub"_hash: case "v2ray"_hash: case "trojan"_hash:
+        break;
+    default:
+        *status_code = 400;
+        return "Invalid target!";
+    }
     //check if we need to read configuration
     if((!api_mode || cfw_child_process) && !generator_mode)
         readConf();
-    std::string target = getUrlArg(argument, "target"), url = UrlDecode(getUrlArg(argument, "url")), emoji = getUrlArg(argument, "emoji");
-    std::string group = UrlDecode(getUrlArg(argument, "group")), upload = getUrlArg(argument, "upload"), upload_path = getUrlArg(argument, "upload_path"), version = getUrlArg(argument, "ver");
-    std::string append_type = getUrlArg(argument, "append_type"), tfo = getUrlArg(argument, "tfo"), udp = getUrlArg(argument, "udp"), nodelist = getUrlArg(argument, "list");
-    std::string include = UrlDecode(getUrlArg(argument, "include")), exclude = UrlDecode(getUrlArg(argument, "exclude")), sort_flag = getUrlArg(argument, "sort");
-    std::string scv = getUrlArg(argument, "scv"), fdn = getUrlArg(argument, "fdn"), expand = getUrlArg(argument, "expand"), append_sub_userinfo = getUrlArg(argument, "append_info");
+
+    /// string values
+    std::string url = UrlDecode(getUrlArg(argument, "url"));
+    std::string group = UrlDecode(getUrlArg(argument, "group")), upload_path = getUrlArg(argument, "upload_path"), version = getUrlArg(argument, "ver");
+    std::string include = UrlDecode(getUrlArg(argument, "include")), exclude = UrlDecode(getUrlArg(argument, "exclude"));
+    std::string groups = urlsafe_base64_decode(getUrlArg(argument, "groups")), ruleset = urlsafe_base64_decode(getUrlArg(argument, "ruleset")), config = UrlDecode(getUrlArg(argument, "config"));
     std::string dev_id = getUrlArg(argument, "dev_id"), filename = getUrlArg(argument, "filename"), interval_str = getUrlArg(argument, "interval"), strict_str = getUrlArg(argument, "strict");
-    std::string clash_new_field = getUrlArg(argument, "new_name"), clash_script = getUrlArg(argument, "script"), add_insert = getUrlArg(argument, "insert");
+
+    /// switches with default value
+    tribool upload = getUrlArg(argument, "upload"), emoji = getUrlArg(argument, "emoji");
+    tribool append_type = getUrlArg(argument, "append_type"), tfo = getUrlArg(argument, "tfo"), udp = getUrlArg(argument, "udp"), nodelist = getUrlArg(argument, "list");
+    tribool sort_flag = getUrlArg(argument, "sort");
+    tribool clash_new_field = getUrlArg(argument, "new_name"), clash_script = getUrlArg(argument, "script"), add_insert = getUrlArg(argument, "insert");
+    tribool scv = getUrlArg(argument, "scv"), fdn = getUrlArg(argument, "fdn"), expand = getUrlArg(argument, "expand"), append_sub_userinfo = getUrlArg(argument, "append_info");
+
     std::string base_content, output_content;
     string_array extra_group, extra_ruleset, include_remarks = def_include_remarks, exclude_remarks = def_exclude_remarks;
-    std::string groups = urlsafe_base64_decode(getUrlArg(argument, "groups")), ruleset = urlsafe_base64_decode(getUrlArg(argument, "ruleset")), config = UrlDecode(getUrlArg(argument, "config"));
     std::vector<ruleset_content> rca;
     extra_settings ext;
     std::string subInfo, dummy;
     int interval = interval_str.size() ? to_int(interval_str, config_update_interval) : config_update_interval;
     bool ruleset_updated = false, authorized = !api_mode || getUrlArg(argument, "token") == access_token, strict = strict_str.size() ? strict_str == "true" : config_update_strict;
-    bool insert_flag = add_insert.empty() || add_insert == "true";
 
     if(std::find(regex_blacklist.cbegin(), regex_blacklist.cend(), include) != regex_blacklist.cend() || std::find(regex_blacklist.cbegin(), regex_blacklist.cend(), exclude) != regex_blacklist.cend())
         return "Invalid request!";
@@ -1130,7 +1145,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     //validate urls
     if(!url.size() && (!api_mode || authorized))
         url = default_url;
-    if(insert_url.size() && insert_flag)
+    if(insert_url.size() && add_insert)
         url = insert_url + "|" + url;
     if(!url.size() || !target.size())
     {
@@ -1164,9 +1179,9 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     ext.rename_array = safe_get_renames();
 
     //check other flags
-    if(emoji.size())
+    if(!emoji.is_undef())
     {
-        ext.add_emoji = emoji == "true";
+        ext.add_emoji = emoji;
         ext.remove_emoji = true;
     }
     else
@@ -1174,25 +1189,22 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         ext.add_emoji = add_emoji;
         ext.remove_emoji = remove_old_emoji;
     }
-    if(append_type.size())
-        ext.append_proxy_type = append_type == "true";
-    else
-        ext.append_proxy_type = append_proxy_type;
+    ext.append_proxy_type = append_type.get(append_proxy_type);
 
-    ext.tfo = tfo.size() ? tfo == "true" : tfo_flag;
-    ext.udp = udp.size() ? udp == "true" : udp_flag;
-    ext.sort_flag = sort_flag.size() ? sort_flag == "true" : do_sort;
-    ext.skip_cert_verify = scv.size() ? scv == "true" : scv_flag;
-    ext.filter_deprecated = fdn.size() ? fdn == "true" : filter_deprecated;
-    ext.clash_new_field_name = clash_new_field.size() ? clash_new_field == "true" : clash_use_new_field_name;
-    ext.clash_script = clash_script == "true";
+    ext.tfo = tfo.get(tfo_flag);
+    ext.udp = udp.get(udp_flag);
+    ext.sort_flag = sort_flag.get(do_sort);
+    ext.skip_cert_verify = scv.get(scv_flag);
+    ext.filter_deprecated = fdn.get(filter_deprecated);
+    ext.clash_new_field_name = clash_new_field.get(clash_use_new_field_name);
+    ext.clash_script = clash_script.get();
 
-    ext.nodelist = nodelist == "true";
+    ext.nodelist = nodelist;
     ext.surge_ssr_path = surge_ssr_path;
     ext.quanx_dev_id = dev_id.size() ? dev_id : quanx_script_id;
     ext.enable_rule_generator = enable_rule_generator;
     ext.overwrite_original_rules = overwrite_original_rules;
-    if(expand != "true")
+    if(expand)
         ext.managed_config_prefix = managed_config_prefix;
 
     //load external configuration
@@ -1293,7 +1305,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     string_array urls = split(url, "|");
     std::vector<nodeInfo> nodes;
     int groupID = 0;
-    groupID -= insert_url.empty() || !insert_flag ? 0 : std::count(insert_url.begin(), insert_url.end(), '|') + 1;
+    groupID -= insert_url.empty() || !add_insert ? 0 : std::count(insert_url.begin(), insert_url.end(), '|') + 1;
 
     //check custom include/exclude settings
     if(include.size() && regValid(include))
@@ -1327,7 +1339,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         for(nodeInfo &x : nodes)
             x.group = group;
 
-    if(subInfo.size() && (append_sub_userinfo.size() ? append_sub_userinfo == "true" : append_userinfo))
+    if(subInfo.size() && append_sub_userinfo.get(append_userinfo))
         extra_headers.emplace("Subscription-UserInfo", subInfo);
 
     //do pre-process now
@@ -1371,7 +1383,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
             output_content = YAML::Dump(yamlnode);
         }
 
-        if(upload == "true")
+        if(upload)
             uploadGist(target, upload_path, output_content, false);
         break;
     case "surge"_hash:
@@ -1383,7 +1395,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         {
             output_content = netchToSurge(nodes, base_content, dummy_ruleset, dummy_group, surge_ver, ext);
 
-            if(upload == "true")
+            if(upload)
                 uploadGist("surge" + version + "list", upload_path, output_content, true);
         }
         else
@@ -1396,7 +1408,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
             //base_content = fetchFile(ext_surge_base, proxy, cache_config);
             output_content = netchToSurge(nodes, base_content, rca, extra_group, surge_ver, ext);
 
-            if(upload == "true")
+            if(upload)
                 uploadGist("surge" + version, upload_path, output_content, true);
 
             if(write_managed_config && managed_config_prefix.size())
@@ -1415,7 +1427,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         }
         //base_content = fetchFile(ext_surfboard_base, proxy, cache_config);
         output_content = netchToSurge(nodes, base_content, rca, extra_group, -3, ext);
-        if(upload == "true")
+        if(upload)
             uploadGist("surfboard", upload_path, output_content, true);
 
         if(write_managed_config && managed_config_prefix.size())
@@ -1446,14 +1458,14 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         }
         */
 
-        if(upload == "true")
+        if(upload)
             uploadGist("mellow", upload_path, output_content, true);
         break;
     case "ss"_hash:
         //std::cerr<<"SS"<<std::endl;
         writeLog(0, "Generate target: SS", LOG_LEVEL_INFO);
         output_content = netchToSS(nodes, ext);
-        if(upload == "true")
+        if(upload)
             uploadGist("ss", upload_path, output_content, false);
         break;
     case "sssub"_hash:
@@ -1467,21 +1479,21 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         }
         //base_content = fetchFile(ext_sssub_base, proxy, cache_config);
         output_content = netchToSSSub(base_content, nodes, ext);
-        if(upload == "true")
+        if(upload)
             uploadGist("sssub", upload_path, output_content, false);
         break;
     case "ssr"_hash:
         //std::cerr<<"SSR"<<std::endl;
         writeLog(0, "Generate target: SSR", LOG_LEVEL_INFO);
         output_content = netchToSSR(nodes, ext);
-        if(upload == "true")
+        if(upload)
             uploadGist("ssr", upload_path, output_content, false);
         break;
     case "v2ray"_hash:
         //std::cerr<<"v2rayN"<<std::endl;
         writeLog(0, "Generate target: v2rayN", LOG_LEVEL_INFO);
         output_content = netchToVMess(nodes, ext);
-        if(upload == "true")
+        if(upload)
             uploadGist("v2ray", upload_path, output_content, false);
         break;
     case "quan"_hash:
@@ -1499,7 +1511,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
 
         output_content = netchToQuan(nodes, base_content, rca, extra_group, ext);
 
-        if(upload == "true")
+        if(upload)
             uploadGist("quan", upload_path, output_content, false);
         break;
     case "quanx"_hash:
@@ -1518,7 +1530,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
 
         output_content = netchToQuanX(nodes, base_content, rca, extra_group, ext);
 
-        if(upload == "true")
+        if(upload)
             uploadGist("quanx", upload_path, output_content, false);
         break;
     case "loon"_hash:
@@ -1536,21 +1548,21 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
 
         output_content = netchToLoon(nodes, base_content, rca, extra_group, ext);
 
-        if(upload == "true")
+        if(upload)
             uploadGist("loon", upload_path, output_content, false);
         break;
     case "ssd"_hash:
         //std::cerr<<"SSD"<<std::endl;
         writeLog(0, "Generate target: SSD", LOG_LEVEL_INFO);
         output_content = netchToSSD(nodes, group, subInfo, ext);
-        if(upload == "true")
+        if(upload)
             uploadGist("ssd", upload_path, output_content, false);
         break;
     case "trojan"_hash:
         //std::cerr<<"Trojan"<<std::endl;
         writeLog(0, "Generate target: Trojan", LOG_LEVEL_INFO);
         output_content = netchToTrojan(nodes, ext);
-        if(upload == "true")
+        if(upload)
             uploadGist("trojan", upload_path, output_content, false);
         break;
     default:

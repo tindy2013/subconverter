@@ -4,8 +4,12 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <algorithm>
+#include <cctype>
 
 #include <yaml-cpp/yaml.h>
+
+#include "string_hash.h"
 
 #ifdef _WIN32
 #include <unistd.h>
@@ -29,6 +33,85 @@ static const std::string base64_chars =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     "abcdefghijklmnopqrstuvwxyz"
     "0123456789+/";
+
+class tribool
+{
+private:
+
+    int _M_VALUE = -1;
+
+public:
+
+    tribool() { _M_VALUE = -1; }
+
+    tribool(const std::string &src) { set(src); }
+
+    tribool(const bool &src) { set(src); }
+
+    tribool(const int &src) { set(src); }
+
+    ~tribool() = default;
+
+    tribool& operator=(const tribool &src)
+    {
+        _M_VALUE = src._M_VALUE;
+        return *this;
+    }
+
+    tribool& operator=(const std::string &src)
+    {
+        set(src);
+        return *this;
+    }
+
+    operator bool() const { return _M_VALUE == 1; }
+
+    tribool& operator=(const bool &src)
+    {
+        _M_VALUE = src;
+        return *this;
+    }
+
+    bool is_undef() { return _M_VALUE == -1; }
+
+    bool get(const bool &def_value = false)
+    {
+        if(_M_VALUE == -1)
+            return def_value;
+        return _M_VALUE;
+    }
+
+    bool set(const bool &value)
+    {
+        _M_VALUE = value;
+        return _M_VALUE;
+    }
+
+    bool set(const int &value)
+    {
+        _M_VALUE = value != 0;
+        return _M_VALUE;
+    }
+
+    bool set(const std::string &str)
+    {
+        std::string temp = str;
+        std::transform(temp.begin(), temp.end(), temp.begin(), [](unsigned char c){ return std::tolower(c); });
+        switch(hash_(temp))
+        {
+        case "true"_hash:
+            _M_VALUE = 1;
+            break;
+        case "false"_hash:
+            _M_VALUE = 0;
+            break;
+        default:
+            _M_VALUE = -1;
+            break;
+        }
+        return _M_VALUE;
+    }
+};
 
 std::string UrlEncode(const std::string& str);
 std::string UrlDecode(const std::string& str);
