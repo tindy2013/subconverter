@@ -734,14 +734,14 @@ custom_proxy_group=🇯🇵 JP`select`沪日`日本`[]🇯🇵 日本延迟最�
 
   ```ini
   当设置 /clash=/sub?target=clash 时：
-  访问 127.0.0.1/clash?url=xxx 即 等同于访问 127.0.0.1/sub?target=clash&url=xxx
+  访问 127.0.0.1/clash?url=xxx 即跳转至 127.0.0.1/sub?target=clash&url=xxx
   ```
 
 - 精简外部配置路径
 
   ```ini
   当设置 /mysub=/getprofile?name=aaa&token=bbb 时：
-  访问 127.0.0.1/mysub 即 等同于访问 127.0.0.1/getprofile?name=aaa&token=bbb
+  访问 127.0.0.1/mysub 即跳转至 127.0.0.1/getprofile?name=aaa&token=bbb
   ```
 
 </details>
