@@ -1143,6 +1143,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     std::string ext_quan_base = quan_rule_base, ext_quanx_base = quanx_rule_base, ext_loon_base = loon_rule_base, ext_sssub_base = sssub_rule_base;
 
     //validate urls
+    add_insert.define(true);
     if(!url.size() && (!api_mode || authorized))
         url = default_url;
     if(insert_url.size() && add_insert)
@@ -1191,10 +1192,10 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     }
     ext.append_proxy_type = append_type.get(append_proxy_type);
 
-    ext.tfo = tfo.get(tfo_flag);
-    ext.udp = udp.get(udp_flag);
+    ext.tfo = tfo;
+    ext.udp = udp;
+    ext.skip_cert_verify = scv;
     ext.sort_flag = sort_flag.get(do_sort);
-    ext.skip_cert_verify = scv.get(scv_flag);
     ext.filter_deprecated = fdn.get(filter_deprecated);
     ext.clash_new_field_name = clash_new_field.get(clash_use_new_field_name);
     ext.clash_script = clash_script.get();
@@ -1609,7 +1610,7 @@ std::string simpleToClashR(RESPONSE_CALLBACK_ARGS)
         refreshRulesets(rulesets, ruleset_content_array);
     rca = ruleset_content_array;
 
-    extra_settings ext = {true, overwrite_original_rules, safe_get_renames(), safe_get_emojis(), add_emoji, remove_old_emoji, append_proxy_type, udp_flag, tfo_flag, false, do_sort, scv_flag, filter_deprecated, clash_use_new_field_name, "", "", ""};
+    extra_settings ext = {true, overwrite_original_rules, safe_get_renames(), safe_get_emojis(), add_emoji, remove_old_emoji, append_proxy_type, false, do_sort, filter_deprecated, clash_use_new_field_name, false, "", "", ""};
 
     std::string proxy = parseProxy(proxy_subscription);
 
@@ -1787,7 +1788,7 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
         return "No nodes were found!";
     }
 
-    extra_settings ext = {true, true, dummy_str_array, dummy_str_array, false, false, false, udp_flag, tfo_flag, false, do_sort, scv_flag, filter_deprecated, clash_use_new_field_name, "", "", ""};
+    extra_settings ext = {true, true, dummy_str_array, dummy_str_array, false, false, false, false, do_sort, filter_deprecated, clash_use_new_field_name, false, "", "", ""};
 
     netchToClash(nodes, clash, dummy_str_array, false, ext);
 

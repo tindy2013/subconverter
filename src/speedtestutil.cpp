@@ -43,6 +43,7 @@ template <typename T> T safe_as (const YAML::Node& node)
 void explodeVmess(std::string vmess, const std::string &custom_port, nodeInfo &node)
 {
     std::string version, ps, add, port, type, id, aid, net, path, host, tls;
+    tribool udp, tfo, scv;
     Document jsondata;
     std::vector<std::string> vArray;
     if(regMatch(vmess, "vmess://(.*?)\\?(.*)")) //shadowrocket style link
@@ -104,7 +105,7 @@ void explodeVmess(std::string vmess, const std::string &custom_port, nodeInfo &n
     node.remarks = ps;
     node.server = add;
     node.port = to_int(port, 0);
-    node.proxyStr = vmessConstruct(add, port, type, id, aid, net, "auto", path, host, "", tls);
+    node.proxyStr = vmessConstruct(add, port, type, id, aid, net, "auto", path, host, "", tls, udp, tfo, scv);
 }
 
 void explodeVmessConf(std::string content, const std::string &custom_port, bool libev, std::vector<nodeInfo> &nodes)
@@ -113,6 +114,7 @@ void explodeVmessConf(std::string content, const std::string &custom_port, bool 
     Document json;
     rapidjson::Value nodejson, settings;
     std::string group, ps, add, port, type, id, aid, net, path, host, edge, tls, cipher, subid;
+    tribool udp, tfo, scv;
     int configType, index = nodes.size();
     std::map<std::string, std::string> subdata;
     std::map<std::string, std::string>::iterator iter;
@@ -177,7 +179,7 @@ void explodeVmessConf(std::string content, const std::string &custom_port, bool 
                 }
             }
             node.linkType = SPEEDTEST_MESSAGE_FOUNDVMESS;
-            node.proxyStr = vmessConstruct(add, port, type, id, aid, net, cipher, path, host, edge, tls);
+            node.proxyStr = vmessConstruct(add, port, type, id, aid, net, cipher, path, host, edge, tls, udp, tfo, scv);
             node.group = V2RAY_DEFAULT_GROUP;
             node.remarks = add + ":" + port;
             node.server = add;
@@ -213,6 +215,7 @@ void explodeVmessConf(std::string content, const std::string &custom_port, bool 
         if(ps.empty())
             ps = add + ":" + port;
 
+        scv = GetMember(json["vmess"][i], "allowInsecure");
         json["vmess"][i]["configType"] >> configType;
         switch(configType)
         {
@@ -227,19 +230,19 @@ void explodeVmessConf(std::string content, const std::string &custom_port, bool 
             json["vmess"][i]["security"] >> cipher;
             group = V2RAY_DEFAULT_GROUP;
             node.linkType = SPEEDTEST_MESSAGE_FOUNDVMESS;
-            node.proxyStr = vmessConstruct(add, port, type, id, aid, net, cipher, path, host, "", tls);
+            node.proxyStr = vmessConstruct(add, port, type, id, aid, net, cipher, path, host, "", tls, udp, tfo, scv);
             break;
         case 3: //ss config
             json["vmess"][i]["id"] >> id;
             json["vmess"][i]["security"] >> cipher;
             group = SS_DEFAULT_GROUP;
             node.linkType = SPEEDTEST_MESSAGE_FOUNDSS;
-            node.proxyStr = ssConstruct(add, port, id, cipher, "", "", ps, libev);
+            node.proxyStr = ssConstruct(add, port, id, cipher, "", "", ps, libev, udp, tfo, scv);
             break;
         case 4: //socks config
             group = SOCKS_DEFAULT_GROUP;
             node.linkType = SPEEDTEST_MESSAGE_FOUNDSOCKS;
-            node.proxyStr = socksConstruct(ps, add, port, "", "");
+            node.proxyStr = socksConstruct(ps, add, port, "", "", udp, tfo, scv);
             break;
         default:
             continue;
@@ -316,7 +319,7 @@ void explodeSSD(std::string link, bool libev, const std::string &custom_port, st
 {
     Document jsondata;
     nodeInfo node;
-    unsigned int index = nodes.size(), listType = 0, listCount = 0;;
+    unsigned int index = nodes.size(), listType = 0, listCount = 0;
     std::string group, port, method, password, server, remarks;
     std::string plugin, pluginopts;
     std::map<unsigned int, std::string> node_map;
@@ -839,6 +842,7 @@ void explodeNetch(std::string netch, bool ss_libev, bool ssr_libev, const std::s
 {
     Document json;
     std::string type, remark, address, port, username, password, method, plugin, pluginopts, protocol, protoparam, obfs, obfsparam, id, aid, transprot, faketype, host, edge, path, tls;
+    tribool udp, tfo, scv;
     netch = urlsafe_base64_decode(netch.substr(8));
 
     json.Parse(netch.data());
@@ -847,6 +851,9 @@ void explodeNetch(std::string netch, bool ss_libev, bool ssr_libev, const std::s
     json["Type"] >> type;
     json["Remark"] >> remark;
     json["Hostname"] >> address;
+    udp = GetMember(json, "EnableUDP");
+    tfo = GetMember(json, "EnableTFO");
+    scv = GetMember(json, "AllowInsecure");
     port = custom_port.size() ? custom_port : GetMember(json, "Port");
     method = GetMember(json, "EncryptMethod");
     password = GetMember(json, "Password");
@@ -859,7 +866,7 @@ void explodeNetch(std::string netch, bool ss_libev, bool ssr_libev, const std::s
         pluginopts = GetMember(json, "PluginOption");
         node.group = SS_DEFAULT_GROUP;
         node.linkType = SPEEDTEST_MESSAGE_FOUNDSS;
-        node.proxyStr = ssConstruct(address, port, password, method, plugin, pluginopts, remark, ss_libev);
+        node.proxyStr = ssConstruct(address, port, password, method, plugin, pluginopts, remark, ss_libev, udp, tfo, scv);
         break;
     case "SSR"_hash:
         protocol = GetMember(json, "Protocol");
@@ -870,7 +877,7 @@ void explodeNetch(std::string netch, bool ss_libev, bool ssr_libev, const std::s
             pluginopts = GetMember(json, "PluginOption");
             node.group = SS_DEFAULT_GROUP;
             node.linkType = SPEEDTEST_MESSAGE_FOUNDSS;
-            node.proxyStr = ssConstruct(address, port, password, method, plugin, pluginopts, remark, ss_libev);
+            node.proxyStr = ssConstruct(address, port, password, method, plugin, pluginopts, remark, ss_libev, udp, tfo, scv);
         }
         else
         {
@@ -878,7 +885,7 @@ void explodeNetch(std::string netch, bool ss_libev, bool ssr_libev, const std::s
             obfsparam = GetMember(json, "OBFSParam");
             node.group = SSR_DEFAULT_GROUP;
             node.linkType = SPEEDTEST_MESSAGE_FOUNDSSR;
-            node.proxyStr = ssrConstruct(SSR_DEFAULT_GROUP, remark, base64_encode(remark), address, port, protocol, method, obfs, password, obfsparam, protoparam, ssr_libev);
+            node.proxyStr = ssrConstruct(SSR_DEFAULT_GROUP, remark, base64_encode(remark), address, port, protocol, method, obfs, password, obfsparam, protoparam, ssr_libev, udp, tfo, scv);
         }
         break;
     case "VMess"_hash:
@@ -889,16 +896,37 @@ void explodeNetch(std::string netch, bool ss_libev, bool ssr_libev, const std::s
         host = GetMember(json, "Host");
         path = GetMember(json, "Path");
         edge = GetMember(json, "Edge");
-        tls = GetMember(json, "TLSSecure") == "true" ? "tls" : "";
+        tls = GetMember(json, "TLSSecure");
         node.linkType = SPEEDTEST_MESSAGE_FOUNDVMESS;
         node.group = V2RAY_DEFAULT_GROUP;
-        node.proxyStr = vmessConstruct(address, port, faketype, id, aid, transprot, method, path, host, edge, tls);
+        node.proxyStr = vmessConstruct(address, port, faketype, id, aid, transprot, method, path, host, edge, tls, udp, tfo, scv);
         break;
     case "Socks5"_hash:
         username = GetMember(json, "Username");
         node.linkType = SPEEDTEST_MESSAGE_FOUNDSOCKS;
         node.group = SOCKS_DEFAULT_GROUP;
-        node.proxyStr = socksConstruct(remark, address, port, username, password);
+        node.proxyStr = socksConstruct(remark, address, port, username, password, udp, tfo, scv);
+        break;
+    case "HTTP"_hash:
+    case "HTTPS"_hash:
+        node.linkType = SPEEDTEST_MESSAGE_FOUNDHTTP;
+        node.group = HTTP_DEFAULT_GROUP;
+        node.proxyStr = httpConstruct(remark, address, port, username, password, type == "HTTPS", scv);
+        break;
+    case "Trojan"_hash:
+        host = GetMember(json, "Host");
+        tls = GetMember(json, "TLSSecure");
+        node.linkType = SPEEDTEST_MESSAGE_FOUNDTROJAN;
+        node.group = TROJAN_DEFAULT_GROUP;
+        node.proxyStr = trojanConstruct(remark, address, port, username, password, tls == "true", udp, tfo, scv);
+        break;
+    case "Snell"_hash:
+        obfs = GetMember(json, "OBFS");
+        host = GetMember(json, "Host");
+        node.linkType = SPEEDTEST_MESSAGE_FOUNDSNELL;
+        node.group = SNELL_DEFAULT_GROUP;
+        node.proxyStr = snellConstruct(remark, address, port, password, obfs, host, udp, tfo, scv);
+        break;
     default:
         return;
     }
@@ -921,6 +949,7 @@ void explodeClash(Node yamlnode, const std::string &custom_port, std::vector<nod
         std::string plugin, pluginopts, pluginopts_mode, pluginopts_host, pluginopts_mux; //ss
         std::string protocol, protoparam, obfs, obfsparam; //ssr
         std::string user; //socks
+        tribool udp, tfo, scv;
 
         singleproxy = yamlnode[section][i];
         singleproxy["type"] >> proxytype;
@@ -929,6 +958,8 @@ void explodeClash(Node yamlnode, const std::string &custom_port, std::vector<nod
         port = custom_port.empty() ? safe_as<std::string>(singleproxy["port"]) : custom_port;
         if(port.empty())
             continue;
+        udp = safe_as<std::string>(singleproxy["udp"]);
+        scv = safe_as<std::string>(singleproxy["skip-cert-verify"]);
         switch(hash_(proxytype))
         {
         case "vmess"_hash:
@@ -953,7 +984,7 @@ void explodeClash(Node yamlnode, const std::string &custom_port, std::vector<nod
 
 
             node.linkType = SPEEDTEST_MESSAGE_FOUNDVMESS;
-            node.proxyStr = vmessConstruct(server, port, type, id, aid, net, cipher, path, host, edge, tls);
+            node.proxyStr = vmessConstruct(server, port, type, id, aid, net, cipher, path, host, edge, tls, udp, tfo, scv);
             break;
         case "ss"_hash:
             group = SS_DEFAULT_GROUP;
@@ -1037,7 +1068,7 @@ void explodeClash(Node yamlnode, const std::string &custom_port, std::vector<nod
             }
 
             node.linkType = SPEEDTEST_MESSAGE_FOUNDSS;
-            node.proxyStr = ssConstruct(server, port, password, cipher, plugin, pluginopts, ps, ss_libev);
+            node.proxyStr = ssConstruct(server, port, password, cipher, plugin, pluginopts, ps, ss_libev, udp, tfo, scv);
             break;
         case "socks"_hash:
             group = SOCKS_DEFAULT_GROUP;
@@ -1059,7 +1090,7 @@ void explodeClash(Node yamlnode, const std::string &custom_port, std::vector<nod
             singleproxy["obfsparam"] >> obfsparam;
 
             node.linkType = SPEEDTEST_MESSAGE_FOUNDSSR;
-            node.proxyStr = ssrConstruct(group, ps, base64_encode(ps), server, port, protocol, cipher, obfs, password, obfsparam, protoparam, ssr_libev);
+            node.proxyStr = ssrConstruct(group, ps, base64_encode(ps), server, port, protocol, cipher, obfs, password, obfsparam, protoparam, ssr_libev, udp, tfo, scv);
             break;
         case "http"_hash:
             group = HTTP_DEFAULT_GROUP;
@@ -1069,7 +1100,7 @@ void explodeClash(Node yamlnode, const std::string &custom_port, std::vector<nod
             singleproxy["tls"] >> tls;
 
             node.linkType = SPEEDTEST_MESSAGE_FOUNDHTTP;
-            node.proxyStr = httpConstruct(ps, server, port, user, password, tls == "true");
+            node.proxyStr = httpConstruct(ps, server, port, user, password, tls == "true", scv);
             break;
         case "trojan"_hash:
             group = TROJAN_DEFAULT_GROUP;
@@ -1077,7 +1108,7 @@ void explodeClash(Node yamlnode, const std::string &custom_port, std::vector<nod
             singleproxy["sni"] >> host;
 
             node.linkType = SPEEDTEST_MESSAGE_FOUNDTROJAN;
-            node.proxyStr = trojanConstruct(ps, server, port, password, host, true);
+            node.proxyStr = trojanConstruct(ps, server, port, password, host, true, udp, tfo, scv);
             break;
         case "snell"_hash:
             group = SNELL_DEFAULT_GROUP;
@@ -1089,7 +1120,7 @@ void explodeClash(Node yamlnode, const std::string &custom_port, std::vector<nod
             }
 
             node.linkType = SPEEDTEST_MESSAGE_FOUNDSNELL;
-            node.proxyStr = snellConstruct(ps, server, port, password, obfs, host);
+            node.proxyStr = snellConstruct(ps, server, port, password, obfs, host, udp, tfo, scv);
             break;
         default:
             continue;
@@ -1246,6 +1277,7 @@ bool explodeSurge(std::string surge, const std::string &custom_port, std::vector
         std::string protocol, protoparam; //ssr
         std::string itemName, itemVal;
         std::vector<std::string> configs, vArray, headers, header;
+        tribool udp, tfo, scv;
 
         remarks = regReplace(x.second, proxystr, "$1");
         configs = split(regReplace(x.second, proxystr, "$2"), ",");
@@ -1289,6 +1321,8 @@ bool explodeSurge(std::string surge, const std::string &custom_port, std::vector
                             pluginopts_mode = itemVal;
                             break;
                         case "obfs-host"_hash: pluginopts_host = itemVal; break;
+                        case "udp-relay"_hash: udp = itemVal; break;
+                        case "tfo"_hash: tfo = itemVal; break;
                         default: continue;
                     }
                 }
@@ -1300,7 +1334,7 @@ bool explodeSurge(std::string surge, const std::string &custom_port, std::vector
 
                 node.linkType = SPEEDTEST_MESSAGE_FOUNDSS;
                 node.group = SS_DEFAULT_GROUP;
-                node.proxyStr = ssConstruct(server, port, password, method, plugin, pluginopts, remarks, libev);
+                node.proxyStr = ssConstruct(server, port, password, method, plugin, pluginopts, remarks, libev, udp, tfo, scv);
             }
             //else
             //    continue;
@@ -1325,6 +1359,8 @@ bool explodeSurge(std::string surge, const std::string &custom_port, std::vector
                         pluginopts_mode = itemVal;
                         break;
                     case "obfs-host"_hash: pluginopts_host = itemVal; break;
+                    case "udp-relay"_hash: udp = itemVal; break;
+                    case "tfo"_hash: tfo = itemVal; break;
                     default: continue;
                 }
             }
@@ -1336,7 +1372,7 @@ bool explodeSurge(std::string surge, const std::string &custom_port, std::vector
 
             node.linkType = SPEEDTEST_MESSAGE_FOUNDSS;
             node.group = SS_DEFAULT_GROUP;
-            node.proxyStr = ssConstruct(server, port, password, method, plugin, pluginopts, remarks, libev);
+            node.proxyStr = ssConstruct(server, port, password, method, plugin, pluginopts, remarks, libev, udp, tfo, scv);
             break;
         case "socks5"_hash: //surge 3 style socks5 proxy
             node.linkType = SPEEDTEST_MESSAGE_FOUNDSOCKS;
@@ -1345,10 +1381,25 @@ bool explodeSurge(std::string surge, const std::string &custom_port, std::vector
             port = custom_port.empty() ? trim(configs[2]) : custom_port;
             if(configs.size() >= 5)
             {
-                username = trim(configs[2]);
-                password = trim(configs[3]);
+                username = trim(configs[3]);
+                password = trim(configs[4]);
             }
-            node.proxyStr = socksConstruct(remarks, server, port, username, password);
+            for(i = 5; i < configs.size(); i++)
+            {
+                vArray = split(configs[i], "=");
+                if(vArray.size() < 2)
+                    continue;
+                itemName = trim(vArray[0]);
+                itemVal = trim(vArray[1]);
+                switch(hash_(itemName))
+                {
+                    case "udp-relay"_hash: udp = itemVal; break;
+                    case "tfo"_hash: tfo = itemVal; break;
+                    case "skip-cert-verify"_hash: scv = itemVal; break;
+                    default: continue;
+                }
+            }
+            node.proxyStr = socksConstruct(remarks, server, port, username, password, udp, tfo, scv);
             break;
         case "vmess"_hash: //surge 4 style vmess proxy
             server = trim(configs[1]);
@@ -1383,6 +1434,9 @@ bool explodeSurge(std::string surge, const std::string &custom_port, std::vector
                                 edge = trim_quote(header[1]);
                         }
                         break;
+                    case "udp-relay"_hash: udp = itemVal; break;
+                    case "tfo"_hash: tfo = itemVal; break;
+                    case "skip-cert-verify"_hash: scv = itemVal; break;
                     default: continue;
                 }
             }
@@ -1391,7 +1445,7 @@ bool explodeSurge(std::string surge, const std::string &custom_port, std::vector
 
             node.linkType = SPEEDTEST_MESSAGE_FOUNDVMESS;
             node.group = V2RAY_DEFAULT_GROUP;
-            node.proxyStr = vmessConstruct(server, port, "", id, "0", net, method, path, host, edge, tls);
+            node.proxyStr = vmessConstruct(server, port, "", id, "0", net, method, path, host, edge, tls, udp, tfo, scv);
             break;
         case "http"_hash: //http proxy
             node.linkType = SPEEDTEST_MESSAGE_FOUNDHTTP;
@@ -1403,7 +1457,20 @@ bool explodeSurge(std::string surge, const std::string &custom_port, std::vector
                 username = trim(configs[2]);
                 password = trim(configs[3]);
             }
-            node.proxyStr = httpConstruct(remarks, server, port, username, password);
+            for(i = 5; i < configs.size(); i++)
+            {
+                vArray = split(configs[i], "=");
+                if(vArray.size() < 2)
+                    continue;
+                itemName = trim(vArray[0]);
+                itemVal = trim(vArray[1]);
+                switch(hash_(itemName))
+                {
+                    case "skip-cert-verify"_hash: scv = itemVal; break;
+                    default: continue;
+                }
+            }
+            node.proxyStr = httpConstruct(remarks, server, port, username, password, false, scv);
             break;
         case "trojan"_hash: // surge 4 style trojan proxy
             node.linkType = SPEEDTEST_MESSAGE_FOUNDTROJAN;
@@ -1422,13 +1489,16 @@ bool explodeSurge(std::string surge, const std::string &custom_port, std::vector
                 {
                     case "password"_hash: password = itemVal; break;
                     case "sni"_hash: host = itemVal; break;
+                    case "udp-relay"_hash: udp = itemVal; break;
+                    case "tfo"_hash: tfo = itemVal; break;
+                    case "skip-cert-verify"_hash: scv = itemVal; break;
                     default: continue;
                 }
             }
             if(host.empty() && !isIPv4(server) && !isIPv6(server))
                 host = server;
 
-            node.proxyStr = trojanConstruct(remarks, server, port, password, host, true);
+            node.proxyStr = trojanConstruct(remarks, server, port, password, host, true, udp, tfo, scv);
             break;
         case "snell"_hash:
             node.linkType = SPEEDTEST_MESSAGE_FOUNDSNELL;
@@ -1449,13 +1519,16 @@ bool explodeSurge(std::string surge, const std::string &custom_port, std::vector
                     case "psk"_hash: password = itemVal; break;
                     case "obfs"_hash: plugin = itemVal; break;
                     case "obfs-host"_hash: host = itemVal; break;
+                    case "udp-relay"_hash: udp = itemVal; break;
+                    case "tfo"_hash: tfo = itemVal; break;
+                    case "skip-cert-verify"_hash: scv = itemVal; break;
                     default: continue;
                 }
             }
             if(host.empty() && !isIPv4(server) && !isIPv6(server))
                 host = server;
 
-            node.proxyStr = snellConstruct(remarks, server, port, password, plugin, host);
+            node.proxyStr = snellConstruct(remarks, server, port, password, plugin, host, udp, tfo, scv);
             break;
         default:
             switch(hash_(remarks))
@@ -1483,6 +1556,8 @@ bool explodeSurge(std::string surge, const std::string &custom_port, std::vector
                             pluginopts_mode = itemVal;
                             break;
                         case "obfs-host"_hash: pluginopts_host = itemVal; break;
+                        case "udp-relay"_hash: udp = itemVal; break;
+                        case "fast-open"_hash: tfo = itemVal; break;
                         default: continue;
                     }
                 }
@@ -1499,13 +1574,13 @@ bool explodeSurge(std::string surge, const std::string &custom_port, std::vector
                 {
                     node.linkType = SPEEDTEST_MESSAGE_FOUNDSSR;
                     node.group = SSR_DEFAULT_GROUP;
-                    node.proxyStr = ssrConstruct(node.group, remarks, base64_encode(remarks), server, port, protocol, method, pluginopts_mode, password, pluginopts_host, protoparam, libev);
+                    node.proxyStr = ssrConstruct(node.group, remarks, base64_encode(remarks), server, port, protocol, method, pluginopts_mode, password, pluginopts_host, protoparam, libev, udp, tfo, scv);
                 }
                 else
                 {
                     node.linkType = SPEEDTEST_MESSAGE_FOUNDSS;
                     node.group = SS_DEFAULT_GROUP;
-                    node.proxyStr = ssConstruct(server, port, password, method, plugin, pluginopts, remarks, libev);
+                    node.proxyStr = ssConstruct(server, port, password, method, plugin, pluginopts, remarks, libev, udp, tfo, scv);
                 }
                 break;
             case "vmess"_hash: //quantumult x style vmess link
@@ -1535,6 +1610,8 @@ bool explodeSurge(std::string surge, const std::string &custom_port, std::vector
                         case "obfs-host"_hash: host = itemVal; break;
                         case "obfs-uri"_hash: path = itemVal; break;
                         case "over-tls"_hash: tls = itemVal == "true" ? "tls" : ""; break;
+                        case "udp-relay"_hash: udp = itemVal; break;
+                        case "fast-open"_hash: tfo = itemVal; break;
                         default: continue;
                     }
                 }
@@ -1546,7 +1623,7 @@ bool explodeSurge(std::string surge, const std::string &custom_port, std::vector
 
                 node.linkType = SPEEDTEST_MESSAGE_FOUNDVMESS;
                 node.group = V2RAY_DEFAULT_GROUP;
-                node.proxyStr = vmessConstruct(server, port, "", id, "0", net, method, path, host, "", tls);
+                node.proxyStr = vmessConstruct(server, port, "", id, "0", net, method, path, host, "", tls, udp, tfo, scv);
                 break;
             case "trojan"_hash: //quantumult x style trojan link
                 server = trim(configs[0].substr(0, configs[0].rfind(":")));
@@ -1565,6 +1642,9 @@ bool explodeSurge(std::string surge, const std::string &custom_port, std::vector
                         case "tag"_hash: remarks = itemVal; break;
                         case "over-tls"_hash: tls = itemVal; break;
                         case "tls-host"_hash: host = itemVal; break;
+                        case "udp-relay"_hash: udp = itemVal; break;
+                        case "fast-open"_hash: tfo = itemVal; break;
+                        case "tls-verification"_hash: scv = itemVal == "false"; break;
                         default: continue;
                     }
                 }
@@ -1576,7 +1656,7 @@ bool explodeSurge(std::string surge, const std::string &custom_port, std::vector
 
                 node.linkType = SPEEDTEST_MESSAGE_FOUNDTROJAN;
                 node.group = TROJAN_DEFAULT_GROUP;
-                node.proxyStr = trojanConstruct(remarks, server, port, password, host, tls == "true");
+                node.proxyStr = trojanConstruct(remarks, server, port, password, host, tls == "true", udp, tfo, scv);
                 break;
             case "http"_hash: //quantumult x style http links
                 server = trim(configs[0].substr(0, configs[0].rfind(":")));
@@ -1595,6 +1675,7 @@ bool explodeSurge(std::string surge, const std::string &custom_port, std::vector
                         case "password"_hash: password = itemVal; break;
                         case "tag"_hash: remarks = itemVal; break;
                         case "over-tls"_hash: tls = itemVal; break;
+                        case "tls-verification"_hash: scv = itemVal == "false"; break;
                         default: continue;
                     }
                 }
@@ -1611,7 +1692,7 @@ bool explodeSurge(std::string surge, const std::string &custom_port, std::vector
 
                 node.linkType = SPEEDTEST_MESSAGE_FOUNDHTTP;
                 node.group = HTTP_DEFAULT_GROUP;
-                node.proxyStr = httpConstruct(remarks, server, port, username, password, tls == "true");
+                node.proxyStr = httpConstruct(remarks, server, port, username, password, tls == "true", scv);
                 break;
             default:
                 continue;

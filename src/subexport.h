@@ -25,17 +25,17 @@ struct extra_settings
     bool add_emoji = false;
     bool remove_emoji = false;
     bool append_proxy_type = false;
-    bool udp = false;
-    bool tfo = false;
     bool nodelist = false;
     bool sort_flag = false;
-    bool skip_cert_verify = false;
     bool filter_deprecated = false;
     bool clash_new_field_name = false;
     bool clash_script = false;
     std::string surge_ssr_path;
     std::string managed_config_prefix;
     std::string quanx_dev_id;
+    tribool udp = false;
+    tribool tfo = false;
+    tribool skip_cert_verify = false;
 };
 
 void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset_content_array, bool overwrite_original_rules, bool new_field_name);

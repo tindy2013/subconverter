@@ -4,8 +4,6 @@
 #include <string>
 #include <vector>
 #include <sstream>
-#include <algorithm>
-#include <cctype>
 
 #include <yaml-cpp/yaml.h>
 
@@ -42,13 +40,11 @@ private:
 
 public:
 
-    tribool() { _M_VALUE = -1; }
+    tribool() { clear(); }
 
-    tribool(const std::string &src) { set(src); }
+    template <typename T> tribool(const T &value) { set(value); }
 
-    tribool(const bool &src) { set(src); }
-
-    tribool(const int &src) { set(src); }
+    tribool(const tribool &value) { *this = value; }
 
     ~tribool() = default;
 
@@ -58,21 +54,21 @@ public:
         return *this;
     }
 
-    tribool& operator=(const std::string &src)
+    template <typename T> tribool& operator=(const T &value)
     {
-        set(src);
+        set(value);
         return *this;
     }
 
     operator bool() const { return _M_VALUE == 1; }
 
-    tribool& operator=(const bool &src)
-    {
-        _M_VALUE = src;
-        return *this;
-    }
-
     bool is_undef() { return _M_VALUE == -1; }
+
+    template <typename T> void define(const T &value)
+    {
+        if(_M_VALUE == -1)
+            set(value);
+    }
 
     bool get(const bool &def_value = false)
     {
@@ -81,23 +77,15 @@ public:
         return _M_VALUE;
     }
 
-    bool set(const bool &value)
+    template <typename T> bool set(const T &value)
     {
         _M_VALUE = value;
         return _M_VALUE;
     }
 
-    bool set(const int &value)
-    {
-        _M_VALUE = value != 0;
-        return _M_VALUE;
-    }
-
     bool set(const std::string &str)
     {
-        std::string temp = str;
-        std::transform(temp.begin(), temp.end(), temp.begin(), [](unsigned char c){ return std::tolower(c); });
-        switch(hash_(temp))
+        switch(hash_(str))
         {
         case "true"_hash:
             _M_VALUE = 1;
@@ -111,6 +99,8 @@ public:
         }
         return _M_VALUE;
     }
+
+    void clear() { _M_VALUE = -1; }
 };
 
 std::string UrlEncode(const std::string& str);

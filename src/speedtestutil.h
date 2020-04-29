@@ -7,13 +7,13 @@
 #include "misc.h"
 #include "nodeinfo.h"
 
-std::string vmessConstruct(std::string add, std::string port, std::string type, std::string id, std::string aid, std::string net, std::string cipher, std::string path, std::string host, std::string edge, std::string tls);
-std::string ssrConstruct(std::string group, std::string remarks, std::string remarks_base64, std::string server, std::string port, std::string protocol, std::string method, std::string obfs, std::string password, std::string obfsparam, std::string protoparam, bool libev);
-std::string ssConstruct(std::string server, std::string port, std::string password, std::string method, std::string plugin, std::string pluginopts, std::string remarks, bool libev);
-std::string socksConstruct(std::string remarks, std::string server, std::string port, std::string username, std::string password);
-std::string httpConstruct(std::string remarks, std::string server, std::string port, std::string username, std::string password, bool tls = false);
-std::string trojanConstruct(std::string remarks, std::string server, std::string port, std::string password, std::string host, bool tlssecure);
-std::string snellConstruct(std::string remarks, std::string server, std::string port, std::string password, std::string obfs, std::string host);
+std::string vmessConstruct(std::string add, std::string port, std::string type, std::string id, std::string aid, std::string net, std::string cipher, std::string path, std::string host, std::string edge, std::string tls, tribool udp = tribool(), tribool tfo = tribool(), tribool scv = tribool());
+std::string ssrConstruct(std::string group, std::string remarks, std::string remarks_base64, std::string server, std::string port, std::string protocol, std::string method, std::string obfs, std::string password, std::string obfsparam, std::string protoparam, bool libev, tribool udp = tribool(), tribool tfo = tribool(), tribool scv = tribool());
+std::string ssConstruct(std::string server, std::string port, std::string password, std::string method, std::string plugin, std::string pluginopts, std::string remarks, bool libev, tribool udp = tribool(), tribool tfo = tribool(), tribool scv = tribool());
+std::string socksConstruct(std::string remarks, std::string server, std::string port, std::string username, std::string password, tribool udp = tribool(), tribool tfo = tribool(), tribool scv = tribool());
+std::string httpConstruct(std::string remarks, std::string server, std::string port, std::string username, std::string password, bool tls, tribool scv = tribool());
+std::string trojanConstruct(std::string remarks, std::string server, std::string port, std::string password, std::string host, bool tlssecure, tribool udp = tribool(), tribool tfo = tribool(), tribool scv = tribool());
+std::string snellConstruct(std::string remarks, std::string server, std::string port, std::string password, std::string obfs, std::string host, tribool udp = tribool(), tribool tfo = tribool(), tribool scv = tribool());
 void explodeVmess(std::string vmess, const std::string &custom_port, nodeInfo &node);
 void explodeSSR(std::string ssr, bool ss_libev, bool libev, const std::string &custom_port, nodeInfo &node);
 void explodeSS(std::string ss, bool libev, const std::string &custom_port, nodeInfo &node);
