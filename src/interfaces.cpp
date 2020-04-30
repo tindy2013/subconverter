@@ -1874,6 +1874,8 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
 std::string getProfile(RESPONSE_CALLBACK_ARGS)
 {
     std::string name = UrlDecode(getUrlArg(argument, "name")), token = UrlDecode(getUrlArg(argument, "token"));
+    string_array profiles = split(name, "|");
+    name = profiles[0];
     if(token.empty() || name.empty())
     {
         *status_code = 403;
@@ -1922,6 +1924,40 @@ std::string getProfile(RESPONSE_CALLBACK_ARGS)
             *status_code = 403;
             return "Forbidden";
         }
+    }
+    /// check if more than one profile is provided
+    if(profiles.size() > 1)
+    {
+        writeLog(0, "Multiple profiles are provided. Trying to combine profiles...", LOG_TYPE_INFO);
+        std::string all_urls, url;
+        auto iter = contents.find("url");
+        if(iter != contents.end())
+            all_urls = iter->second;
+        for(size_t i = 1; i < profiles.size(); i++)
+        {
+            name = profiles[i];
+            if(!fileExist(name))
+            {
+                writeLog(0, "Ignoring non-exist profile '" + name + "'...", LOG_LEVEL_WARNING);
+                continue;
+            }
+            if(ini.ParseFile(name) != INIREADER_EXCEPTION_NONE && !ini.SectionExist("Profile"))
+            {
+                writeLog(0, "Ignoring broken profile '" + name + "'...", LOG_LEVEL_WARNING);
+                continue;
+            }
+            url = ini.Get("Profile", "url");
+            if(url.size())
+            {
+                all_urls += "|" + url;
+                writeLog(0, "Profile url from '" + name + "' added.", LOG_LEVEL_INFO);
+            }
+            else
+            {
+                writeLog(0, "Profile '" + name + "' does not have url key. Skipping...", LOG_LEVEL_INFO);
+            }
+        }
+        iter->second = all_urls;
     }
 
     contents.emplace("token", token);
