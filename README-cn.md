@@ -11,6 +11,17 @@
 
 ## 新增内容
 
+2020/04/29
+
+- 新增 [配置文件](#配置文件) 指定默认外部配置文件
+- 新增 [配置文件](#配置文件) 中 `[aliases]` 参数的描述
+- 新增 [模板功能](#模板功能) 用于直接渲染的 `/render` 接口的描述
+- 修改 [支持类型](#支持类型) 中类 TG 类型节点的描述
+- 调整 模板介绍 为 [模板功能](#模板功能)
+
+<details>
+<summary><b>更新历史</b></summary>
+
 2020/04/04
 
 - 新增 [模板介绍](#模板介绍) 用于对所引用的 `base` 基础模板进行高度个性化自定义
@@ -25,6 +36,8 @@
 2020/03/02
 
 - 新增 [进阶链接](#进阶链接) 中关于 `append_type` `append_info` `expand` `dev_id` `interval` `strict` 等参数的描述
+
+</details>
 
 ---
 
@@ -41,7 +54,7 @@
   - [配置档案](#配置档案)
   - [配置文件](#配置文件)
   - [外部配置](#外部配置)
-  - [模板介绍](#模板介绍)
+  - [模板功能](#模板功能)
 - [特别用法](#特别用法)
   - [本地生成](#本地生成)
   - [自动上传](#自动上传)
@@ -72,11 +85,11 @@
 
 1. Shadowrocket 用户可以使用 `ss`、`ssr` 以及 `v2ray` 参数
 
-2. 类 TG 代理的 HTTP/Socks 链接 由于没有命名设定，所以可以在后方插入`&remark=`进行命名，例如
+2. 类 TG 代理的 HTTP/Socks 链接由于没有命名设定，所以可以在后方插入`&remarks=`进行命名，同时也可以插入 `&group=` 设置组别名称，以上两个参数需要经过 [URLEncode](https://www.urlencoder.org/) 处理，例如
 
-   - tg://http?server=1.2.3.4&port=233&user=user&pass=pass&remark=Example
+   - tg://http?server=1.2.3.4&port=233&user=user&pass=pass&remarks=Example&group=xxx
 
-   - https://t.me/http?server=1.2.3.4&port=233&user=user&pass=pass&remark=Example
+   - https://t.me/http?server=1.2.3.4&port=233&user=user&pass=pass&remarks=Example&group=xxx
 
 ---
 
@@ -402,6 +415,16 @@ exclude=(流量|官网)
      include_remarks=(?<=美).*(BGP|GIA|IPLC)
      ```
 
+1. **default_external_config**
+
+   > 如果未指定外部配置文件，则将其设置为默认值。支持 `本地文件` 和 `在线URL`
+
+    - 例如:
+
+     ```ini
+     default_external_config=config/example_external_config.ini
+     ```
+
 1. **clash_rule_base**
 
    > 生成的 Clash 配置文件基础。支持 `本地文件` 和 `在线URL`
@@ -674,11 +697,11 @@ custom_proxy_group=🇯🇵 JP`select`沪日`日本`[]🇯🇵 日本延迟最�
 # 表示创建一个叫 🇯🇵 JP 的 select 策略组,并向其中**依次**添加名字含'沪日','日本'的节点，以及引用上述所创建的 🇯🇵 日本延迟最低 策略组
 ```
 
-- 还可使用一些特殊筛选条件(GROUPID 匹配支持range,如 1,!2,3-4,!5-6,7+,8-)
+- 还可使用一些特殊筛选条件(GROUPID 和 INSERT 匹配支持range,如 1,!2,3-4,!5-6,7+,8-)
 
   ```ini
-  custom_proxy_group=g1`select`!!GROUPID=0
-  # 指订阅链接中的第一条订阅
+  custom_proxy_group=g1`select`!!GROUPID=0`!!INSERT=0
+  # 指订阅链接中的第一条订阅以及配置文件中 insert_url 中的第一条节点
   custom_proxy_group=g2`select`!!GROUPID=1
   # 指订阅链接中的第二条订阅
   custom_proxy_group=g2`select`!!GROUPID=!2
@@ -688,7 +711,8 @@ custom_proxy_group=🇯🇵 JP`select`沪日`日本`[]🇯🇵 日本延迟最�
   custom_proxy_group=v2ray`select`!!GROUP=V2RayProvider
   # 指订阅链接中组名为 V2RayProvider 的节点
   ```
-
+  注意：此处的订阅链接指 `default_url` 和 `&url=` 中的订阅以及单链接节点（区别于配置文件中 insert_url）
+  
 - 现在也可以使用双条件进行筛选
 
   ```ini
@@ -698,6 +722,30 @@ custom_proxy_group=🇯🇵 JP`select`沪日`日本`[]🇯🇵 日本延迟最�
 
 </details>
 
+<details>
+<summary><b>[aliases] 部分</b></summary>
+
+> 设置访问接口的别名，也可以用来缩短URI。
+>
+> 访问别名时会将传递的所有参数附加到别名目标的参数中。
+
+使用方法如下（但不仅限于此）：
+
+- 精简接口步骤（此类别名默认在 pref 中启用）
+
+  ```ini
+  当设置 /clash=/sub?target=clash 时：
+  访问 127.0.0.1/clash?url=xxx 即跳转至 127.0.0.1/sub?target=clash&url=xxx
+  ```
+
+- 精简外部配置路径
+
+  ```ini
+  当设置 /mysub=/getprofile?name=aaa&token=bbb 时：
+  访问 127.0.0.1/mysub 即跳转至 127.0.0.1/getprofile?name=aaa&token=bbb
+  ```
+
+</details>
 <details>
 
 <summary><b>[server] 部分</b></summary>
@@ -819,13 +867,15 @@ clash_rule_base=base/forcerule.yml
 
 </details>
 
-### 模板介绍
+### 模板功能
 
 > `0.5.0` 版本中引进了模板功能，可以通过设置不同的条件参数来获取对应的模板内容
 >
 > 从而做到将多个模板文件合成为一个，或者在不改动模板内容的前提下修改其中的某个参数等
 
-示例文件可以参看 [all_base.tpl](./base/base/all_base.tpl)
+#### 模板调用
+
+当前模板调用可以用于 [外部配置](#外部配置) 和各类 base 文件中，示例可以参照 [all_base.tpl](./base/base/all_base.tpl)
 
 模板内的常用写法有以下几类：
 
@@ -923,6 +973,17 @@ clash_rule_base=base/forcerule.yml
       {% endif %}
       # 当 clash.dns=1 时，该判断生效，其包含的 dns 内容被引用
       ```
+
+#### 直接渲染
+
+在对模板功能进行调试或需要直接对模板进行渲染时，此时可以使用以下方式进行调用
+
+```txt
+http://127.0.0.1:25500/render?path=xxx&额外的调试或控制参数
+```
+
+此处 `path` 需要在 [配置文件](#配置文件) 中 `template_path` 所限定的路径内
+
 
 ## 特别用法
 
