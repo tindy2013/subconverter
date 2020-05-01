@@ -128,7 +128,7 @@ std::string getFormData(const std::string &raw_data);
 void sleep(int interval);
 bool regValid(const std::string &reg);
 bool regFind(const std::string &src, const std::string &match);
-std::string regReplace(const std::string &src, const std::string &match, const std::string &rep);
+std::string regReplace(const std::string &src, const std::string &match, const std::string &rep, bool global = true);
 bool regMatch(const std::string &src, const std::string &match);
 int regGetMatch(const std::string &src, const std::string &match, size_t group_count, ...);
 std::string regTrim(const std::string &src);

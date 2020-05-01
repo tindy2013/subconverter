@@ -1298,7 +1298,7 @@ bool explodeSurge(std::string surge, const std::string &custom_port, std::vector
     ini.IncludeSection("Proxy");
     ini.AddDirectSaveSection("Proxy");
     if(surge.find("[Proxy]") != surge.npos)
-        surge = regReplace(surge, "^[\\S\\s]*?\\[", "[");
+        surge = regReplace(surge, "^[\\S\\s]*?\\[", "[", false);
     ini.Parse(surge);
 
     if(!ini.SectionExist("Proxy"))

@@ -637,7 +637,7 @@ int regGetMatch(const std::string &src, const std::string &match, size_t group_c
             {
                 std::string* arg = va_arg(vl, std::string*);
                 if(arg != NULL)
-                    *arg = result[index];
+                    *arg = std::move(result[index]);
                 index++;
                 group_count--;
             }
@@ -673,13 +673,13 @@ bool regFind(const std::string &src, const std::string &match)
     return reg.match(src);
 }
 
-std::string regReplace(const std::string &src, const std::string &match, const std::string &rep)
+std::string regReplace(const std::string &src, const std::string &match, const std::string &rep, bool global)
 {
     jp::Regex reg;
     reg.setPattern(match).addModifier("gm").addPcre2Option(PCRE2_UTF).compile();
     if(!reg)
         return src;
-    return reg.replace(src, rep, "g");
+    return reg.replace(src, rep, global ? "g" : "");
 }
 
 bool regValid(const std::string &reg)
@@ -695,7 +695,7 @@ int regGetMatch(const std::string &src, const std::string &match, size_t group_c
     jp::VecNum vec_num;
     jp::RegexMatch rm;
     size_t count = rm.setRegexObject(&reg).setSubject(src).setNumberedSubstringVector(&vec_num).match();
-    if(!count || count < group_count - 1)
+    if(!count)
         return -1;
     va_list vl;
     va_start(vl, group_count);
@@ -704,7 +704,7 @@ int regGetMatch(const std::string &src, const std::string &match, size_t group_c
     {
         std::string* arg = va_arg(vl, std::string*);
         if(arg != NULL)
-            *arg = vec_num[match_index][index];
+            *arg = std::move(vec_num[match_index][index]);
         index++;
         group_count--;
         if(vec_num[match_index].size() <= index)
