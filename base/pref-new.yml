@@ -34,10 +34,10 @@ userinfo:
   - {match: "^.*?流量:(?:.*?) 剩:(.*?)天$", replace: "left=$1d"}
 
 node_pref:
-  udp_flag: false
-  tcp_fast_open_flag: false
+#  udp_flag: false
+#  tcp_fast_open_flag: false
   sort_flag: false
-  skip_cert_verify_flag: false
+#  skip_cert_verify_flag: false
   filter_deprecated_nodes: false
   append_sub_userinfo: true
   clash_use_new_field_name: false

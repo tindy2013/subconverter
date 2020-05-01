@@ -1284,9 +1284,11 @@ std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &base_conf, s
     if(!ext.enable_rule_generator)
         return YAML::Dump(yamlnode);
 
-    if(ext.clash_script)
+    if(ext.managed_config_prefix.size() || ext.clash_script)
     {
-        renderClashScript(yamlnode, ruleset_content_array, ext.managed_config_prefix);
+        if(yamlnode["mode"].IsDefined())
+            yamlnode["mode"] = ext.clash_script ? "Script" : "Rule";
+        renderClashScript(yamlnode, ruleset_content_array, ext.managed_config_prefix, ext.clash_script, ext.overwrite_original_rules);
         return YAML::Dump(yamlnode);
     }
 

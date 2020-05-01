@@ -4,6 +4,8 @@
 #include <string>
 #include <map>
 
+#include "subexport.h"
+
 typedef std::map<std::string, std::string> string_map;
 
 struct template_args
@@ -14,6 +16,6 @@ struct template_args
 };
 
 int render_template(const std::string &content, const template_args &vars, std::string &output, const std::string &include_scope = "template");
-int renderClashScript(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset_content_array, std::string remote_path_prefix);
+int renderClashScript(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset_content_array, std::string remote_path_prefix, bool script, bool overwrite_original_rules);
 
 #endif // TEMPLATES_H_INCLUDED

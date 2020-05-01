@@ -47,7 +47,8 @@ std::mutex on_configuring;
 //preferences
 string_array renames, emojis;
 bool add_emoji = false, remove_old_emoji = false, append_proxy_type = false, filter_deprecated = true;
-bool udp_flag = false, tfo_flag = false, scv_flag = false, do_sort = false, config_update_strict = false;
+tribool udp_flag, tfo_flag, scv_flag;
+bool do_sort = false, config_update_strict = false;
 bool clash_use_new_field_name = false;
 std::string proxy_config, proxy_ruleset, proxy_subscription;
 int config_update_interval = 0;
@@ -153,7 +154,7 @@ std::string getRuleset(RESPONSE_CALLBACK_ARGS)
             switch(hash_(vArray[0]))
             {
             case "DOMAIN-SUFFIX"_hash:
-                strLine = "  - '." + vArray[1] + "'";
+                strLine = "  - '." + vArray[1] + "'\n  - '" + vArray[1] + "'";
                 break;
             case "DOMAIN"_hash:
                 strLine = "  - '" + vArray[1] + "'";
@@ -536,10 +537,15 @@ void readYAMLConf(YAML::Node &node)
     if(node["node_pref"].IsDefined())
     {
         section = node["node_pref"];
+        /*
         section["udp_flag"] >> udp_flag;
         section["tcp_fast_open_flag"] >> tfo_flag;
-        section["sort_flag"] >> do_sort;
         section["skip_cert_verify_flag"] >> scv_flag;
+        */
+        udp_flag.set(safe_as<std::string>(section["udp_flag"]));
+        tfo_flag.set(safe_as<std::string>(section["tcp_fast_open_flag"]));
+        scv_flag.set(safe_as<std::string>(section["skip_cert_verify_flag"]));
+        section["sort_flag"] >> do_sort;
         section["filter_deprecated_nodes"] >> filter_deprecated;
         section["append_sub_userinfo"] >> append_userinfo;
         section["clash_use_new_field_name"] >> clash_use_new_field_name;
@@ -759,10 +765,15 @@ void readConf()
     if(ini.SectionExist("node_pref"))
     {
         ini.EnterSection("node_pref");
+        /*
         ini.GetBoolIfExist("udp_flag", udp_flag);
         ini.GetBoolIfExist("tcp_fast_open_flag", tfo_flag);
-        ini.GetBoolIfExist("sort_flag", do_sort);
         ini.GetBoolIfExist("skip_cert_verify_flag", scv_flag);
+        */
+        udp_flag.set(ini.Get("udp_flag"));
+        tfo_flag.set(ini.Get("tcp_fast_open_flag"));
+        scv_flag.set(ini.Get("skip_cert_verify_flag"));
+        ini.GetBoolIfExist("sort_flag", do_sort);
         ini.GetBoolIfExist("filter_deprecated_nodes", filter_deprecated);
         ini.GetBoolIfExist("append_sub_userinfo", append_userinfo);
         ini.GetBoolIfExist("clash_use_new_field_name", clash_use_new_field_name);
@@ -1191,21 +1202,33 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         ext.remove_emoji = remove_old_emoji;
     }
     ext.append_proxy_type = append_type.get(append_proxy_type);
+    if(target == "clash" || target == "clashr")
+        expand.define(true);
 
+    /// read preference from argument
     ext.tfo = tfo;
     ext.udp = udp;
     ext.skip_cert_verify = scv;
+    /// assign global var if not in argument
+    ext.tfo.define(tfo_flag);
+    ext.udp.define(udp_flag);
+    ext.skip_cert_verify.define(scv_flag);
+
     ext.sort_flag = sort_flag.get(do_sort);
     ext.filter_deprecated = fdn.get(filter_deprecated);
     ext.clash_new_field_name = clash_new_field.get(clash_use_new_field_name);
     ext.clash_script = clash_script.get();
+    if(!expand)
+        ext.clash_new_field_name = true;
+    else
+        ext.clash_script = false;
 
     ext.nodelist = nodelist;
     ext.surge_ssr_path = surge_ssr_path;
     ext.quanx_dev_id = dev_id.size() ? dev_id : quanx_script_id;
     ext.enable_rule_generator = enable_rule_generator;
     ext.overwrite_original_rules = overwrite_original_rules;
-    if(expand)
+    if(!expand)
         ext.managed_config_prefix = managed_config_prefix;
 
     //load external configuration
