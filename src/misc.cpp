@@ -7,6 +7,7 @@
 #include <cstdio>
 //#include <filesystem>
 #include <unistd.h>
+#include <stdarg.h>
 
 /*
 #ifdef USE_STD_REGEX
