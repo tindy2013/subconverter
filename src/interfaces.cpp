@@ -2038,7 +2038,8 @@ std::string getRewriteRemote(RESPONSE_CALLBACK_ARGS)
 
 std::string parseHostname(inja::Arguments &args)
 {
-    std::string data = args.at(0)->get<std::string>();
+    std::string data = args.at(0)->get<std::string>(), hostname;
+    const std::string matcher = R"(^(?i:hostname\s*?=\s*?)(.*?)\s$)";
     string_array urls = split(data, ",");
     if(!urls.size())
         return std::string();
@@ -2047,7 +2048,12 @@ std::string parseHostname(inja::Arguments &args)
     for(std::string &x : urls)
     {
         input_content = webGet(x, proxy, cache_config);
-        output_content += regReplace(input_content, "(?:[\\s\\S]*?)^(?i:hostname\\s*?=\\s*?)(.*?)\\s$(?:[\\s\\S]*)", "$1") + ",";
+        regGetMatch(input_content, matcher, 2, NULL, &hostname);
+        if(hostname.size())
+        {
+            output_content += hostname + ",";
+            hostname.clear();
+        }
     }
     string_array vArray = split(output_content, ",");
     std::set<std::string> hostnames;

@@ -43,7 +43,6 @@ template <typename T> T safe_as (const YAML::Node& node)
 void explodeVmess(std::string vmess, const std::string &custom_port, nodeInfo &node)
 {
     std::string version, ps, add, port, type, id, aid, net, path, host, tls;
-    tribool udp, tfo, scv;
     Document jsondata;
     std::vector<std::string> vArray;
     if(regMatch(vmess, "vmess://(.*?)\\?(.*)")) //shadowrocket style link
@@ -105,7 +104,7 @@ void explodeVmess(std::string vmess, const std::string &custom_port, nodeInfo &n
     node.remarks = ps;
     node.server = add;
     node.port = to_int(port, 0);
-    node.proxyStr = vmessConstruct(add, port, type, id, aid, net, "auto", path, host, "", tls, udp, tfo, scv);
+    node.proxyStr = vmessConstruct(add, port, type, id, aid, net, "auto", path, host, "", tls);
 }
 
 void explodeVmessConf(std::string content, const std::string &custom_port, bool libev, std::vector<nodeInfo> &nodes)
@@ -260,8 +259,8 @@ void explodeVmessConf(std::string content, const std::string &custom_port, bool 
 
 void explodeSS(std::string ss, bool libev, const std::string &custom_port, nodeInfo &node)
 {
-    std::string ps, password, method, server, port, plugins, plugin, pluginopts, addition, group = SS_DEFAULT_GROUP;
-    std::vector<std::string> args, secret;
+    std::string ps, password, method, server, port, plugins, plugin, pluginopts, addition, group = SS_DEFAULT_GROUP, secret;
+    //std::vector<std::string> args, secret;
     ss = replace_all_distinct(ss.substr(5), "/?", "?");
     if(strFind(ss, "#"))
     {
@@ -281,6 +280,7 @@ void explodeSS(std::string ss, bool libev, const std::string &custom_port, nodeI
     }
     if(strFind(ss, "@"))
     {
+        /*
         ss = regReplace(ss, "(.*?)@(.*):(.*)", "$1|$2|$3");
         args = split(ss, "|");
         secret = split(urlsafe_base64_decode(args[0]), ":");
@@ -290,9 +290,15 @@ void explodeSS(std::string ss, bool libev, const std::string &custom_port, nodeI
         password = secret[1];
         server = args[1];
         port = custom_port.empty() ? args[2] : custom_port;
+        */
+        if(regGetMatch(ss, "(.*?)@(.*):(.*)", 4, NULL, &secret, &server, &port))
+            return;
+        if(regGetMatch(urlsafe_base64_decode(secret), "(.*?):(.*)", 3, NULL, &method, &password))
+            return;
     }
     else
     {
+        /*
         if(!regMatch(urlsafe_base64_decode(ss), "(.*?):(.*?)@(.*):(.*)"))
             return;
         ss = regReplace(urlsafe_base64_decode(ss), "(.*?):(.*?)@(.*):(.*)", "$1|$2|$3|$4");
@@ -303,7 +309,12 @@ void explodeSS(std::string ss, bool libev, const std::string &custom_port, nodeI
         password = args[1];
         server = args[2];
         port = custom_port.empty() ? args[3] : custom_port;
+        */
+        if(regGetMatch(urlsafe_base64_decode(ss), "(.*?):(.*)@(.*):(.*)", 5, NULL, &method, &password, &server, &port))
+            return;
     }
+    if(custom_port.size())
+        port = custom_port;
     if(ps.empty())
         ps = server + ":" + port;
 
@@ -501,6 +512,7 @@ void explodeSSR(std::string ssr, bool ss_libev, bool ssr_libev, const std::strin
         protoparam = regReplace(urlsafe_base64_decode(getUrlArg(strobfs, "protoparam")), "\\s", "");
     }
 
+    /*
     ssr = regReplace(ssr, "(.*):(.*?):(.*?):(.*?):(.*?):(.*)", "$1|$2|$3|$4|$5|$6");
     strcfg = split(ssr, "|");
 
@@ -513,6 +525,12 @@ void explodeSSR(std::string ssr, bool ss_libev, bool ssr_libev, const std::strin
     method = strcfg[3];
     obfs = strcfg[4];
     password = urlsafe_base64_decode(strcfg[5]);
+    */
+    if(regGetMatch(ssr, "(.*):(.*?):(.*?):(.*?):(.*?):(.*)", 7, NULL, &server, &port, &protocol, &method, &obfs, &password))
+        return;
+    password = urlsafe_base64_decode(password);
+    if(custom_port.size())
+        port = custom_port;
 
     if(group.empty())
         group = SSR_DEFAULT_GROUP;
@@ -700,6 +718,7 @@ void explodeHTTPSub(std::string link, const std::string &custom_port, nodeInfo &
     link = urlsafe_base64_decode(link);
     if(strFind(link, "@"))
     {
+        /*
         link = regReplace(link, "(.*?):(.*?)@(.*):(.*)", "$1|$2|$3|$4");
         configs = split(link, "|");
         if(configs.size() != 4)
@@ -708,15 +727,22 @@ void explodeHTTPSub(std::string link, const std::string &custom_port, nodeInfo &
         password = configs[1];
         server = configs[2];
         port = configs[3];
+        */
+        if(regGetMatch(link, "(.*?):(.*?)@(.*):(.*)", 5, NULL, &username, &password, &server, &port))
+            return;
     }
     else
     {
+        /*
         link = regReplace(link, "(.*):(.*)", "$1|$2");
         configs = split(link, "|");
         if(configs.size() != 2)
             return;
         server = configs[1];
         port = configs[2];
+        */
+        if(regGetMatch(link, "(.*):(.*)", 3, NULL, &server, &port))
+            return;
     }
 
     if(group.empty())
@@ -753,6 +779,7 @@ void explodeTrojan(std::string trojan, const std::string &custom_port, nodeInfo 
         trojan.erase(pos);
     }
 
+    /*
     trojan = regReplace(trojan, "(.*?)@(.*):(.*)", "$1|$2|$3");
     vArray = split(trojan, "|");
     if(vArray.size() != 3)
@@ -761,6 +788,11 @@ void explodeTrojan(std::string trojan, const std::string &custom_port, nodeInfo 
     psk = vArray[0];
     server = vArray[1];
     port = custom_port.empty() ? vArray[2] : custom_port;
+    */
+    if(regGetMatch(trojan, "(.*?)@(.*):(.*)", 4, NULL, &psk, &server, &port))
+        return;
+    if(custom_port.size())
+        port = custom_port;
 
     host = getUrlArg(addition, "peer");
 
@@ -1148,6 +1180,7 @@ void explodeShadowrocket(std::string rocket, const std::string &custom_port, nod
     addition = rocket.substr(rocket.find("?") + 1);
     rocket = rocket.substr(0, rocket.find("?"));
 
+    /*
     userinfo = split(regReplace(urlsafe_base64_decode(rocket), "(.*?):(.*?)@(.*):(.*)", "$1,$2,$3,$4"), ",");
     if(userinfo.size() != 4) // broken link
         return;
@@ -1155,6 +1188,11 @@ void explodeShadowrocket(std::string rocket, const std::string &custom_port, nod
     id = userinfo[1];
     add = userinfo[2];
     port = custom_port.size() ? custom_port : userinfo[3];
+    */
+    if(regGetMatch(urlsafe_base64_decode(rocket), "(.*?):(.*)@(.*):(.*)", 5, NULL, &cipher, &id, &add, &port))
+        return;
+    if(custom_port.size())
+        port = custom_port;
     remarks = UrlDecode(getUrlArg(addition, "remark"));
     obfs = getUrlArg(addition, "obfs");
     if(obfs.size())
@@ -1208,20 +1246,21 @@ void explodeKitsunebi(std::string kit, const std::string &custom_port, nodeInfo 
     addition = kit.substr(pos + 1);
     kit = kit.substr(0, pos);
 
+    /*
     userinfo = split(regReplace(kit, "(.*?)@(.*):(.*)", "$1,$2,$3"), ",");
     if(userinfo.size() != 3)
         return;
     id = userinfo[0];
     add = userinfo[1];
     pos = userinfo[2].find("/");
-    if(pos != userinfo[2].npos)
+    */
+    if(regGetMatch(kit, "(.*?)@(.*):(.*)", 4, NULL, &id, &add, &port))
+        return;
+    pos = port.find("/");
+    if(pos != port.npos)
     {
-        port = userinfo[2].substr(0, pos);
-        path = userinfo[2].substr(pos);
-    }
-    else
-    {
-        port = userinfo[2];
+        path = port.substr(pos);
+        port.erase(pos);
     }
     if(custom_port.size())
         port = custom_port;
@@ -1275,16 +1314,24 @@ bool explodeSurge(std::string surge, const std::string &custom_port, std::vector
         std::string plugin, pluginopts, pluginopts_mode, pluginopts_host = "cloudfront.net", mod_url, mod_md5; //ss
         std::string id, net, tls, host, edge, path; //v2
         std::string protocol, protoparam; //ssr
-        std::string itemName, itemVal;
+        std::string itemName, itemVal, config;
         std::vector<std::string> configs, vArray, headers, header;
         tribool udp, tfo, scv;
 
+        /*
         remarks = regReplace(x.second, proxystr, "$1");
         configs = split(regReplace(x.second, proxystr, "$2"), ",");
-        if(configs.size() < 2 || configs[0] == "direct")
+        */
+        regGetMatch(x.second, proxystr, 3, NULL, &remarks, &config);
+        configs = split(config, ",");
+        if(configs.size() < 2)
             continue;
         switch(hash_(configs[0]))
         {
+        case "direct"_hash:
+        case "reject"_hash:
+        case "reject-tinygif"_hash:
+            continue;
         case "custom"_hash: //surge 2 style custom proxy
             //remove module detection to speed up parsing and compatible with broken module
             /*
@@ -2132,11 +2179,11 @@ time_t dateStringToTimestamp(std::string date)
 
 bool getSubInfoFromHeader(std::string &header, std::string &result)
 {
-    std::string pattern = R"((?:[\s\S]*?)^(?i:Subscription-UserInfo): (.*?)\s$(?:[\s\S]*))", retStr;
+    std::string pattern = R"(^(?i:Subscription-UserInfo): (.*?)\s*?$)", retStr;
     if(regFind(header, pattern))
     {
-        retStr = regReplace(header, pattern, "$1");
-        if(retStr != header)
+        regGetMatch(header, pattern, 2, NULL, &retStr);
+        if(retStr.size())
         {
             result = retStr;
             return true;

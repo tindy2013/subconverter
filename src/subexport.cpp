@@ -405,6 +405,7 @@ bool matchRange(std::string &range, int target)
 {
     string_array vArray = split(range, ",");
     bool match = false;
+    std::string range_begin_str, range_end_str;
     int range_begin = 0, range_end = 0;
     const std::string reg_num = "-?\\d+", reg_range = "(\\d+)-(\\d+)", reg_not = "\\!(\\d+)", reg_not_range = "\\!(\\d+)-(\\d+)", reg_less = "(\\d+)-", reg_more = "(\\d+)\\+";
     for(std::string &x : vArray)
@@ -416,8 +417,13 @@ bool matchRange(std::string &range, int target)
         }
         else if(regMatch(x, reg_range))
         {
+            /*
             range_begin = to_int(regReplace(x, reg_range, "$1"), INT_MAX);
             range_end = to_int(regReplace(x, reg_range, "$2"), INT_MIN);
+            */
+            regGetMatch(x, reg_range, 3, NULL, &range_begin_str, &range_end_str);
+            range_begin = to_int(range_begin_str, INT_MAX);
+            range_end = to_int(range_end_str, INT_MIN);
             if(target >= range_begin && target <= range_end)
                 match = true;
         }
@@ -428,8 +434,13 @@ bool matchRange(std::string &range, int target)
         }
         else if(regMatch(x, reg_not_range))
         {
+            /*
             range_begin = to_int(regReplace(x, reg_range, "$1"), INT_MAX);
             range_end = to_int(regReplace(x, reg_range, "$2"), INT_MIN);
+            */
+            regGetMatch(x, reg_range, 3, NULL, &range_begin_str, &range_end_str);
+            range_begin = to_int(range_begin_str, INT_MAX);
+            range_end = to_int(range_end_str, INT_MIN);
             if(target >= range_begin && target <= range_end)
                 match = false;
         }

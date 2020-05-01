@@ -1,5 +1,4 @@
 #include <chrono>
-//#include <regex>
 #include <fstream>
 #include <thread>
 #include <sstream>
@@ -9,12 +8,14 @@
 //#include <filesystem>
 #include <unistd.h>
 
+/*
 #ifdef USE_STD_REGEX
 #include <regex>
 #else
+*/
 #include <jpcre2.hpp>
 typedef jpcre2::select<char> jp;
-#endif // USE_STD_REGEX
+//#endif // USE_STD_REGEX
 
 #include <rapidjson/document.h>
 
@@ -534,7 +535,7 @@ std::string replace_all_distinct(std::string str, const std::string &old_value, 
     }
     return str;
 }
-
+/*
 #ifdef USE_STD_REGEX
 bool regValid(const std::string &reg)
 {
@@ -611,42 +612,113 @@ bool regMatch(const std::string &src, const std::string &match)
     }
 }
 
+int regGetMatch(const std::string &src, const std::string &match, size_t group_count, ...)
+{
+    try
+    {
+        std::regex::flag_type flags = std::regex::extended | std::regex::ECMAScript;
+        std::string target = match;
+        if(match.find("(?i)") == 0)
+        {
+            target.erase(0, 4);
+            flags |= std::regex::icase;
+        }
+        std::regex reg(target, flags);
+        std::smatch result;
+        if(regex_search(src.cbegin(), src.cend(), result, reg))
+        {
+            if(result.size() < group_count - 1)
+                return -1;
+            va_list vl;
+            va_start(vl, group_count);
+            size_t index = 0;
+            while(group_count)
+            {
+                std::string* arg = va_arg(vl, std::string*);
+                if(arg != NULL)
+                    *arg = result[index];
+                index++;
+                group_count--;
+            }
+            va_end(vl);
+        }
+        else
+            return -2;
+        return 0;
+    }
+    catch (std::regex_error&)
+    {
+        return -3;
+    }
+}
+
 #else
-
-bool regMatch(const std::string &src, const std::string &target)
+*/
+bool regMatch(const std::string &src, const std::string &match)
 {
     jp::Regex reg;
-    reg.setPattern(target).addModifier("gm").addPcre2Option(PCRE2_ANCHORED|PCRE2_ENDANCHORED|PCRE2_UTF).compile();
+    reg.setPattern(match).addModifier("gm").addPcre2Option(PCRE2_ANCHORED|PCRE2_ENDANCHORED|PCRE2_UTF).compile();
     if(!reg)
         return false;
     return reg.match(src);
 }
 
-bool regFind(const std::string &src, const std::string &target)
+bool regFind(const std::string &src, const std::string &match)
 {
     jp::Regex reg;
-    reg.setPattern(target).addModifier("gm").addPcre2Option(PCRE2_UTF).compile();
+    reg.setPattern(match).addModifier("gm").addPcre2Option(PCRE2_UTF).compile();
     if(!reg)
         return false;
     return reg.match(src);
 }
 
-std::string regReplace(const std::string &src, const std::string &target, const std::string &rep)
+std::string regReplace(const std::string &src, const std::string &match, const std::string &rep)
 {
     jp::Regex reg;
-    reg.setPattern(target).addModifier("gm").addPcre2Option(PCRE2_UTF).compile();
+    reg.setPattern(match).addModifier("gm").addPcre2Option(PCRE2_UTF).compile();
     if(!reg)
         return src;
-    return reg.replace(src, rep);
+    return reg.replace(src, rep, "g");
 }
 
-bool regValid(const std::string &target)
+bool regValid(const std::string &reg)
 {
-    jp::Regex reg(target);
-    return !!reg;
+    jp::Regex r(reg);
+    return !!r;
 }
 
-#endif // USE_STD_REGEX
+int regGetMatch(const std::string &src, const std::string &match, size_t group_count, ...)
+{
+    jp::Regex reg;
+    reg.setPattern(match).addModifier("gm").addPcre2Option(PCRE2_UTF).compile();
+    jp::VecNum vec_num;
+    jp::RegexMatch rm;
+    size_t count = rm.setRegexObject(&reg).setSubject(src).setNumberedSubstringVector(&vec_num).match();
+    if(!count || count < group_count - 1)
+        return -1;
+    va_list vl;
+    va_start(vl, group_count);
+    size_t index = 0, match_index = 0;
+    while(group_count)
+    {
+        std::string* arg = va_arg(vl, std::string*);
+        if(arg != NULL)
+            *arg = vec_num[match_index][index];
+        index++;
+        group_count--;
+        if(vec_num[match_index].size() <= index)
+        {
+            match_index++;
+            index = 0;
+        }
+        if(vec_num.size() <= match_index)
+            break;
+    }
+    va_end(vl);
+    return 0;
+}
+
+//#endif // USE_STD_REGEX
 
 std::string regTrim(const std::string &src)
 {
