@@ -2,6 +2,7 @@ common:
   api_mode: false
   api_access_token: password
   default_url: []
+  enable_insert: true
   insert_url: []
   prepend_insert_url: true
   exclude_remarks: ["(到期|剩余流量|时间|官网|产品)"]

@@ -48,7 +48,7 @@ std::mutex on_configuring;
 //preferences
 string_array renames, emojis;
 bool add_emoji = false, remove_old_emoji = false, append_proxy_type = false, filter_deprecated = true;
-tribool udp_flag, tfo_flag, scv_flag;
+tribool udp_flag, tfo_flag, scv_flag, enable_insert;
 bool do_sort = false, config_update_strict = false;
 bool clash_use_new_field_name = false;
 std::string proxy_config, proxy_ruleset, proxy_subscription;
@@ -485,6 +485,7 @@ void readYAMLConf(YAML::Node &node)
             eraseElements(tempArray);
         }
     }
+    enable_insert = safe_as<std::string>(section["enable_insert"]);
     if(section["insert_url"].IsSequence())
     {
         section["insert_url"] >> tempArray;
@@ -733,6 +734,7 @@ void readConf()
     ini.GetBoolIfExist("api_mode", api_mode);
     ini.GetIfExist("api_access_token", access_token);
     ini.GetIfExist("default_url", default_url);
+    enable_insert = ini.Get("enable_insert");
     ini.GetIfExist("insert_url", insert_url);
     ini.GetBoolIfExist("prepend_insert_url", prepend_insert_url);
     if(ini.ItemPrefixExist("exclude_remarks"))
@@ -1152,7 +1154,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     std::string ext_quan_base = quan_rule_base, ext_quanx_base = quanx_rule_base, ext_loon_base = loon_rule_base, ext_sssub_base = sssub_rule_base;
 
     //validate urls
-    add_insert.define(true);
+    add_insert.define(enable_insert);
     if(!url.size() && (!api_mode || authorized))
         url = default_url;
     if((!url.size() && !(insert_url.size() && add_insert)) || !target.size())
