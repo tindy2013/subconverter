@@ -26,6 +26,7 @@ string_array def_exclude_remarks, def_include_remarks, rulesets, stream_rules, t
 std::vector<ruleset_content> ruleset_content_array;
 std::string listen_address = "127.0.0.1", default_url, insert_url, managed_config_prefix;
 int listen_port = 25500, max_pending_connections = 10, max_concurrent_threads = 4;
+bool prepend_insert_url = true;
 bool api_mode = true, write_managed_config = false, enable_rule_generator = true, update_ruleset_on_request = false, overwrite_original_rules = true;
 bool print_debug_info = false, cfw_child_process = false, append_userinfo = true, enable_base_gen = false, async_fetch_ruleset = false;
 std::string access_token, base_path = "base";
@@ -491,12 +492,13 @@ void readYAMLConf(YAML::Node &node)
         {
             strLine = std::accumulate(std::next(tempArray.begin()), tempArray.end(), tempArray[0], [](std::string a, std::string b)
             {
-                return std::move(b) + "|" + std::move(a); // add in reverse order
+                return std::move(a) + "|" + std::move(b);
             });
             insert_url = strLine;
             eraseElements(tempArray);
         }
     }
+    section["prepend_insert_url"] >> prepend_insert_url;
     if(section["exclude_remarks"].IsSequence())
         section["exclude_remarks"] >> def_exclude_remarks;
     if(section["include_remarks"].IsSequence())
@@ -732,12 +734,7 @@ void readConf()
     ini.GetIfExist("api_access_token", access_token);
     ini.GetIfExist("default_url", default_url);
     ini.GetIfExist("insert_url", insert_url);
-    tempArray = split(insert_url, "|");
-    if(tempArray.size())
-        insert_url = std::accumulate(std::next(tempArray.begin()), tempArray.end(), tempArray[0], [](std::string a, std::string b)
-        {
-            return std::move(b) + "|" + std::move(a);
-        });
+    ini.GetBoolIfExist("prepend_insert_url", prepend_insert_url);
     if(ini.ItemPrefixExist("exclude_remarks"))
         ini.GetAll("exclude_remarks", def_exclude_remarks);
     if(ini.ItemPrefixExist("include_remarks"))
@@ -1137,6 +1134,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     tribool sort_flag = getUrlArg(argument, "sort");
     tribool clash_new_field = getUrlArg(argument, "new_name"), clash_script = getUrlArg(argument, "script"), add_insert = getUrlArg(argument, "insert");
     tribool scv = getUrlArg(argument, "scv"), fdn = getUrlArg(argument, "fdn"), expand = getUrlArg(argument, "expand"), append_sub_userinfo = getUrlArg(argument, "append_info");
+    tribool prepend_insert = getUrlArg(argument, "prepend");
 
     std::string base_content, output_content;
     string_array extra_group, extra_ruleset, include_remarks = def_include_remarks, exclude_remarks = def_exclude_remarks;
@@ -1157,9 +1155,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     add_insert.define(true);
     if(!url.size() && (!api_mode || authorized))
         url = default_url;
-    if(insert_url.size() && add_insert)
-        url = insert_url + "|" + url;
-    if(!url.size() || !target.size())
+    if((!url.size() && !(insert_url.size() && add_insert)) || !target.size())
     {
         *status_code = 400;
         return "Invalid request!";
@@ -1325,12 +1321,6 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         }
     }
 
-    //loading urls
-    string_array urls = split(url, "|");
-    std::vector<nodeInfo> nodes;
-    int groupID = 0;
-    groupID -= insert_url.empty() || !add_insert ? 0 : std::count(insert_url.begin(), insert_url.end(), '|') + 1;
-
     //check custom include/exclude settings
     if(include.size() && regValid(include))
         include_remarks = string_array{include};
@@ -1339,6 +1329,29 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
 
     //start parsing urls
     string_array stream_temp = safe_get_streams(), time_temp = safe_get_times();
+
+    //loading urls
+    string_array urls;
+    std::vector<nodeInfo> nodes, insert_nodes;
+    int groupID = 0;
+    if(insert_url.size() && add_insert)
+    {
+        groupID = -1;
+        urls = split(insert_url, "|");
+        for(std::string &x : urls)
+        {
+            x = regTrim(x);
+            writeLog(0, "Fetching node data from url '" + x + "'.", LOG_LEVEL_INFO);
+            if(addNodes(x, insert_nodes, groupID, proxy, exclude_remarks, include_remarks, stream_temp, time_temp, subInfo, authorized) == -1)
+            {
+                *status_code = 400;
+                return std::string("The following link doesn't contain any valid node info: " + x);
+            }
+            groupID--;
+        }
+    }
+    urls = split(url, "|");
+    groupID = 0;
     for(std::string &x : urls)
     {
         x = regTrim(x);
@@ -1352,10 +1365,18 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         groupID++;
     }
     //exit if found nothing
-    if(!nodes.size())
+    if(!nodes.size() && !insert_nodes.size())
     {
         *status_code = 400;
         return "No nodes were found!";
+    }
+    prepend_insert.define(prepend_insert_url);
+    for(nodeInfo &x : insert_nodes)
+    {
+        if(prepend_insert)
+            nodes.emplace(nodes.begin(), x);
+        else
+            nodes.emplace_back(x);
     }
 
     //check custom group name
