@@ -2124,18 +2124,15 @@ static inline unsigned long long streamToInt(const std::string &stream)
     if(!stream.size())
         return 0;
     double streamval = 1.0;
-    if(stream.find("GB") != std::string::npos)
-        streamval = std::pow(1024, 3) * to_number<float>(stream.substr(0, stream.size() - 2), 0.0);
-    else if(stream.find("TB") != std::string::npos)
-        streamval = std::pow(1024, 4) * to_number<float>(stream.substr(0, stream.size() - 2), 0.0);
-    else if(stream.find("PB") != std::string::npos)
-        streamval = std::pow(1024, 5) * to_number<float>(stream.substr(0, stream.size() - 2), 0.0);
-    else if(stream.find("MB") != std::string::npos)
-        streamval = std::pow(1024, 2) * to_number<float>(stream.substr(0, stream.size() - 2), 0.0);
-    else if(stream.find("KB") != std::string::npos)
-        streamval = 1024.0 * to_number<float>(stream.substr(0, stream.size() - 2), 0.0);
-    else if(stream.find("B") != std::string::npos)
-        streamval = 1.0 * to_number<float>(stream.substr(0, stream.size() - 1), 0.0);
+    std::vector<std::string> units = {"B", "KB", "MB", "GB", "TB", "PB", "EB"};
+    for(size_t index = units.size() - 1; index >= 0; index--)
+    {
+        if(endsWith(stream, units[index]))
+        {
+            streamval = std::pow(1024, index) * to_number<float>(stream.substr(0, stream.size() - units[index].size()), 0.0);
+            break;
+        }
+    }
     return (unsigned long long)streamval;
 }
 

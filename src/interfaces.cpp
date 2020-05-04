@@ -138,7 +138,7 @@ std::string getRuleset(RESPONSE_CALLBACK_ARGS)
         switch(type_int)
         {
         case 2:
-            if(!std::any_of(quanx_rule_type.begin(), quanx_rule_type.end(), [&strLine](std::string type){return startsWith(strLine, type);}) || startsWith(strLine, "IP-CIDR6"))
+            if(!std::any_of(quanx_rule_type.begin(), quanx_rule_type.end(), [&strLine](std::string type){return startsWith(strLine, type);}))
                 continue;
             break;
         case 1:
@@ -206,6 +206,8 @@ std::string getRuleset(RESPONSE_CALLBACK_ARGS)
         {
             if(type_int == 2)
             {
+                if(startsWith(strLine, "IP-CIDR6"))
+                    strLine.replace(0, 8, "IP6-CIDR");
                 strLine += "," + group;
                 if(std::count(strLine.begin(), strLine.end(), ',') > 2 && regReplace(strLine, rule_match_regex, "$2") == ",no-resolve")
                     strLine = regReplace(strLine, rule_match_regex, "$1$3$2");
@@ -1954,7 +1956,7 @@ std::string getProfile(RESPONSE_CALLBACK_ARGS)
         return "Broken profile!";
     }
     auto profile_token = contents.find("profile_token");
-    if(profile_token != contents.end())
+    if(profiles.size() == 1 && profile_token != contents.end())
     {
         if(token != profile_token->second)
         {
