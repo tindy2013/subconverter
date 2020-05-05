@@ -56,7 +56,7 @@ static inline int process_request(const char *method_str, std::string uri, std::
 
     for(responseRoute &x : responses)
     {
-        if(strcmp(method_str, "OPTIONS") == 0 && x.method == postdata && x.path == path)
+        if(strcmp(method_str, "OPTIONS") == 0 && postdata.find(x.method) != 0 && x.path == path)
         {
             return 1;
         }

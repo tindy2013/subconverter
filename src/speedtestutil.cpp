@@ -2125,14 +2125,16 @@ static inline unsigned long long streamToInt(const std::string &stream)
         return 0;
     double streamval = 1.0;
     std::vector<std::string> units = {"B", "KB", "MB", "GB", "TB", "PB", "EB"};
-    for(size_t index = units.size() - 1; index >= 0; index--)
+    size_t index = units.size();
+    do
     {
+        index--;
         if(endsWith(stream, units[index]))
         {
             streamval = std::pow(1024, index) * to_number<float>(stream.substr(0, stream.size() - units[index].size()), 0.0);
             break;
         }
-    }
+    } while(index != 0);
     return (unsigned long long)streamval;
 }
 

@@ -1131,6 +1131,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     std::string include = UrlDecode(getUrlArg(argument, "include")), exclude = UrlDecode(getUrlArg(argument, "exclude"));
     std::string groups = urlsafe_base64_decode(getUrlArg(argument, "groups")), ruleset = urlsafe_base64_decode(getUrlArg(argument, "ruleset")), config = UrlDecode(getUrlArg(argument, "config"));
     std::string dev_id = getUrlArg(argument, "dev_id"), filename = getUrlArg(argument, "filename"), interval_str = getUrlArg(argument, "interval"), strict_str = getUrlArg(argument, "strict");
+    std::string ext_rename = UrlDecode(getUrlArg(argument, "rename"));
 
     /// switches with default value
     tribool upload = getUrlArg(argument, "upload"), emoji = getUrlArg(argument, "emoji");
@@ -1188,7 +1189,10 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     std::string proxy = parseProxy(proxy_subscription);
 
     ext.emoji_array = safe_get_emojis();
-    ext.rename_array = safe_get_renames();
+    if(ext_rename.size())
+        ext.rename_array = split(ext_rename, "`");
+    else
+        ext.rename_array = safe_get_renames();
 
     //check other flags
     if(!emoji.is_undef())
