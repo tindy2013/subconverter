@@ -2081,6 +2081,27 @@ void netchToQuan(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rules
                 continue;
             rules_upper_bound -= 2;
             break;
+        case "ssid"_hash:
+            {
+                if(rules_upper_bound < 4)
+                    continue;
+                singlegroup = vArray[0] + " : wifi = " + vArray[2];
+                std::string content, celluar, celluar_matcher = R"(^(.*?),?celluar\s?=\s?(.*?)(,.*)$)", rem_a, rem_b;
+                for(auto iter = vArray.begin() + 3; iter != vArray.end(); iter++)
+                {
+                    if(regGetMatch(*iter, celluar_matcher, 4, NULL, &rem_a, &celluar, &rem_b))
+                    {
+                        content += *iter + "\n";
+                        continue;
+                    }
+                    content += rem_a + rem_b + "\n";
+                }
+                if(celluar.size())
+                    singlegroup += ", celluar = " + celluar;
+                singlegroup += "\n" + replace_all_distinct(trim_of(content, ','), ",", "\n");
+                ini.Set("{NONAME}", base64_encode(singlegroup)); //insert order
+            }
+            continue;
         default:
             continue;
         }
