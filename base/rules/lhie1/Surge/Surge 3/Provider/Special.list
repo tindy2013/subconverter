@@ -6,9 +6,16 @@ DOMAIN-KEYWORD,mtalk.google.com
 DOMAIN,safebrowsing.googleapis.com
 DOMAIN-SUFFIX,dl.google.com
 
+# > Proxy plugin
+PROCESS-NAME,v2ray
+PROCESS-NAME,ss-local
+
 # > Steam
 USER-AGENT,Steam*
 DOMAIN-SUFFIX,steamcontent.com
+
+# > UUBooster
+PROCESS-NAME,UUBooster
 
 # > Windows
 DOMAIN-SUFFIX,windows.com
@@ -16,9 +23,19 @@ DOMAIN-SUFFIX,windows.net
 DOMAIN-SUFFIX,windowsupdate.com
 
 # > Xunlei
-PROCESS-NAME,Thunder
 USER-AGENT,%E8%BF%85%E9%9B%B7
 DOMAIN-SUFFIX,xunlei.com
+
+# > Download
+PROCESS-NAME,aria2c
+PROCESS-NAME,fdm
+PROCESS-NAME,Folx
+PROCESS-NAME,NetTransport
+PROCESS-NAME,Thunder
+PROCESS-NAME,Transmission
+PROCESS-NAME,uTorrent
+PROCESS-NAME,WebTorrent
+PROCESS-NAME,WebTorrent Helper
 
 # > Private Tracker
 DOMAIN-SUFFIX,awesome-hd.me

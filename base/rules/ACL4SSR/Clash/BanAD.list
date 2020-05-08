@@ -30,7 +30,6 @@ DOMAIN-KEYWORD,pingfore
 DOMAIN-KEYWORD,socdm
 DOMAIN-KEYWORD,supersonicads
 DOMAIN-KEYWORD,tracking
-DOMAIN-KEYWORD,uedas
 DOMAIN-KEYWORD,usage
 DOMAIN-KEYWORD,wlmonitor
 DOMAIN-KEYWORD,zjtoolbar
@@ -138,7 +137,6 @@ DOMAIN-SUFFIX,ajapk.com
 DOMAIN-SUFFIX,allyes.cn
 DOMAIN-SUFFIX,allyes.com
 DOMAIN-SUFFIX,amazon-adsystem.com
-DOMAIN-SUFFIX,amplitude.com
 DOMAIN-SUFFIX,analysys.cn
 DOMAIN-SUFFIX,angsrvr.com
 DOMAIN-SUFFIX,anquan.org
@@ -504,6 +502,7 @@ DOMAIN-SUFFIX,blismedia.com
 DOMAIN-SUFFIX,brucelead.com
 DOMAIN-SUFFIX,bttrack.com
 DOMAIN-SUFFIX,casalemedia.com
+DOMAIN-SUFFIX,celtra.com
 DOMAIN-SUFFIX,channeladvisor.com
 DOMAIN-SUFFIX,connexity.net
 DOMAIN-SUFFIX,criteo.com
@@ -533,6 +532,7 @@ DOMAIN-SUFFIX,hyperpromote.com
 DOMAIN-SUFFIX,i-mobile.co.jp
 DOMAIN-SUFFIX,imrworldwide.com
 DOMAIN-SUFFIX,inmobi.com
+DOMAIN-SUFFIX,inner-active.mobi
 DOMAIN-SUFFIX,intentiq.com
 DOMAIN-SUFFIX,inter1ads.com
 DOMAIN-SUFFIX,ipredictive.com
@@ -561,6 +561,7 @@ DOMAIN-SUFFIX,mobadme.jp
 DOMAIN-SUFFIX,mobfox.com
 DOMAIN-SUFFIX,mobileadtrading.com
 DOMAIN-SUFFIX,mobilityware.com
+DOMAIN-SUFFIX,mojiva.com
 DOMAIN-SUFFIX,mookie1.com
 DOMAIN-SUFFIX,msads.net
 DOMAIN-SUFFIX,mydas.mobi
@@ -596,6 +597,7 @@ DOMAIN-SUFFIX,taboola.com
 DOMAIN-SUFFIX,tapjoy.com
 DOMAIN-SUFFIX,tapjoyads.com
 DOMAIN-SUFFIX,trafficjunky.com
+DOMAIN-SUFFIX,trafficjunky.net
 DOMAIN-SUFFIX,tribalfusion.com
 DOMAIN-SUFFIX,turn.com
 DOMAIN-SUFFIX,vidoomy.com

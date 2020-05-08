@@ -2181,7 +2181,6 @@ DOMAIN-SUFFIX,cc.yac8.com
 DOMAIN-SUFFIX,cca.mob.com
 DOMAIN-SUFFIX,ccb.uncle-ad.com
 DOMAIN-SUFFIX,ccbaihehq.com
-DOMAIN-SUFFIX,ccclub.cmbchina.com
 DOMAIN-SUFFIX,cccrir.com
 DOMAIN-SUFFIX,ccr.yxdown.com
 DOMAIN-SUFFIX,cctyly.com
@@ -4052,7 +4051,6 @@ DOMAIN-SUFFIX,ifengad.3g.ifeng.com
 DOMAIN-SUFFIX,iflyad.bj.openstorage.cn
 DOMAIN-SUFFIX,iframe.travel.yahoo.com
 DOMAIN-SUFFIX,ig.nukefans.net
-DOMAIN-SUFFIX,igexin.com
 DOMAIN-SUFFIX,igj5y.yongchanghengyuan.com
 DOMAIN-SUFFIX,ih.adscale.de
 DOMAIN-SUFFIX,ihualun.com
@@ -6135,7 +6133,6 @@ DOMAIN-SUFFIX,pv.enet.com.cn
 DOMAIN-SUFFIX,pv.focus.cn
 DOMAIN-SUFFIX,pv.ra.icast.cn
 DOMAIN-SUFFIX,pv.sogou.com
-DOMAIN-SUFFIX,pv.sohu.com
 DOMAIN-SUFFIX,pv.xcar.com.cn
 DOMAIN-SUFFIX,pv.zdnet.com.cn
 DOMAIN-SUFFIX,pv.zol.com.cn
@@ -8271,7 +8268,6 @@ URL-REGEX,^http:\/\/c\.tieba\.baidu\.com\/c\/s\/splashSchedule$
 
 # > Bilibili
 DOMAIN,cm.bilibili.com
-DOMAIN,dataflow.biliapi.com
 DOMAIN,data.bilibili.com
 DOMAIN,miniapp.bilibili.com
 DOMAIN,thirdparty.biliapi.com
@@ -8312,7 +8308,7 @@ URL-REGEX,^http:\/\/iad.*mat\.[a-z]*\.12[67]\.net/\w+\.(jpg|mp4)$
 DOMAIN,mqtt.zhihu.com
 DOMAIN,sugar.zhihu.com
 DOMAIN-SUFFIX,xdrig.com
-URL-REGEX,https://api.zhihu.com/(fringe|zst|real_time|ad-style-service|banners|topstory/hot-lists|market/popover|mqtt|me|.*launch|.*featured-comment-ad|search/(top|tabs|preset)
+URL-REGEX,https://api.zhihu.com/(fringe|zst|real_time|ad-style-service|banners|topstory/hot-lists|market/popover|mqtt|me|.*launch|.*featured-comment-ad|search/(top|tabs|preset))
 URL-REGEX,https://api.zhihu.com.*(launch|recommendations)
 URL-REGEX,https://api.zhihu.com/search/(top|tabs|preset)
 URL-REGEX,https://api.zhihu.com/answers/.*/comments/featured-comment-ad

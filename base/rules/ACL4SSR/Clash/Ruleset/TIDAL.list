@@ -1,4 +1,6 @@
 # 内容：TIDAL
-# 数量：2条
+# 数量：4条
 USER-AGENT,TIDAL*
+DOMAIN-SUFFIX,tidal-cms.s3.amazonaws.com
 DOMAIN-SUFFIX,tidal.com
+DOMAIN-SUFFIX,tidalhifi.com

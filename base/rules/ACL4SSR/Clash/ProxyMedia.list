@@ -1,6 +1,6 @@
 # 内容：国外媒体列表
-# 更新：2020-04-10 13:39:43
-# 数量：249条
+# 更新：2020-04-23 22:30:34
+# 数量：262条
 
 # ABC
 DOMAIN-SUFFIX,edgedatg.com
@@ -53,13 +53,14 @@ DOMAIN-SUFFIX,tv.apple.com
 USER-AGENT,BBCiPlayer*
 DOMAIN-KEYWORD,bbcfmt
 DOMAIN-KEYWORD,uk-live
+DOMAIN,aod-dash-uk-live.akamaized.net
+DOMAIN,aod-hls-uk-live.akamaized.net
 DOMAIN,vod-dash-uk-live.akamaized.net
-DOMAIN,vod-dash-uk-live.bbcfmt.hs.llnwd.net
 DOMAIN,vod-thumb-uk-live.akamaized.net
-DOMAIN,vod-thumb-uk-live.bbcfmt.hs.llnwd.net
 DOMAIN-SUFFIX,bbc.co
 DOMAIN-SUFFIX,bbc.co.uk
 DOMAIN-SUFFIX,bbc.com
+DOMAIN-SUFFIX,bbcfmt.hs.llnwd.net
 DOMAIN-SUFFIX,bbci.co
 DOMAIN-SUFFIX,bbci.co.uk
 
@@ -90,8 +91,10 @@ DOMAIN-SUFFIX,dzcdn.net
 # DisneyPlus
 USER-AGENT,Disney*
 USER-AGENT,Disney+*
+DOMAIN,cdn.cdn.unid.go.com
 DOMAIN,cdn.registerdisney.go.com
 DOMAIN-SUFFIX,bamgrid.com
+DOMAIN-SUFFIX,braze.com
 DOMAIN-SUFFIX,conviva.com
 DOMAIN-SUFFIX,disney-plus.net
 DOMAIN-SUFFIX,disney.demdex.net
@@ -268,6 +271,9 @@ DOMAIN-SUFFIX,phprcdn.com
 DOMAIN-SUFFIX,pornhub.com
 DOMAIN-SUFFIX,pornhubpremium.com
 
+# Qobuz
+DOMAIN-SUFFIX,qobuz.com
+
 # SoundCloud
 USER-AGENT,SoundCloud*
 DOMAIN-SUFFIX,p-cdn.us
@@ -285,7 +291,9 @@ DOMAIN-SUFFIX,spotify.com
 
 # TIDAL
 USER-AGENT,TIDAL*
+DOMAIN-SUFFIX,tidal-cms.s3.amazonaws.com
 DOMAIN-SUFFIX,tidal.com
+DOMAIN-SUFFIX,tidalhifi.com
 
 # TaiWanGood
 USER-AGENT,TaiwanGood*
@@ -313,7 +321,14 @@ DOMAIN,api.viu.now.com
 DOMAIN,d1k2us671qcoau.cloudfront.net
 DOMAIN,d2anahhhmp1ffz.cloudfront.net
 DOMAIN,dfp6rglgjqszk.cloudfront.net
+DOMAIN-SUFFIX,bootstrapcdn.com
 DOMAIN-SUFFIX,cloudfront.net
+DOMAIN-SUFFIX,cognito-identity.us-east-1.amazonaws.com
+DOMAIN-SUFFIX,firebaseio.com
+DOMAIN-SUFFIX,jwpcdn.com
+DOMAIN-SUFFIX,jwplayer.com
+DOMAIN-SUFFIX,mobileanalytics.us-east-1.amazonaws.com
+DOMAIN-SUFFIX,nowe.com
 DOMAIN-SUFFIX,viu.com
 DOMAIN-SUFFIX,viu.now.com
 DOMAIN-SUFFIX,viu.tv
