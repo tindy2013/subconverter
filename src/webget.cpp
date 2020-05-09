@@ -47,7 +47,7 @@ static int writer(char *data, size_t size, size_t nmemb, std::string *writerData
 
 static int size_checker(void *clientp, double dltotal, double dlnow, double ultotal, double ulnow)
 {
-    if(dltotal > 1048576.0)
+    if(dltotal > 524288.0)
         return 1;
     return 0;
 }
@@ -63,7 +63,7 @@ static inline void curl_set_common_options(CURL *curl_handle, const char *url)
     curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYHOST, 0L);
     curl_easy_setopt(curl_handle, CURLOPT_TIMEOUT, 15L);
     curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, user_agent_str.data());
-    curl_easy_setopt(curl_handle, CURLOPT_MAXFILESIZE, 1048576L);
+    curl_easy_setopt(curl_handle, CURLOPT_MAXFILESIZE, 524288L);
     curl_easy_setopt(curl_handle, CURLOPT_PROGRESSFUNCTION, size_checker);
 }
 

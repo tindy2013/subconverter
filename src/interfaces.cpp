@@ -20,6 +20,8 @@
 #include "templates.h"
 #include "upload.h"
 
+#define MAX_EXTCONF_RULESET_COUNT 30
+
 //common settings
 std::string pref_path = "pref.ini", def_ext_config;
 string_array def_exclude_remarks, def_include_remarks, rulesets, stream_rules, time_rules;
@@ -358,14 +360,22 @@ void readGroup(YAML::Node node, string_array &dest, bool scope_limit = true)
         object["timeout"] >> timeout;
         for(j = 0; j < object["rule"].size(); j++)
             tempArray.emplace_back(safe_as<std::string>(object["rule"][j]));
-        if(type != "select" && type != "ssid")
+        switch(hash_(type))
         {
+        case "select"_hash:
+            if(tempArray.size() < 3)
+                continue;
+            break;
+        case "ssid"_hash:
+            if(tempArray.size() < 4)
+                continue;
+            break;
+        default:
+            if(tempArray.size() < 3)
+                continue;
             tempArray.emplace_back(url);
             tempArray.emplace_back(interval + "," + timeout + "," + tolerance);
         }
-
-        if((type == "select" && tempArray.size() < 3) || (type == "ssid" && tempArray.size() < 4) || (type != "select" && type != "ssid" && tempArray.size() < 5))
-            continue;
 
         strLine = std::accumulate(std::next(tempArray.begin()), tempArray.end(), tempArray[0], [](std::string a, std::string b) -> std::string
         {
@@ -972,7 +982,15 @@ int loadExternalYAML(YAML::Node &node, ExternalConfig &ext)
         readGroup(section["custom_proxy_group"], ext.custom_proxy_group, api_mode);
 
     if(section["surge_ruleset"].size())
+    {
         readRuleset(section["surge_ruleset"], ext.surge_ruleset, api_mode);
+        if(ext.surge_ruleset.size() > MAX_EXTCONF_RULESET_COUNT)
+        {
+            writeLog(0, "Ruleset count in external config has exceeded limit.", LOG_LEVEL_WARNING);
+            eraseElements(ext.surge_ruleset);
+            return -1;
+        }
+    }
 
     if(section["rename_node"].size())
         readRegexMatch(section["rename_node"], "@", ext.rename, api_mode);
@@ -1031,6 +1049,12 @@ int loadExternalConfig(std::string &path, ExternalConfig &ext)
     {
         ini.GetAll("surge_ruleset", ext.surge_ruleset);
         importItems(ext.surge_ruleset, api_mode);
+        if(ext.surge_ruleset.size() > MAX_EXTCONF_RULESET_COUNT)
+        {
+            writeLog(0, "Ruleset count in external config has exceeded limit. ", LOG_LEVEL_WARNING);
+            eraseElements(ext.surge_ruleset);
+            return -1;
+        }
     }
 
     ini.GetIfExist("clash_rule_base", ext.clash_rule_base);
@@ -1206,7 +1230,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         ext.remove_emoji = remove_old_emoji;
     }
     ext.append_proxy_type = append_type.get(append_proxy_type);
-    if(target == "clash" || target == "clashr")
+    if((target == "clash" || target == "clashr") && clash_script.is_undef())
         expand.define(true);
 
     /// read preference from argument
@@ -1248,28 +1272,34 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         //then load external configuration
         ExternalConfig extconf;
         extconf.tpl_args = &tpl_args;
-        loadExternalConfig(config, extconf);
-        if(!ext.nodelist)
+        if(loadExternalConfig(config, extconf) == 0)
         {
-            checkExternalBase(extconf.clash_rule_base, ext_clash_base);
-            checkExternalBase(extconf.surge_rule_base, ext_surge_base);
-            checkExternalBase(extconf.surfboard_rule_base, ext_surfboard_base);
-            checkExternalBase(extconf.mellow_rule_base, ext_mellow_base);
-            checkExternalBase(extconf.quan_rule_base, ext_quan_base);
-            checkExternalBase(extconf.quanx_rule_base, ext_quanx_base);
-            checkExternalBase(extconf.loon_rule_base, ext_loon_base);
-            checkExternalBase(extconf.sssub_rule_base, ext_sssub_base);
+            if(!ext.nodelist)
+            {
+                checkExternalBase(extconf.clash_rule_base, ext_clash_base);
+                checkExternalBase(extconf.surge_rule_base, ext_surge_base);
+                checkExternalBase(extconf.surfboard_rule_base, ext_surfboard_base);
+                checkExternalBase(extconf.mellow_rule_base, ext_mellow_base);
+                checkExternalBase(extconf.quan_rule_base, ext_quan_base);
+                checkExternalBase(extconf.quanx_rule_base, ext_quanx_base);
+                checkExternalBase(extconf.loon_rule_base, ext_loon_base);
+                checkExternalBase(extconf.sssub_rule_base, ext_sssub_base);
+            }
+            if(extconf.rename.size())
+                ext.rename_array = extconf.rename;
+            if(extconf.emoji.size())
+                ext.emoji_array = extconf.emoji;
+            ext.enable_rule_generator = extconf.enable_rule_generator;
+            //load custom group
+            if(extconf.custom_proxy_group.size())
+                extra_group = extconf.custom_proxy_group;
+            //load custom rules
+            ext.overwrite_original_rules = extconf.overwrite_original_rules;
+            if(extconf.include.size())
+                include_remarks = extconf.include;
+            if(extconf.exclude.size())
+                exclude_remarks = extconf.exclude;
         }
-        if(extconf.rename.size())
-            ext.rename_array = extconf.rename;
-        if(extconf.emoji.size())
-            ext.emoji_array = extconf.emoji;
-        ext.enable_rule_generator = extconf.enable_rule_generator;
-        //load custom group
-        if(extconf.custom_proxy_group.size())
-            extra_group = extconf.custom_proxy_group;
-        //load custom rules
-        ext.overwrite_original_rules = extconf.overwrite_original_rules;
         if(extconf.surge_ruleset.size() && !ext.nodelist)
         {
             extra_ruleset = extconf.surge_ruleset;
@@ -1285,10 +1315,6 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
                 rca = ruleset_content_array;
             }
         }
-        if(extconf.include.size())
-            include_remarks = extconf.include;
-        if(extconf.exclude.size())
-            exclude_remarks = extconf.exclude;
     }
     else
     {
@@ -1855,20 +1881,22 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
         if(!dummy_str_array.size())
             continue;
         content = trim(dummy_str_array[0]);
-        if(content == "direct")
+        switch(hash_(content))
         {
+        case "direct"_hash:
             singlegroup["name"] = name;
             singlegroup["type"] = "select";
             singlegroup["proxies"].push_back("DIRECT");
-        }
-        else if(content == "reject")
-        {
+            break;
+        case "reject"_hash:
+        case "reject-tinygif"_hash:
             singlegroup["name"] = name;
             singlegroup["type"] = "select";
             singlegroup["proxies"].push_back("REJECT");
-        }
-        else
+            break;
+        default:
             continue;
+        }
         clash[proxygroup_name].push_back(singlegroup);
     }
 
