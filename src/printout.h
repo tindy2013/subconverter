@@ -76,7 +76,7 @@ enum
 #define TROJAN_DEFAULT_GROUP "TrojanProvider"
 #define SNELL_DEFAULT_GROUP "SnellProvider"
 
-void printMsg(int index, nodeInfo *node, bool rpcmode);
+void printMsg(int index, nodeInfo &node, bool rpcmode);
 void printMsgWithDict(int index, bool rpcmode, std::vector<std::string> dict, std::vector<std::string> trans);
 void printMsgDirect(int index, bool rpcmode);
 
