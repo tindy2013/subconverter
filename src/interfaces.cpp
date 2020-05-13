@@ -995,6 +995,9 @@ int loadExternalYAML(YAML::Node &node, ExternalConfig &ext)
     if(section["rename_node"].size())
         readRegexMatch(section["rename_node"], "@", ext.rename, api_mode);
 
+    if(section["emoji"].size())
+        readEmoji(section["emoji"], ext.emoji, api_mode);
+
     section["include_remarks"] >> ext.include;
     section["exclude_remarks"] >> ext.exclude;
 
