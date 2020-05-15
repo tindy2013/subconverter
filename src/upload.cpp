@@ -1,8 +1,5 @@
 #include <string>
 
-#include <rapidjson/writer.h>
-#include <rapidjson/document.h>
-
 #include "webget.h"
 #include "ini_reader.h"
 #include "logger.h"

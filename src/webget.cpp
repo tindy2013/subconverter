@@ -23,7 +23,7 @@ typedef std::lock_guard<std::mutex> guarded_mutex;
 std::mutex cache_rw_lock;
 
 //std::string user_agent_str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36";
-std::string user_agent_str = "subconverter/" + std::string(VERSION) + " cURL/" + std::string(LIBCURL_VERSION);
+std::string user_agent_str = "subconverter/" VERSION " cURL/" LIBCURL_VERSION;
 
 static inline void curl_init()
 {
@@ -70,19 +70,29 @@ static inline void curl_set_common_options(CURL *curl_handle, const char *url)
 static std::string curlGet(const std::string &url, const std::string &proxy, std::string &response_headers, CURLcode &return_code)
 {
     CURL *curl_handle;
-    std::string data;
+    std::string data, new_url = url;
+    struct curl_slist *list = NULL;
     long retVal = 0;
 
     curl_init();
 
     curl_handle = curl_easy_init();
-    curl_set_common_options(curl_handle, url.data());
+    if(proxy.size())
+    {
+        if(startsWith(proxy, "cors:"))
+        {
+            list = curl_slist_append(list, "X-Requested-With: subconverter " VERSION);
+            curl_easy_setopt(curl_handle, CURLOPT_HTTPHEADER, list);
+            new_url = proxy.substr(5) + url;
+        }
+        else
+            curl_easy_setopt(curl_handle, CURLOPT_PROXY, proxy.data());
+    }
+    curl_set_common_options(curl_handle, new_url.data());
     curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, writer);
     curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, &data);
     curl_easy_setopt(curl_handle, CURLOPT_HEADERFUNCTION, writer);
     curl_easy_setopt(curl_handle, CURLOPT_HEADERDATA, &response_headers);
-    if(proxy.size())
-        curl_easy_setopt(curl_handle, CURLOPT_PROXY, proxy.data());
 
     return_code = curl_easy_perform(curl_handle);
     curl_easy_getinfo(curl_handle, CURLINFO_HTTP_CODE, &retVal);

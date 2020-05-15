@@ -5,7 +5,6 @@
 
 #define PCRE2_CODE_UNIT_WIDTH 8
 #include <pcre2.h>
-#include <rapidjson/document.h>
 
 #include "misc.h"
 #include "printout.h"
@@ -117,75 +116,84 @@ void explodeVmessConf(std::string content, const std::string &custom_port, bool 
     int configType, index = nodes.size();
     std::map<std::string, std::string> subdata;
     std::map<std::string, std::string>::iterator iter;
+    std::string streamset = "streamSettings", tcpset = "tcpSettings", wsset = "wsSettings";
+    regGetMatch(content, "((?i)streamsettings)", 2, NULL, &streamset);
+    regGetMatch(content, "((?i)tcpsettings)", 2, NULL, &tcpset);
+    regGetMatch(content, "((?1)wssettings)", 2, NULL, &wsset);
 
     json.Parse(content.data());
     if(json.HasParseError())
         return;
-    if(json.HasMember("outbounds")) //single config
+    try
     {
-        if(json["outbounds"].Size() > 0 && json["outbounds"][0].HasMember("settings") && json["outbounds"][0]["settings"].HasMember("vnext") && json["outbounds"][0]["settings"]["vnext"].Size() > 0)
+        if(json.HasMember("outbounds")) //single config
         {
-            nodejson = json["outbounds"][0];
-            add = GetMember(nodejson["settings"]["vnext"][0], "address");
-            port = GetMember(nodejson["settings"]["vnext"][0], "port");
-            if(nodejson["settings"]["vnext"][0]["users"].Size())
+            if(json["outbounds"].Size() > 0 && json["outbounds"][0].HasMember("settings") && json["outbounds"][0]["settings"].HasMember("vnext") && json["outbounds"][0]["settings"]["vnext"].Size() > 0)
             {
-                id = GetMember(nodejson["settings"]["vnext"][0]["users"][0], "id");
-                aid = GetMember(nodejson["settings"]["vnext"][0]["users"][0], "alterId");
-                cipher = GetMember(nodejson["settings"]["vnext"][0]["users"][0], "security");
-            }
-            if(nodejson.HasMember("streamSettings"))
-            {
-                net = GetMember(nodejson["streamSettings"], "network");
-                tls = GetMember(nodejson["streamSettings"], "security");
-                if(net == "ws")
+                nodejson = json["outbounds"][0];
+                add = GetMember(nodejson["settings"]["vnext"][0], "address");
+                port = GetMember(nodejson["settings"]["vnext"][0], "port");
+                if(nodejson["settings"]["vnext"][0]["users"].Size())
                 {
-                    if(nodejson["streamSettings"].HasMember("wssettings"))
-                        settings = nodejson["streamSettings"]["wssettings"];
-                    else if(nodejson["streamSettings"].HasMember("wsSettings"))
-                        settings = nodejson["streamSettings"]["wsSettings"];
+                    id = GetMember(nodejson["settings"]["vnext"][0]["users"][0], "id");
+                    aid = GetMember(nodejson["settings"]["vnext"][0]["users"][0], "alterId");
+                    cipher = GetMember(nodejson["settings"]["vnext"][0]["users"][0], "security");
+                }
+                if(nodejson.HasMember(streamset.data()))
+                {
+                    net = GetMember(nodejson[streamset.data()], "network");
+                    tls = GetMember(nodejson[streamset.data()], "security");
+                    if(net == "ws")
+                    {
+                        if(nodejson[streamset.data()].HasMember(wsset.data()))
+                            settings = nodejson[streamset.data()][wsset.data()];
+                        else
+                            settings.RemoveAllMembers();
+                        path = GetMember(settings, "path");
+                        if(settings.HasMember("headers"))
+                        {
+                            host = GetMember(settings["headers"], "Host");
+                            edge = GetMember(settings["headers"], "Edge");
+                        }
+                    }
+                    if(nodejson[streamset.data()].HasMember(tcpset.data()))
+                        settings = nodejson[streamset.data()][tcpset.data()];
                     else
                         settings.RemoveAllMembers();
-                    path = GetMember(settings, "path");
-                    if(settings.HasMember("headers"))
+                    if(settings.IsObject() && settings.HasMember("header"))
                     {
-                        host = GetMember(settings["headers"], "Host");
-                        edge = GetMember(settings["headers"], "Edge");
-                    }
-                }
-                if(nodejson["streamSettings"].HasMember("tcpSettings"))
-                    settings = nodejson["streamSettings"]["tcpSettings"];
-                else if(nodejson["streamSettings"].HasMember("tcpsettings"))
-                    settings = nodejson["streamSettings"]["tcpsettings"];
-                else
-                    settings.RemoveAllMembers();
-                if(settings.HasMember("header"))
-                {
-                    type = GetMember(settings["header"], "type");
-                    if(type == "http")
-                    {
-                        if(settings["header"].HasMember("request"))
+                        type = GetMember(settings["header"], "type");
+                        if(type == "http")
                         {
-                            if(settings["header"]["request"].HasMember("path") && settings["header"]["request"]["path"].Size())
-                                settings["header"]["request"]["path"][0] >> path;
-                            if(settings["header"]["request"].HasMember("headers"))
+                            if(settings["header"].HasMember("request"))
                             {
-                                host = GetMember(settings["header"]["request"]["headers"], "Host");
-                                edge = GetMember(settings["header"]["request"]["headers"], "Edge");
+                                if(settings["header"]["request"].HasMember("path") && settings["header"]["request"]["path"].Size())
+                                    settings["header"]["request"]["path"][0] >> path;
+                                if(settings["header"]["request"].HasMember("headers"))
+                                {
+                                    host = GetMember(settings["header"]["request"]["headers"], "Host");
+                                    edge = GetMember(settings["header"]["request"]["headers"], "Edge");
+                                }
                             }
                         }
                     }
                 }
+                node.linkType = SPEEDTEST_MESSAGE_FOUNDVMESS;
+                node.proxyStr = vmessConstruct(add, port, type, id, aid, net, cipher, path, host, edge, tls, udp, tfo, scv);
+                node.group = V2RAY_DEFAULT_GROUP;
+                node.remarks = add + ":" + port;
+                node.server = add;
+                node.port = to_int(port);
+                nodes.push_back(node);
             }
-            node.linkType = SPEEDTEST_MESSAGE_FOUNDVMESS;
-            node.proxyStr = vmessConstruct(add, port, type, id, aid, net, cipher, path, host, edge, tls, udp, tfo, scv);
-            node.group = V2RAY_DEFAULT_GROUP;
-            node.remarks = add + ":" + port;
-            node.server = add;
-            node.port = to_int(port);
-            nodes.push_back(node);
+            return;
         }
+    }
+    catch(std::exception & e)
+    {
+        writeLog(0, "VMessConf parser throws an error. Leaving...", LOG_LEVEL_WARNING);
         return;
+        //ignore
     }
     //read all subscribe remark as group name
     for(unsigned int i = 0; i < json["subItem"].Size(); i++)

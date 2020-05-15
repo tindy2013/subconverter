@@ -45,7 +45,6 @@ ADD_EXECUTABLE(subconverter
     src/misc.cpp
     src/multithread.cpp
     src/nodemanip.cpp
-    src/rapidjson_extra.cpp
     src/speedtestutil.cpp
     src/subexport.cpp
     src/templates.cpp

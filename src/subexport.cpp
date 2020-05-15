@@ -1615,40 +1615,34 @@ std::string netchToSS(std::vector<nodeInfo> &nodes, extra_settings &ext)
 
 std::string netchToSSSub(std::string &base_conf, std::vector<nodeInfo> &nodes, extra_settings &ext)
 {
-    rapidjson::Document json;
-    rapidjson::StringBuffer sb;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
+    rapidjson::Document json, base;
     std::string remark, hostname, password, method;
     std::string plugin, pluginopts;
     std::string protocol, obfs;
-    std::string route, remote_dns, ipv6, metered, proxy_apps_enabled, bypass, udpdns;
-    string_array android_list;
+    std::string output_content;
     int port;
 
-    json.Parse(base_conf.data());
-    if(!json.HasParseError())
+    rapidjson::Document::AllocatorType &alloc = json.GetAllocator();
+    json.SetObject();
+    json.AddMember("remarks", "", alloc);
+    json.AddMember("server", "", alloc);
+    json.AddMember("server_port", 0, alloc);
+    json.AddMember("method", "", alloc);
+    json.AddMember("password", "", alloc);
+    json.AddMember("plugin", "", alloc);
+    json.AddMember("plugin_opts", "", alloc);
+
+    base.Parse(base_conf.data());
+    if(!base.HasParseError())
     {
-        route = GetMember(json, "route");
-        remote_dns = GetMember(json, "remote_dns");
-        ipv6 = GetMember(json, "ipv6");
-        metered = GetMember(json, "metered");
-        udpdns = GetMember(json, "udpdns");
-        if(json.HasMember("proxy_apps") && json["proxy_apps"].IsObject())
-        {
-            proxy_apps_enabled = GetMember(json["proxy_apps"], "enabled");
-            bypass = GetMember(json["proxy_apps"], "bypass");
-            if(json["proxy_apps"].HasMember("android_list") && json["proxy_apps"]["android_list"].IsArray())
-            {
-                for(size_t i = 0; i < json["proxy_apps"]["android_list"].Size(); i++)
-                {
-                    if(json["proxy_apps"]["android_list"][i].IsString())
-                        android_list.push_back(json["proxy_apps"]["android_list"][i].GetString());
-                }
-            }
-        }
+        for(auto iter = base.MemberBegin(); iter != base.MemberEnd(); iter++)
+            json.AddMember(iter->name, iter->value, alloc);
     }
 
-    writer.StartArray();
+    rapidjson::Value jsondata;
+    json.Swap(jsondata);
+
+    output_content = "[";
     for(nodeInfo &x : nodes)
     {
         json.Parse(x.proxyStr.data());
@@ -1676,75 +1670,19 @@ std::string netchToSSSub(std::string &base_conf, std::vector<nodeInfo> &nodes, e
         default:
             continue;
         }
-        writer.StartObject();
-        writer.Key("server");
-        writer.String(hostname.data());
-        writer.Key("server_port");
-        writer.Int(port);
-        writer.Key("method");
-        writer.String(method.data());
-        writer.Key("password");
-        writer.String(password.data());
-        writer.Key("remarks");
-        writer.String(remark.data());
-        writer.Key("plugin");
-        writer.String(plugin.data());
-        writer.Key("plugin_opts");
-        writer.String(pluginopts.data());
-        if(route.size())
-        {
-            writer.Key("route");
-            writer.String(route.data());
-        }
-        if(remote_dns.size())
-        {
-            writer.Key("remote_dns");
-            writer.Bool(remote_dns == "true");
-        }
-        if(ipv6.size())
-        {
-            writer.Key("ipv6");
-            writer.Bool(ipv6 == "true");
-        }
-        if(metered.size())
-        {
-            writer.Key("metered");
-            writer.Bool(metered == "true");
-        }
-        if(udpdns.size())
-        {
-            writer.Key("udpdns");
-            writer.Bool(udpdns == "true");
-        }
-        if(proxy_apps_enabled.size())
-        {
-            bool enabled = proxy_apps_enabled == "true";
-            writer.Key("proxy_apps");
-            writer.StartObject();
-            writer.Key("enabled");
-            writer.Bool(enabled);
-            if(enabled)
-            {
-                if(bypass.size())
-                {
-                    writer.Key("bypass");
-                    writer.Bool(bypass == "true");
-                }
-            }
-            if(android_list.size())
-            {
-                writer.Key("android_list");
-                writer.StartArray();
-                for(const std::string &x : android_list)
-                    writer.String(x.data());
-                writer.EndArray();
-            }
-            writer.EndObject();
-        }
-        writer.EndObject();
+        jsondata["remarks"].SetString(rapidjson::StringRef(remark.c_str(), remark.size()));
+        jsondata["server"].SetString(rapidjson::StringRef(hostname.c_str(), hostname.size()));
+        jsondata["server_port"] = port;
+        jsondata["password"].SetString(rapidjson::StringRef(password.c_str(), password.size()));
+        jsondata["method"].SetString(rapidjson::StringRef(method.c_str(), method.size()));
+        jsondata["plugin"].SetString(rapidjson::StringRef(plugin.c_str(), plugin.size()));
+        jsondata["plugin_opts"].SetString(rapidjson::StringRef(pluginopts.c_str(), pluginopts.size()));
+        output_content += SerializeObject(jsondata) + ",";
     }
-    writer.EndArray();
-    return sb.GetString();
+    if(output_content.size() > 1)
+        output_content.erase(output_content.size() - 1);
+    output_content += "]";
+    return output_content;
 }
 
 std::string netchToSSR(std::vector<nodeInfo> &nodes, extra_settings &ext)
@@ -2322,27 +2260,27 @@ void netchToQuanX(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rule
         case "ssid"_hash:
             if(rules_upper_bound < 4)
                 continue;
-            proxies = vArray[0] + ",";
-            proxies += std::accumulate(vArray.begin() + 3, vArray.end(), vArray[2], [](std::string a, std::string b)
-            {
-                return std::move(a) + "," + replace_all_distinct(b, "=", ":");
-            });
-            ini.Set("{NONAME}", vArray[1] + "=" + proxies); //insert order
-            continue;
+            type = "ssid";
+            for(auto iter = vArray.begin() + 2; iter != vArray.end(); iter++)
+                filtered_nodelist.emplace_back(replace_all_distinct(*iter, "=", ":"));
+            break;
         default:
             continue;
         }
 
         name = vArray[0];
 
-        for(unsigned int i = 2; i < rules_upper_bound; i++)
-            groupGenerate(vArray[i], nodelist, filtered_nodelist, true);
+        if(hash_(vArray[1]) != "ssid"_hash)
+        {
+            for(unsigned int i = 2; i < rules_upper_bound; i++)
+                groupGenerate(vArray[i], nodelist, filtered_nodelist, true);
 
-        if(!filtered_nodelist.size())
-            filtered_nodelist.emplace_back("direct");
+            if(!filtered_nodelist.size())
+                filtered_nodelist.emplace_back("direct");
 
-        if(filtered_nodelist.size() < 2) // force groups with 1 node to be static
-            type = "static";
+            if(filtered_nodelist.size() < 2) // force groups with 1 node to be static
+                type = "static";
+        }
 
         auto iter = std::find_if(original_groups.begin(), original_groups.end(), [name](const string_multimap::value_type &n)
         {
