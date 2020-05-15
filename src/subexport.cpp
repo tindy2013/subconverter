@@ -1640,7 +1640,7 @@ std::string netchToSSSub(std::string &base_conf, std::vector<nodeInfo> &nodes, e
     }
 
     rapidjson::Value jsondata;
-    json.Swap(jsondata);
+    jsondata = json.Move();
 
     output_content = "[";
     for(nodeInfo &x : nodes)
