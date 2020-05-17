@@ -20,6 +20,8 @@
 #include <rapidjson/document.h>
 #include <yaml-cpp/yaml.h>
 
+#define MAX_RULES_COUNT 32768
+
 extern bool api_mode;
 extern string_array ss_ciphers, ssr_ciphers;
 
@@ -555,12 +557,15 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset
     std::stringstream strStrm;
     const std::string field_name = new_field_name ? "rules" : "Rule";
     YAML::Node Rules;
+    size_t total_rules = 0;
 
     if(!overwrite_original_rules && base_rule[field_name].IsDefined())
         Rules = base_rule[field_name];
 
     for(ruleset_content &x : ruleset_content_array)
     {
+        if(total_rules > MAX_RULES_COUNT)
+            break;
         rule_group = x.rule_group;
         retrived_rules = x.rule_content.get();
         if(retrived_rules.empty())
@@ -577,6 +582,7 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset
             if(std::count(strLine.begin(), strLine.end(), ',') > 2)
                 strLine = regReplace(strLine, "^(.*?,.*?)(,.*)(,.*)$", "$1$3$2");
             allRules.emplace_back(strLine);
+            total_rules++;
             continue;
         }
         char delimiter = count(retrived_rules.begin(), retrived_rules.end(), '\n') < 1 ? '\r' : '\n';
@@ -586,6 +592,8 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset
         std::string::size_type lineSize;
         while(getline(strStrm, strLine, delimiter))
         {
+            if(total_rules > MAX_RULES_COUNT)
+                break;
             lineSize = strLine.size();
             /*
             if(lineSize && strLine[lineSize - 1] == '\r') //remove line break
@@ -636,6 +644,7 @@ std::string rulesetToClashStr(YAML::Node &base_rule, std::vector<ruleset_content
     std::stringstream strStrm;
     const std::string field_name = new_field_name ? "rules" : "Rule";
     std::string output_content = "\n" + field_name + ":\n";
+    size_t total_rules = 0;
 
     if(!overwrite_original_rules && base_rule[field_name].IsDefined())
     {
@@ -646,6 +655,8 @@ std::string rulesetToClashStr(YAML::Node &base_rule, std::vector<ruleset_content
 
     for(ruleset_content &x : ruleset_content_array)
     {
+        if(total_rules > MAX_RULES_COUNT)
+            break;
         rule_group = x.rule_group;
         retrived_rules = x.rule_content.get();
         if(retrived_rules.empty())
@@ -662,6 +673,7 @@ std::string rulesetToClashStr(YAML::Node &base_rule, std::vector<ruleset_content
             if(std::count(strLine.begin(), strLine.end(), ',') > 2)
                 strLine = regReplace(strLine, "^(.*?,.*?)(,.*)(,.*)$", "$1$3$2");
             output_content += " - " + strLine + "\n";
+            total_rules++;
             continue;
         }
         char delimiter = count(retrived_rules.begin(), retrived_rules.end(), '\n') < 1 ? '\r' : '\n';
@@ -671,6 +683,8 @@ std::string rulesetToClashStr(YAML::Node &base_rule, std::vector<ruleset_content
         std::string::size_type lineSize;
         while(getline(strStrm, strLine, delimiter))
         {
+            if(total_rules > MAX_RULES_COUNT)
+                break;
             lineSize = strLine.size();
             if(lineSize)
             {
@@ -685,6 +699,7 @@ std::string rulesetToClashStr(YAML::Node &base_rule, std::vector<ruleset_content
             if(std::count(strLine.begin(), strLine.end(), ',') > 2)
                 strLine = regReplace(strLine, "^(.*?,.*?)(,.*)(,.*)$", "$1$3$2");
             output_content += " - " + strLine + "\n";
+            total_rules++;
         }
     }
     return output_content;
@@ -695,6 +710,7 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
     string_array allRules;
     std::string rule_group, rule_path, retrieved_rules, strLine;
     std::stringstream strStrm;
+    size_t total_rules = 0;
 
     switch(surge_ver) //other version: -3 for Surfboard, -4 for Loon
     {
@@ -729,6 +745,8 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
 
     for(ruleset_content &x : ruleset_content_array)
     {
+        if(total_rules > MAX_RULES_COUNT)
+            break;
         rule_group = x.rule_group;
         rule_path = x.rule_path;
         if(rule_path.empty())
@@ -751,6 +769,7 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
             }
             strLine = replace_all_distinct(strLine, ",,", ",");
             allRules.emplace_back(strLine);
+            total_rules++;
             continue;
         }
         else
@@ -815,6 +834,8 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
             std::string::size_type lineSize;
             while(getline(strStrm, strLine, delimiter))
             {
+                if(total_rules > MAX_RULES_COUNT)
+                    break;
                 lineSize = strLine.size();
                 /*
                 if(lineSize && strLine[lineSize - 1] == '\r') //remove line break
@@ -875,6 +896,7 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
                         strLine = regReplace(strLine, rule_match_regex, "$1$3$2");
                 }
                 allRules.emplace_back(strLine);
+                total_rules++;
             }
         }
     }

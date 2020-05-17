@@ -20,7 +20,7 @@
 #include "templates.h"
 #include "upload.h"
 
-#define MAX_EXTCONF_RULESET_COUNT 30
+#define MAX_EXTCONF_RULESET_COUNT 64
 
 //common settings
 std::string pref_path = "pref.ini", def_ext_config;
@@ -2336,12 +2336,7 @@ std::string renderTemplate(RESPONSE_CALLBACK_ARGS)
     std::string path = UrlDecode(getUrlArg(argument, "path"));
     writeLog(0, "Trying to render template '" + path + "'...", LOG_LEVEL_INFO);
 
-    if(path.find(template_path) != 0)
-    {
-        *status_code = 403;
-        return "Out of scope";
-    }
-    if(!fileExist(path))
+    if(path.find(template_path) != 0 || !fileExist(path))
     {
         *status_code = 404;
         return "Not found";

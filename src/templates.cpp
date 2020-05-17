@@ -9,6 +9,8 @@
 #include "logger.h"
 #include "misc.h"
 
+extern std::string managed_config_prefix;
+
 static inline void parse_json_pointer(nlohmann::json &json, const std::string &path, const std::string &value)
 {
     std::string pointer = "/" + replace_all_distinct(path, ".", "/");
@@ -109,6 +111,10 @@ int render_template(const std::string &content, const template_args &vars, std::
         output_content.append(value);
         data[nlohmann::json::json_pointer(pointer)] = output_content;
         return std::string();
+    });
+    m_callbacks.add_callback("getLink", 1, [](inja::Arguments &args)
+    {
+        return managed_config_prefix + args.at(0)->get<std::string>();
     });
     m_callbacks.add_callback("fetch", 1, template_webGet);
     m_callbacks.add_callback("parseHostname", 1, parseHostname);
