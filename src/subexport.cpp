@@ -407,7 +407,7 @@ bool matchRange(std::string &range, int target)
     bool match = false;
     std::string range_begin_str, range_end_str;
     int range_begin = 0, range_end = 0;
-    const std::string reg_num = "-?\\d+", reg_range = "(\\d+)-(\\d+)", reg_not = "\\!(\\d+)", reg_not_range = "\\!(\\d+)-(\\d+)", reg_less = "(\\d+)-", reg_more = "(\\d+)\\+";
+    const std::string reg_num = "-?\\d+", reg_range = "(\\d+)-(\\d+)", reg_not = "\\!-?(\\d+)", reg_not_range = "\\!(\\d+)-(\\d+)", reg_less = "(\\d+)-", reg_more = "(\\d+)\\+";
     for(std::string &x : vArray)
     {
         if(regMatch(x, reg_num))
@@ -909,32 +909,28 @@ void parseGroupTimes(const std::string &src, int *interval, int *tolerance, int 
 
 void groupGenerate(std::string &rule, std::vector<nodeInfo> &nodelist, std::vector<std::string> &filtered_nodelist, bool add_direct)
 {
-    std::string group;
-    const std::string groupid_regex = R"(^!!(?:GROUPID|INSERT)=([\d\-+!,]+)(?:!!(.*))?$)";
+    std::string group, real_rule;
+    const std::string groupid_regex = R"(^!!(?:GROUPID|INSERT)=([\d\-+!,]+)(?:!!(.*))?$)", group_regex = R"(^!!(?:GROUP)=(.*?)(?:!!(.*))?$)";
     if(rule.find("[]") == 0 && add_direct)
     {
         filtered_nodelist.emplace_back(rule.substr(2));
     }
     else if(rule.find("!!GROUP=") == 0)
     {
-        if(rule.find("!!", rule.find("!!") + 2) != rule.npos)
+        regGetMatch(rule, group_regex, 3, NULL, &group, &real_rule);
+        if(real_rule.empty())
         {
-            group = rule.substr(8, rule.find("!!", rule.find("!!") + 2) - 8);
-            rule = rule.substr(rule.find("!!", rule.find("!!") + 2) + 2);
-
             for(nodeInfo &y : nodelist)
             {
-                if(regFind(y.group, group) && regFind(y.remarks, rule) && std::find(filtered_nodelist.begin(), filtered_nodelist.end(), y.remarks) == filtered_nodelist.end())
+                if(regFind(y.group, group) && std::find(filtered_nodelist.begin(), filtered_nodelist.end(), y.remarks) == filtered_nodelist.end())
                     filtered_nodelist.emplace_back(y.remarks);
             }
         }
         else
         {
-            group = rule.substr(8);
-
             for(nodeInfo &y : nodelist)
             {
-                if(regFind(y.group, group) && std::find(filtered_nodelist.begin(), filtered_nodelist.end(), y.remarks) == filtered_nodelist.end())
+                if(regFind(y.group, group) && regFind(y.remarks, real_rule) && std::find(filtered_nodelist.begin(), filtered_nodelist.end(), y.remarks) == filtered_nodelist.end())
                     filtered_nodelist.emplace_back(y.remarks);
             }
         }
@@ -942,9 +938,8 @@ void groupGenerate(std::string &rule, std::vector<nodeInfo> &nodelist, std::vect
     else if(rule.find("!!GROUPID=") == 0 || rule.find("!!INSERT=") == 0)
     {
         int dir = rule.find("!!INSERT=") == 0 ? -1 : 1;
-        group = regReplace(rule, groupid_regex, "$1");
-        rule = regReplace(rule, groupid_regex, "$2");
-        if(rule.empty())
+        regGetMatch(rule, groupid_regex, 3, NULL, &group, &real_rule);
+        if(real_rule.empty())
         {
             for(nodeInfo &y : nodelist)
             {
@@ -956,7 +951,7 @@ void groupGenerate(std::string &rule, std::vector<nodeInfo> &nodelist, std::vect
         {
             for(nodeInfo &y : nodelist)
             {
-                if(matchRange(group, dir * y.groupID) && regFind(y.remarks, rule) && std::find(filtered_nodelist.begin(), filtered_nodelist.end(), y.remarks) == filtered_nodelist.end())
+                if(matchRange(group, dir * y.groupID) && regFind(y.remarks, real_rule) && std::find(filtered_nodelist.begin(), filtered_nodelist.end(), y.remarks) == filtered_nodelist.end())
                     filtered_nodelist.emplace_back(y.remarks);
             }
         }
