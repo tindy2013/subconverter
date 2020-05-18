@@ -8,7 +8,7 @@ RUN apk add git g++ build-base linux-headers cmake && \
     cd subconverter && \
     cmake . && \
     make -j4 && \
-    mv subconverter base/ && \
+    mv subconverter /usr/bin/ && \
     mv base ../ && \
     cd .. && \
     rm -rf subconverter && \
@@ -17,4 +17,5 @@ RUN apk add git g++ build-base linux-headers cmake && \
 
 # set entry
 WORKDIR /base
-CMD ./subconverter
+
+CMD  /usr/bin/subconverter
