@@ -39,6 +39,11 @@ template <typename T> T safe_as (const YAML::Node& node)
     return T();
 };
 
+template <typename T> void operator >>= (const YAML::Node& node, T& i)
+{
+    i = safe_as<T>(node);
+};
+
 void explodeVmess(std::string vmess, const std::string &custom_port, nodeInfo &node)
 {
     std::string version, ps, add, port, type, id, aid, net, path, host, tls;
@@ -978,23 +983,22 @@ void explodeNetch(std::string netch, bool ss_libev, bool ssr_libev, const std::s
 
 void explodeClash(Node yamlnode, const std::string &custom_port, std::vector<nodeInfo> &nodes, bool ss_libev, bool ssr_libev)
 {
+    std::string proxytype, ps, server, port, cipher, group, password; //common
+    std::string type = "none", id, aid = "0", net = "tcp", path, host, edge, tls; //vmess
+    std::string plugin, pluginopts, pluginopts_mode, pluginopts_host, pluginopts_mux; //ss
+    std::string protocol, protoparam, obfs, obfsparam; //ssr
+    std::string user; //socks
+    tribool udp, tfo, scv;
     nodeInfo node;
     Node singleproxy;
     unsigned int index = nodes.size();
     const std::string section = yamlnode["proxies"].IsDefined() ? "proxies" : "Proxy";
     for(unsigned int i = 0; i < yamlnode[section].size(); i++)
     {
-        std::string proxytype, ps, server, port, cipher, group, password; //common
-        std::string type = "none", id, aid = "0", net = "tcp", path, host, edge, tls; //vmess
-        std::string plugin, pluginopts, pluginopts_mode, pluginopts_host, pluginopts_mux; //ss
-        std::string protocol, protoparam, obfs, obfsparam; //ssr
-        std::string user; //socks
-        tribool udp, tfo, scv;
-
         singleproxy = yamlnode[section][i];
-        singleproxy["type"] >> proxytype;
-        singleproxy["name"] >> ps;
-        singleproxy["server"] >> server;
+        singleproxy["type"] >>= proxytype;
+        singleproxy["name"] >>= ps;
+        singleproxy["server"] >>= server;
         port = custom_port.empty() ? safe_as<std::string>(singleproxy["port"]) : custom_port;
         if(port.empty())
             continue;
@@ -1005,23 +1009,14 @@ void explodeClash(Node yamlnode, const std::string &custom_port, std::vector<nod
         case "vmess"_hash:
             group = V2RAY_DEFAULT_GROUP;
 
-            singleproxy["uuid"] >> id;
-            singleproxy["alterId"] >> aid;
-            singleproxy["cipher"] >> cipher;
+            singleproxy["uuid"] >>= id;
+            singleproxy["alterId"] >>= aid;
+            singleproxy["cipher"] >>= cipher;
             net = singleproxy["network"].IsDefined() ? safe_as<std::string>(singleproxy["network"]) : "tcp";
             path = singleproxy["ws-path"].IsDefined() ? safe_as<std::string>(singleproxy["ws-path"]) : "/";
-            if(singleproxy["tls"].IsDefined())
-                tls = safe_as<std::string>(singleproxy["tls"]) == "true" ? "tls" : "";
-            else
-                tls.clear();
-            if(singleproxy["ws-headers"].IsDefined())
-            {
-                singleproxy["ws-headers"]["Host"] >> host;
-                singleproxy["ws-headers"]["Edge"] >> edge;
-            }
-            else
-                host.clear();
-
+            tls = safe_as<std::string>(singleproxy["tls"]) == "true" ? "tls" : "";
+            singleproxy["ws-headers"]["Host"] >>= host;
+            singleproxy["ws-headers"]["Edge"] >>= edge;
 
             node.linkType = SPEEDTEST_MESSAGE_FOUNDVMESS;
             node.proxyStr = vmessConstruct(server, port, type, id, aid, net, cipher, path, host, edge, tls, udp, tfo, scv);
@@ -1029,8 +1024,8 @@ void explodeClash(Node yamlnode, const std::string &custom_port, std::vector<nod
         case "ss"_hash:
             group = SS_DEFAULT_GROUP;
 
-            singleproxy["cipher"] >> cipher;
-            singleproxy["password"] >> password;
+            singleproxy["cipher"] >>= cipher;
+            singleproxy["password"] >>= password;
             if(singleproxy["plugin"].IsDefined())
             {
                 switch(hash_(safe_as<std::string>(singleproxy["plugin"])))
@@ -1039,34 +1034,19 @@ void explodeClash(Node yamlnode, const std::string &custom_port, std::vector<nod
                         plugin = "simple-obfs";
                         if(singleproxy["plugin-opts"].IsDefined())
                         {
-                            singleproxy["plugin-opts"]["mode"] >> pluginopts_mode;
-                            if(singleproxy["plugin-opts"]["host"].IsDefined())
-                                singleproxy["plugin-opts"]["host"] >> pluginopts_host;
-                            else
-                                pluginopts_host.clear();
+                            singleproxy["plugin-opts"]["mode"] >>= pluginopts_mode;
+                            singleproxy["plugin-opts"]["host"] >>= pluginopts_host;
                         }
                         break;
                     case "v2ray-plugin"_hash:
                         plugin = "v2ray-plugin";
                         if(singleproxy["plugin-opts"].IsDefined())
                         {
-                            singleproxy["plugin-opts"]["mode"] >> pluginopts_mode;
-                            if(singleproxy["plugin-opts"]["host"].IsDefined())
-                                singleproxy["plugin-opts"]["host"] >> pluginopts_host;
-                            else
-                                pluginopts_host.clear();
-                            if(singleproxy["plugin-opts"]["tls"].IsDefined())
-                                tls = safe_as<bool>(singleproxy["plugin-opts"]["tls"]) ? "tls;" : "";
-                            else
-                                tls.clear();
-                            if(singleproxy["plugin-opts"]["path"].IsDefined())
-                                singleproxy["plugin-opts"]["path"] >> path;
-                            else
-                                path.clear();
-                            if(singleproxy["plugin-opts"]["mux"].IsDefined())
-                                pluginopts_mux = safe_as<bool>(singleproxy["plugin-opts"]["mux"]) ? "mux=4;" : "";
-                            else
-                                pluginopts_mux.clear();
+                            singleproxy["plugin-opts"]["mode"] >>= pluginopts_mode;
+                            singleproxy["plugin-opts"]["host"] >>= pluginopts_host;
+                            tls = safe_as<bool>(singleproxy["plugin-opts"]["tls"]) ? "tls;" : "";
+                            singleproxy["plugin-opts"]["path"] >>= path;
+                            pluginopts_mux = safe_as<bool>(singleproxy["plugin-opts"]["mux"]) ? "mux=4;" : "";
                         }
                         break;
                     default: break;
@@ -1075,10 +1055,12 @@ void explodeClash(Node yamlnode, const std::string &custom_port, std::vector<nod
             else if(singleproxy["obfs"].IsDefined())
             {
                 plugin = "simple-obfs";
-                singleproxy["obfs"] >> pluginopts_mode;
+                singleproxy["obfs"] >>= pluginopts_mode;
                 if(singleproxy["obfs-host"].IsDefined())
-                    singleproxy["obfs-host"] >> pluginopts_host;
+                    singleproxy["obfs-host"] >>= pluginopts_host;
             }
+            else
+                plugin.clear();
 
             switch(hash_(plugin))
             {
@@ -1113,8 +1095,8 @@ void explodeClash(Node yamlnode, const std::string &custom_port, std::vector<nod
         case "socks"_hash:
             group = SOCKS_DEFAULT_GROUP;
 
-            singleproxy["username"] >> user;
-            singleproxy["password"] >> password;
+            singleproxy["username"] >>= user;
+            singleproxy["password"] >>= password;
 
             node.linkType = SPEEDTEST_MESSAGE_FOUNDSOCKS;
             node.proxyStr = socksConstruct(ps, server, port, user, password);
@@ -1122,12 +1104,12 @@ void explodeClash(Node yamlnode, const std::string &custom_port, std::vector<nod
         case "ssr"_hash:
             group = SSR_DEFAULT_GROUP;
 
-            singleproxy["cipher"] >> cipher;
-            singleproxy["password"] >> password;
-            singleproxy["protocol"] >> protocol;
-            singleproxy["protocolparam"] >> protoparam;
-            singleproxy["obfs"] >> obfs;
-            singleproxy["obfsparam"] >> obfsparam;
+            singleproxy["cipher"] >>= cipher;
+            singleproxy["password"] >>= password;
+            singleproxy["protocol"] >>= protocol;
+            singleproxy["protocolparam"] >>= protoparam;
+            singleproxy["obfs"] >>= obfs;
+            singleproxy["obfsparam"] >>= obfsparam;
 
             node.linkType = SPEEDTEST_MESSAGE_FOUNDSSR;
             node.proxyStr = ssrConstruct(group, ps, base64_encode(ps), server, port, protocol, cipher, obfs, password, obfsparam, protoparam, ssr_libev, udp, tfo, scv);
@@ -1135,17 +1117,17 @@ void explodeClash(Node yamlnode, const std::string &custom_port, std::vector<nod
         case "http"_hash:
             group = HTTP_DEFAULT_GROUP;
 
-            singleproxy["username"] >> user;
-            singleproxy["password"] >> password;
-            singleproxy["tls"] >> tls;
+            singleproxy["username"] >>= user;
+            singleproxy["password"] >>= password;
+            singleproxy["tls"] >>= tls;
 
             node.linkType = SPEEDTEST_MESSAGE_FOUNDHTTP;
             node.proxyStr = httpConstruct(ps, server, port, user, password, tls == "true", scv);
             break;
         case "trojan"_hash:
             group = TROJAN_DEFAULT_GROUP;
-            singleproxy["password"] >> password;
-            singleproxy["sni"] >> host;
+            singleproxy["password"] >>= password;
+            singleproxy["sni"] >>= host;
 
             node.linkType = SPEEDTEST_MESSAGE_FOUNDTROJAN;
             node.proxyStr = trojanConstruct(ps, server, port, password, host, true, udp, tfo, scv);
@@ -1153,11 +1135,8 @@ void explodeClash(Node yamlnode, const std::string &custom_port, std::vector<nod
         case "snell"_hash:
             group = SNELL_DEFAULT_GROUP;
             singleproxy["psk"] >> password;
-            if(singleproxy["obfs-opts"].IsDefined())
-            {
-                singleproxy["obfs-opts"]["mode"] >> obfs;
-                singleproxy["obfs-opts"]["host"] >> host;
-            }
+            singleproxy["obfs-opts"]["mode"] >>= obfs;
+            singleproxy["obfs-opts"]["host"] >>= host;
 
             node.linkType = SPEEDTEST_MESSAGE_FOUNDSNELL;
             node.proxyStr = snellConstruct(ps, server, port, password, obfs, host, udp, tfo, scv);
@@ -1507,12 +1486,7 @@ bool explodeSurge(std::string surge, const std::string &custom_port, std::vector
             node.group = HTTP_DEFAULT_GROUP;
             server = trim(configs[1]);
             port = custom_port.empty() ? trim(configs[2]) : custom_port;
-            if(configs.size() >= 5)
-            {
-                username = trim(configs[2]);
-                password = trim(configs[3]);
-            }
-            for(i = 5; i < configs.size(); i++)
+            for(i = 3; i < configs.size(); i++)
             {
                 vArray = split(configs[i], "=");
                 if(vArray.size() < 2)
@@ -1521,6 +1495,8 @@ bool explodeSurge(std::string surge, const std::string &custom_port, std::vector
                 itemVal = trim(vArray[1]);
                 switch(hash_(itemName))
                 {
+                    case "username"_hash: username = itemVal; break;
+                    case "password"_hash: password = itemVal; break;
                     case "skip-cert-verify"_hash: scv = itemVal; break;
                     default: continue;
                 }
@@ -1979,6 +1955,7 @@ void explodeSub(std::string sub, bool sslibev, bool ssrlibev, const std::string 
     {
         if(!processed && (strFind(sub, "Proxy:") || strFind(sub, "proxies:")))
         {
+            regGetMatch(sub, R"(^(?:Proxy|proxies):$\s(?:(?:^ +?.*$| *?-.*$|)\s)+)", 1, &sub);
             Node yamlnode = Load(sub);
             if(yamlnode.size() && (yamlnode["Proxy"].IsDefined() || yamlnode["proxies"].IsDefined()))
             {
