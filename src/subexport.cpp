@@ -460,10 +460,10 @@ bool matchRange(std::string &range, int target)
     return match;
 }
 
-std::string nodeRename(std::string remark, int groupID, const string_array &rename_array)
+std::string nodeRename(const std::string &orig_remark, int groupID, const string_array &rename_array)
 {
     string_array vArray;
-    std::string targetRange;
+    std::string targetRange, remark = orig_remark;
     string_size pos;
 
     for(const std::string &x : rename_array)
@@ -490,12 +490,15 @@ std::string nodeRename(std::string remark, int groupID, const string_array &rena
         if(matchRange(targetRange, groupID))
             remark = regReplace(remark, vArray[0], vArray[1]);
     }
+    if(remark.empty())
+        return orig_remark;
     return remark;
 }
 
-std::string removeEmoji(std::string remark)
+std::string removeEmoji(const std::string &orig_remark)
 {
     char emoji_id[2] = {(char)-16, (char)-97};
+    std::string remark = orig_remark;
     while(true)
     {
         if(remark[0] == emoji_id[0] && remark[1] == emoji_id[1])
@@ -503,6 +506,8 @@ std::string removeEmoji(std::string remark)
         else
             break;
     }
+    if(remark.empty())
+        return orig_remark;
     return remark;
 }
 
