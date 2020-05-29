@@ -55,7 +55,7 @@ jobs:
       services: docker
       arch: arm64
       script:
-        - docker run --rm -v $TRAVIS_BUILD_DIR:/root/workdir multiarch/alpine:armhf-v3.11 /bin/sh -c "apk add bash git && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
+        - docker run --rm -v $TRAVIS_BUILD_DIR:/root/workdir multiarch/alpine:armhf-v3.10 /bin/sh -c "apk add bash git && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
       before_deploy:
         - tar czf subconverter_armhf.tar.gz subconverter/
       deploy:
