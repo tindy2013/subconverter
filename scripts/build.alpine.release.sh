@@ -27,7 +27,7 @@ cd ../../..
 cmake .
 make -j2
 rm subconverter
-g++ -o base/subconverter CMakeFiles/subconverter.dir/src/*.o  -static -lpcre2-8 -levent -lyaml-cpp -lcurl -lnghttp2 -lssl -lcrypto -lz -lbz2 -ldl -lpthread -O3 -s  
+g++ -o base/subconverter CMakeFiles/subconverter.dir/src/*.o  -static -lpcre2-8 -levent -lyaml-cpp -lcurl -lnghttp2 -lssl -lcrypto -lz -lbz2 -lduktape -lduktape_module -ldl -lpthread -O3 -s  
 
 cd base
 chmod +rx subconverter
