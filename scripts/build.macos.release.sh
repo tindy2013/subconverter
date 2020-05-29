@@ -26,9 +26,9 @@ cc -c -O3 -o duktape.o duktape.c
 cc -c -O3 -o duk_module_node.o -I. ../extras/module-node/duk_module_node.c
 ar cr libduktape.a duktape.o
 ar cr libduktape_module.a duk_module_node.o
-install -m0644 *.a /usr/lib
-install -m0644 duk*.h /usr/include
-install -m0644 ../extras/module-node/duk_module_node.h /usr/include
+install -m0644 *.a /usr/local/lib
+install -m0644 duk*.h /usr/local/include
+install -m0644 ../extras/module-node/duk_module_node.h /usr/local/include
 cd ../../..
 
 cp curl/lib/libcurl.a .
