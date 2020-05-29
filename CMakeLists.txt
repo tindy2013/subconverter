@@ -45,6 +45,7 @@ ADD_EXECUTABLE(subconverter
     src/misc.cpp
     src/multithread.cpp
     src/nodemanip.cpp
+    src/script.cpp
     src/speedtestutil.cpp
     src/subexport.cpp
     src/templates.cpp
