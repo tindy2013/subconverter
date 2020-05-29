@@ -20,7 +20,9 @@
 
 #define concat(a,b) a ## b
 #define do_concat(a,b) concat(a,b)
-#define defer(x) std::shared_ptr<void> do_concat(__defer_deleter_,__LINE__) (nullptr, [&](...){x});
+template <typename T> class __defer_struct final {private: T fn; bool __cancelled = false; public: __defer_struct(T func) : fn(std::move(func)) {} ~__defer_struct() {if(!__cancelled) fn();} void cancel() {__cancelled = true;} };
+//#define defer(x) std::unique_ptr<void> do_concat(__defer_deleter_,__LINE__) (nullptr, [&](...){x});
+#define defer(x) __defer_struct do_concat(__defer_deleter,__COUNTER__) ([&](...){x;});
 
 typedef std::string::size_type string_size;
 typedef std::vector<std::string> string_array;

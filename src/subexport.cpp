@@ -10,6 +10,7 @@
 #include "string_hash.h"
 #include "logger.h"
 #include "templates.h"
+#include "script_duktape.h"
 
 #include <algorithm>
 #include <iostream>
@@ -19,6 +20,7 @@
 #include <rapidjson/writer.h>
 #include <rapidjson/document.h>
 #include <yaml-cpp/yaml.h>
+#include <duktape.h>
 
 #define MAX_RULES_COUNT 32768
 
@@ -78,7 +80,7 @@ std::string hostnameToIPAddr(const std::string &host)
     return retAddr;
 }
 
-std::string vmessConstruct(std::string add, std::string port, std::string type, std::string id, std::string aid, std::string net, std::string cipher, std::string path, std::string host, std::string edge, std::string tls, tribool udp, tribool tfo, tribool scv)
+std::string vmessConstruct(std::string group, std::string remarks, std::string add, std::string port, std::string type, std::string id, std::string aid, std::string net, std::string cipher, std::string path, std::string host, std::string edge, std::string tls, tribool udp, tribool tfo, tribool scv)
 {
     if(!path.size())
         path = "/";
@@ -94,8 +96,10 @@ std::string vmessConstruct(std::string add, std::string port, std::string type, 
     writer.StartObject();
     writer.Key("Type");
     writer.String("VMess");
+    writer.Key("Group");
+    writer.String(group.data());
     writer.Key("Remark");
-    writer.String(std::string(add + ":" + port).data());
+    writer.String(remarks.data());
     writer.Key("Hostname");
     writer.String(add.data());
     writer.Key("Port");
@@ -194,13 +198,15 @@ std::string ssrConstruct(std::string group, std::string remarks, std::string rem
     return sb.GetString();
 }
 
-std::string ssConstruct(std::string server, std::string port, std::string password, std::string method, std::string plugin, std::string pluginopts, std::string remarks, bool libev, tribool udp, tribool tfo, tribool scv)
+std::string ssConstruct(std::string group, std::string remarks, std::string server, std::string port, std::string password, std::string method, std::string plugin, std::string pluginopts, bool libev, tribool udp, tribool tfo, tribool scv)
 {
     rapidjson::StringBuffer sb;
     rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
     writer.StartObject();
     writer.Key("Type");
     writer.String("SS");
+    writer.Key("Group");
+    writer.String(group.data());
     writer.Key("Remark");
     writer.String(remarks.data());
     writer.Key("Hostname");
@@ -234,13 +240,15 @@ std::string ssConstruct(std::string server, std::string port, std::string passwo
     return sb.GetString();
 }
 
-std::string socksConstruct(std::string remarks, std::string server, std::string port, std::string username, std::string password, tribool udp, tribool tfo, tribool scv)
+std::string socksConstruct(std::string group, std::string remarks, std::string server, std::string port, std::string username, std::string password, tribool udp, tribool tfo, tribool scv)
 {
     rapidjson::StringBuffer sb;
     rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
     writer.StartObject();
     writer.Key("Type");
     writer.String("Socks5");
+    writer.Key("Group");
+    writer.String(group.data());
     writer.Key("Remark");
     writer.String(remarks.data());
     writer.Key("Hostname");
@@ -270,13 +278,15 @@ std::string socksConstruct(std::string remarks, std::string server, std::string 
     return sb.GetString();
 }
 
-std::string httpConstruct(std::string remarks, std::string server, std::string port, std::string username, std::string password, bool tls, tribool scv)
+std::string httpConstruct(std::string group, std::string remarks, std::string server, std::string port, std::string username, std::string password, bool tls, tribool scv)
 {
     rapidjson::StringBuffer sb;
     rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
     writer.StartObject();
     writer.Key("Type");
     writer.String(tls ? "HTTPS" : "HTTP");
+    writer.Key("Group");
+    writer.String(group.data());
     writer.Key("Remark");
     writer.String(remarks.data());
     writer.Key("Hostname");
@@ -296,13 +306,15 @@ std::string httpConstruct(std::string remarks, std::string server, std::string p
     return sb.GetString();
 }
 
-std::string trojanConstruct(std::string remarks, std::string server, std::string port, std::string password, std::string host, bool tlssecure, tribool udp, tribool tfo, tribool scv)
+std::string trojanConstruct(std::string group, std::string remarks, std::string server, std::string port, std::string password, std::string host, bool tlssecure, tribool udp, tribool tfo, tribool scv)
 {
     rapidjson::StringBuffer sb;
     rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
     writer.StartObject();
     writer.Key("Type");
     writer.String("Trojan");
+    writer.Key("Group");
+    writer.String(group.data());
     writer.Key("Remark");
     writer.String(remarks.data());
     writer.Key("Hostname");
@@ -334,13 +346,15 @@ std::string trojanConstruct(std::string remarks, std::string server, std::string
     return sb.GetString();
 }
 
-std::string snellConstruct(std::string remarks, std::string server, std::string port, std::string password, std::string obfs, std::string host, tribool udp, tribool tfo, tribool scv)
+std::string snellConstruct(std::string group, std::string remarks, std::string server, std::string port, std::string password, std::string obfs, std::string host, tribool udp, tribool tfo, tribool scv)
 {
     rapidjson::StringBuffer sb;
     rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
     writer.StartObject();
     writer.Key("Type");
     writer.String("Snell");
+    writer.Key("Group");
+    writer.String(group.data());
     writer.Key("Remark");
     writer.String(remarks.data());
     writer.Key("Hostname");
@@ -409,7 +423,7 @@ bool matchRange(std::string &range, int target)
     bool match = false;
     std::string range_begin_str, range_end_str;
     int range_begin = 0, range_end = 0;
-    const std::string reg_num = "-?\\d+", reg_range = "(\\d+)-(\\d+)", reg_not = "\\!-?(\\d+)", reg_not_range = "\\!(\\d+)-(\\d+)", reg_less = "(\\d+)-", reg_more = "(\\d+)\\+";
+    static const std::string reg_num = "-?\\d+", reg_range = "(\\d+)-(\\d+)", reg_not = "\\!-?(\\d+)", reg_not_range = "\\!(\\d+)-(\\d+)", reg_less = "(\\d+)-", reg_more = "(\\d+)\\+";
     for(std::string &x : vArray)
     {
         if(regMatch(x, reg_num))
@@ -460,15 +474,35 @@ bool matchRange(std::string &range, int target)
     return match;
 }
 
-std::string nodeRename(const std::string &orig_remark, int groupID, const string_array &rename_array)
+bool applyMatcher(const std::string &rule, std::string &real_rule, const nodeInfo &node)
+{
+    std::string group, ret_real_rule;
+    static const std::string groupid_regex = R"(^!!(?:GROUPID|INSERT)=([\d\-+!,]+)(?:!!(.*))?$)", group_regex = R"(^!!(?:GROUP)=(.*?)(?:!!(.*))?$)";
+    if(startsWith(rule, "!!GROUP="))
+    {
+        regGetMatch(rule, group_regex, 3, NULL, &group, &ret_real_rule);
+        real_rule = ret_real_rule;
+        return regFind(node.group, group);
+    }
+    else if(startsWith(rule, "!!GROUPID=") || startsWith(rule, "!!INSERT="))
+    {
+        int dir = startsWith(rule, "!!INSERT=") ? -1 : 1;
+        regGetMatch(rule, groupid_regex, 3, NULL, &group, &ret_real_rule);
+        real_rule = ret_real_rule;
+        return matchRange(group, dir * node.groupID);
+    }
+    else
+        real_rule = rule;
+    return true;
+}
+
+std::string nodeRename(const nodeInfo &node, const string_array &rename_array)
 {
     string_array vArray;
-    std::string targetRange, remark = orig_remark;
-    string_size pos;
+    std::string remark = node.remarks, real_rule;
 
     for(const std::string &x : rename_array)
     {
-        targetRange = std::to_string(groupID);
         vArray = split(x, "@");
         if(vArray.size() == 1)
         {
@@ -476,22 +510,11 @@ std::string nodeRename(const std::string &orig_remark, int groupID, const string
         }
         else if(vArray.size() != 2)
             continue;
-        if(startsWith(vArray[0], "!!GROUPID="))
-        {
-            pos = vArray[0].find("!!", vArray[0].find("!!") + 2);
-            if(pos != vArray[0].npos)
-            {
-                targetRange = vArray[0].substr(10, pos - 10);
-                vArray[0] = vArray[0].substr(pos + 2);
-            }
-            else
-                continue;
-        }
-        if(matchRange(targetRange, groupID))
-            remark = regReplace(remark, vArray[0], vArray[1]);
+        if(applyMatcher(vArray[0], real_rule, node) && real_rule.size())
+            remark = regReplace(remark, real_rule, vArray[1]);
     }
     if(remark.empty())
-        return orig_remark;
+        return node.remarks;
     return remark;
 }
 
@@ -511,36 +534,21 @@ std::string removeEmoji(const std::string &orig_remark)
     return remark;
 }
 
-std::string addEmoji(std::string remark, int groupID, const string_array &emoji_array)
+std::string addEmoji(const nodeInfo &node, const string_array &emoji_array)
 {
     string_array vArray;
-    std::string targetRange;
+    std::string real_rule;
     string_size pos;
 
     for(const std::string &x : emoji_array)
     {
-        targetRange = std::to_string(groupID);
-        vArray = split(x, ",");
-        if(vArray.size() != 2)
+        pos = x.rfind(",");
+        if(pos == x.npos)
             continue;
-        if(startsWith(vArray[0], "!!GROUPID="))
-        {
-            pos = vArray[0].find("!!", vArray[0].find("!!") + 2);
-            if(pos != vArray[0].npos)
-            {
-                targetRange = vArray[0].substr(10, pos - 10);
-                vArray[0] = vArray[0].substr(pos + 2);
-            }
-            else
-                continue;
-        }
-        if(matchRange(targetRange, groupID) && regFind(remark, vArray[0]))
-        {
-            remark = vArray[1] + " " + remark;
-            break;
-        }
+        if(applyMatcher(x.substr(0, pos), real_rule, node) && real_rule.size() && regFind(node.remarks, real_rule))
+            return x.substr(pos + 1) + " " + node.remarks;
     }
-    return remark;
+    return node.remarks;
 }
 
 void processRemark(std::string &oldremark, std::string &newremark, string_array &remarks_list)
@@ -934,61 +942,54 @@ void parseGroupTimes(const std::string &src, int *interval, int *tolerance, int 
     return;
 }
 
-void groupGenerate(std::string &rule, std::vector<nodeInfo> &nodelist, std::vector<std::string> &filtered_nodelist, bool add_direct)
+void groupGenerate(std::string &rule, std::vector<nodeInfo> &nodelist, string_array &filtered_nodelist, bool add_direct)
 {
     std::string group, real_rule;
     const std::string groupid_regex = R"(^!!(?:GROUPID|INSERT)=([\d\-+!,]+)(?:!!(.*))?$)", group_regex = R"(^!!(?:GROUP)=(.*?)(?:!!(.*))?$)";
-    if(rule.find("[]") == 0 && add_direct)
+    if(startsWith(rule, "[]") && add_direct)
     {
         filtered_nodelist.emplace_back(rule.substr(2));
     }
-    else if(rule.find("!!GROUP=") == 0)
+    else if(startsWith(rule, "script:"))
     {
-        regGetMatch(rule, group_regex, 3, NULL, &group, &real_rule);
-        if(real_rule.empty())
+        duk_context *ctx = duktape_init();
+        if(ctx)
         {
-            for(nodeInfo &y : nodelist)
+            defer(duk_destroy_heap(ctx);)
+            std::string script = fileGet(rule.substr(7), true);
+            if(duktape_peval(ctx, script) == 0)
             {
-                if(regFind(y.group, group) && std::find(filtered_nodelist.begin(), filtered_nodelist.end(), y.remarks) == filtered_nodelist.end())
-                    filtered_nodelist.emplace_back(y.remarks);
+                duk_get_global_string(ctx, "filter");
+                duk_idx_t arr_idx = duk_push_array(ctx), node_idx = 0;
+                for(nodeInfo &x : nodelist)
+                {
+                    duktape_push_nodeinfo_arr(ctx, x, -1);
+                    duk_put_prop_index(ctx, arr_idx, node_idx++);
+                }
+                if(duk_pcall(ctx, 1) == 0)
+                {
+                    std::string result_list = duktape_get_res_str(ctx);
+                    filtered_nodelist = split(regTrim(result_list), "\n");
+                }
+                else
+                {
+                    writeLog(0, "Error when trying to evaluate script:\n" + duktape_get_err_stack(ctx), LOG_LEVEL_ERROR);
+                    duk_pop(ctx);
+                }
             }
-        }
-        else
-        {
-            for(nodeInfo &y : nodelist)
+            else
             {
-                if(regFind(y.group, group) && regFind(y.remarks, real_rule) && std::find(filtered_nodelist.begin(), filtered_nodelist.end(), y.remarks) == filtered_nodelist.end())
-                    filtered_nodelist.emplace_back(y.remarks);
-            }
-        }
-    }
-    else if(rule.find("!!GROUPID=") == 0 || rule.find("!!INSERT=") == 0)
-    {
-        int dir = rule.find("!!INSERT=") == 0 ? -1 : 1;
-        regGetMatch(rule, groupid_regex, 3, NULL, &group, &real_rule);
-        if(real_rule.empty())
-        {
-            for(nodeInfo &y : nodelist)
-            {
-                if(matchRange(group, dir * y.groupID) && std::find(filtered_nodelist.begin(), filtered_nodelist.end(), y.remarks) == filtered_nodelist.end())
-                    filtered_nodelist.emplace_back(y.remarks);
-            }
-        }
-        else
-        {
-            for(nodeInfo &y : nodelist)
-            {
-                if(matchRange(group, dir * y.groupID) && regFind(y.remarks, real_rule) && std::find(filtered_nodelist.begin(), filtered_nodelist.end(), y.remarks) == filtered_nodelist.end())
-                    filtered_nodelist.emplace_back(y.remarks);
+                writeLog(0, "Error when trying to parse script:\n" + duktape_get_err_stack(ctx), LOG_LEVEL_ERROR);
+                duk_pop(ctx);
             }
         }
     }
     else
     {
-        for(nodeInfo &y : nodelist)
+        for(nodeInfo &x : nodelist)
         {
-            if(regFind(y.remarks, rule) && std::find(filtered_nodelist.begin(), filtered_nodelist.end(), y.remarks) == filtered_nodelist.end())
-                filtered_nodelist.emplace_back(y.remarks);
+            if(applyMatcher(rule, real_rule, x) && (real_rule.empty() || regFind(x.remarks, real_rule)) && std::find(filtered_nodelist.begin(), filtered_nodelist.end(), x.remarks) == filtered_nodelist.end())
+                filtered_nodelist.emplace_back(x.remarks);
         }
     }
 }
@@ -997,17 +998,45 @@ void preprocessNodes(std::vector<nodeInfo> &nodes, extra_settings &ext)
 {
     std::for_each(nodes.begin(), nodes.end(), [ext](nodeInfo &x)
     {
-        x.remarks = nodeRename(x.remarks, x.groupID, ext.rename_array);
+        x.remarks = nodeRename(x, ext.rename_array);
         if(ext.remove_emoji)
             x.remarks = trim(removeEmoji(x.remarks));
 
         if(ext.add_emoji)
-            x.remarks = addEmoji(x.remarks, x.groupID, ext.emoji_array);
+            x.remarks = addEmoji(x, ext.emoji_array);
     });
 
     if(ext.sort_flag)
     {
-        std::sort(nodes.begin(), nodes.end(), [](const nodeInfo &a, const nodeInfo &b)
+        bool failed = true;
+        if(ext.sort_script.size())
+        {
+            duk_context *ctx = duktape_init();
+            if(ctx)
+            {
+                defer(duk_destroy_heap(ctx);)
+                if(duktape_peval(ctx, ext.sort_script) == 0)
+                {
+                    auto comparer = [&](const nodeInfo &a, const nodeInfo &b)
+                    {
+                        duk_get_global_string(ctx, "compare");
+                        /// push 2 nodeinfo
+                        duktape_push_nodeinfo(ctx, a);
+                        duktape_push_nodeinfo(ctx, b);
+                        /// call function
+                        return duktape_get_res_int(ctx);
+                    };
+                    std::sort(nodes.begin(), nodes.end(), comparer);
+                    failed = false;
+                }
+                else
+                {
+                    writeLog(0, "Error when trying to parse script:\n" + duktape_get_err_stack(ctx), LOG_LEVEL_ERROR);
+                    duk_pop(ctx); /// pop err
+                }
+            }
+        }
+        if(failed) std::sort(nodes.begin(), nodes.end(), [](const nodeInfo &a, const nodeInfo &b)
         {
             return a.remarks < b.remarks;
         });

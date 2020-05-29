@@ -59,6 +59,7 @@ static inline void curl_set_common_options(CURL *curl_handle, const char *url)
     curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 0L);
     curl_easy_setopt(curl_handle, CURLOPT_NOSIGNAL, 1L);
     curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1L);
+    curl_easy_setopt(curl_handle, CURLOPT_MAXREDIRS, 20L);
     curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYPEER, 0L);
     curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYHOST, 0L);
     curl_easy_setopt(curl_handle, CURLOPT_TIMEOUT, 15L);
@@ -109,12 +110,12 @@ static std::string curlGet(const std::string &url, const std::string &proxy, std
 static std::string dataGet(const std::string &url)
 {
     if (!startsWith(url, "data:"))
-        return "";
+        return std::string();
     std::string::size_type comma = url.find(',');
-    if (comma == std::string::npos)
-        return "";
+    if (comma == std::string::npos || comma == url.size() - 1)
+        return std::string();
 
-    std::string data = UrlDecode(url.substr(comma));
+    std::string data = UrlDecode(url.substr(comma + 1));
     if (endsWith(url.substr(0, comma), ";base64")) {
         return urlsafe_base64_decode(data);
     } else {

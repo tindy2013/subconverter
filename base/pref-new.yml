@@ -7,6 +7,8 @@ common:
   prepend_insert_url: true
   exclude_remarks: ["(到期|剩余流量|时间|官网|产品)"]
   include_remarks: []
+  enable_filter: false
+  filter_script: ""
   default_external_config: "" # config/example_external_config.yml
   base_path: base
   clash_rule_base: base/all_base.tpl
@@ -39,6 +41,7 @@ node_pref:
 #  udp_flag: false
 #  tcp_fast_open_flag: false
   sort_flag: false
+  sort_script: ""
 #  skip_cert_verify_flag: false
   filter_deprecated_nodes: false
   append_sub_userinfo: true

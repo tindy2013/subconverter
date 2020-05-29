@@ -36,6 +36,7 @@ struct extra_settings
     tribool udp = false;
     tribool tfo = false;
     tribool skip_cert_verify = false;
+    std::string sort_script;
 };
 
 void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset_content_array, bool overwrite_original_rules, bool new_field_name);

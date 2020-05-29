@@ -15,6 +15,6 @@ c++ -std=c++17 -Wall -fexceptions -c src/upload.cpp -o obj/upload.o
 c++ -std=c++17 -Wall -fexceptions -c src/templates.cpp -o obj/templates.o
 c++ -std=c++17 -Wall -fexceptions -c src/webget.cpp -o obj/webget.o
 c++ -std=c++17 -Wall -fexceptions -c src/webserver_libevent.cpp -o obj/webserver_libevent.o
-c++ -o subconverter obj/*.o -lpcre2-8 -levent -lpthread -lyaml-cpp -lcurl -lssl -lcrypto -lz -O3 -s 
+c++ -o subconverter obj/*.o -lpcre2-8 -levent -lpthread -lyaml-cpp -lcurl -lssl -lcrypto -lz -O3 -s -lduktape -lduktape_module
 
 chmod +x subconverter
