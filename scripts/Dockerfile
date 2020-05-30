@@ -17,7 +17,8 @@ RUN apk add git g++ build-base linux-headers cmake && \
     install -m0644 duk*.h /usr/include && \
     install -m0644 ../extras/module-node/duk_module_node.h /usr/include && \
     cd ../../.. && \
-    git clone https://github.com/tindy2013/subconverter && \
+    rm -rf duktape /usr/lib/python2.7 && \
+    git clone https://github.com/tindy2013/subconverter --depth=1 && \
     cd subconverter && \
     cmake . && \
     make -j4 && \
