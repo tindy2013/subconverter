@@ -21,8 +21,6 @@
 #include "upload.h"
 #include "script_duktape.h"
 
-#define MAX_EXTCONF_RULESET_COUNT 64
-
 //common settings
 std::string pref_path = "pref.ini", def_ext_config;
 string_array def_exclude_remarks, def_include_remarks, rulesets, stream_rules, time_rules;
@@ -70,6 +68,9 @@ INIReader surge_base, mellow_base;
 //cache system
 bool serve_cache_on_fetch_fail = false;
 int cache_subscription = 60, cache_config = 300, cache_ruleset = 21600;
+
+//limits
+size_t max_allowed_rulesets = 64, max_allowed_rules = 32768;
 
 string_array regex_blacklist = {"(.*)*"};
 
@@ -224,8 +225,7 @@ std::string getRuleset(RESPONSE_CALLBACK_ARGS)
                     strLine = regReplace(strLine, rule_match_regex, "$1$3");
             }
         }
-
-        output_content.append(strLine + "\n");
+        output_content += strLine + "\n";
     }
 
     if(type_int == 3 && output_content == "payload:\n")
@@ -698,6 +698,8 @@ void readYAMLConf(YAML::Node &node)
         node["advanced"]["max_pending_connections"] >> max_pending_connections;
         node["advanced"]["max_concurrent_threads"] >> max_concurrent_threads;
         node["advanced"]["enable_base_gen"] >> enable_base_gen;
+        node["advanced"]["max_allowed_rulesets"] >> max_allowed_rulesets;
+        node["advanced"]["max_allowed_rules"] >> max_allowed_rules;
         if(node["advanced"]["enable_cache"].IsDefined())
         {
             if(safe_as<bool>(node["advanced"]["enable_cache"]))
@@ -933,6 +935,8 @@ void readConf()
     ini.GetIntIfExist("max_pending_connections", max_pending_connections);
     ini.GetIntIfExist("max_concurrent_threads", max_concurrent_threads);
     ini.GetBoolIfExist("enable_base_gen", enable_base_gen);
+    ini.GetNumberIfExist("max_allowed_rulesets", max_allowed_rulesets);
+    ini.GetNumberIfExist("max_allowed_rules", max_allowed_rules);
     if(ini.ItemExist("enable_cache"))
     {
         if(ini.GetBool("enable_cache"))
@@ -999,7 +1003,7 @@ int loadExternalYAML(YAML::Node &node, ExternalConfig &ext)
     if(section["surge_ruleset"].size())
     {
         readRuleset(section["surge_ruleset"], ext.surge_ruleset, api_mode);
-        if(ext.surge_ruleset.size() > MAX_EXTCONF_RULESET_COUNT)
+        if(max_allowed_rulesets && ext.surge_ruleset.size() > max_allowed_rulesets)
         {
             writeLog(0, "Ruleset count in external config has exceeded limit.", LOG_LEVEL_WARNING);
             eraseElements(ext.surge_ruleset);
@@ -1067,7 +1071,7 @@ int loadExternalConfig(std::string &path, ExternalConfig &ext)
     {
         ini.GetAll("surge_ruleset", ext.surge_ruleset);
         importItems(ext.surge_ruleset, api_mode);
-        if(ext.surge_ruleset.size() > MAX_EXTCONF_RULESET_COUNT)
+        if(max_allowed_rulesets && ext.surge_ruleset.size() > max_allowed_rulesets)
         {
             writeLog(0, "Ruleset count in external config has exceeded limit. ", LOG_LEVEL_WARNING);
             eraseElements(ext.surge_ruleset);

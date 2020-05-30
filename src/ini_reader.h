@@ -611,25 +611,41 @@ public:
     }
 
     /**
-    * @brief Retrieve one boolean item value with the exact same name in the given section.
+    * @brief Retrieve one number item value with the exact same name in the given section.
     */
-    int GetIntIfExist(const std::string &section, const std::string &itemName, int &target)
+    template <typename T> int GetNumberIfExist(const std::string &section, const std::string &itemName, T &target)
     {
         std::string result;
         int retval = GetIfExist(section, itemName, result);
         if(retval != INIREADER_EXCEPTION_NONE)
             return retval;
         if(result.size())
-            target = to_int(result, target);
+            target = to_number<T>(result, target);
         return INIREADER_EXCEPTION_NONE;
     }
 
     /**
-    * @brief Retrieve one boolean item value with the exact same name in current section.
+    * @brief Retrieve one number item value with the exact same name in current section.
+    */
+    template <typename T> int GetNumberIfExist(const std::string &itemName, T &target)
+    {
+        return current_section.size() ? GetNumberIfExist(current_section, itemName, target) : INIREADER_EXCEPTION_NOTEXIST;
+    }
+
+    /**
+    * @brief Retrieve one integer item value with the exact same name in the given section.
+    */
+    int GetIntIfExist(const std::string &section, const std::string &itemName, int &target)
+    {
+        return GetNumberIfExist<int>(section, itemName, target);
+    }
+
+    /**
+    * @brief Retrieve one integer item value with the exact same name in current section.
     */
     int GetIntIfExist(const std::string &itemName, int &target)
     {
-        return current_section.size() ? GetIntIfExist(current_section, itemName, target) : INIREADER_EXCEPTION_NOTEXIST;
+        return GetNumberIfExist<int>(itemName, target);
     }
 
     /**

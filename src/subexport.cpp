@@ -22,10 +22,9 @@
 #include <yaml-cpp/yaml.h>
 #include <duktape.h>
 
-#define MAX_RULES_COUNT 32768
-
 extern bool api_mode;
 extern string_array ss_ciphers, ssr_ciphers;
+extern size_t max_allowed_rules;
 
 const string_array clashr_protocols = {"auth_aes128_md5", "auth_aes128_sha1"};
 const string_array clashr_obfs = {"plain", "http_simple", "http_post", "tls1.2_ticket_auth"};
@@ -577,7 +576,7 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset
 
     for(ruleset_content &x : ruleset_content_array)
     {
-        if(total_rules > MAX_RULES_COUNT)
+        if(max_allowed_rules && total_rules > max_allowed_rules)
             break;
         rule_group = x.rule_group;
         retrived_rules = x.rule_content.get();
@@ -605,7 +604,7 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset
         std::string::size_type lineSize;
         while(getline(strStrm, strLine, delimiter))
         {
-            if(total_rules > MAX_RULES_COUNT)
+            if(max_allowed_rules && total_rules > max_allowed_rules)
                 break;
             lineSize = strLine.size();
             /*
@@ -668,7 +667,7 @@ std::string rulesetToClashStr(YAML::Node &base_rule, std::vector<ruleset_content
 
     for(ruleset_content &x : ruleset_content_array)
     {
-        if(total_rules > MAX_RULES_COUNT)
+        if(max_allowed_rules && total_rules > max_allowed_rules)
             break;
         rule_group = x.rule_group;
         retrived_rules = x.rule_content.get();
@@ -696,7 +695,7 @@ std::string rulesetToClashStr(YAML::Node &base_rule, std::vector<ruleset_content
         std::string::size_type lineSize;
         while(getline(strStrm, strLine, delimiter))
         {
-            if(total_rules > MAX_RULES_COUNT)
+            if(max_allowed_rules && total_rules > max_allowed_rules)
                 break;
             lineSize = strLine.size();
             if(lineSize)
@@ -758,7 +757,7 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
 
     for(ruleset_content &x : ruleset_content_array)
     {
-        if(total_rules > MAX_RULES_COUNT)
+        if(max_allowed_rules && total_rules > max_allowed_rules)
             break;
         rule_group = x.rule_group;
         rule_path = x.rule_path;
@@ -847,7 +846,7 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
             std::string::size_type lineSize;
             while(getline(strStrm, strLine, delimiter))
             {
-                if(total_rules > MAX_RULES_COUNT)
+                if(max_allowed_rules && total_rules > max_allowed_rules)
                     break;
                 lineSize = strLine.size();
                 /*
@@ -1264,7 +1263,7 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
         singlegroup["name"] = vArray[0];
         singlegroup["type"] = vArray[1];
 
-        int interval = -1;
+        int interval = 0, tolerance = 0;
         rules_upper_bound = vArray.size();
         switch(hash_(vArray[1]))
         {
@@ -1278,8 +1277,9 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
                 continue;
             rules_upper_bound -= 2;
             singlegroup["url"] = vArray[rules_upper_bound];
-            parseGroupTimes(vArray[rules_upper_bound + 1], &interval, NULL, NULL);
+            parseGroupTimes(vArray[rules_upper_bound + 1], &interval, &tolerance, NULL);
             singlegroup["interval"] = interval;
+            singlegroup["tolerance"] = tolerance;
             break;
         default:
             continue;
