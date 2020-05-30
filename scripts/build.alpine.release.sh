@@ -1,7 +1,7 @@
 #!/bin/bash
 set -xe
 
-apk add gcc g++ build-base linux-headers cmake make autoconf automake libtool python2 py2-pip
+apk add gcc g++ build-base linux-headers cmake make autoconf automake libtool python2
 apk add openssl-dev openssl-libs-static curl curl-dev curl-static nghttp2-static zlib-dev rapidjson-dev libevent-dev libevent-static zlib-static pcre2-dev bzip2-static 
 
 git clone https://github.com/jbeder/yaml-cpp --depth=1
@@ -12,6 +12,7 @@ cd ..
 
 git clone https://github.com/svaarala/duktape --depth=1
 cd duktape
+python2 -m ensurepip
 pip2 install PyYAML
 python2 util/dist.py
 cd dist/src

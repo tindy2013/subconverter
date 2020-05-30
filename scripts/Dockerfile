@@ -3,9 +3,10 @@ MAINTAINER Tindy X <tindy.it@gmail.com>
 
 # build minimized
 RUN apk add git g++ build-base linux-headers cmake && \
-    apk add libressl-dev curl-dev rapidjson-dev libevent-dev pcre2-dev yaml-cpp-dev python2 py2-pip && \
+    apk add libressl-dev curl-dev rapidjson-dev libevent-dev pcre2-dev yaml-cpp-dev python2 && \
     git clone https://github.com/svaarala/duktape --depth=1 && \
     cd duktape && \
+    python2 -m ensurepip && \
     pip2 install PyYAML && \
     python2 util/dist.py && \
     cd dist/src && \
