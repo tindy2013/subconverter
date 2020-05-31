@@ -165,7 +165,7 @@ std::string getRuleset(RESPONSE_CALLBACK_ARGS)
             switch(hash_(vArray[0]))
             {
             case "DOMAIN-SUFFIX"_hash:
-                strLine = "  - '." + vArray[1] + "'\n  - '" + vArray[1] + "'";
+                strLine = "  - '+." + vArray[1] + "'";
                 break;
             case "DOMAIN"_hash:
                 strLine = "  - '" + vArray[1] + "'";
@@ -1220,7 +1220,10 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     {
         pos = x.find("=");
         if(pos == x.npos)
+        {
+            req_arg_map[x] = "";
             continue;
+        }
         if(x.substr(0, pos) == "token")
             continue;
         req_arg_map[x.substr(0, pos)] = x.substr(pos + 1);
@@ -2333,8 +2336,9 @@ std::string renderTemplate(RESPONSE_CALLBACK_ARGS)
     {
         pos = x.find("=");
         if(pos == x.npos)
-            continue;
-        req_arg_map[x.substr(0, pos)] = x.substr(pos + 1);
+            req_arg_map[x] = "";
+        else
+            req_arg_map[x.substr(0, pos)] = x.substr(pos + 1);
     }
     tpl_args.request_params = req_arg_map;
 

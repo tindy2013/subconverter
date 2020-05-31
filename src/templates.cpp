@@ -29,8 +29,19 @@ int render_template(const std::string &content, const template_args &vars, std::
     nlohmann::json data;
     for(auto &x : vars.global_vars)
         parse_json_pointer(data["global"], x.first, x.second);
+    std::string all_args;
     for(auto &x : vars.request_params)
-        parse_json_pointer(data["request"], x.first, x.second);
+    {
+        all_args += x.first;
+        if(x.second.size())
+        {
+            parse_json_pointer(data["request"], x.first, x.second);
+            all_args += "=" + x.second;
+        }
+        all_args += "&";
+    }
+    all_args.erase(all_args.size() - 1);
+    parse_json_pointer(data["request"], "_args", all_args);
     for(auto &x : vars.local_vars)
         parse_json_pointer(data["local"], x.first, x.second);
 
@@ -115,6 +126,14 @@ int render_template(const std::string &content, const template_args &vars, std::
     m_callbacks.add_callback("getLink", 1, [](inja::Arguments &args)
     {
         return managed_config_prefix + args.at(0)->get<std::string>();
+    });
+    m_callbacks.add_callback("startsWith", 2, [](inja::Arguments &args)
+    {
+        return startsWith(args.at(0)->get<std::string>(), args.at(1)->get<std::string>());
+    });
+    m_callbacks.add_callback("endsWith", 2, [](inja::Arguments &args)
+    {
+        return endsWith(args.at(0)->get<std::string>(), args.at(1)->get<std::string>());
     });
     m_callbacks.add_callback("fetch", 1, template_webGet);
     m_callbacks.add_callback("parseHostname", 1, parseHostname);
