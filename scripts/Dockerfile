@@ -28,7 +28,7 @@ RUN apk add git g++ build-base linux-headers cmake && \
     cd .. && \
     rm -rf subconverter && \
     apk add pcre2 libcurl yaml-cpp libevent && \
-    apk del git gcc g++ build-base linux-headers cmake libressl-dev curl-dev rapidjson-dev libevent-dev pcre2-dev yaml-cpp-dev python2 py2-pip
+    apk del git gcc g++ build-base linux-headers cmake libressl-dev curl-dev rapidjson-dev libevent-dev pcre2-dev yaml-cpp-dev python2
 
 # set entry
 WORKDIR /base
