@@ -477,21 +477,25 @@ void explodeSSConf(std::string content, const std::string &custom_port, bool lib
     json.Parse(content.data());
     if(json.HasParseError())
         return;
+    const char *section = json.HasMember("version") && json.HasMember("remarks") && json.HasMember("servers") ? "servers" : "configs";
+    if(!json.HasMember(section))
+        return;
+    GetMember(json, "remarks", group);
 
-    for(unsigned int i = 0; i < json["configs"].Size(); i++)
+    for(unsigned int i = 0; i < json[section].Size(); i++)
     {
-        json["configs"][i]["remarks"] >> ps;
-        port = custom_port.size() ? custom_port : GetMember(json["configs"][i], "server_port");
+        ps = GetMember(json[section][i], "remarks");
+        port = custom_port.size() ? custom_port : GetMember(json[section][i], "server_port");
         if(port == "0")
             continue;
         if(ps.empty())
             ps = server + ":" + port;
 
-        json["configs"][i]["password"] >> password;
-        json["configs"][i]["method"] >> method;
-        json["configs"][i]["server"] >> server;
-        json["configs"][i]["plugin"] >> plugin;
-        json["configs"][i]["plugin_opts"] >> pluginopts;
+        password = GetMember(json[section][i], "password");
+        method = GetMember(json[section][i], "method");
+        server = GetMember(json[section][i], "server");
+        plugin = GetMember(json[section][i], "plugin");
+        pluginopts = GetMember(json[section][i], "plugin_opts");
 
         node.linkType = SPEEDTEST_MESSAGE_FOUNDSS;
         node.group = group;
