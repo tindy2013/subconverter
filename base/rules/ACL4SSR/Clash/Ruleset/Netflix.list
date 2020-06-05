@@ -1,6 +1,7 @@
 # 内容：Netflix
-# 数量：34条
+# 数量：35条
 USER-AGENT,Argo*
+DOMAIN,netflix.com.edgesuite.net
 DOMAIN-SUFFIX,fast.com
 DOMAIN-SUFFIX,netflix.com
 DOMAIN-SUFFIX,netflix.net

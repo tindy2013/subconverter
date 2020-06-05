@@ -1136,7 +1136,8 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
             case "ws"_hash:
                 singleproxy["network"] = transproto;
                 singleproxy["ws-path"] = path;
-                singleproxy["ws-headers"]["Host"] = host;
+                if(host.size())
+                    singleproxy["ws-headers"]["Host"] = host;
                 if(edge.size())
                     singleproxy["ws-headers"]["Edge"] = edge;
                 break;
@@ -1144,7 +1145,8 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
                 singleproxy["network"] = transproto;
                 singleproxy["http-opts"]["method"] = "GET";
                 singleproxy["http-opts"]["path"].push_back(path);
-                singleproxy["http-opts"]["headers"]["Host"].push_back(host);
+                if(host.size())
+                    singleproxy["http-opts"]["headers"]["Host"].push_back(host);
                 if(edge.size())
                     singleproxy["http-opts"]["headers"]["Edge"].push_back(edge);
             default:
@@ -1217,7 +1219,8 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
             if(obfs.size())
             {
                 singleproxy["obfs-opts"]["mode"] = obfs;
-                singleproxy["obfs-opts"]["host"] = host;
+                if(host.size())
+                    singleproxy["obfs-opts"]["host"] = host;
             }
             if(std::all_of(password.begin(), password.end(), ::isdigit) && !password.empty())
                 singleproxy["password"].SetTag("str");

@@ -2012,7 +2012,7 @@ void explodeSub(std::string sub, bool sslibev, bool ssrlibev, const std::string 
     //try to parse as clash configuration
     try
     {
-        if(!processed && (strFind(sub, "Proxy:") || strFind(sub, "proxies:")))
+        if(!processed && regFind(sub, "\"?(Proxy|proxies)\"?:"))
         {
             regGetMatch(sub, R"(^(?:Proxy|proxies):$\s(?:(?:^ +?.*$| *?-.*$|)\s)+)", 1, &sub);
             Node yamlnode = Load(sub);

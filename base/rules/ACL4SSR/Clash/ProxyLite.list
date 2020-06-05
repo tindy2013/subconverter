@@ -147,6 +147,7 @@ DOMAIN-SUFFIX,symauth.com
 DOMAIN-SUFFIX,symcb.com
 DOMAIN-SUFFIX,symcd.com
 DOMAIN-SUFFIX,textnow.com
+DOMAIN-SUFFIX,textnow.me
 DOMAIN-SUFFIX,thefacebook.com
 DOMAIN-SUFFIX,thepiratebay.org
 DOMAIN-SUFFIX,torproject.org
@@ -351,7 +352,7 @@ DOMAIN-SUFFIX,steamstatic.com
 DOMAIN-SUFFIX,twitch.tv
 DOMAIN-SUFFIX,ttvnw.net
 DOMAIN-SUFFIX,jtvnw.net
-DOMAIN-SUFFIX,akamaized.net
+DOMAIN-KEYWORD,ttvnw
 
 # Twitter
 DOMAIN-SUFFIX,t.co

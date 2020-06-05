@@ -27,6 +27,9 @@ IP-CIDR6,2a0b:b581::/48,no-resolve
 IP-CIDR6,2a0b:b582::/48,no-resolve
 IP-CIDR6,2a0b:b583::/48,no-resolve
 
+# > Tencent
+IP-CIDR,182.254.116.0/24,no-resolve
+
 DOMAIN-SUFFIX,12306.cn
 DOMAIN-SUFFIX,12306.com
 DOMAIN-SUFFIX,126.net
@@ -53,7 +56,6 @@ DOMAIN-SUFFIX,alipayobjects.com
 DOMAIN-SUFFIX,aliyun.com
 DOMAIN-SUFFIX,aliyuncs.com
 DOMAIN-SUFFIX,amap.com
-DOMAIN-SUFFIX,apache.org
 DOMAIN-SUFFIX,api.crisp.chat
 DOMAIN-SUFFIX,appshike.com
 DOMAIN-SUFFIX,appstore.com

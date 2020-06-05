@@ -3,10 +3,6 @@
 
 #include <string>
 
-#ifdef _WIN32
-#include <ws2tcpip.h>
-#endif // _WIN32
-
 #include "misc.h"
 
 std::string webGet(const std::string &url, const std::string &proxy);

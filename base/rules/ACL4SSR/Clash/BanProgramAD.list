@@ -182,7 +182,6 @@ DOMAIN-SUFFIX,als.baidu.com
 DOMAIN-SUFFIX,anquan.baidu.cn
 DOMAIN-SUFFIX,anquan.baidu.com
 DOMAIN-SUFFIX,antivirus.baidu.com
-DOMAIN-SUFFIX,api.cpu.baidu.com
 DOMAIN-SUFFIX,api.mobula.sdk.duapps.com
 DOMAIN-SUFFIX,appc.baidu.cn
 DOMAIN-SUFFIX,appc.baidu.com
@@ -222,10 +221,7 @@ DOMAIN-SUFFIX,cpro.tieba.baidu.com
 DOMAIN-SUFFIX,cpro.zhidao.baidu.com
 DOMAIN-SUFFIX,cpro2.baidu.cn
 DOMAIN-SUFFIX,cpro2.baidu.com
-DOMAIN-SUFFIX,cpu-admin.baidu.cn
 DOMAIN-SUFFIX,cpu-admin.baidu.com
-DOMAIN-SUFFIX,cpu.baidu.cn
-DOMAIN-SUFFIX,cpu.baidu.com
 DOMAIN-SUFFIX,crs.baidu.cn
 DOMAIN-SUFFIX,crs.baidu.com
 DOMAIN-SUFFIX,datax.baidu.com
@@ -1103,7 +1099,6 @@ DOMAIN-SUFFIX,analytics.ganji.com
 DOMAIN-SUFFIX,api-deal.kechenggezi.com
 DOMAIN-SUFFIX,api-z.weidian.com
 DOMAIN-SUFFIX,app-monitor.ele.me
-DOMAIN-SUFFIX,bam.nr-data.net
 DOMAIN-SUFFIX,bat.bing.com
 DOMAIN-SUFFIX,bd1.52che.com
 DOMAIN-SUFFIX,bd2.52che.com

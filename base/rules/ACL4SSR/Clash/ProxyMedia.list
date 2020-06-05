@@ -1,6 +1,6 @@
 # 内容：国外媒体列表
-# 更新：2020-04-23 22:30:34
-# 数量：262条
+# 更新：2020-05-31 11:43:37
+# 数量：271条
 
 # ABC
 DOMAIN-SUFFIX,edgedatg.com
@@ -131,6 +131,7 @@ DOMAIN-SUFFIX,hboasia.com
 DOMAIN-SUFFIX,hbogo.com
 DOMAIN-SUFFIX,hbogoasia.com
 DOMAIN-SUFFIX,hbogoasia.hk
+DOMAIN-SUFFIX,hbomax.com
 DOMAIN-SUFFIX,hbonow.com
 
 # HBO_GO_HKG
@@ -222,6 +223,7 @@ DOMAIN-SUFFIX,tvb.com
 
 # Netflix
 USER-AGENT,Argo*
+DOMAIN,netflix.com.edgesuite.net
 DOMAIN-SUFFIX,fast.com
 DOMAIN-SUFFIX,netflix.com
 DOMAIN-SUFFIX,netflix.net
@@ -240,15 +242,21 @@ DOMAIN-SUFFIX,nflximg.com
 DOMAIN-SUFFIX,nflximg.net
 DOMAIN-SUFFIX,nflxso.net
 DOMAIN-SUFFIX,nflxvideo.net
+IP-CIDR,8.41.4.0/24,no-resolve
 IP-CIDR,23.246.0.0/18,no-resolve
 IP-CIDR,37.77.184.0/21,no-resolve
 IP-CIDR,45.57.0.0/17,no-resolve
 IP-CIDR,64.120.128.0/17,no-resolve
 IP-CIDR,66.197.128.0/17,no-resolve
+IP-CIDR,69.53.224.0/19,no-resolve
 IP-CIDR,108.175.32.0/20,no-resolve
+IP-CIDR,185.2.220.0/22,no-resolve
+IP-CIDR,185.9.188.0/22,no-resolve
 IP-CIDR,192.173.64.0/18,no-resolve
 IP-CIDR,198.38.96.0/19,no-resolve
 IP-CIDR,198.45.48.0/20,no-resolve
+IP-CIDR,207.45.72.0/22,no-resolve
+IP-CIDR,208.75.76.0/22,no-resolve
 
 # Niconico
 USER-AGENT,Niconico*
@@ -309,6 +317,7 @@ DOMAIN-SUFFIX,tiktokcdn.com
 DOMAIN-SUFFIX,tiktokv.com
 
 # Twitch
+DOMAIN-KEYWORD,ttvnw
 DOMAIN-SUFFIX,jtvnw.net
 DOMAIN-SUFFIX,ttvnw.net
 DOMAIN-SUFFIX,twitch.tv

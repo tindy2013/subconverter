@@ -1,4 +1,4 @@
-#Update 2020.4.28 Self-use for testing only, there may be a lot of manslaughter.
+#Update 2020.6.4 Self-use for testing only, there may be a lot of manslaughter.
 DOMAIN-SUFFIX,admaster.com
 DOMAIN-SUFFIX,0z5jn.cn
 DOMAIN-SUFFIX,114so.cn
@@ -1080,7 +1080,6 @@ DOMAIN-SUFFIX,video.c-ctrip.com
 DOMAIN-SUFFIX,agn.aty.sohu.com
 DOMAIN-SUFFIX,map-mobile-opnimg.cdn.bcebos.com
 DOMAIN-SUFFIX,www.jinshanju.com
-DOMAIN-SUFFIX,iesdouyin.com
 DOMAIN-SUFFIX,test-www.douyin.com
 DOMAIN-SUFFIX,safebrowsing.urlsec.qq.com
 DOMAIN-SUFFIX,adserver-ad.321mh.com

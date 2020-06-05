@@ -95,7 +95,16 @@ static std::string curlGet(const std::string &url, const std::string &proxy, std
     curl_easy_setopt(curl_handle, CURLOPT_HEADERFUNCTION, writer);
     curl_easy_setopt(curl_handle, CURLOPT_HEADERDATA, &response_headers);
 
-    return_code = curl_easy_perform(curl_handle);
+    unsigned int fail_count = 0, max_fails = 1;
+    while(true)
+    {
+        return_code = curl_easy_perform(curl_handle);
+        if(return_code == CURLE_OK || max_fails >= fail_count)
+            break;
+        else
+            fail_count++;
+    }
+
     curl_easy_getinfo(curl_handle, CURLINFO_HTTP_CODE, &retVal);
     curl_easy_cleanup(curl_handle);
 

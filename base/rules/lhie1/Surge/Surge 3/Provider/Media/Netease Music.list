@@ -1,9 +1,10 @@
 # > Netease Music
-AND,((OR,((USER-AGENT,NeteaseMusic*), (USER-AGENT,网易云音乐*), (USER-AGENT,%E7%BD%91%E6%98%93%E4%BA%91%E9%9F%B3%E4%B9%90*), (USER-AGENT,neteasemusic*))), (DOMAIN,apm.music.163.com))
-AND,((OR,((USER-AGENT,NeteaseMusic*), (USER-AGENT,网易云音乐*), (USER-AGENT,%E7%BD%91%E6%98%93%E4%BA%91%E9%9F%B3%E4%B9%90*), (USER-AGENT,neteasemusic*))), (DOMAIN,apm3.music.163.com))
-AND,((OR,((USER-AGENT,NeteaseMusic*), (USER-AGENT,网易云音乐*), (USER-AGENT,%E7%BD%91%E6%98%93%E4%BA%91%E9%9F%B3%E4%B9%90*), (USER-AGENT,neteasemusic*))), (DOMAIN,interface.music.163.com))
-AND,((OR,((USER-AGENT,NeteaseMusic*), (USER-AGENT,网易云音乐*), (USER-AGENT,%E7%BD%91%E6%98%93%E4%BA%91%E9%9F%B3%E4%B9%90*), (USER-AGENT,neteasemusic*))), (DOMAIN,interface3.music.163.com))
-AND,((OR,((USER-AGENT,NeteaseMusic*), (USER-AGENT,网易云音乐*), (USER-AGENT,%E7%BD%91%E6%98%93%E4%BA%91%E9%9F%B3%E4%B9%90*), (USER-AGENT,neteasemusic*))), (DOMAIN,music.163.com))
+DOMAIN,apm.music.163.com
+DOMAIN,apm3.music.163.com
+DOMAIN,interface.music.163.com
+DOMAIN,interface3.music.163.com
+DOMAIN,music.126.net
+DOMAIN,music.163.com
 IP-CIDR,101.71.154.241/32,no-resolve
 IP-CIDR,103.126.92.132/32,no-resolve
 IP-CIDR,103.126.92.133/32,no-resolve
