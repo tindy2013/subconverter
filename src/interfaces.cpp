@@ -1268,7 +1268,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     ext.skip_cert_verify.define(scv_flag);
 
     ext.sort_flag = sort_flag.get(do_sort);
-    use_sort_script.define(sort_script.size());
+    use_sort_script.define(sort_script.size() != 0);
     if(ext.sort_flag && use_sort_script)
         ext.sort_script = sort_script;
     ext.filter_deprecated = fdn.get(filter_deprecated);

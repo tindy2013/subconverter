@@ -1023,6 +1023,7 @@ void preprocessNodes(std::vector<nodeInfo> &nodes, extra_settings &ext)
                         duktape_push_nodeinfo(ctx, a);
                         duktape_push_nodeinfo(ctx, b);
                         /// call function
+                        duk_pcall(ctx, 2);
                         return duktape_get_res_int(ctx);
                     };
                     std::sort(nodes.begin(), nodes.end(), comparer);
