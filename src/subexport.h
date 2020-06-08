@@ -36,6 +36,7 @@ struct extra_settings
     tribool udp = false;
     tribool tfo = false;
     tribool skip_cert_verify = false;
+    bool clash_classical_ruleset = false;
     std::string sort_script;
 };
 

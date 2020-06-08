@@ -103,17 +103,18 @@ std::string parseProxy(const std::string &source)
 }
 
 #define basic_types "DOMAIN", "DOMAIN-SUFFIX", "DOMAIN-KEYWORD", "IP-CIDR", "SRC-IP-CIDR", "GEOIP", "MATCH", "FINAL"
+const string_array clash_rule_type = {basic_types, "IP-CIDR6", "SRC-PORT", "DST-PORT"};
 const string_array surge_rule_type = {basic_types, "IP-CIDR6", "USER-AGENT", "URL-REGEX", "AND", "OR", "NOT", "PROCESS-NAME", "IN-PORT", "DEST-PORT", "SRC-IP"};
 const string_array quanx_rule_type = {basic_types, "USER-AGENT", "HOST", "HOST-SUFFIX", "HOST-KEYWORD"};
 
 std::string getRuleset(RESPONSE_CALLBACK_ARGS)
 {
-    /// type: 1 for Surge, 2 for Quantumult X, 3 for Clash domain rule-provider, 4 for Clash ipcidr rule-provider, 5 for Surge DOMAIN-SET
+    /// type: 1 for Surge, 2 for Quantumult X, 3 for Clash domain rule-provider, 4 for Clash ipcidr rule-provider, 5 for Surge DOMAIN-SET, 6 for Clash classical ruleset
     std::string url = urlsafe_base64_decode(getUrlArg(argument, "url")), type = getUrlArg(argument, "type"), group = urlsafe_base64_decode(getUrlArg(argument, "group"));
     std::string output_content, dummy;
     int type_int = to_int(type, 0);
 
-    if(!url.size() || !type.size() || (type_int == 2 && !group.size()) || (type_int < 1 && type_int > 5))
+    if(!url.size() || !type.size() || (type_int == 2 && !group.size()) || (type_int < 1 && type_int > 6))
     {
         *status_code = 400;
         return "Invalid request!";
@@ -136,11 +137,31 @@ std::string getRuleset(RESPONSE_CALLBACK_ARGS)
 
     ss << output_content;
     char delimiter = count(output_content.begin(), output_content.end(), '\n') < 1 ? '\r' : '\n';
-    std::string::size_type lineSize;
+    std::string::size_type lineSize, posb, pose;
+    auto filterLine = [&]()
+    {
+        posb = 0;
+        pose = strLine.find(',');
+        if(pose == strLine.npos)
+            return 1;
+        posb = pose + 1;
+        pose = strLine.find(',', posb);
+        if(pose == strLine.npos)
+        {
+            pose = strLine.size();
+            if(strLine[pose - 1] == '\r')
+                pose--;
+        }
+        else
+            pose -= posb + 1;
+        return 0;
+    };
 
+    lineSize = output_content.size();
     output_content.clear();
+    output_content.reserve(lineSize);
 
-    if(type_int == 3 || type_int == 4)
+    if(type_int == 3 || type_int == 4 || type_int == 6)
         output_content = "payload:\n";
 
     while(getline(ss, strLine, delimiter))
@@ -158,51 +179,35 @@ std::string getRuleset(RESPONSE_CALLBACK_ARGS)
         case 3:
             if(!startsWith(strLine, "DOMAIN-SUFFIX,") && !startsWith(strLine, "DOMAIN,"))
                 continue;
-            vArray = split(strLine, ",");
-            if(vArray.size() < 2)
+            if(filterLine())
                 continue;
-            vArray[1] = regTrim(vArray[1]);
-            switch(hash_(vArray[0]))
-            {
-            case "DOMAIN-SUFFIX"_hash:
-                strLine = "  - '+." + vArray[1] + "'";
-                break;
-            case "DOMAIN"_hash:
-                strLine = "  - '" + vArray[1] + "'";
-                break;
-            //case "DOMAIN_KEYWORD"_hash:
-                //strLine = "  - '." + vArray[1] + ".*'";
-                //break;
-            }
-            output_content += strLine + "\n";
+            output_content += "  - '";
+            if(strLine[posb - 2] == 'X')
+                output_content += "+.";
+            output_content += strLine.substr(posb, pose);
+            output_content += "'\n";
             continue;
         case 4:
             if(!startsWith(strLine, "IP-CIDR,") && !startsWith(strLine, "IP-CIDR6,"))
                 continue;
-            vArray = split(strLine, ",");
-            if(vArray.size() < 2)
+            if(filterLine())
                 continue;
-            output_content += "  - '" + vArray[1] + "'\n";
+            output_content += "  - '";
+            output_content += strLine.substr(posb, pose);
+            output_content += "'\n";
             continue;
         case 5:
             if(!startsWith(strLine, "DOMAIN-SUFFIX,") && !startsWith(strLine, "DOMAIN,"))
                 continue;
-            vArray = split(strLine, ",");
-            if(vArray.size() < 2)
+            if(filterLine())
                 continue;
-            vArray[1] = regTrim(vArray[1]);
-            switch(hash_(vArray[0]))
-            {
-            case "DOMAIN-SUFFIX"_hash:
-            case "DOMAIN"_hash:
-                strLine = vArray[1];
-                break;
-            //case "DOMAIN_KEYWORD"_hash:
-                //strLine = "  - '." + vArray[1] + ".*'";
-                //break;
-            }
-            output_content += strLine + "\n";
+            output_content += strLine.substr(posb, pose);
+            output_content += '\n';
             continue;
+        case 6:
+            if(!std::any_of(clash_rule_type.begin(), clash_rule_type.end(), [&strLine](std::string type){return startsWith(strLine, type);}))
+                continue;
+            output_content += "  - ";
         }
 
         lineSize = strLine.size();
@@ -225,13 +230,25 @@ std::string getRuleset(RESPONSE_CALLBACK_ARGS)
                     strLine = regReplace(strLine, rule_match_regex, "$1$3");
             }
         }
-        output_content += strLine + "\n";
+        output_content += strLine;
+        output_content += '\n';
     }
 
-    if(type_int == 3 && output_content == "payload:\n")
-        output_content += "  - '--placeholder--'";
-    if(type_int == 4 && output_content == "payload:\n")
-        output_content += "  - '0.0.0.0/32'";
+    if(output_content == "payload:\n")
+    {
+        switch(type_int)
+        {
+        case 3:
+            output_content += "  - '--placeholder--'";
+            break;
+        case 4:
+            output_content += "  - '0.0.0.0/32'";
+            break;
+        case 6:
+            output_content += "  - 'DOMAIN,--placeholder--'";
+            break;
+        }
+    }
     return output_content;
 }
 
@@ -1185,7 +1202,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     tribool sort_flag = getUrlArg(argument, "sort"), use_sort_script = getUrlArg(argument, "sort_script");
     tribool clash_new_field = getUrlArg(argument, "new_name"), clash_script = getUrlArg(argument, "script"), add_insert = getUrlArg(argument, "insert");
     tribool scv = getUrlArg(argument, "scv"), fdn = getUrlArg(argument, "fdn"), expand = getUrlArg(argument, "expand"), append_sub_userinfo = getUrlArg(argument, "append_info");
-    tribool prepend_insert = getUrlArg(argument, "prepend");
+    tribool prepend_insert = getUrlArg(argument, "prepend"), classical = getUrlArg(argument, "classic");
 
     std::string base_content, output_content;
     string_array extra_group, extra_ruleset, include_remarks = def_include_remarks, exclude_remarks = def_exclude_remarks;
@@ -1274,6 +1291,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     ext.filter_deprecated = fdn.get(filter_deprecated);
     ext.clash_new_field_name = clash_new_field.get(clash_use_new_field_name);
     ext.clash_script = clash_script.get();
+    ext.clash_classical_ruleset = classical.get();
     if(!expand)
         ext.clash_new_field_name = true;
     else
