@@ -1,0 +1,46 @@
+name: Publish Docker Image
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout base
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Set up docker buildx
+        id: buildx
+        uses: crazy-max/ghaction-docker-buildx@v2
+        with:
+          buildx-version: latest
+          skip-cache: false
+          qemu-version: latest
+
+      - name: Docker login
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          echo "${DOCKER_PASSWORD}" | docker login --username "${DOCKER_USERNAME}" --password-stdin
+      
+      - name: Docker buildx image and push on master branch
+        if: github.ref == 'refs/heads/master'
+        run: |
+          docker buildx build --output "type=image,push=true" --platform=linux/amd64,linux/arm/v7,linux/arm64 --tag tindy2013/subconverter:latest scripts/
+
+      - name: Replace tag without `v`
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/github-script@v1
+        id: version
+        with:
+          script: |
+            return context.payload.ref.replace(/\/refs\/tags\//v, '')
+          result-encoding: string
+
+      - name: Docker buildx image and push on release
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          docker buildx build --output "type=image,push=true" --platform=linux/amd64,linux/arm/v7,linux/arm64 --tag tindy2013/subconverter:${{steps.version.outputs.result}} scripts/
+          docker buildx build --output "type=image,push=true" --platform=linux/amd64,linux/arm/v7,linux/arm64 --tag tindy2013/subconverter:latest scripts/
