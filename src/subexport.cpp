@@ -1,3 +1,13 @@
+#include <algorithm>
+#include <iostream>
+#include <numeric>
+#include <cmath>
+#include <climits>
+#include <rapidjson/writer.h>
+#include <rapidjson/document.h>
+#include <yaml-cpp/yaml.h>
+#include <duktape.h>
+
 #include "misc.h"
 #include "speedtestutil.h"
 #include "ini_reader.h"
@@ -11,16 +21,7 @@
 #include "logger.h"
 #include "templates.h"
 #include "script_duktape.h"
-
-#include <algorithm>
-#include <iostream>
-#include <numeric>
-#include <cmath>
-#include <climits>
-#include <rapidjson/writer.h>
-#include <rapidjson/document.h>
-#include <yaml-cpp/yaml.h>
-#include <duktape.h>
+#include "yamlcpp_extra.h"
 
 extern bool api_mode;
 extern string_array ss_ciphers, ssr_ciphers;
@@ -36,13 +37,6 @@ const string_array surge2_rule_type = {basic_types, "IP-CIDR6", "USER-AGENT", "U
 const string_array surge_rule_type = {basic_types, "IP-CIDR6", "USER-AGENT", "URL-REGEX", "AND", "OR", "NOT", "PROCESS-NAME", "IN-PORT", "DEST-PORT", "SRC-IP"};
 const string_array quanx_rule_type = {basic_types, "USER-AGENT", "HOST", "HOST-SUFFIX", "HOST-KEYWORD"};
 const string_array surfb_rule_type = {basic_types, "IP-CIDR6", "PROCESS-NAME", "IN-PORT", "DEST-PORT", "SRC-IP"};
-
-template <typename T> T safe_as (const YAML::Node& node)
-{
-    if(node.IsDefined() && !node.IsNull())
-        return node.as<T>();
-    return T();
-};
 
 std::string hostnameToIPAddr(const std::string &host)
 {

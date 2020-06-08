@@ -85,6 +85,12 @@ public:
         return _M_VALUE;
     }
 
+    bool set(const tribool &value)
+    {
+        _M_VALUE = value._M_VALUE;
+        return _M_VALUE;
+    }
+
     bool set(const std::string &str)
     {
         switch(hash_(str))

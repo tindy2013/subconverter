@@ -6,6 +6,7 @@
 #define PCRE2_CODE_UNIT_WIDTH 8
 #include <pcre2.h>
 
+#include "yamlcpp_extra.h"
 #include "misc.h"
 #include "printout.h"
 #include "logger.h"
@@ -25,24 +26,6 @@ std::map<std::string, std::string> parsedMD5;
 std::string modSSMD5 = "f7653207090ce3389115e9c88541afe0";
 
 //remake from speedtestutil
-
-template <typename T> void operator >> (const YAML::Node& node, T& i)
-{
-    if(node.IsDefined() && !node.IsNull()) //fail-safe
-        i = node.as<T>();
-};
-
-template <typename T> T safe_as (const YAML::Node& node)
-{
-    if(node.IsDefined() && !node.IsNull())
-        return node.as<T>();
-    return T();
-};
-
-template <typename T> void operator >>= (const YAML::Node& node, T& i)
-{
-    i = safe_as<T>(node);
-};
 
 void explodeVmess(std::string vmess, const std::string &custom_port, nodeInfo &node)
 {

@@ -6,6 +6,7 @@
 #include <inja.hpp>
 #include <yaml-cpp/yaml.h>
 
+#include "yamlcpp_extra.h"
 #include "misc.h"
 #include "nodeinfo.h"
 #include "speedtestutil.h"
@@ -73,24 +74,6 @@ int cache_subscription = 60, cache_config = 300, cache_ruleset = 21600;
 size_t max_allowed_rulesets = 64, max_allowed_rules = 32768;
 
 string_array regex_blacklist = {"(.*)*"};
-
-template <typename T> void operator >> (const YAML::Node& node, T& i)
-{
-    if(node.IsDefined() && !node.IsNull()) //fail-safe
-        i = node.as<T>();
-};
-
-template <typename T> T safe_as (const YAML::Node& node)
-{
-    if(node.IsDefined() && !node.IsNull())
-        return node.as<T>();
-    return T();
-};
-
-template <typename T> void operator >>= (const YAML::Node& node, T& i)
-{
-    i = safe_as<T>(node);
-};
 
 std::string parseProxy(const std::string &source)
 {

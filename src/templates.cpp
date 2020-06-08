@@ -4,19 +4,13 @@
 #include <inja.hpp>
 #include <nlohmann/json.hpp>
 
+#include "yamlcpp_extra.h"
 #include "interfaces.h"
 #include "templates.h"
 #include "logger.h"
 #include "misc.h"
 
 extern std::string managed_config_prefix;
-
-template <typename T> T safe_as (const YAML::Node& node)
-{
-    if(node.IsDefined() && !node.IsNull())
-        return node.as<T>();
-    return T();
-};
 
 static inline void parse_json_pointer(nlohmann::json &json, const std::string &path, const std::string &value)
 {

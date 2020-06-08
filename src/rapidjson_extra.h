@@ -9,6 +9,9 @@ template <typename T> void exception_thrower(T e)
         throw std::runtime_error("assert");
 }
 
+#ifdef RAPIDJSON_ASSERT
+#undef RAPIDJSON_ASSERT
+#endif // RAPIDJSON_ASSERT
 #define RAPIDJSON_ASSERT(x) exception_thrower(x)
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>

@@ -33,11 +33,11 @@ struct extra_settings
     std::string surge_ssr_path;
     std::string managed_config_prefix;
     std::string quanx_dev_id;
-    tribool udp = false;
-    tribool tfo = false;
-    tribool skip_cert_verify = false;
+    tribool udp = tribool();
+    tribool tfo = tribool();
+    tribool skip_cert_verify = tribool();
     bool clash_classical_ruleset = false;
-    std::string sort_script;
+    std::string sort_script = "";
 };
 
 void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset_content_array, bool overwrite_original_rules, bool new_field_name);
