@@ -287,6 +287,7 @@ int start_web_server_multi(void *argv)
     for (i = 0; i < nthreads; i++)
         event_base_loopbreak(base[i]); //stop the loop
 
+    shutdown(nfd, SD_BOTH); //stop accept call
     closesocket(nfd); //close listener socket
 
     return 0;

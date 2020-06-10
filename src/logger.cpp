@@ -1,5 +1,6 @@
 #include <string>
 #include <iostream>
+#include <thread>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -37,35 +38,9 @@ std::string getTime(int type)
 
 void writeLog(int type, std::string content, int level)
 {
-    //placeholder
-    /*
-    if(print_debug_info)
-        std::cerr<<getTime(2)<<" [DEBUG] "<<content<<"\n";
-    */
     if(level > global_log_level)
         return;
-    //std::cerr<<getTime(2)<<" ["<<getpid()<<"]";
-
-    switch(level)
-    {
-    case LOG_LEVEL_VERBOSE:
-        std::cerr<<getTime(2)<<" ["<<getpid()<<"]"<<"[VERB]"<<" "<<content<<"\n";
-        break;
-    case LOG_LEVEL_DEBUG:
-        std::cerr<<getTime(2)<<" ["<<getpid()<<"]"<<"[DEBG]"<<" "<<content<<"\n";
-        break;
-    case LOG_LEVEL_INFO:
-        std::cerr<<getTime(2)<<" ["<<getpid()<<"]"<<"[INFO]"<<" "<<content<<"\n";
-        break;
-    case LOG_LEVEL_WARNING:
-        std::cerr<<getTime(2)<<" ["<<getpid()<<"]"<<"[WARN]"<<" "<<content<<"\n";
-        break;
-    case LOG_LEVEL_ERROR:
-        std::cerr<<getTime(2)<<" ["<<getpid()<<"]"<<"[ERRO]"<<" "<<content<<"\n";
-        break;
-    case LOG_LEVEL_FATAL:
-        std::cerr<<getTime(2)<<" ["<<getpid()<<"]"<<"[FATL]"<<" "<<content<<"\n";
-        break;
-    }
-    //std::cerr<<" "<<content<<"\n";
+    const char *levels[] = {"[FATL]", "[ERRO]", "[WARN]", "[INFO]", "[DEBG]", "[VERB]"};
+    std::cerr<<getTime(2)<<" ["<<getpid()<<" "<<std::this_thread::get_id()<<"]"<<levels[level % 6];
+    std::cerr<<" "<<content<<"\n";
 }

@@ -58,11 +58,25 @@ void chkArg(int argc, char *argv[])
             update_ruleset_on_request = true;
         }
         else if(strcmp(argv[i], "-f") == 0 || strcmp(argv[i], "--file") == 0)
-            pref_path.assign(argv[++i]);
+        {
+            if(i < argc - 1)
+                pref_path.assign(argv[++i]);
+        }
         else if(strcmp(argv[i], "-g") == 0 || strcmp(argv[i], "--gen") == 0)
+        {
             generator_mode = true;
+        }
         else if(strcmp(argv[i], "--artifact") == 0)
-            gen_profile.assign(argv[++i]);
+        {
+            if(i < argc - 1)
+                gen_profile.assign(argv[++i]);
+        }
+        else if(strcmp(argv[i], "-l") == 0 || strcmp(argv[i], "--log") == 0)
+        {
+            if(i < argc - 1)
+                if(freopen(argv[++i], "a", stderr) == NULL)
+                    std::cerr<<"Error redirecting output to file.\n";
+        }
     }
 }
 
@@ -85,6 +99,10 @@ void signal_handler(int sig)
 
 int main(int argc, char *argv[])
 {
+    if(fileExist("pref.yml"))
+        pref_path = "pref.yml";
+    chkArg(argc, argv);
+    setcd(pref_path); //then switch to pref directory
     writeLog(0, "SubConverter " VERSION " starting up..", LOG_LEVEL_INFO);
 #ifdef _WIN32
     WSADATA wsaData;
@@ -95,6 +113,7 @@ int main(int argc, char *argv[])
         return 1;
     }
     UINT origcp = GetConsoleOutputCP();
+    defer(SetConsoleOutputCP(origcp);)
     SetConsoleOutputCP(65001);
 #else
     signal(SIGPIPE, SIG_IGN);
@@ -110,23 +129,13 @@ int main(int argc, char *argv[])
     std::string prgpath = argv[0];
     setcd(prgpath); //first switch to program directory
 #endif // _DEBUG
-    if(fileExist("pref.yml"))
-        pref_path = "pref.yml";
-    chkArg(argc, argv);
-    setcd(pref_path); //then switch to pref directory
     readConf();
     if(!update_ruleset_on_request)
         refreshRulesets(rulesets, ruleset_content_array);
     generateBase();
 
     if(generator_mode)
-    {
-        int retVal = simpleGenerator();
-#ifdef _WIN32
-        SetConsoleOutputCP(origcp);
-#endif // _WIN32
-        return retVal;
-    }
+        return simpleGenerator();
 
     append_response("GET", "/", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {

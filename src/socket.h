@@ -23,6 +23,7 @@
 #ifndef SA_INTERRUPT
 #define SA_INTERRUPT 0 //ignore this setting
 #endif
+#define SD_BOTH SHUT_RDWR
 #ifndef __hpux
 #include <sys/select.h>
 #endif /* __hpux */

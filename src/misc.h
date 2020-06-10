@@ -69,7 +69,7 @@ public:
     template <typename T> void define(const T &value)
     {
         if(_M_VALUE == -1)
-            set(value);
+            *this = value;
     }
 
     bool get(const bool &def_value = false)
@@ -82,12 +82,6 @@ public:
     template <typename T> bool set(const T &value)
     {
         _M_VALUE = value;
-        return _M_VALUE;
-    }
-
-    bool set(const tribool &value)
-    {
-        _M_VALUE = value._M_VALUE;
         return _M_VALUE;
     }
 
@@ -185,11 +179,12 @@ template <typename T> static inline void eraseElements(T &target)
     T().swap(target);
 }
 
-template <typename T> static inline T to_number(const std::string &str, T def_value)
+template <typename T, typename U> static inline T to_number(const U &value, T def_value = T())
 {
     T retval = 0.0;
     char c;
-    std::stringstream ss(str);
+    std::stringstream ss;
+    ss << value;
     if(!(ss >> retval))
         return def_value;
     else if(ss >> c)

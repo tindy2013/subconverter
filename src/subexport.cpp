@@ -991,9 +991,10 @@ void preprocessNodes(std::vector<nodeInfo> &nodes, extra_settings &ext)
 {
     std::for_each(nodes.begin(), nodes.end(), [ext](nodeInfo &x)
     {
-        x.remarks = nodeRename(x, ext.rename_array);
         if(ext.remove_emoji)
             x.remarks = trim(removeEmoji(x.remarks));
+
+        x.remarks = nodeRename(x, ext.rename_array);
 
         if(ext.add_emoji)
             x.remarks = addEmoji(x, ext.emoji_array);
