@@ -1813,6 +1813,8 @@ struct Bytecode {
 
 
 
+#define INJA_VARARGS (unsigned int) (~0) // use special number for VARARGS functions
+
 namespace inja {
 
 using json = nlohmann::json;
@@ -1873,10 +1875,16 @@ class FunctionStorage {
     if (it == m_map.end()) {
       return nullptr;
     }
+
+    const FunctionData* var_func = nullptr;
     for (auto &&i: it->second) {
-      if (i.num_args == num_args) return &i;
+      if (i.num_args == num_args) {
+        return &i; // function with precise number of argument(s) should always be used first
+      } else if (i.num_args == INJA_VARARGS) {
+        var_func = &i; // store the VARARGS function for later use
+      }
     }
-    return nullptr;
+    return var_func;
   }
 
   std::map<std::string, std::vector<FunctionData>> m_map;
@@ -2218,6 +2226,7 @@ class Lexer {
     if (std::isalpha(ch)) {
       return scan_id();
     }
+
     switch (ch) {
       case ',':
         return make_token(Token::Kind::Comma);
@@ -3221,7 +3230,7 @@ class Renderer {
         }
         case Bytecode::Op::Push: {
           try{m_stack.emplace_back(*get_imm(bc));}
-          catch(std::exception &e){m_stack.emplace_back(json());}
+          catch(std::exception&){m_stack.emplace_back(json());}
           //m_stack.emplace_back(*get_imm(bc));
           break;
         }
@@ -3418,8 +3427,9 @@ class Renderer {
           bool result = false;
           try
           {
-            const std::string pointer = "/" + [](std::string str){std::string new_value = "/", old_value = ".";for(std::string::size_type pos(0); pos != std::string::npos; pos += new_value.length()){if((pos = str.find(old_value, pos)) != std::string::npos)str.replace(pos, old_value.length(), new_value);else break;}return str;}(name);
-            data.at(json::json_pointer(pointer));
+            std::string ptr;
+            convert_dot_to_json_pointer(name, ptr);
+            data.at(json::json_pointer(ptr));
             result = true;
           }
           catch (json::out_of_range &e)

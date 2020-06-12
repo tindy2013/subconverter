@@ -1266,11 +1266,13 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
         yamlnode["Proxy"] = proxies;
 
     std::string groupname;
+    string_array providers;
 
     for(std::string &x : extra_proxy_group)
     {
         singlegroup.reset();
         eraseElements(filtered_nodelist);
+        eraseElements(providers);
         replace_flag = false;
         unsigned int rules_upper_bound = 0;
 
@@ -1304,12 +1306,26 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
         }
 
         for(unsigned int i = 2; i < rules_upper_bound; i++)
-            groupGenerate(vArray[i], nodelist, filtered_nodelist, true);
+        {
+            if(startsWith(vArray[i], "!!PROVIDER="))
+            {
+                string_array list = split(vArray[i].substr(11), ",");
+                providers.reserve(providers.size() + list.size());
+                std::move(list.begin(), list.end(), std::back_inserter(providers));
+            }
+            else
+                groupGenerate(vArray[i], nodelist, filtered_nodelist, true);
+        }
 
-        if(!filtered_nodelist.size())
-            filtered_nodelist.emplace_back("DIRECT");
+        if(providers.size())
+            singlegroup["use"] = providers;
+        else
+        {
+            if(!filtered_nodelist.size())
+                filtered_nodelist.emplace_back("DIRECT");
 
-        singlegroup["proxies"] = filtered_nodelist;
+            singlegroup["proxies"] = filtered_nodelist;
+        }
         //singlegroup.SetStyle(YAML::EmitterStyle::Flow);
 
         for(unsigned int i = 0; i < original_groups.size(); i++)

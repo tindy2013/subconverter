@@ -14,7 +14,8 @@ extern std::string managed_config_prefix;
 
 static inline void parse_json_pointer(nlohmann::json &json, const std::string &path, const std::string &value)
 {
-    std::string pointer = "/" + replace_all_distinct(path, ".", "/");
+    std::string pointer;
+    inja::convert_dot_to_json_pointer(path, pointer);
     try
     {
         json[nlohmann::json::json_pointer(pointer)] = value;
@@ -97,21 +98,17 @@ int render_template(const std::string &content, const template_args &vars, std::
             parse_json_pointer(data, dest + "." + std::to_string(index), vArray[index]);
         return std::string();
     });
-    m_callbacks.add_callback("join", 2, [](inja::Arguments &args)
+    m_callbacks.add_callback("join", INJA_VARARGS, [](inja::Arguments &args)
     {
-        std::string str1 = args.at(0)->get<std::string>(), str2 = args.at(1)->get<std::string>();
-        return std::move(str1) + std::move(str2);
-    });
-    m_callbacks.add_callback("join", 3, [](inja::Arguments &args)
-    {
-        std::string str1 = args.at(0)->get<std::string>(), str2 = args.at(1)->get<std::string>(), str3 = args.at(2)->get<std::string>();
-        return std::move(str1) + std::move(str2) + std::move(str3);
+        std::string result;
+        for(auto iter = args.begin(); iter != args.end(); iter++)
+            result += (*iter)->get<std::string>();
+        return result;
     });
     m_callbacks.add_callback("append", 2, [&data](inja::Arguments &args)
     {
-        std::string path = args.at(0)->get<std::string>(), value = args.at(1)->get<std::string>();
-        std::string pointer = "/" + replace_all_distinct(path, ".", "/");
-        std::string output_content;
+        std::string path = args.at(0)->get<std::string>(), value = args.at(1)->get<std::string>(), pointer, output_content;
+        inja::convert_dot_to_json_pointer(path, pointer);
         try
         {
             output_content = data[nlohmann::json::json_pointer(pointer)].get<std::string>();
@@ -135,6 +132,32 @@ int render_template(const std::string &content, const template_args &vars, std::
     m_callbacks.add_callback("endsWith", 2, [](inja::Arguments &args)
     {
         return endsWith(args.at(0)->get<std::string>(), args.at(1)->get<std::string>());
+    });
+    m_callbacks.add_callback("or", INJA_VARARGS, [](inja::Arguments &args)
+    {
+        for(auto iter = args.begin(); iter != args.end(); iter++)
+            if((*iter)->get<int>())
+                return true;
+        return false;
+    });
+    m_callbacks.add_callback("and", INJA_VARARGS, [](inja::Arguments &args)
+    {
+        for(auto iter = args.begin(); iter != args.end(); iter++)
+            if(!(*iter)->get<int>())
+                return false;
+        return true;
+    });
+    m_callbacks.add_callback("bool", 1, [](inja::Arguments &args)
+    {
+        std::string value = args.at(0)->get<std::string>();
+        std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c) { return std::tolower(c); });
+        switch(hash_(value))
+        {
+        case "true"_hash:
+            return 1;
+        default:
+            return 0;
+        }
     });
     m_callbacks.add_callback("fetch", 1, template_webGet);
     m_callbacks.add_callback("parseHostname", 1, parseHostname);
