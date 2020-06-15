@@ -1139,3 +1139,17 @@ std::string UTF8ToCodePoint(const std::string &data)
     }
     return ss.str();
 }
+
+std::string toLower(const std::string &str)
+{
+    std::string result;
+    std::transform(str.begin(), str.end(), std::back_inserter(result), [](unsigned char c) { return std::tolower(c); });
+    return result;
+}
+
+std::string toUpper(const std::string &str)
+{
+    std::string result;
+    std::transform(str.begin(), str.end(), std::back_inserter(result), [](unsigned char c) { return std::toupper(c); });
+    return result;
+}

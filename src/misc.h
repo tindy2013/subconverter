@@ -72,6 +72,12 @@ public:
             *this = value;
     }
 
+    template <typename T> tribool read(const T &value)
+    {
+        define(value);
+        return *this;
+    }
+
     bool get(const bool &def_value = false)
     {
         if(_M_VALUE == -1)
@@ -144,6 +150,8 @@ int shortAssemble(unsigned short num_a, unsigned short num_b);
 void shortDisassemble(int source, unsigned short &num_a, unsigned short &num_b);
 std::string UTF8ToCodePoint(const std::string &data);
 std::string GetEnv(const std::string &name);
+std::string toLower(const std::string &str);
+std::string toUpper(const std::string &str);
 
 std::string fileGet(const std::string &path, bool scope_limit = false);
 int fileWrite(const std::string &path, const std::string &content, bool overwrite);

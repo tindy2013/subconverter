@@ -59,7 +59,6 @@ duk_ret_t cb_resolve_module(duk_context *ctx)
     resolved_id = foldPathString(resolved_id);
 
     /* Arrive at the canonical module ID somehow. */
-    std::cout<<resolved_id<<std::endl;
     if(!fileExist(resolved_id))
         duk_push_undefined(ctx);
     else

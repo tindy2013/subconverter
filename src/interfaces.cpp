@@ -1180,7 +1180,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     std::string ext_rename = UrlDecode(getUrlArg(argument, "rename"));
 
     /// switches with default value
-    tribool upload = getUrlArg(argument, "upload"), emoji = getUrlArg(argument, "emoji");
+    tribool upload = getUrlArg(argument, "upload"), emoji = getUrlArg(argument, "emoji"), emoji_add = getUrlArg(argument, "add_emoji"), emoji_remove = getUrlArg(argument, "remove_emoji");
     tribool append_type = getUrlArg(argument, "append_type"), tfo = getUrlArg(argument, "tfo"), udp = getUrlArg(argument, "udp"), nodelist = getUrlArg(argument, "list");
     tribool sort_flag = getUrlArg(argument, "sort"), use_sort_script = getUrlArg(argument, "sort_script");
     tribool clash_new_field = getUrlArg(argument, "new_name"), clash_script = getUrlArg(argument, "script"), add_insert = getUrlArg(argument, "insert");
@@ -1251,21 +1251,17 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     }
     else
     {
-        ext.add_emoji = add_emoji;
-        ext.remove_emoji = remove_old_emoji;
+        ext.add_emoji = emoji_add.get(add_emoji);
+        ext.remove_emoji = emoji_remove.get(remove_old_emoji);
     }
     ext.append_proxy_type = append_type.get(append_proxy_type);
     if((target == "clash" || target == "clashr") && clash_script.is_undef())
         expand.define(true);
 
-    /// read preference from argument
-    ext.tfo = tfo;
-    ext.udp = udp;
-    ext.skip_cert_verify = scv;
-    /// assign global var if not in argument
-    ext.tfo.define(tfo_flag);
-    ext.udp.define(udp_flag);
-    ext.skip_cert_verify.define(scv_flag);
+    /// read preference from argument, assign global var if not in argument
+    ext.tfo.read(tfo).read(tfo_flag);
+    ext.udp.read(udp).read(udp_flag);
+    ext.skip_cert_verify.read(scv).read(scv_flag);
 
     ext.sort_flag = sort_flag.get(do_sort);
     use_sort_script.define(sort_script.size() != 0);

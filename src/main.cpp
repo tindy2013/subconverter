@@ -10,7 +10,7 @@
 #include "webget.h"
 #include "logger.h"
 
-extern std::string pref_path, access_token, listen_address, gen_profile;
+extern std::string pref_path, access_token, listen_address, gen_profile, managed_config_prefix;
 extern bool api_mode, generator_mode, cfw_child_process, update_ruleset_on_request;
 extern int listen_port, max_concurrent_threads, max_pending_connections;
 extern string_array rulesets;
@@ -133,6 +133,13 @@ int main(int argc, char *argv[])
     if(!update_ruleset_on_request)
         refreshRulesets(rulesets, ruleset_content_array);
     generateBase();
+
+    std::string env_api_mode = GetEnv("API_MODE"), env_managed_prefix = GetEnv("MANAGED_PREFIX"), env_token = GetEnv("API_TOKEN");
+    api_mode = tribool().read(toLower(env_api_mode)).get(api_mode);
+    if(env_managed_prefix.size())
+        managed_config_prefix = env_managed_prefix;
+    if(env_token.size())
+        access_token = env_token;
 
     if(generator_mode)
         return simpleGenerator();
