@@ -2,10 +2,10 @@ custom:
   enable_rule_generator: false
   overwrite_original_rules: false
 
-  custom_proxy_group:
+  proxy_groups:
   - {import: snippets/groups_forcerule.txt}
 
-#  surge_ruleset:
+#  rulesets:
 #  - {import: snippets/ruleset_remote.txt}
 
   clash_rule_base: base/forcerule.yml
@@ -18,7 +18,7 @@ custom:
 #  rename_node:
 #  - {import: snippet/rename.txt}
 
-#  emoji:
+#  emojis:
 #  - {import: snippets/emoji.txt}
 
 #  include_remarks: []

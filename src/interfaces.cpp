@@ -1105,8 +1105,9 @@ int loadExternalYAML(YAML::Node &node, ExternalConfig &ext)
     section["enable_rule_generator"] >> ext.enable_rule_generator;
     section["overwrite_original_rules"] >> ext.overwrite_original_rules;
 
-    if(section["custom_proxy_group"].size())
-        readGroup(section["custom_proxy_group"], ext.custom_proxy_group, api_mode);
+    const char *group_name = section["proxy_groups"].IsDefined() ? "proxy_groups" : "custom_proxy_group";
+    if(section[group_name].size())
+        readGroup(section[group_name], ext.custom_proxy_group, api_mode);
 
     const char *ruleset_name = section["rulesets"].IsDefined() ? "rulesets" : "surge_ruleset";
     if(section[ruleset_name].size())
