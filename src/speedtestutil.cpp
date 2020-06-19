@@ -1974,7 +1974,7 @@ void explode(std::string link, bool sslibev, bool ssrlibev, const std::string &c
         explodeNetch(link, sslibev, ssrlibev, custom_port, node);
     else if(strFind(link, "trojan://"))
         explodeTrojan(link, custom_port, node);
-    else if(strFind(link, "http://") || strFind(link, "https://"))
+    else if(isLink(link))
         explodeHTTPSub(link, custom_port, node);
 }
 

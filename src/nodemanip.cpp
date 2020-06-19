@@ -72,7 +72,7 @@ int addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID, std
         linkType = SPEEDTEST_MESSAGE_FOUNDSOCKS;
     else if(startsWith(link, "https://t.me/http") || startsWith(link, "tg://http"))
         linkType = SPEEDTEST_MESSAGE_FOUNDHTTP;
-    else if(startsWith(link, "http://") || startsWith(link, "https://") || startsWith(link, "data:") || startsWith(link, "surge:///install-config"))
+    else if(isLink(link) || startsWith(link, "surge:///install-config"))
         linkType = SPEEDTEST_MESSAGE_FOUNDSUB;
     else if(startsWith(link, "Netch://"))
         linkType = SPEEDTEST_MESSAGE_FOUNDNETCH;

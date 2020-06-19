@@ -1,9 +1,28 @@
 #ifndef WEBSERVER_H_INCLUDED
 #define WEBSERVER_H_INCLUDED
 
-typedef std::string (*response_callback)(std::string, std::string, int*, std::map<std::string, std::string>&); //process arguments and POST data and return served-content
+#include <string>
+#include <map>
 
-#define RESPONSE_CALLBACK_ARGS std::string argument, std::string postdata, int *status_code, std::map<std::string, std::string> &extra_headers
+struct Request
+{
+    std::string method;
+    std::string url;
+    std::string argument;
+    std::map<std::string, std::string> headers;
+    std::string postdata;
+};
+
+struct Response
+{
+    int status_code = 200;
+    std::string content_type;
+    std::map<std::string, std::string> headers;
+};
+
+typedef std::string (*response_callback)(Request&, Response&); //process arguments and POST data and return served-content
+
+#define RESPONSE_CALLBACK_ARGS Request &request, Response &response
 
 struct listener_args
 {

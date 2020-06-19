@@ -156,6 +156,9 @@ int main(int argc, char *argv[])
 
     append_response("GET", "/refreshrules", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
+        std::string &argument = request.argument;
+        int *status_code = &response.status_code;
+
         if(access_token.size())
         {
             std::string token = getUrlArg(argument, "token");
@@ -172,6 +175,9 @@ int main(int argc, char *argv[])
 
     append_response("GET", "/readconf", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
+        std::string &argument = request.argument;
+        int *status_code = &response.status_code;
+
         if(access_token.size())
         {
             std::string token = getUrlArg(argument, "token");
@@ -188,6 +194,10 @@ int main(int argc, char *argv[])
 
     append_response("POST", "/updateconf", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
+        std::string &argument = request.argument;
+        std::string postdata = request.postdata;
+        int *status_code = &response.status_code;
+
         if(access_token.size())
         {
             std::string token = getUrlArg(argument, "token");
@@ -231,16 +241,20 @@ int main(int argc, char *argv[])
 
     append_response("GET", "/render", "text/plain;charset=utf-8", renderTemplate);
 
+    append_response("GET", "/convert", "text/plain;charset=utf-8", getConvertedRuleset);
+
     if(!api_mode)
     {
         append_response("GET", "/get", "text/plain;charset=utf-8", [](RESPONSE_CALLBACK_ARGS) -> std::string
         {
+            std::string &argument = request.argument;
             std::string url = UrlDecode(getUrlArg(argument, "url"));
             return webGet(url, "");
         });
 
         append_response("GET", "/getlocal", "text/plain;charset=utf-8", [](RESPONSE_CALLBACK_ARGS) -> std::string
         {
+            std::string &argument = request.argument;
             return fileGet(UrlDecode(getUrlArg(argument, "path")));
         });
     }

@@ -67,16 +67,21 @@ emojis:
 #  - {match: "(流量|时间|应急)", emoji: "🏳️‍🌈"}
   - {import: snippets/emoji.txt}
 
-ruleset:
+rulesets:
   enabled: true
   overwrite_original_rules: false
   update_ruleset_on_request: false
-  surge_ruleset:
+  rulesets:
 #  - {rule: "GEOIP,CN", group: "DIRECT"}
 #  - {ruleset: "rules/LocalAreaNetwork.list", group: "DIRECT"}
+#  - {ruleset: "surge:rules/LocalAreaNetwork.list", group: "DIRECT"}
+#  - {ruleset: "quanx:https://raw.githubusercontent.com/ConnersHua/Profiles/master/Quantumult/X/Filter/Advertising.list", group: "Advertising"}
+#  - {ruleset: "clash-domain:https://ruleset.dev/clash_domestic_services_domains", group: "Domestic Services"}
+#  - {ruleset: "clash-ipcidr:https://ruleset.dev/clash_domestic_services_ips", group: "Domestic Services"}
+#  - {ruleset: "clash-classic:https://raw.githubusercontent.com/DivineEngine/Profiles/master/Clash/RuleSet/China.yaml", group: "DIRECT"}
   - {import: snippets/rulesets.txt}
 
-proxy_group:
+proxy_groups:
   custom_proxy_group:
 #  - {name: UrlTest, type: url-test, rule: [".*"], url: http://www.gstatic.com/generate_204, interval: 300, tolerance: 100, timeout: 5}
 #  - {name: Proxy, type: select, rule: [".*"]}

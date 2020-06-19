@@ -723,7 +723,7 @@ int regGetMatch(const std::string &src, const std::string &match, size_t group_c
 
 std::string regTrim(const std::string &src)
 {
-    return regReplace(src, "^\\s*?(.*?)\\s*$", "$1");
+    return regReplace(src, "^\\s*?([\\s\\S]*)\\s*$", "$1", false);
 }
 
 std::string speedCalc(double speed)

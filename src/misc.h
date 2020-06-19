@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <algorithm>
 
 #include <yaml-cpp/yaml.h>
 
@@ -33,83 +34,6 @@ static const std::string base64_chars =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     "abcdefghijklmnopqrstuvwxyz"
     "0123456789+/";
-
-class tribool
-{
-private:
-
-    int _M_VALUE = -1;
-
-public:
-
-    tribool() { clear(); }
-
-    template <typename T> tribool(const T &value) { set(value); }
-
-    tribool(const tribool &value) { *this = value; }
-
-    ~tribool() = default;
-
-    tribool& operator=(const tribool &src)
-    {
-        _M_VALUE = src._M_VALUE;
-        return *this;
-    }
-
-    template <typename T> tribool& operator=(const T &value)
-    {
-        set(value);
-        return *this;
-    }
-
-    operator bool() const { return _M_VALUE == 1; }
-
-    bool is_undef() { return _M_VALUE == -1; }
-
-    template <typename T> void define(const T &value)
-    {
-        if(_M_VALUE == -1)
-            *this = value;
-    }
-
-    template <typename T> tribool read(const T &value)
-    {
-        define(value);
-        return *this;
-    }
-
-    bool get(const bool &def_value = false)
-    {
-        if(_M_VALUE == -1)
-            return def_value;
-        return _M_VALUE;
-    }
-
-    template <typename T> bool set(const T &value)
-    {
-        _M_VALUE = value;
-        return _M_VALUE;
-    }
-
-    bool set(const std::string &str)
-    {
-        switch(hash_(str))
-        {
-        case "true"_hash:
-            _M_VALUE = 1;
-            break;
-        case "false"_hash:
-            _M_VALUE = 0;
-            break;
-        default:
-            _M_VALUE = -1;
-            break;
-        }
-        return _M_VALUE;
-    }
-
-    void clear() { _M_VALUE = -1; }
-};
 
 std::string UrlEncode(const std::string& str);
 std::string UrlDecode(const std::string& str);
@@ -202,6 +126,93 @@ template <typename T, typename U> static inline T to_number(const U &value, T de
 }
 
 int to_int(const std::string &str, int def_value = 0);
+
+static inline char getLineBreak(const std::string &str)
+{
+    return count(str.begin(), str.end(), '\n') < 1 ? '\r' : '\n';
+}
+
+class tribool
+{
+private:
+
+    int _M_VALUE = -1;
+
+public:
+
+    tribool() { clear(); }
+
+    template <typename T> tribool(const T &value) { set(value); }
+
+    tribool(const tribool &value) { *this = value; }
+
+    ~tribool() = default;
+
+    tribool& operator=(const tribool &src)
+    {
+        _M_VALUE = src._M_VALUE;
+        return *this;
+    }
+
+    template <typename T> tribool& operator=(const T &value)
+    {
+        set(value);
+        return *this;
+    }
+
+    operator bool() const { return _M_VALUE == 1; }
+
+    bool is_undef() { return _M_VALUE == -1; }
+
+    template <typename T> void define(const T &value)
+    {
+        if(_M_VALUE == -1)
+            *this = value;
+    }
+
+    template <typename T> tribool read(const T &value)
+    {
+        define(value);
+        return *this;
+    }
+
+    bool get(const bool &def_value = false)
+    {
+        if(_M_VALUE == -1)
+            return def_value;
+        return _M_VALUE;
+    }
+
+    template <typename T> bool set(const T &value)
+    {
+        _M_VALUE = value;
+        return _M_VALUE;
+    }
+
+    bool set(const std::string &str)
+    {
+        switch(hash_(str))
+        {
+        case "true"_hash:
+        case "1"_hash:
+            _M_VALUE = 1;
+            break;
+        case "false"_hash:
+        case "0"_hash:
+            _M_VALUE = 0;
+            break;
+        default:
+            if(to_int(str, 0) > 1)
+                _M_VALUE = 1;
+            else
+                _M_VALUE = -1;
+            break;
+        }
+        return _M_VALUE;
+    }
+
+    void clear() { _M_VALUE = -1; }
+};
 
 #ifndef HAVE_TO_STRING
 namespace std

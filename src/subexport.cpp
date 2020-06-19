@@ -22,6 +22,7 @@
 #include "templates.h"
 #include "script_duktape.h"
 #include "yamlcpp_extra.h"
+#include "interfaces.h"
 
 extern bool api_mode;
 extern string_array ss_ciphers, ssr_ciphers;
@@ -559,7 +560,7 @@ void processRemark(std::string &oldremark, std::string &newremark, string_array 
 void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset_content_array, bool overwrite_original_rules, bool new_field_name)
 {
     string_array allRules, vArray;
-    std::string rule_group, retrived_rules, strLine;
+    std::string rule_group, retrieved_rules, strLine;
     std::stringstream strStrm;
     const std::string field_name = new_field_name ? "rules" : "Rule";
     YAML::Node Rules;
@@ -573,15 +574,15 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset
         if(max_allowed_rules && total_rules > max_allowed_rules)
             break;
         rule_group = x.rule_group;
-        retrived_rules = x.rule_content.get();
-        if(retrived_rules.empty())
+        retrieved_rules = x.rule_content.get();
+        if(retrieved_rules.empty())
         {
             writeLog(0, "Failed to fetch ruleset or ruleset is empty: '" + x.rule_path + "'!", LOG_LEVEL_WARNING);
             continue;
         }
-        if(retrived_rules.find("[]") == 0)
+        if(retrieved_rules.find("[]") == 0)
         {
-            strLine = retrived_rules.substr(2);
+            strLine = retrieved_rules.substr(2);
             if(strLine.find("FINAL") == 0)
                 strLine.replace(0, 5, "MATCH");
             strLine += "," + rule_group;
@@ -591,10 +592,11 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset
             total_rules++;
             continue;
         }
-        char delimiter = count(retrived_rules.begin(), retrived_rules.end(), '\n') < 1 ? '\r' : '\n';
+        convertRuleset(retrieved_rules, x.rule_type);
+        char delimiter = getLineBreak(retrieved_rules);
 
         strStrm.clear();
-        strStrm<<retrived_rules;
+        strStrm<<retrieved_rules;
         std::string::size_type lineSize;
         while(getline(strStrm, strLine, delimiter))
         {
@@ -646,7 +648,7 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset
 std::string rulesetToClashStr(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset_content_array, bool overwrite_original_rules, bool new_field_name)
 {
     string_array allRules, vArray;
-    std::string rule_group, retrived_rules, strLine;
+    std::string rule_group, retrieved_rules, strLine;
     std::stringstream strStrm;
     const std::string field_name = new_field_name ? "rules" : "Rule";
     std::string output_content = "\n" + field_name + ":\n";
@@ -664,15 +666,15 @@ std::string rulesetToClashStr(YAML::Node &base_rule, std::vector<ruleset_content
         if(max_allowed_rules && total_rules > max_allowed_rules)
             break;
         rule_group = x.rule_group;
-        retrived_rules = x.rule_content.get();
-        if(retrived_rules.empty())
+        retrieved_rules = x.rule_content.get();
+        if(retrieved_rules.empty())
         {
             writeLog(0, "Failed to fetch ruleset or ruleset is empty: '" + x.rule_path + "'!", LOG_LEVEL_WARNING);
             continue;
         }
-        if(retrived_rules.find("[]") == 0)
+        if(retrieved_rules.find("[]") == 0)
         {
-            strLine = retrived_rules.substr(2);
+            strLine = retrieved_rules.substr(2);
             if(strLine.find("FINAL") == 0)
                 strLine.replace(0, 5, "MATCH");
             strLine += "," + rule_group;
@@ -682,10 +684,11 @@ std::string rulesetToClashStr(YAML::Node &base_rule, std::vector<ruleset_content
             total_rules++;
             continue;
         }
-        char delimiter = count(retrived_rules.begin(), retrived_rules.end(), '\n') < 1 ? '\r' : '\n';
+        convertRuleset(retrieved_rules, x.rule_type);
+        char delimiter = getLineBreak(retrieved_rules);
 
         strStrm.clear();
-        strStrm<<retrived_rules;
+        strStrm<<retrieved_rules;
         std::string::size_type lineSize;
         while(getline(strStrm, strLine, delimiter))
         {
@@ -714,7 +717,7 @@ std::string rulesetToClashStr(YAML::Node &base_rule, std::vector<ruleset_content
 void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_content_array, int surge_ver, bool overwrite_original_rules, std::string remote_path_prefix)
 {
     string_array allRules;
-    std::string rule_group, rule_path, retrieved_rules, strLine;
+    std::string rule_group, rule_path, rule_path_typed, retrieved_rules, strLine;
     std::stringstream strStrm;
     size_t total_rules = 0;
 
@@ -755,6 +758,7 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
             break;
         rule_group = x.rule_group;
         rule_path = x.rule_path;
+        rule_path_typed = x.rule_path_typed;
         if(rule_path.empty())
         {
             strLine = x.rule_content.get().substr(2);
@@ -780,39 +784,54 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
         }
         else
         {
+            if(surge_ver == -1 && x.rule_type == RULESET_QUANX && isLink(rule_path))
+            {
+                strLine = rule_path + ", tag=" + rule_group + ", force-policy=" + rule_group + ", enabled=true";
+                base_rule.Set("filter_remote", "{NONAME}", strLine);
+                continue;
+            }
             if(fileExist(rule_path))
             {
                 if(surge_ver > 2 && remote_path_prefix.size())
                 {
-                    strLine = "RULE-SET," + remote_path_prefix + "/getruleset?type=1&url=" + urlsafe_base64_encode(rule_path) + "," + rule_group;
+                    strLine = "RULE-SET," + remote_path_prefix + "/getruleset?type=1&url=" + urlsafe_base64_encode(rule_path_typed) + "," + rule_group;
                     allRules.emplace_back(strLine);
                     continue;
                 }
                 else if(surge_ver == -1 && remote_path_prefix.size())
                 {
-                    strLine = remote_path_prefix + "/getruleset?type=2&url=" + urlsafe_base64_encode(rule_path) + "&group=" + urlsafe_base64_encode(rule_group);
+                    strLine = remote_path_prefix + "/getruleset?type=2&url=" + urlsafe_base64_encode(rule_path_typed) + "&group=" + urlsafe_base64_encode(rule_group);
                     strLine += ", tag=" + rule_group + ", enabled=true";
                     base_rule.Set("filter_remote", "{NONAME}", strLine);
                     continue;
                 }
                 else if(surge_ver == -4 && remote_path_prefix.size())
                 {
-                    strLine = remote_path_prefix + "/getruleset?type=1&url=" + urlsafe_base64_encode(rule_path) + "," + rule_group;
+                    strLine = remote_path_prefix + "/getruleset?type=1&url=" + urlsafe_base64_encode(rule_path_typed) + "," + rule_group;
                     base_rule.Set("Remote Rule", "{NONAME}", strLine);
                     continue;
                 }
             }
-            else if(startsWith(rule_path, "https://") || startsWith(rule_path, "http://") || startsWith(rule_path, "data:"))
+            else if(isLink(rule_path))
             {
                 if(surge_ver > 2)
                 {
-                    strLine = "RULE-SET," + rule_path + "," + rule_group;
+                    if(x.rule_type != RULESET_SURGE)
+                    {
+                        if(remote_path_prefix.size())
+                            strLine = "RULE-SET," + remote_path_prefix + "/getruleset?type=1&url=" + urlsafe_base64_encode(rule_path_typed) + "," + rule_group;
+                        else
+                            continue;
+                    }
+                    else
+                        strLine = "RULE-SET," + rule_path + "," + rule_group;
+
                     allRules.emplace_back(strLine);
                     continue;
                 }
                 else if(surge_ver == -1 && remote_path_prefix.size())
                 {
-                    strLine = remote_path_prefix + "/getruleset?type=2&url=" + urlsafe_base64_encode(rule_path) + "&group=" + urlsafe_base64_encode(rule_group);
+                    strLine = remote_path_prefix + "/getruleset?type=2&url=" + urlsafe_base64_encode(rule_path_typed) + "&group=" + urlsafe_base64_encode(rule_group);
                     strLine += ", tag=" + rule_group + ", enabled=true";
                     base_rule.Set("filter_remote", "{NONAME}", strLine);
                     continue;
@@ -833,7 +852,8 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
                 continue;
             }
 
-            char delimiter = count(retrieved_rules.begin(), retrieved_rules.end(), '\n') < 1 ? '\r' : '\n';
+            convertRuleset(retrieved_rules, x.rule_type);
+            char delimiter = getLineBreak(retrieved_rules);
 
             strStrm.clear();
             strStrm<<retrieved_rules;
@@ -2427,7 +2447,7 @@ void netchToQuanX(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rule
             if(regMatch(content, pattern))
             {
                 url = regReplace(content, pattern, "$2");
-                if(startsWith(url, "https://") || startsWith(url, "http://"))
+                if(isLink(url))
                 {
                     url = ext.managed_config_prefix + "/qx-script?id=" + ext.quanx_dev_id + "&url=" + urlsafe_base64_encode(url);
                     content = regReplace(content, pattern, "$1") + url;
@@ -2451,7 +2471,7 @@ void netchToQuanX(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rule
             else
                 content = x.second;
 
-            if(startsWith(content, "https://") || startsWith(content, "http://"))
+            if(isLink(content))
             {
                 pos = content.find(",");
                 url = ext.managed_config_prefix + "/qx-rewrite?id=" + ext.quanx_dev_id + "&url=" + urlsafe_base64_encode(content.substr(0, pos));

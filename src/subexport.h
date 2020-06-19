@@ -9,10 +9,21 @@
 #include "ini_reader.h"
 #include "nodeinfo.h"
 
+enum ruleset_type
+{
+    RULESET_SURGE,
+    RULESET_QUANX,
+    RULESET_CLASH_DOMAIN,
+    RULESET_CLASH_IPCIDR,
+    RULESET_CLASH_CLASSICAL
+};
+
 struct ruleset_content
 {
     std::string rule_group;
     std::string rule_path;
+    std::string rule_path_typed;
+    int rule_type = RULESET_SURGE;
     std::shared_future<std::string> rule_content;
 };
 

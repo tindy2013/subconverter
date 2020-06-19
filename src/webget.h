@@ -16,4 +16,9 @@ std::string buildSocks5ProxyString(const std::string &addr, int port, const std:
 std::string httpGet(const std::string &host, const std::string &addr, const std::string &uri);
 std::string httpsGet(const std::string &host, const std::string &addr, const std::string &uri);
 
+static inline bool isLink(const std::string &url)
+{
+    return startsWith(url, "https://") || startsWith(url, "http://") || startsWith(url, "data:");
+}
+
 #endif // WEBGET_H_INCLUDED
