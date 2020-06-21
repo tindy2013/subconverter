@@ -48,6 +48,8 @@ node_pref:
   clash_use_new_field_name: true
   rename_node:
 #  - {match: "\\(?((x|X)?(\\d+)(\\.?\\d+)?)((\\s?倍率?)|(x|X))\\)?", replace: "$1x"}
+#  - {script: "function rename(node){}"}
+#  - {script: "path:/path/to/script.js"}
   - {import: snippets/rename_node.txt}
 
 managed_config:
@@ -65,6 +67,8 @@ emojis:
   remove_old_emoji: true
   rules:
 #  - {match: "(流量|时间|应急)", emoji: "🏳️‍🌈"}
+#  - {script: "function getEmoji(node){}"}
+#  - {script: "path:/path/to/script.js"}
   - {import: snippets/emoji.txt}
 
 rulesets:

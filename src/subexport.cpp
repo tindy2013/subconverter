@@ -492,20 +492,44 @@ bool applyMatcher(const std::string &rule, std::string &real_rule, const nodeInf
 
 std::string nodeRename(const nodeInfo &node, const string_array &rename_array)
 {
-    string_array vArray;
+    string_size pos;
+    std::string match, rep;
     std::string remark = node.remarks, real_rule;
+    duk_context *ctx = duktape_init();
+    defer(duk_destroy_heap(ctx);)
 
     for(const std::string &x : rename_array)
     {
-        vArray = split(x, "@");
-        if(vArray.size() == 1)
+        if(startsWith(x, "!!script:"))
         {
-            vArray.emplace_back("");
-        }
-        else if(vArray.size() != 2)
+            std::string script = x.substr(7);
+            if(startsWith(script, "path:"))
+                script = fileGet(script.substr(5), true);
+            if(ctx)
+            {
+                if(duktape_peval(ctx, script) == 0)
+                {
+                    duk_get_global_string(ctx, "rename");
+                    duktape_push_nodeinfo(ctx, node);
+                    if(duk_pcall(ctx, 1) == 0)
+                        remark = duktape_get_res_str(ctx);
+                }
+                else
+                {
+                    writeLog(0, "Error when trying to parse rename script:\n" + duktape_get_err_stack(ctx), LOG_LEVEL_ERROR);
+                    duk_pop(ctx); // pop err
+                }
+            }
             continue;
-        if(applyMatcher(vArray[0], real_rule, node) && real_rule.size())
-            remark = regReplace(remark, real_rule, vArray[1]);
+        }
+        pos = x.rfind("@");
+        match = x.substr(0, pos);
+        if(pos != x.npos && pos < x.size())
+            rep = x.substr(pos + 1);
+        else
+            rep.clear();
+        if(applyMatcher(match, real_rule, node) && real_rule.size())
+            remark = regReplace(remark, real_rule, rep);
     }
     if(remark.empty())
         return node.remarks;
@@ -530,12 +554,39 @@ std::string removeEmoji(const std::string &orig_remark)
 
 std::string addEmoji(const nodeInfo &node, const string_array &emoji_array)
 {
-    string_array vArray;
     std::string real_rule;
     string_size pos;
+    duk_context *ctx = duktape_init();
+    defer(duk_destroy_heap(ctx);)
 
     for(const std::string &x : emoji_array)
     {
+        if(startsWith(x, "!!script:"))
+        {
+            std::string script = x.substr(7);
+            if(startsWith(script, "path:"))
+                script = fileGet(script.substr(5), true);
+            if(ctx)
+            {
+                if(duktape_peval(ctx, script) == 0)
+                {
+                    duk_get_global_string(ctx, "getEmoji");
+                    duktape_push_nodeinfo(ctx, node);
+                    if(duk_pcall(ctx, 1) == 0)
+                    {
+                         std::string ret = duktape_get_res_str(ctx);
+                         if(ret.size())
+                            return ret + " " + node.remarks;
+                    }
+                }
+                else
+                {
+                    writeLog(0, "Error when trying to parse emoji script:\n" + duktape_get_err_stack(ctx), LOG_LEVEL_ERROR);
+                    duk_pop(ctx); // pop err
+                }
+            }
+            continue;
+        }
         pos = x.rfind(",");
         if(pos == x.npos)
             continue;
@@ -545,8 +596,16 @@ std::string addEmoji(const nodeInfo &node, const string_array &emoji_array)
     return node.remarks;
 }
 
-void processRemark(std::string &oldremark, std::string &newremark, string_array &remarks_list)
+void processRemark(std::string &oldremark, std::string &newremark, string_array &remarks_list, bool proc_comma = true)
 {
+    if(proc_comma)
+    {
+        if(oldremark.find(',') != oldremark.npos)
+        {
+            oldremark.insert(0, "\"");
+            oldremark.append("\"");
+        }
+    }
     newremark = oldremark;
     int cnt = 2;
     while(std::find(remarks_list.begin(), remarks_list.end(), newremark) != remarks_list.end())
@@ -1091,7 +1150,7 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
         if(ext.append_proxy_type)
             x.remarks = "[" + type + "] " + x.remarks;
 
-        processRemark(x.remarks, remark, remarks_list);
+        processRemark(x.remarks, remark, remarks_list, false);
 
         hostname = GetMember(json, "Hostname");
         port = GetMember(json, "Port");

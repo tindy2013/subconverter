@@ -6,8 +6,11 @@
 #include "misc.h"
 #include "multithread.h"
 #include "nodeinfo.h"
+#include "socket.h"
+#include "webget.h"
 
 extern int cache_config;
+extern std::string proxy_config;
 
 std::string parseProxy(const std::string &source);
 
@@ -38,6 +41,23 @@ std::string foldPathString(const std::string &path)
             pos_unres = pos_up + 3;
     } while(pos_up != output.npos);
     return output;
+}
+
+static int duktape_get_arguments_str(duk_context *ctx, duk_idx_t min_count, duk_idx_t max_count, ...)
+{
+    duk_idx_t nargs = duk_get_top(ctx);
+    if((min_count >= 0 && nargs < min_count) || (max_count >= 0 && nargs > max_count))
+        return 0;
+    va_list vl;
+    va_start(vl, max_count);
+    for(duk_idx_t idx = 0; idx < nargs; idx++)
+    {
+        std::string *arg = va_arg(vl, std::string*);
+        if(arg)
+            *arg = duk_safe_to_string(ctx, idx);
+    }
+    va_end(vl);
+    return 1;
 }
 
 duk_ret_t cb_resolve_module(duk_context *ctx)
@@ -88,7 +108,8 @@ static duk_ret_t native_print(duk_context *ctx)
 
 static duk_ret_t fetch(duk_context *ctx)
 {
-    std::string filepath = duk_safe_to_string(ctx, -1), proxy = duk_safe_to_string(ctx, -1);
+    std::string filepath, proxy;
+    duktape_get_arguments_str(ctx, 1, 2, &filepath, &proxy);
     std::string content = fetchFile(filepath, proxy, cache_config);
     duk_push_lstring(ctx, content.c_str(), content.size());
     return 1;
@@ -104,7 +125,21 @@ static duk_ret_t atob(duk_context *ctx)
 static duk_ret_t btoa(duk_context *ctx)
 {
     std::string data = duk_safe_to_string(ctx, -1);
-    duk_push_string(ctx, base64_decode(data, true).c_str());
+    data = base64_decode(data, true);
+    duk_push_lstring(ctx, data.c_str(), data.size());
+    return 1;
+}
+
+static duk_ret_t getGeoIP(duk_context *ctx)
+{
+    std::string address, proxy;
+    duktape_get_arguments_str(ctx, 1, 2, &address, &proxy);
+    if(!isIPv4(address) && !isIPv6(address))
+        address = hostnameToIPAddr(address);
+    if(address.empty())
+        duk_push_undefined(ctx);
+    else
+        duk_push_string(ctx, fetchFile("https://api.ip.sb/geoip/" + address, parseProxy(proxy), cache_config).c_str());
     return 1;
 }
 
@@ -123,12 +158,14 @@ duk_context *duktape_init()
 
     duk_push_c_function(ctx, native_print, DUK_VARARGS);
     duk_put_global_string(ctx, "print");
-    duk_push_c_function(ctx, fetch, 1);
+    duk_push_c_function(ctx, fetch, DUK_VARARGS);
     duk_put_global_string(ctx, "fetch");
     duk_push_c_function(ctx, atob, 1);
     duk_put_global_string(ctx, "atob");
     duk_push_c_function(ctx, btoa, 1);
     duk_put_global_string(ctx, "btoa");
+    duk_push_c_function(ctx, getGeoIP, DUK_VARARGS);
+    duk_put_global_string(ctx, "geoip");
     return ctx;
 }
 

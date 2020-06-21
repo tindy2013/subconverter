@@ -5,7 +5,7 @@
 
 #include "misc.h"
 
-std::string webGet(const std::string &url, const std::string &proxy);
+std::string webGet(const std::string &url, const std::string &proxy = "");
 std::string webGet(const std::string &url, const std::string &proxy, unsigned int cache_ttl);
 std::string webGet(const std::string &url, const std::string &proxy, std::string &response_headers, unsigned int cache_ttl = 0);
 int webPost(const std::string &url, const std::string &data, const std::string &proxy, const string_array &request_headers, std::string *retData);

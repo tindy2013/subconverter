@@ -136,7 +136,17 @@ std::string convertRuleset(const std::string &content, int type)
                 {
                     if(strLine[0] == '.' || (lineSize >= 2 && strLine[0] == '+' && strLine[1] == '.')) /// suffix
                     {
-                        output += "DOMAIN-SUFFIX,";
+                        bool keyword_flag = false;
+                        while(endsWith(strLine, ".*"))
+                        {
+                            keyword_flag = true;
+                            strLine.erase(strLine.size() - 2);
+                        }
+                        output += "DOMAIN-";
+                        if(keyword_flag)
+                            output += "KEYWORD,";
+                        else
+                            output += "SUFFIX,";
                         strLine.erase(0, 2 - (strLine[0] == '.'));
                     }
                     else
@@ -369,20 +379,25 @@ int importItems(string_array &target, bool scope_limit = true)
 void readRegexMatch(YAML::Node node, std::string delimiter, string_array &dest, bool scope_limit = true)
 {
     YAML::Node object;
-    std::string url, match, rep, strLine;
+    std::string script, url, match, rep, strLine;
 
     for(unsigned i = 0; i < node.size(); i++)
     {
         object = node[i];
-        object["import"] >> url;
-        if(url.size())
+        object["script"] >>= script;
+        if(script.size())
         {
-            url = "!!import:" + url;
-            dest.emplace_back(url);
+            dest.emplace_back("!!script:" + script);
             continue;
         }
-        object["match"] >> match;
-        object["replace"] >> rep;
+        object["import"] >>= url;
+        if(url.size())
+        {
+            dest.emplace_back("!!import:" + url);
+            continue;
+        }
+        object["match"] >>= match;
+        object["replace"] >>= rep;
         if(match.size() && rep.size())
             strLine = match + delimiter + rep;
         else
@@ -400,15 +415,15 @@ void readEmoji(YAML::Node node, string_array &dest, bool scope_limit = true)
     for(unsigned i = 0; i < node.size(); i++)
     {
         object = node[i];
-        object["import"] >> url;
+        object["import"] >>= url;
         if(url.size())
         {
             url = "!!import:" + url;
             dest.emplace_back(url);
             continue;
         }
-        object["match"] >> match;
-        object["emoji"] >> rep;
+        object["match"] >>= match;
+        object["emoji"] >>= rep;
         if(match.size() && rep.size())
             strLine = match + "," + rep;
         else
@@ -420,32 +435,30 @@ void readEmoji(YAML::Node node, string_array &dest, bool scope_limit = true)
 
 void readGroup(YAML::Node node, string_array &dest, bool scope_limit = true)
 {
+    std::string strLine, name, type;
     string_array tempArray;
     YAML::Node object;
     unsigned int i, j;
 
     for(i = 0; i < node.size(); i++)
     {
-        std::string strLine, name, type;
-        name.clear();
         eraseElements(tempArray);
         object = node[i];
-        object["import"] >> name;
+        object["import"] >>= name;
         if(name.size())
         {
-            name = "!!import:" + name;
-            dest.emplace_back(name);
+            dest.emplace_back("!!import:" + name);
             continue;
         }
         std::string url = "http://www.gstatic.com/generate_204", interval = "300", tolerance, timeout;
-        object["name"] >> name;
-        object["type"] >> type;
+        object["name"] >>= name;
+        object["type"] >>= type;
         tempArray.emplace_back(name);
         tempArray.emplace_back(type);
-        object["url"] >> url;
-        object["interval"] >> interval;
-        object["tolerance"] >> tolerance;
-        object["timeout"] >> timeout;
+        object["url"] >>= url;
+        object["interval"] >>= interval;
+        object["tolerance"] >>= tolerance;
+        object["timeout"] >>= timeout;
         for(j = 0; j < object["rule"].size(); j++)
             tempArray.emplace_back(safe_as<std::string>(object["rule"][j]));
         switch(hash_(type))
@@ -481,19 +494,16 @@ void readRuleset(YAML::Node node, string_array &dest, bool scope_limit = true)
 
     for(unsigned int i = 0; i < node.size(); i++)
     {
-        url.clear();
-        name.clear();
         object = node[i];
-        object["import"] >> name;
+        object["import"] >>= name;
         if(name.size())
         {
-            name = "!!import:" + name;
-            dest.emplace_back(name);
+            dest.emplace_back("!!import:" + name);
             continue;
         }
-        object["ruleset"] >> url;
-        object["group"] >> group;
-        object["rule"] >> name;
+        object["ruleset"] >>= url;
+        object["group"] >>= group;
+        object["rule"] >>= name;
         if(url.size())
             strLine = group + "," + url;
         else if(name.size())
