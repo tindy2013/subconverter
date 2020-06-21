@@ -502,7 +502,7 @@ std::string nodeRename(const nodeInfo &node, const string_array &rename_array)
     {
         if(startsWith(x, "!!script:"))
         {
-            std::string script = x.substr(7);
+            std::string script = x.substr(9);
             if(startsWith(script, "path:"))
                 script = fileGet(script.substr(5), true);
             if(ctx)
@@ -563,7 +563,7 @@ std::string addEmoji(const nodeInfo &node, const string_array &emoji_array)
     {
         if(startsWith(x, "!!script:"))
         {
-            std::string script = x.substr(7);
+            std::string script = x.substr(9);
             if(startsWith(script, "path:"))
                 script = fileGet(script.substr(5), true);
             if(ctx)
