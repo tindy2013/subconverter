@@ -228,7 +228,7 @@ std::string webGet(const std::string &url, const std::string &proxy, unsigned in
         return content;
     }
     //return curlGet(url, proxy, response_headers, return_code);
-    content = curlGet(argument, fetch_res);
+    curlGet(argument, fetch_res);
     return content;
 }
 
