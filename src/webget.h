@@ -2,12 +2,26 @@
 #define WEBGET_H_INCLUDED
 
 #include <string>
+#include <map>
 
 #include "misc.h"
 
-std::string webGet(const std::string &url, const std::string &proxy = "");
-std::string webGet(const std::string &url, const std::string &proxy, unsigned int cache_ttl);
-std::string webGet(const std::string &url, const std::string &proxy, std::string &response_headers, unsigned int cache_ttl = 0);
+struct FetchArgument
+{
+    const std::string url;
+    const std::string proxy;
+    string_map *request_headers = NULL;
+    const unsigned int cache_ttl = 0;
+};
+
+struct FetchResult
+{
+    int *status_code;
+    std::string *content = NULL;
+    std::string *response_headers = NULL;
+};
+
+std::string webGet(const std::string &url, const std::string &proxy = "", unsigned int cache_ttl = 0, std::string *response_headers = NULL, string_map *request_headers = NULL);
 int webPost(const std::string &url, const std::string &data, const std::string &proxy, const string_array &request_headers, std::string *retData);
 int webPatch(const std::string &url, const std::string &data, const std::string &proxy, const string_array &request_headers, std::string *retData);
 std::string buildSocks5ProxyString(const std::string &addr, int port, const std::string &username, const std::string &password);

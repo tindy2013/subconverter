@@ -651,7 +651,7 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset
             total_rules++;
             continue;
         }
-        convertRuleset(retrieved_rules, x.rule_type);
+        retrieved_rules = convertRuleset(retrieved_rules, x.rule_type);
         char delimiter = getLineBreak(retrieved_rules);
 
         strStrm.clear();
@@ -743,7 +743,7 @@ std::string rulesetToClashStr(YAML::Node &base_rule, std::vector<ruleset_content
             total_rules++;
             continue;
         }
-        convertRuleset(retrieved_rules, x.rule_type);
+        retrieved_rules = convertRuleset(retrieved_rules, x.rule_type);
         char delimiter = getLineBreak(retrieved_rules);
 
         strStrm.clear();
@@ -911,7 +911,7 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
                 continue;
             }
 
-            convertRuleset(retrieved_rules, x.rule_type);
+            retrieved_rules = convertRuleset(retrieved_rules, x.rule_type);
             char delimiter = getLineBreak(retrieved_rules);
 
             strStrm.clear();
@@ -1735,13 +1735,16 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
     return ini.ToString();
 }
 
-std::string netchToSS(std::vector<nodeInfo> &nodes, extra_settings &ext)
+std::string netchToSingle(std::vector<nodeInfo> &nodes, int types, extra_settings &ext)
 {
+    /// types: SS=1 SSR=2 VMess=4 Trojan=8
     rapidjson::Document json;
     std::string remark, hostname, port, password, method;
     std::string plugin, pluginopts;
     std::string protocol, protoparam, obfs, obfsparam;
+    std::string id, aid, transproto, faketype, host, path, quicsecure, quicsecret;
     std::string proxyStr, allLinks;
+    bool tlssecure, ss = getbit(types, 1), ssr = getbit(types, 2), vmess = getbit(types, 3), trojan = getbit(types, 4);
 
     for(nodeInfo &x : nodes)
     {
@@ -1762,16 +1765,55 @@ std::string netchToSS(std::vector<nodeInfo> &nodes, extra_settings &ext)
         switch(x.linkType)
         {
         case SPEEDTEST_MESSAGE_FOUNDSS:
-            proxyStr = "ss://" + urlsafe_base64_encode(method + ":" + password) + "@" + hostname + ":" + port;
-            if(plugin.size() && pluginopts.size())
+            if(ss)
             {
-                proxyStr += "/?plugin=" + UrlEncode(plugin + ";" + pluginopts);
+                proxyStr = "ss://" + urlsafe_base64_encode(method + ":" + password) + "@" + hostname + ":" + port;
+                if(plugin.size() && pluginopts.size())
+                {
+                    proxyStr += "/?plugin=" + UrlEncode(plugin + ";" + pluginopts);
+                }
+                proxyStr += "#" + UrlEncode(remark);
             }
-            proxyStr += "#" + UrlEncode(remark);
+            else if(ssr)
+            {
+                if(std::count(ssr_ciphers.begin(), ssr_ciphers.end(), method) > 0 && !GetMember(json, "Plugin").size() && !GetMember(json, "Plugin").size())
+                    proxyStr = "ssr://" + urlsafe_base64_encode(hostname + ":" + port + ":origin:" + method + ":plain:" + urlsafe_base64_encode(password) \
+                               + "/?group=" + urlsafe_base64_encode(x.group) + "&remarks=" + urlsafe_base64_encode(remark));
+            }
+            else
+                continue;
             break;
         case SPEEDTEST_MESSAGE_FOUNDSSR:
-            if(std::count(ss_ciphers.begin(), ss_ciphers.end(), method) > 0 && protocol == "origin" && obfs == "plain")
-                proxyStr = "ss://" + urlsafe_base64_encode(method + ":" + password) + "@" + hostname + ":" + port + "#" + UrlEncode(remark);
+            if(ssr)
+            {
+                proxyStr = "ssr://" + urlsafe_base64_encode(hostname + ":" + port + ":" + protocol + ":" + method + ":" + obfs + ":" + urlsafe_base64_encode(password) \
+                           + "/?group=" + urlsafe_base64_encode(x.group) + "&remarks=" + urlsafe_base64_encode(remark) \
+                           + "&obfsparam=" + urlsafe_base64_encode(obfsparam) + "&protoparam=" + urlsafe_base64_encode(protoparam));
+            }
+            else if(ss)
+            {
+                if(std::count(ss_ciphers.begin(), ss_ciphers.end(), method) > 0 && protocol == "origin" && obfs == "plain")
+                    proxyStr = "ss://" + urlsafe_base64_encode(method + ":" + password) + "@" + hostname + ":" + port + "#" + UrlEncode(remark);
+            }
+            else
+                continue;
+            break;
+        case SPEEDTEST_MESSAGE_FOUNDVMESS:
+            if(!vmess)
+                continue;
+            id = GetMember(json, "UserID");
+            aid = GetMember(json, "AlterID");
+            transproto = GetMember(json, "TransferProtocol");
+            host = GetMember(json, "Host");
+            path = GetMember(json, "Path");
+            faketype = GetMember(json, "FakeType");
+            tlssecure = GetMember(json, "TLSSecure") == "true";
+            proxyStr = "vmess://" + base64_encode(vmessLinkConstruct(remark, hostname, port, faketype, id, aid, transproto, path, host, tlssecure ? "tls" : ""));
+            break;
+        case SPEEDTEST_MESSAGE_FOUNDTROJAN:
+            if(!trojan)
+                continue;
+            proxyStr = "trojan://" + password + "@" + hostname + ":" + port + "#" + UrlEncode(remark);
             break;
         default:
             continue;
@@ -1855,115 +1897,6 @@ std::string netchToSSSub(std::string &base_conf, std::vector<nodeInfo> &nodes, e
         output_content.erase(output_content.size() - 1);
     output_content += "]";
     return output_content;
-}
-
-std::string netchToSSR(std::vector<nodeInfo> &nodes, extra_settings &ext)
-{
-    rapidjson::Document json;
-    std::string remark, hostname, port, password, method;
-    std::string protocol, protoparam, obfs, obfsparam;
-    std::string proxyStr, allLinks;
-
-    for(nodeInfo &x : nodes)
-    {
-        json.Parse(x.proxyStr.data());
-
-        remark = x.remarks;
-        hostname = GetMember(json, "Hostname");
-        port = std::to_string((unsigned short)stoi(GetMember(json, "Port")));
-        password = GetMember(json, "Password");
-        method = GetMember(json, "EncryptMethod");
-        protocol = GetMember(json, "Protocol");
-        protoparam = GetMember(json, "ProtocolParam");
-        obfs = GetMember(json, "OBFS");
-        obfsparam = GetMember(json, "OBFSParam");
-
-        switch(x.linkType)
-        {
-        case SPEEDTEST_MESSAGE_FOUNDSSR:
-            proxyStr = "ssr://" + urlsafe_base64_encode(hostname + ":" + port + ":" + protocol + ":" + method + ":" + obfs + ":" + urlsafe_base64_encode(password) \
-                       + "/?group=" + urlsafe_base64_encode(x.group) + "&remarks=" + urlsafe_base64_encode(remark) \
-                       + "&obfsparam=" + urlsafe_base64_encode(obfsparam) + "&protoparam=" + urlsafe_base64_encode(protoparam));
-            break;
-        case SPEEDTEST_MESSAGE_FOUNDSS:
-            if(std::count(ssr_ciphers.begin(), ssr_ciphers.end(), method) > 0 && !GetMember(json, "Plugin").size() && !GetMember(json, "Plugin").size())
-                proxyStr = "ssr://" + urlsafe_base64_encode(hostname + ":" + port + ":origin:" + method + ":plain:" + urlsafe_base64_encode(password) \
-                           + "/?group=" + urlsafe_base64_encode(x.group) + "&remarks=" + urlsafe_base64_encode(remark));
-            break;
-        default:
-            continue;
-        }
-        allLinks += proxyStr + "\n";
-    }
-
-    return base64_encode(allLinks);
-}
-
-std::string netchToVMess(std::vector<nodeInfo> &nodes, extra_settings &ext)
-{
-    rapidjson::Document json;
-    std::string remark, hostname, port, method;
-    std::string id, aid, transproto, faketype, host, path, quicsecure, quicsecret;
-    std::string proxyStr, allLinks;
-    bool tlssecure;
-
-    for(nodeInfo &x : nodes)
-    {
-        json.Parse(x.proxyStr.data());
-
-        remark = x.remarks;
-        hostname = GetMember(json, "Hostname");
-        port = std::to_string((unsigned short)stoi(GetMember(json, "Port")));
-        method = GetMember(json, "EncryptMethod");
-        id = GetMember(json, "UserID");
-        aid = GetMember(json, "AlterID");
-        transproto = GetMember(json, "TransferProtocol");
-        host = GetMember(json, "Host");
-        path = GetMember(json, "Path");
-        faketype = GetMember(json, "FakeType");
-        tlssecure = GetMember(json, "TLSSecure") == "true";
-
-        switch(x.linkType)
-        {
-        case SPEEDTEST_MESSAGE_FOUNDVMESS:
-            proxyStr = "vmess://" + base64_encode(vmessLinkConstruct(remark, hostname, port, faketype, id, aid, transproto, path, host, tlssecure ? "tls" : ""));
-            break;
-        default:
-            continue;
-        }
-        allLinks += proxyStr + "\n";
-    }
-
-    return base64_encode(allLinks);
-}
-
-std::string netchToTrojan(std::vector<nodeInfo> &nodes, extra_settings &ext)
-{
-    rapidjson::Document json;
-    std::string server, port, psk, remark;
-    std::string proxyStr, allLinks;
-
-    for(nodeInfo &x : nodes)
-    {
-        json.Parse(x.proxyStr.data());
-
-        remark = x.remarks;
-        server = GetMember(json, "Hostname");
-        port = std::to_string((unsigned short)stoi(GetMember(json, "Port")));
-        psk = GetMember(json, "Password");
-
-        switch(x.linkType)
-        {
-        case SPEEDTEST_MESSAGE_FOUNDTROJAN:
-            proxyStr = "trojan://" + psk + "@" + server + ":" + port + "#" + UrlEncode(remark);
-            break;
-        default:
-            continue;
-        }
-        allLinks += proxyStr + "\n";
-    }
-
-    return base64_encode(allLinks);
 }
 
 std::string netchToQuan(std::vector<nodeInfo> &nodes, std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, extra_settings &ext)

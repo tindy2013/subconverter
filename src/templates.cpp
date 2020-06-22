@@ -190,7 +190,7 @@ const std::string clash_script_template = R"(def main(ctx, md):
 {% if not rule.keyword == "" %}{% include "keyword_template" %}{% endif %}
 {% endfor %}
 
-  geoips = { {{ geoips }} }
+{% if exists("geoips") %}  geoips = { {{ geoips }} }
   ip = md.dst_ip
   if ip == "":
     ip = ctx.resolve_ip(md.host)
@@ -199,7 +199,7 @@ const std::string clash_script_template = R"(def main(ctx, md):
       return "{{ match_group }}"
   for key in geoips:
     if ctx.geoip(ip) == key:
-      return geoips[key]
+      return geoips[key]{% endif %}
   return "{{ match_group }}")";
 
 const std::string clash_script_group_template = R"({% if rule.has_domain == "false" and rule.has_ipcidr == "false" %}  if ctx.rule_providers["{{ rule.name }}_classical"].match(md):
@@ -414,7 +414,9 @@ int renderClashScript(YAML::Node &base_rule, std::vector<ruleset_content> &rules
     }
     if(script)
     {
-        parse_json_pointer(data, "geoips", geoips.erase(geoips.size() - 1));
+        if(geoips.size())
+            parse_json_pointer(data, "geoips", geoips.erase(geoips.size() - 1));
+
         parse_json_pointer(data, "match_group", match_group);
 
         inja::Environment env;

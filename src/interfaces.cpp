@@ -330,7 +330,7 @@ int importItems(string_array &target, bool scope_limit = true)
 {
     string_array result;
     std::stringstream ss;
-    std::string path, content, strLine, dummy;
+    std::string path, content, strLine;
     unsigned int itemCount = 0;
     for(std::string &x : target)
     {
@@ -347,7 +347,7 @@ int importItems(string_array &target, bool scope_limit = true)
         if(fileExist(path))
             content = fileGet(path, scope_limit);
         else if(isLink(path))
-            content = webGet(path, proxy, dummy, cache_config);
+            content = webGet(path, proxy, cache_config);
         else
             writeLog(0, "File not found or not a valid URL: " + path, LOG_LEVEL_ERROR);
         if(!content.size())
@@ -1286,7 +1286,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     std::string target = getUrlArg(argument, "target");
     switch(hash_(target))
     {
-    case "clash"_hash: case "clashr"_hash: case "surge"_hash: case "quan"_hash: case "quanx"_hash: case "loon"_hash: case "surfboard"_hash: case "mellow"_hash: case "ss"_hash: case "ssd"_hash: case "ssr"_hash: case "sssub"_hash: case "v2ray"_hash: case "trojan"_hash:
+    case "clash"_hash: case "clashr"_hash: case "surge"_hash: case "quan"_hash: case "quanx"_hash: case "loon"_hash: case "surfboard"_hash: case "mellow"_hash: case "ss"_hash: case "ssd"_hash: case "ssr"_hash: case "sssub"_hash: case "v2ray"_hash: case "trojan"_hash: case "mixed"_hash:
         break;
     default:
         *status_code = 400;
@@ -1526,7 +1526,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         {
             x = regTrim(x);
             writeLog(0, "Fetching node data from url '" + x + "'.", LOG_LEVEL_INFO);
-            if(addNodes(x, insert_nodes, groupID, proxy, exclude_remarks, include_remarks, stream_temp, time_temp, subInfo, authorized) == -1)
+            if(addNodes(x, insert_nodes, groupID, proxy, exclude_remarks, include_remarks, stream_temp, time_temp, subInfo, authorized, request.headers) == -1)
             {
                 *status_code = 400;
                 return std::string("The following link doesn't contain any valid node info: " + x);
@@ -1541,7 +1541,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         x = regTrim(x);
         //std::cerr<<"Fetching node data from url '"<<x<<"'."<<std::endl;
         writeLog(0, "Fetching node data from url '" + x + "'.", LOG_LEVEL_INFO);
-        if(addNodes(x, nodes, groupID, proxy, exclude_remarks, include_remarks, stream_temp, time_temp, subInfo, authorized) == -1)
+        if(addNodes(x, nodes, groupID, proxy, exclude_remarks, include_remarks, stream_temp, time_temp, subInfo, authorized, request.headers) == -1)
         {
             *status_code = 400;
             return std::string("The following link doesn't contain any valid node info: " + x);
@@ -1611,7 +1611,6 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     switch(hash_(target))
     {
     case "clash"_hash: case "clashr"_hash:
-        //std::cerr<<"Clash"<<((target == "clashr") ? "R" : "")<<std::endl;
         writeLog(0, target == "clashr" ? "Generate target: ClashR" : "Generate target: Clash", LOG_LEVEL_INFO);
         tpl_args.local_vars["clash.new_field_name"] = ext.clash_new_field_name ? "true" : "false";
         if(ext.nodelist)
@@ -1642,7 +1641,6 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         break;
     case "surge"_hash:
         surge_ver = version.size() ? to_int(version, 3) : 3;
-        //std::cerr<<"Surge "<<surge_ver<<std::endl;
         writeLog(0, "Generate target: Surge " + std::to_string(surge_ver), LOG_LEVEL_INFO);
 
         if(ext.nodelist)
@@ -1671,7 +1669,6 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         }
         break;
     case "surfboard"_hash:
-        //std::cerr<<"Surfboard"<<std::endl;
         writeLog(0, "Generate target: Surfboard", LOG_LEVEL_INFO);
 
         if(render_template(fetchFile(ext_surfboard_base, proxy, cache_config), tpl_args, base_content, template_path) != 0)
@@ -1689,7 +1686,6 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
                  + " strict=" + std::string(strict ? "true" : "false") + "\n\n" + output_content;
         break;
     case "mellow"_hash:
-        //std::cerr<<"Mellow"<<std::endl;
         writeLog(0, "Generate target: Mellow", LOG_LEVEL_INFO);
         // mellow base generator removed for now
         //if(ruleset_updated || update_ruleset_on_request || ext_mellow_base != mellow_rule_base || !enable_base_gen)
@@ -1715,15 +1711,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         if(upload)
             uploadGist("mellow", upload_path, output_content, true);
         break;
-    case "ss"_hash:
-        //std::cerr<<"SS"<<std::endl;
-        writeLog(0, "Generate target: SS", LOG_LEVEL_INFO);
-        output_content = netchToSS(nodes, ext);
-        if(upload)
-            uploadGist("ss", upload_path, output_content, false);
-        break;
     case "sssub"_hash:
-        //std::cerr<<"SS Subscription"<<std::endl;
         writeLog(0, "Generate target: SS Subscription", LOG_LEVEL_INFO);
 
         if(render_template(fetchFile(ext_sssub_base, proxy, cache_config), tpl_args, base_content, template_path) != 0)
@@ -1736,22 +1724,37 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         if(upload)
             uploadGist("sssub", upload_path, output_content, false);
         break;
+    case "ss"_hash:
+        writeLog(0, "Generate target: SS", LOG_LEVEL_INFO);
+        output_content = netchToSingle(nodes, 1, ext);
+        if(upload)
+            uploadGist("ss", upload_path, output_content, false);
+        break;
     case "ssr"_hash:
-        //std::cerr<<"SSR"<<std::endl;
         writeLog(0, "Generate target: SSR", LOG_LEVEL_INFO);
-        output_content = netchToSSR(nodes, ext);
+        output_content = netchToSingle(nodes, 2, ext);
         if(upload)
             uploadGist("ssr", upload_path, output_content, false);
         break;
     case "v2ray"_hash:
-        //std::cerr<<"v2rayN"<<std::endl;
         writeLog(0, "Generate target: v2rayN", LOG_LEVEL_INFO);
-        output_content = netchToVMess(nodes, ext);
+        output_content = netchToSingle(nodes, 4, ext);
         if(upload)
             uploadGist("v2ray", upload_path, output_content, false);
         break;
+    case "trojan"_hash:
+        writeLog(0, "Generate target: Trojan", LOG_LEVEL_INFO);
+        output_content = netchToSingle(nodes, 8, ext);
+        if(upload)
+            uploadGist("trojan", upload_path, output_content, false);
+        break;
+    case "mixed"_hash:
+        writeLog(0, "Generate target: Standard Subscription", LOG_LEVEL_INFO);
+        output_content = netchToSingle(nodes, 15, ext);
+        if(upload)
+            uploadGist("sub", upload_path, output_content, false);
+        break;
     case "quan"_hash:
-        //std::cerr<<"Quantumult"<<std::endl;
         writeLog(0, "Generate target: Quantumult", LOG_LEVEL_INFO);
         if(!ext.nodelist)
         {
@@ -1769,7 +1772,6 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
             uploadGist("quan", upload_path, output_content, false);
         break;
     case "quanx"_hash:
-        //std::cerr<<"Quantumult X"<<std::endl;
         writeLog(0, "Generate target: Quantumult X", LOG_LEVEL_INFO);
         if(!ext.nodelist)
         {
@@ -1781,14 +1783,12 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
             //base_content = fetchFile(ext_quanx_base, proxy, cache_config);
         }
 
-
         output_content = netchToQuanX(nodes, base_content, rca, extra_group, ext);
 
         if(upload)
             uploadGist("quanx", upload_path, output_content, false);
         break;
     case "loon"_hash:
-        //std::cerr<<"Loon"<<std::endl;
         writeLog(0, "Generate target: Loon", LOG_LEVEL_INFO);
         if(!ext.nodelist)
         {
@@ -1806,21 +1806,12 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
             uploadGist("loon", upload_path, output_content, false);
         break;
     case "ssd"_hash:
-        //std::cerr<<"SSD"<<std::endl;
         writeLog(0, "Generate target: SSD", LOG_LEVEL_INFO);
         output_content = netchToSSD(nodes, group, subInfo, ext);
         if(upload)
             uploadGist("ssd", upload_path, output_content, false);
         break;
-    case "trojan"_hash:
-        //std::cerr<<"Trojan"<<std::endl;
-        writeLog(0, "Generate target: Trojan", LOG_LEVEL_INFO);
-        output_content = netchToTrojan(nodes, ext);
-        if(upload)
-            uploadGist("trojan", upload_path, output_content, false);
-        break;
     default:
-        //std::cerr<<"Unspecified"<<std::endl;
         writeLog(0, "Generate target: Unspecified", LOG_LEVEL_INFO);
         *status_code = 500;
         return "Unrecognized target";
@@ -1859,7 +1850,7 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
     INIReader ini;
     string_array dummy_str_array;
     std::vector<nodeInfo> nodes;
-    std::string base_content, url = argument.size() <= 5 ? "" : argument.substr(5), dummy;
+    std::string base_content, url = argument.size() <= 5 ? "" : argument.substr(5);
     const std::string proxygroup_name = clash_use_new_field_name ? "proxy-groups" : "Proxy Group", rule_name = clash_use_new_field_name ? "rules" : "Rule";
 
     ini.store_any_line = true;
@@ -1962,7 +1953,7 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
     {
         //std::cerr<<"Fetching node data from url '"<<x<<"'."<<std::endl;
         writeLog(0, "Fetching node data from url '" + x + "'.", LOG_LEVEL_INFO);
-        if(addNodes(x, nodes, 0, proxy, dummy_str_array, dummy_str_array, dummy_str_array, dummy_str_array, subInfo, !api_mode) == -1)
+        if(addNodes(x, nodes, 0, proxy, dummy_str_array, dummy_str_array, dummy_str_array, dummy_str_array, subInfo, !api_mode, request.headers) == -1)
         {
             *status_code = 400;
             return std::string("The following link doesn't contain any valid node info: " + x);
@@ -2026,7 +2017,7 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
             strArray = split(x, ",");
             if(strArray.size() != 3)
                 continue;
-            content = webGet(strArray[1], proxy, dummy, cache_ruleset);
+            content = webGet(strArray[1], proxy, cache_ruleset);
             if(!content.size())
                 continue;
 

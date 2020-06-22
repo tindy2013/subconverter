@@ -22,7 +22,7 @@ void copyNodes(std::vector<nodeInfo> &source, std::vector<nodeInfo> &dest)
     }
 }
 
-int addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID, std::string proxy, string_array &exclude_remarks, string_array &include_remarks, string_array &stream_rules, string_array &time_rules, std::string &subInfo, bool authorized)
+int addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID, std::string proxy, string_array &exclude_remarks, string_array &include_remarks, string_array &stream_rules, string_array &time_rules, std::string &subInfo, bool authorized, string_map &request_headers)
 {
     int linkType = -1;
     std::vector<nodeInfo> nodes;
@@ -85,7 +85,7 @@ int addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID, std
         writeLog(LOG_TYPE_INFO, "Downloading subscription data...");
         if(startsWith(link, "surge:///install-config")) //surge config link
             link = UrlDecode(getUrlArg(link, "url"));
-        strSub = webGet(link, proxy, extra_headers, cache_subscription);
+        strSub = webGet(link, proxy, cache_subscription, &extra_headers, &request_headers);
         /*
         if(strSub.size() == 0)
         {

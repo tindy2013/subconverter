@@ -32,6 +32,8 @@ struct responseRoute
 std::vector<responseRoute> responses;
 string_map redirect_map;
 
+const char *request_header_whitelist[] = {"user-agent"};
+
 static inline void buffer_cleanup(struct evbuffer *eb)
 {
     //evbuffer_free(eb);
@@ -40,7 +42,6 @@ static inline void buffer_cleanup(struct evbuffer *eb)
 #endif // MALLOC_TRIM
 }
 
-//static inline int process_request(const char *method_str, std::string uri, std::string &postdata, std::string &content_type, std::string &return_data, int *status_code, std::map<std::string, std::string> &extra_headers)
 static inline int process_request(Request &request, Response &response, std::string &return_data)
 {
     writeLog(0, "handle_cmd:    " + request.method + " handle_uri:    " + request.url, LOG_LEVEL_VERBOSE);
@@ -123,9 +124,17 @@ void OnReq(evhttp_request *req, void *args)
     struct evkeyval* kv = req->input_headers->tqh_first;
     while (kv)
     {
-        request.headers.emplace(kv->key, kv->value);
-        kv = kv->next.tqe_next;
+        for(auto &x : request_header_whitelist)
+        {
+            if(strcmp(kv->key, x) == 0)
+                request.headers.emplace(kv->key, kv->value);
+            kv = kv->next.tqe_next;
+        }
     }
+    if(user_agent)
+        request.headers.emplace("X-User-Agent", user_agent);
+    request.headers.emplace("X-Client-IP", client_ip);
+
     retVal = process_request(request, response, return_data);
     content_type = response.content_type;
 
