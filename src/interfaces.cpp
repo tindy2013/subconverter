@@ -115,6 +115,7 @@ std::string convertRuleset(const std::string &content, int type)
         string_size pos, lineSize;
         while(getline(ss, strLine, delimiter))
         {
+            strLine = trim(strLine);
             lineSize = strLine.size();
             if(lineSize && strLine[lineSize - 1] == '\r') //remove line break
             {
