@@ -658,28 +658,28 @@ int regGetMatch(const std::string &src, const std::string &match, size_t group_c
 bool regMatch(const std::string &src, const std::string &match)
 {
     jp::Regex reg;
-    reg.setPattern(match).addModifier("gm").addPcre2Option(PCRE2_ANCHORED|PCRE2_ENDANCHORED|PCRE2_UTF).compile();
+    reg.setPattern(match).addModifier("m").addPcre2Option(PCRE2_ANCHORED|PCRE2_ENDANCHORED|PCRE2_UTF).compile();
     if(!reg)
         return false;
-    return reg.match(src);
+    return reg.match(src, "g");
 }
 
 bool regFind(const std::string &src, const std::string &match)
 {
     jp::Regex reg;
-    reg.setPattern(match).addModifier("gm").addPcre2Option(PCRE2_UTF).compile();
+    reg.setPattern(match).addModifier("m").addPcre2Option(PCRE2_UTF).compile();
     if(!reg)
         return false;
-    return reg.match(src);
+    return reg.match(src, "g");
 }
 
 std::string regReplace(const std::string &src, const std::string &match, const std::string &rep, bool global)
 {
     jp::Regex reg;
-    reg.setPattern(match).addModifier("gm").addPcre2Option(PCRE2_UTF).compile();
+    reg.setPattern(match).addModifier("m").addPcre2Option(PCRE2_UTF|PCRE2_MULTILINE).compile();
     if(!reg)
         return src;
-    return reg.replace(src, rep, global ? "g" : "");
+    return reg.replace(src, rep, global ? "gx" : "x");
 }
 
 bool regValid(const std::string &reg)
@@ -691,10 +691,10 @@ bool regValid(const std::string &reg)
 int regGetMatch(const std::string &src, const std::string &match, size_t group_count, ...)
 {
     jp::Regex reg;
-    reg.setPattern(match).addModifier("gm").addPcre2Option(PCRE2_UTF).compile();
+    reg.setPattern(match).addModifier("m").addPcre2Option(PCRE2_UTF).compile();
     jp::VecNum vec_num;
     jp::RegexMatch rm;
-    size_t count = rm.setRegexObject(&reg).setSubject(src).setNumberedSubstringVector(&vec_num).match();
+    size_t count = rm.setRegexObject(&reg).setSubject(src).setNumberedSubstringVector(&vec_num).setModifier("g").match();
     if(!count)
         return -1;
     va_list vl;

@@ -161,8 +161,8 @@ std::string convertRuleset(const std::string &content, int type)
     }
     else /// QuanX
     {
-        output = regReplace(regReplace(content, "(?i:host)", "DOMAIN", true), "(?i:ip6-cidr)", "IP-CIDR6", true); //translate type
-        output = regReplace(output, "^((?i:DOMAIN(?:-(?:SUFFIX|KEYWORD))?|IP-CIDR6?),.*?)(?:,(?!no-resolve).*?)(,no-resolve)?$", "$1$2", true); //remove group
+        output = regReplace(regReplace(content, "^(?i:host)", "DOMAIN", true), "^(?i:ip6-cidr)", "IP-CIDR6", true); //translate type
+        output = regReplace(output, "^((?i:DOMAIN(?:-(?:SUFFIX|KEYWORD))?|IP-CIDR6?|USER-AGENT),)\\s*?(\\S*?)(?:,(?!no-resolve).*?)(,no-resolve)?$", "\\U$1\\E$2${3:-}", true); //remove group
         return output;
     }
 }

@@ -2851,6 +2851,14 @@ std::string netchToLoon(std::vector<nodeInfo> &nodes, std::string &base_conf, st
         case SPEEDTEST_MESSAGE_FOUNDHTTP:
             proxy = "http," + hostname + "," + port + "," + username + "," + password;
             break;
+        case SPEEDTEST_MESSAGE_FOUNDTROJAN:
+            host = GetMember(json, "Host");
+            proxy = "trojan," + hostname + "," + port + "," + password;
+            if(host.size())
+                proxy += ",tls-name:" + host;
+            if(scv)
+                proxy += ",skip-cert-verify:1";
+            break;
         default:
             continue;
         }
