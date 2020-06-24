@@ -796,21 +796,25 @@ std::string getMD5(const std::string &data)
     return result;
 }
 
+bool isInScope(const std::string &path)
+{
+#ifdef _WIN32
+    if(path.find(":\\") != path.npos || path.find("..") != path.npos)
+        return false;
+#else
+    if(path.find("/") == 0 || path.find("..") != path.npos)
+        return false;
+#endif // _WIN32
+    return true;
+}
+
 // TODO: Add preprocessor option to disable (open web service safety)
 std::string fileGet(const std::string &path, bool scope_limit)
 {
     std::string content;
 
-    if(scope_limit)
-    {
-#ifdef _WIN32
-        if(path.find(":\\") != path.npos || path.find("..") != path.npos)
-            return std::string();
-#else
-        if(path.find("/") == 0 || path.find("..") != path.npos)
-            return std::string();
-#endif // _WIN32
-    }
+    if(scope_limit && !isInScope(path))
+        return std::string();
 
     std::FILE *fp = std::fopen(path.c_str(), "rb");
     if(fp)
@@ -846,10 +850,12 @@ std::string fileGet(const std::string &path, bool scope_limit)
     return content;
 }
 
-bool fileExist(const std::string &path)
+bool fileExist(const std::string &path, bool scope_limit)
 {
     //using c++17 standard, but may cause problem on clang
     //return std::filesystem::exists(path);
+    if(scope_limit && !isInScope(path))
+        return false;
     return _access(path.data(), 4) != -1;
 }
 

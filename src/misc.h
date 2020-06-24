@@ -82,7 +82,7 @@ std::string toUpper(const std::string &str);
 
 std::string fileGet(const std::string &path, bool scope_limit = false);
 int fileWrite(const std::string &path, const std::string &content, bool overwrite);
-bool fileExist(const std::string &path);
+bool fileExist(const std::string &path, bool scope_limit = false);
 bool fileCopy(const std::string &source, const std::string &dest);
 std::string fileToBase64(const std::string &filepath);
 std::string fileGetMD5(const std::string &filepath);

@@ -1523,6 +1523,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     {
         groupID = -1;
         urls = split(insert_url, "|");
+        importItems(urls, true);
         for(std::string &x : urls)
         {
             x = regTrim(x);
@@ -1536,6 +1537,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         }
     }
     urls = split(url, "|");
+    importItems(urls, true);
     groupID = 0;
     for(std::string &x : urls)
     {

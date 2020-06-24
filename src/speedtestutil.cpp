@@ -769,6 +769,7 @@ void explodeHTTPSub(std::string link, const std::string &custom_port, nodeInfo &
 void explodeTrojan(std::string trojan, const std::string &custom_port, nodeInfo &node)
 {
     std::string server, port, psk, addition, remark, host;
+    tribool tfo, scv;
     string_array vArray;
     trojan.erase(0, 9);
     string_size pos = trojan.rfind("#");
@@ -778,7 +779,7 @@ void explodeTrojan(std::string trojan, const std::string &custom_port, nodeInfo 
         remark = UrlDecode(trojan.substr(pos + 1));
         trojan.erase(pos);
     }
-    pos = trojan.rfind("?");
+    pos = trojan.find("?");
     if(pos != trojan.npos)
     {
         addition = trojan.substr(pos + 1);
@@ -803,6 +804,8 @@ void explodeTrojan(std::string trojan, const std::string &custom_port, nodeInfo 
         return;
 
     host = getUrlArg(addition, "peer");
+    tfo = getUrlArg(addition, "tfo");
+    scv = getUrlArg(addition, "allowInsecure");
 
     if(remark.empty())
         remark = server + ":" + port;
@@ -814,7 +817,7 @@ void explodeTrojan(std::string trojan, const std::string &custom_port, nodeInfo 
     node.remarks = remark;
     node.server = server;
     node.port = to_int(port, 1);
-    node.proxyStr = trojanConstruct(node.group, remark, server, port, psk, host, true);
+    node.proxyStr = trojanConstruct(node.group, remark, server, port, psk, host, true, tribool(), tfo, scv);
 }
 
 void explodeQuan(std::string quan, const std::string &custom_port, nodeInfo &node)

@@ -290,7 +290,7 @@ int renderClashScript(YAML::Node &base_rule, std::vector<ruleset_content> &rules
             }
             if(remote_path_prefix.size())
             {
-                if(isLink(rule_path) || startsWith(rule_path, "data:"))
+                if(fileExist(rule_path, true) || isLink(rule_path))
                 {
                     rule_name = std::to_string(hash_(rule_group + rule_path));
                     names[rule_name] = rule_group;
@@ -314,6 +314,7 @@ int renderClashScript(YAML::Node &base_rule, std::vector<ruleset_content> &rules
                 continue;
             }
 
+            retrieved_rules = convertRuleset(retrieved_rules, x.rule_type);
             char delimiter = getLineBreak(retrieved_rules);
 
             strStrm.clear();
