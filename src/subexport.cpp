@@ -1165,7 +1165,7 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
 
         singleproxy["name"] = remark;
         singleproxy["server"] = hostname;
-        singleproxy["port"] = (unsigned short)stoi(port);
+        singleproxy["port"] = (unsigned short)to_int(port);
 
         switch(x.linkType)
         {
