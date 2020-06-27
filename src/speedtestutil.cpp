@@ -1333,7 +1333,7 @@ bool explodeSurge(std::string surge, const std::string &custom_port, std::vector
         */
         regGetMatch(x.second, proxystr, 3, NULL, &remarks, &config);
         configs = split(config, ",");
-        if(configs.size() < 2)
+        if(configs.size() < 3)
             continue;
         switch(hash_(configs[0]))
         {
@@ -1358,6 +1358,8 @@ bool explodeSurge(std::string surge, const std::string &custom_port, std::vector
 
             //if(mod_md5 == modSSMD5) //is SSEncrypt module
             {
+                if(configs.size() < 5)
+                    continue;
                 server = trim(configs[1]);
                 port = custom_port.empty() ? trim(configs[2]) : custom_port;
                 if(port == "0")

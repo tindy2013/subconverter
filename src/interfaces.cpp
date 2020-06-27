@@ -2430,7 +2430,7 @@ int simpleGenerator()
         {
             if(y.first == "Subscription-UserInfo")
             {
-                std::cerr<<"User Info for artifact '"<<x<<"': "<<subInfoToMessage(y.second)<<"\n";
+                writeLog(0, "User Info for artifact '" + x + "': " + subInfoToMessage(y.second), LOG_LEVEL_INFO);
                 break;
             }
         }
