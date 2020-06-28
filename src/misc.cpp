@@ -8,6 +8,7 @@
 //#include <filesystem>
 #include <unistd.h>
 #include <stdarg.h>
+#include <sys/stat.h>
 
 /*
 #ifdef USE_STD_REGEX
@@ -856,7 +857,8 @@ bool fileExist(const std::string &path, bool scope_limit)
     //return std::filesystem::exists(path);
     if(scope_limit && !isInScope(path))
         return false;
-    return _access(path.data(), 4) != -1;
+    struct stat st;
+    return stat(path.data(), &st) == 0 && S_ISREG(st.st_mode);
 }
 
 bool fileCopy(const std::string &source, const std::string &dest)
