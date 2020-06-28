@@ -104,7 +104,10 @@ static int curlGet(const FetchArgument argument, FetchResult &result)
     if(argument.request_headers)
     {
         for(auto &x : *argument.request_headers)
-            list = curl_slist_append(list, (x.first + ": " + x.second).data());
+        {
+            if(toLower(x.first) != "user-agent")
+                list = curl_slist_append(list, (x.first + ": " + x.second).data());
+        }
     }
     if(list)
         curl_easy_setopt(curl_handle, CURLOPT_HTTPHEADER, list);
@@ -252,7 +255,6 @@ int curlPost(const std::string &url, const std::string &data, const std::string 
     curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, writer);
     curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, retData);
     curl_easy_setopt(curl_handle, CURLOPT_HTTPHEADER, list);
-    curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, user_agent_str.data());
     if(proxy.size())
         curl_easy_setopt(curl_handle, CURLOPT_PROXY, proxy.data());
 
@@ -296,7 +298,6 @@ int curlPatch(const std::string &url, const std::string &data, const std::string
     curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, writer);
     curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, retData);
     curl_easy_setopt(curl_handle, CURLOPT_HTTPHEADER, list);
-    curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, user_agent_str.data());
     if(proxy.size())
         curl_easy_setopt(curl_handle, CURLOPT_PROXY, proxy.data());
 
@@ -337,7 +338,6 @@ int curlHead(const std::string &url, const std::string &proxy, const string_arra
     curl_easy_setopt(curl_handle, CURLOPT_HEADERDATA, &response_headers);
     curl_easy_setopt(curl_handle, CURLOPT_NOBODY, 1L);
     curl_easy_setopt(curl_handle, CURLOPT_HTTPHEADER, list);
-    curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, user_agent_str.data());
     if(proxy.size())
         curl_easy_setopt(curl_handle, CURLOPT_PROXY, proxy.data());
 
