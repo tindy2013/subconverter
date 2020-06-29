@@ -185,15 +185,16 @@ int render_template(const std::string &content, const template_args &vars, std::
 }
 
 const std::string clash_script_template = R"(def main(ctx, md):
+  host = md["host"]
 {% for rule in rules %}
 {% if rule.set == "true" %}{% include "group_template" %}{% endif %}
 {% if not rule.keyword == "" %}{% include "keyword_template" %}{% endif %}
 {% endfor %}
 
 {% if exists("geoips") %}  geoips = { {{ geoips }} }
-  ip = md.dst_ip
+  ip = md["dst_ip"]
   if ip == "":
-    ip = ctx.resolve_ip(md.host)
+    ip = ctx.resolve_ip(host)
     if ip == "":
       ctx.log('[Script] dns lookup error use {{ match_group }}')
       return "{{ match_group }}"
@@ -213,7 +214,7 @@ const std::string clash_script_group_template = R"({% if rule.has_domain == "fal
 
 const std::string clash_script_keyword_template = R"(  keywords = [{{ rule.keyword }}]
   for keyword in keywords:
-    if keyword in md.host:
+    if keyword in host:
       ctx.log('[Script] matched {{ rule.group }} DOMAIN-KEYWORD rule')
       return "{{ rule.group }}")";
 
@@ -323,10 +324,10 @@ int renderClashScript(YAML::Node &base_rule, std::vector<ruleset_content> &rules
             while(getline(strStrm, strLine, delimiter))
             {
                 lineSize = strLine.size();
-                if(lineSize)
+                if(lineSize && strLine[lineSize - 1] == '\r') //remove line break
                 {
-                    strLine = regTrim(strLine);
-                    lineSize = strLine.size();
+                    strLine.erase(lineSize - 1);
+                    lineSize--;
                 }
                 if(!lineSize || strLine[0] == ';' || strLine[0] == '#' || (lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')) //empty lines and comments are ignored
                     continue;
@@ -400,6 +401,16 @@ int renderClashScript(YAML::Node &base_rule, std::vector<ruleset_content> &rules
                 else
                     base_rule["rule-providers"][name + "_" + x + "_ipcidr"]["url"] = remote_path_prefix + "/getruleset?type=4&url=" + urlsafe_base64_encode(url);
                 base_rule["rule-providers"][name + "_" + x + "_ipcidr"]["path"] = "./providers/rule-provider_" + x + "_ipcidr.yaml";
+            }
+            if(!group_has_domain && !group_has_ipcidr)
+            {
+                base_rule["rule-providers"][name + "_" + x + "_classical"]["type"] = "http";
+                base_rule["rule-providers"][name + "_" + x + "_classical"]["behavior"] = "classical";
+                if(url[0] == '*')
+                    base_rule["rule-providers"][name + "_" + x + "_classical"]["url"] = url.substr(1);
+                else
+                    base_rule["rule-providers"][name + "_" + x + "_classical"]["url"] = remote_path_prefix + "/getruleset?type=6&url=" + urlsafe_base64_encode(url);
+                base_rule["rule-providers"][name + "_" + x + "_classical"]["path"] = "./providers/rule-provider_" + x + "_classical.yaml";
             }
         }
         if(script)
