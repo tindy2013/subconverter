@@ -34,7 +34,7 @@ cd ../../../..
 
 cp curl/lib/libcurl.a .
 cp yaml-cpp/libyaml-cpp.a .
-cp duktape/dist/src/*.a .
+cp duktape/dist/source/src/*.a .
 cp /usr/local/lib/libevent.a .
 cp /usr/local/opt/zlib/lib/libz.a .
 cp /usr/local/lib/libpcre2-8.a .

@@ -2,11 +2,11 @@
 set -xe
 
 apk add gcc g++ build-base linux-headers cmake make autoconf automake libtool python2
-apk add mbedtls-dev mbedtls-static nghttp2-dev nghttp2-static zlib-dev rapidjson-dev libevent-dev libevent-static zlib-static pcre2-dev
+apk add mbedtls-static zlib-dev rapidjson-dev libevent-dev libevent-static zlib-static pcre2-dev
 
 git clone https://github.com/curl/curl --depth=1
 cd curl
-cmake -DCMAKE_USE_MBEDTLS=ON -DHTTP_ONLY=ON -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_USE_LIBSSH2=OFF -DUSE_NGHTTP2=ON . > /dev/null
+cmake -DCMAKE_USE_MBEDTLS=ON -DHTTP_ONLY=ON -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_USE_LIBSSH2=OFF . > /dev/null
 make install -j2 > /dev/null
 cd ..
 
@@ -32,6 +32,7 @@ install -m0644 ./duk*.h /usr/include
 install -m0644 ../extras/module-node/duk_module_node.h /usr/include
 cd ../../../..
 
+export PKG_CONFIG_PATH=/usr/lib64/pkgconfig
 cmake .
 make -j2
 rm subconverter
