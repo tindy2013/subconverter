@@ -42,6 +42,7 @@ ADD_EXECUTABLE(subconverter
     src/interfaces.cpp
     src/logger.cpp
     src/main.cpp
+    src/md5.cpp
     src/misc.cpp
     src/multithread.cpp
     src/nodemanip.cpp

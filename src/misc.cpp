@@ -21,11 +21,14 @@ typedef jpcre2::select<char> jp;
 
 #include <rapidjson/document.h>
 
+/*
 #ifdef USE_MBEDTLS
 #include <mbedtls/md5.h>
 #else
 #include <openssl/md5.h>
 #endif // USE_MBEDTLS
+*/
+#include "md5.h"
 
 #include "misc.h"
 
@@ -768,6 +771,8 @@ std::string urlsafe_base64_encode(const std::string &string_to_encode)
 std::string getMD5(const std::string &data)
 {
     std::string result;
+
+    /*
     unsigned int i = 0;
     unsigned char digest[16] = {};
 
@@ -793,6 +798,14 @@ std::string getMD5(const std::string &data)
         snprintf(tmp, 3, "%02x", digest[i]);
         result += tmp;
     }
+    */
+
+    char result_str[MD5_STRING_SIZE];
+    md5::md5_t md5;
+    md5.process(data.data(), data.size());
+    md5.finish();
+    md5.get_string(result_str);
+    result.assign(result_str);
 
     return result;
 }
