@@ -1744,7 +1744,7 @@ std::string netchToSingle(std::vector<nodeInfo> &nodes, int types, extra_setting
     std::string protocol, protoparam, obfs, obfsparam;
     std::string id, aid, transproto, faketype, host, path, quicsecure, quicsecret;
     std::string proxyStr, allLinks;
-    bool tlssecure, ss = getbit(types, 1), ssr = getbit(types, 2), vmess = getbit(types, 3), trojan = getbit(types, 4);
+    bool tlssecure, ss = GETBIT(types, 1), ssr = GETBIT(types, 2), vmess = GETBIT(types, 3), trojan = GETBIT(types, 4);
 
     for(nodeInfo &x : nodes)
     {

@@ -1,13 +1,13 @@
 #!/bin/bash
 set -xe
 
-brew reinstall rapidjson libevent zlib pcre2 bzip2 libssh2 pkgconfig
+brew reinstall rapidjson libevent zlib pcre2 pkgconfig
 
 git clone https://github.com/curl/curl --depth=1
 cd curl
 #./buildconf > /dev/null
 #./configure --with-ssl=/usr/local/opt/openssl@1.1 --without-mbedtls --disable-ldap --disable-ldaps --disable-rtsp --without-libidn2 > /dev/null
-cmake -DHTTP_ONLY=ON -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=OFF -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl@1.1 . > /dev/null
+cmake -DCMAKE_USE_SECTRANSP=ON -DHTTP_ONLY=ON -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_USE_LIBSSH2=OFF . > /dev/null
 make -j8 > /dev/null
 cd ..
 
@@ -20,33 +20,29 @@ cd ..
 git clone https://github.com/svaarala/duktape --depth=1
 cd duktape
 pip2 install PyYAML
+mkdir dist
 python2 util/dist.py
-cd dist/src
+cd dist/source/src
 cc -c -O3 -o duktape.o duktape.c
 cc -c -O3 -o duk_module_node.o -I. ../extras/module-node/duk_module_node.c
 ar cr libduktape.a duktape.o
 ar cr libduktape_module.a duk_module_node.o
-install -m0644 *.a /usr/local/lib
-install -m0644 duk*.h /usr/local/include
+install -m0644 ./*.a /usr/local/lib
+install -m0644 ./duk*.h /usr/local/include
 install -m0644 ../extras/module-node/duk_module_node.h /usr/local/include
-cd ../../..
+cd ../../../..
 
 cp curl/lib/libcurl.a .
 cp yaml-cpp/libyaml-cpp.a .
 cp duktape/dist/src/*.a .
 cp /usr/local/lib/libevent.a .
 cp /usr/local/opt/zlib/lib/libz.a .
-cp /usr/local/opt/openssl@1.1/lib/libssl.a .
-cp /usr/local/opt/openssl@1.1/lib/libcrypto.a .
 cp /usr/local/lib/libpcre2-8.a .
-cp /usr/local/opt/bzip2/lib/libbz2.a .
-cp /usr/local/lib/libssh2.a .
 
-export CMAKE_CXX_FLAGS="-I/usr/local/include -I/usr/local/opt/openssl@1.1/include -I/usr/local/opt/curl/include"
-cmake -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl@1.1 .
+cmake .
 make -j8
 rm subconverter
-c++ -Xlinker -unexported_symbol -Xlinker "*" -o base/subconverter CMakeFiles/subconverter.dir/src/*.o libpcre2-8.a libevent.a libcurl.a libz.a libssl.a libcrypto.a libyaml-cpp.a libbz2.a libssh2.a libduktape.a libduktape_module.a -ldl -lpthread -O3
+c++ -Xlinker -unexported_symbol -Xlinker "*" -o base/subconverter $(find CMakeFiles/subconverter.dir/src/ -name "*.o") $(find . -name "*.a") -O3
 
 cd base
 chmod +rx subconverter

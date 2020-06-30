@@ -23,10 +23,10 @@
 #define DO_CONCAT(a,b) CONCAT(a,b)
 template <typename T> class __defer_struct final {private: T fn; bool __cancelled = false; public: __defer_struct(T func) : fn(std::move(func)) {} ~__defer_struct() {if(!__cancelled) fn();} void cancel() {__cancelled = true;} };
 //#define defer(x) std::unique_ptr<void> DO_CONCAT(__defer_deleter_,__LINE__) (nullptr, [&](...){x});
-#define defer(x) __defer_struct DO_CONCAT(__defer_deleter,__COUNTER__) ([&](...){x;});
+#define defer(x) __defer_struct DO_CONCAT(__defer_deleter,__LINE__) ([&](...){x;});
 
-#define getbit(x,n) (((int)x < 1) ? 0 : ((x >> (n - 1)) & 1))
-#define setbit(x,n,v) x ^= (-v ^ x) & (1UL << (n - 1))
+#define GETBIT(x,n) (((int)x < 1) ? 0 : ((x >> (n - 1)) & 1))
+#define SETBIT(x,n,v) x ^= (-v ^ x) & (1UL << (n - 1))
 
 typedef std::string::size_type string_size;
 typedef std::vector<std::string> string_array;
