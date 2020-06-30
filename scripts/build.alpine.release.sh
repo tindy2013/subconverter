@@ -2,7 +2,7 @@
 set -xe
 
 apk add gcc g++ build-base linux-headers cmake make autoconf automake libtool python2
-apk add mbedtls-static zlib-dev rapidjson-dev libevent-dev libevent-static zlib-static pcre2-dev
+apk add mbedtls-dev mbedtls-static zlib-dev rapidjson-dev libevent-dev libevent-static zlib-static pcre2-dev
 
 git clone https://github.com/curl/curl --depth=1
 cd curl
