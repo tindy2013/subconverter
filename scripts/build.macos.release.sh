@@ -42,7 +42,7 @@ cp /usr/local/lib/libpcre2-8.a .
 cmake .
 make -j8
 rm subconverter
-c++ -Xlinker -unexported_symbol -Xlinker "*" -o base/subconverter $(find CMakeFiles/subconverter.dir/src/ -name "*.o") $(find . -name "*.a") -O3
+c++ -Xlinker -unexported_symbol -Xlinker "*" -o base/subconverter -framework CoreFoundation -framework Security $(find CMakeFiles/subconverter.dir/src/ -name "*.o") $(find . -name "*.a") -O3
 
 cd base
 chmod +rx subconverter
