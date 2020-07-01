@@ -2,8 +2,8 @@ FROM alpine:latest
 MAINTAINER Tindy X <tindy.it@gmail.com>
 
 # build minimized
-RUN apk add --no-cache --virtual .build-deps git g++ build-base linux-headers cmake && \
-    apk add --no-cache --virtual .build-deps curl-dev rapidjson-dev libevent-dev pcre2-dev yaml-cpp-dev python2 && \
+RUN apk add --no-cache --virtual .build-tools git g++ build-base linux-headers cmake python2 && \
+    apk add --no-cache --virtual .build-deps curl-dev rapidjson-dev libevent-dev pcre2-dev yaml-cpp-dev && \
     git clone https://github.com/svaarala/duktape --depth=1 && \
     cd duktape && \
     python2 -m ensurepip && \
@@ -29,7 +29,7 @@ RUN apk add --no-cache --virtual .build-deps git g++ build-base linux-headers cm
     cd .. && \
     rm -rf subconverter && \
     apk add --no-cache --virtual subconverter-deps pcre2 libcurl yaml-cpp libevent && \
-    apk del .build-deps
+    apk del .build-tools .build-deps
 
 # set entry
 WORKDIR /base
