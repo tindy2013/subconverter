@@ -2,12 +2,12 @@ FROM alpine:latest
 MAINTAINER Tindy X <tindy.it@gmail.com>
 
 # build minimized
-RUN apk add git g++ build-base linux-headers cmake && \
-    apk add curl-dev rapidjson-dev libevent-dev pcre2-dev yaml-cpp-dev python2 && \
+RUN apk add --no-cache --virtual .build-deps git g++ build-base linux-headers cmake && \
+    apk add --no-cache --virtual .build-deps curl-dev rapidjson-dev libevent-dev pcre2-dev yaml-cpp-dev python2 && \
     git clone https://github.com/svaarala/duktape --depth=1 && \
     cd duktape && \
     python2 -m ensurepip && \
-    pip2 install PyYAML && \
+    pip2 install PyYAML --no-cache-dir && \
     mkdir dist && \
     python2 util/dist.py && \
     cd dist/source/src && \
@@ -28,8 +28,8 @@ RUN apk add git g++ build-base linux-headers cmake && \
     mv base ../ && \
     cd .. && \
     rm -rf subconverter && \
-    apk add pcre2 libcurl yaml-cpp libevent && \
-    apk del git gcc g++ build-base linux-headers cmake curl-dev rapidjson-dev libevent-dev pcre2-dev yaml-cpp-dev python2
+    apk add --no-cache --virtual subconverter-deps pcre2 libcurl yaml-cpp libevent && \
+    apk del .build-deps
 
 # set entry
 WORKDIR /base
