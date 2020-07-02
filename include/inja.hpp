@@ -2074,6 +2074,11 @@ class Lexer {
   nonstd::string_view m_in;
   size_t m_tok_start;
   size_t m_pos;
+  bool global_trim_flag = false;
+
+  void flip_trim_flag() {
+    global_trim_flag = !global_trim_flag;
+  }
 
  public:
   explicit Lexer(const LexerConfig& config) : m_config(config) {}
@@ -2152,6 +2157,11 @@ class Lexer {
       case State::ExpressionStart: {
         m_state = State::ExpressionBody;
         m_pos += m_config.expression_open.size();
+        // whitespace control
+        if (m_in[m_pos] == '-') {
+          m_pos += 1;
+          flip_trim_flag();
+        }
         return make_token(Token::Kind::ExpressionOpen);
       }
       case State::LineStart: {
@@ -2162,11 +2172,21 @@ class Lexer {
       case State::StatementStart: {
         m_state = State::StatementBody;
         m_pos += m_config.statement_open.size();
+        // whitespace control
+        if (m_in[m_pos] == '-') {
+          m_pos += 1;
+          flip_trim_flag();
+        }
         return make_token(Token::Kind::StatementOpen);
       }
       case State::CommentStart: {
         m_state = State::CommentBody;
         m_pos += m_config.comment_open.size();
+        // whitespace control
+        if (m_in[m_pos] == '-') {
+          m_pos += 1;
+          flip_trim_flag();
+        }
         return make_token(Token::Kind::CommentOpen);
       }
       case State::ExpressionBody:
@@ -2206,13 +2226,22 @@ class Lexer {
       goto again;
     }
 
+    if (ch == '-') {
+      if (inja::string_view::starts_with(m_in.substr(m_tok_start + 1), close))
+        m_tok_start += 1;
+      else
+        return make_token(Token::Kind::Unknown);
+    }
+
     // check for close
     if (inja::string_view::starts_with(m_in.substr(m_tok_start), close)) {
       m_state = State::Text;
       m_pos = m_tok_start + close.size();
       Token tok = make_token(closeKind);
-      if (trim)
+      if (trim || global_trim_flag)
         skip_newline();
+      if (m_in[m_tok_start - 1] == '-')
+        flip_trim_flag();
       return tok;
     }
 

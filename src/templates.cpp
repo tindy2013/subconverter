@@ -160,6 +160,10 @@ int render_template(const std::string &content, const template_args &vars, std::
             return 0;
         }
     });
+    m_callbacks.add_callback("string", 1, [](inja::Arguments &args)
+    {
+        return std::to_string(args.at(0)->get<int>());
+    });
     m_callbacks.add_callback("fetch", 1, template_webGet);
     m_callbacks.add_callback("parseHostname", 1, parseHostname);
     m_parser_config.include_scope_limit = true;
