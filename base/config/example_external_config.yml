@@ -18,6 +18,8 @@ custom:
 #  rename_node:
 #  - {import: snippet/rename.txt}
 
+#  add_emoji: true
+#  remove_old_emoji: true
 #  emojis:
 #  - {import: snippets/emoji.txt}
 

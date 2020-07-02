@@ -1096,6 +1096,8 @@ struct ExternalConfig
     template_args *tpl_args = NULL;
     bool overwrite_original_rules = false;
     bool enable_rule_generator = true;
+    tribool add_emoji;
+    tribool remove_old_emoji;
 };
 
 int loadExternalYAML(YAML::Node &node, ExternalConfig &ext)
@@ -1135,6 +1137,8 @@ int loadExternalYAML(YAML::Node &node, ExternalConfig &ext)
     if(section["rename_node"].size())
         readRegexMatch(section["rename_node"], "@", ext.rename, api_mode);
 
+    ext.add_emoji = safe_as<std::string>(section["add_emoji"]);
+    ext.remove_old_emoji = safe_as<std::string>(section["remove_old_emoji"]);
     const char *emoji_name = section["emojis"].IsDefined() ? "emojis" : "emoji";
     if(section[emoji_name].size())
         readEmoji(section[emoji_name], ext.emoji, api_mode);
@@ -1219,6 +1223,8 @@ int loadExternalConfig(std::string &path, ExternalConfig &ext)
         ini.GetAll("rename", ext.rename);
         importItems(ext.rename, api_mode);
     }
+    ext.add_emoji = ini.Get("add_emoji");
+    ext.remove_old_emoji = ini.Get("remove_old_emoji");
     if(ini.ItemPrefixExist("emoji"))
     {
         ini.GetAll("emoji", ext.emoji);
@@ -1363,23 +1369,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     //check for proxy settings
     std::string proxy = parseProxy(proxy_subscription);
 
-    ext.emoji_array = safe_get_emojis();
-    if(ext_rename.size())
-        ext.rename_array = split(ext_rename, "`");
-    else
-        ext.rename_array = safe_get_renames();
-
     //check other flags
-    if(!emoji.is_undef())
-    {
-        ext.add_emoji = emoji;
-        ext.remove_emoji = true;
-    }
-    else
-    {
-        ext.add_emoji = emoji_add.get(add_emoji);
-        ext.remove_emoji = emoji_remove.get(remove_old_emoji);
-    }
     ext.append_proxy_type = append_type.get(append_proxy_type);
     if((target == "clash" || target == "clashr") && clash_script.is_undef())
         expand.define(true);
@@ -1450,6 +1440,8 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
                 include_remarks = extconf.include;
             if(extconf.exclude.size())
                 exclude_remarks = extconf.exclude;
+            emoji_add.define(extconf.add_emoji);
+            emoji_remove.define(extconf.remove_old_emoji);
         }
         if(extconf.surge_ruleset.size() && !ext.nodelist)
         {
@@ -1505,6 +1497,20 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
             }
         }
     }
+
+    if(!emoji.is_undef())
+    {
+        emoji_add.set(emoji);
+        emoji_remove.set(true);
+    }
+    ext.add_emoji = emoji_add.get(add_emoji);
+    ext.remove_emoji = emoji_remove.get(remove_old_emoji);
+    if(ext.add_emoji && ext.emoji_array.empty())
+        ext.emoji_array = safe_get_emojis();
+    if(ext_rename.size())
+        ext.rename_array = split(ext_rename, "`");
+    else
+        ext.rename_array = safe_get_renames();
 
     //check custom include/exclude settings
     if(include.size() && regValid(include))
