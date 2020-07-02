@@ -335,9 +335,6 @@ DOMAIN-SUFFIX,spcode.baidu.com
 DOMAIN-SUFFIX,stat.v.baidu.com
 DOMAIN-SUFFIX,su.bdimg.com
 DOMAIN-SUFFIX,su.bdstatic.com
-DOMAIN-SUFFIX,t10.baidu.com
-DOMAIN-SUFFIX,t11.baidu.com
-DOMAIN-SUFFIX,t12.baidu.com
 DOMAIN-SUFFIX,tk.baidu.cn
 DOMAIN-SUFFIX,tk.baidu.com
 DOMAIN-SUFFIX,tkweb.baidu.com
@@ -491,7 +488,6 @@ DOMAIN-SUFFIX,bssdl.kugou.com
 DOMAIN-SUFFIX,bssdlbig.kugou.com
 DOMAIN-SUFFIX,d.kugou.com
 DOMAIN-SUFFIX,downmobile.kugou.com
-DOMAIN-SUFFIX,fanxing.kugou.com
 DOMAIN-SUFFIX,gad.kugou.com
 DOMAIN-SUFFIX,game.kugou.com
 DOMAIN-SUFFIX,gamebox.kugou.com
@@ -739,7 +735,6 @@ DOMAIN-SUFFIX,adm.zookingsoft.com
 DOMAIN-SUFFIX,bannera.kingsoft-office-service.com
 DOMAIN-SUFFIX,bole.shangshufang.ksosoft.com
 DOMAIN-SUFFIX,counter.kingsoft.com
-DOMAIN-SUFFIX,dl.op.wpscdn.cn
 DOMAIN-SUFFIX,docerad.wps.cn
 DOMAIN-SUFFIX,gou.wps.cn
 DOMAIN-SUFFIX,hoplink.ksosoft.com
@@ -750,7 +745,6 @@ DOMAIN-SUFFIX,ios-informationplatform.wps.cn
 DOMAIN-SUFFIX,minfo.wps.cn
 DOMAIN-SUFFIX,mo.res.wpscdn.cn
 DOMAIN-SUFFIX,news.docer.com
-DOMAIN-SUFFIX,news.op.wpscdn.cn
 DOMAIN-SUFFIX,notify.wps.cn
 DOMAIN-SUFFIX,pc.uf.ksosoft.com
 DOMAIN-SUFFIX,pcfg.wps.cn

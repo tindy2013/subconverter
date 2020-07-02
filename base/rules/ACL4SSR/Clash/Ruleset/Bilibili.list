@@ -1,5 +1,5 @@
 # 内容：Bilibili 哔哩哔哩
-# 数量：14条
+# 数量：15条
 USER-AGENT,Bilibili*
 USER-AGENT,bili*
 DOMAIN-SUFFIX,acg.tv
@@ -14,3 +14,4 @@ DOMAIN-SUFFIX,biligame.net
 DOMAIN-SUFFIX,bilivideo.com
 DOMAIN-SUFFIX,hdslb.com
 DOMAIN-SUFFIX,im9.com
+DOMAIN-SUFFIX,smtcdns.net

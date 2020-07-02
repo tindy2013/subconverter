@@ -1,4 +1,4 @@
-# Update > 2020.4.28 Go advertising rule Integration lhie1 and ConnersHua
+# Update > 2020.6.29 Go advertising rule Integration lhie1 and ConnersHua
 DOMAIN-SUFFIX,mcupdate.gstarcad.com
 DOMAIN-SUFFIX,adx.open-adx.com
 DOMAIN-SUFFIX,adservice.sigmob.cn
@@ -2196,7 +2196,6 @@ DOMAIN-SUFFIX,clkservice.union.youdao.com
 DOMAIN-SUFFIX,clkservice.youdao.com
 DOMAIN-SUFFIX,clkservice2.dict.youdao.com
 DOMAIN-SUFFIX,cloud.codenow.cn
-DOMAIN-SUFFIX,cloud.rovio.com
 DOMAIN-SUFFIX,cloud.zyiis.net
 DOMAIN-SUFFIX,cloudad.asia
 DOMAIN-SUFFIX,cloudcdn.yousee.com
@@ -2249,7 +2248,6 @@ DOMAIN-SUFFIX,co.dtech.baofeng.com
 DOMAIN-SUFFIX,cocounion.com
 DOMAIN-SUFFIX,cod.southmoney.com
 DOMAIN-SUFFIX,code.3shangyou.com
-DOMAIN-SUFFIX,code.createjs.com
 DOMAIN-SUFFIX,code.fastclick.net
 DOMAIN-SUFFIX,code.hajuwang.cn
 DOMAIN-SUFFIX,code.hot-mob.com
@@ -6131,7 +6129,6 @@ DOMAIN-SUFFIX,rotate.ymtracking.com
 DOMAIN-SUFFIX,rotator.tradetracker.net
 DOMAIN-SUFFIX,router.bittorrent.com
 DOMAIN-SUFFIX,router.gwdang.com
-DOMAIN-SUFFIX,rovio-news-app.angrybirdsgame.com
 DOMAIN-SUFFIX,rp.crasheye.cn
 DOMAIN-SUFFIX,rp.gwallet.com
 DOMAIN-SUFFIX,rpaulfrank.com

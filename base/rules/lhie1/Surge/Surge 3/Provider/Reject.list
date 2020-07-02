@@ -3200,7 +3200,6 @@ DOMAIN-SUFFIX,e.pyerc.com
 DOMAIN-SUFFIX,e.qiaoyuwang.com
 DOMAIN-SUFFIX,e.qingzhencai.net
 DOMAIN-SUFFIX,e.qiyunmuye.com
-DOMAIN-SUFFIX,e.qq.com
 DOMAIN-SUFFIX,e.qsove.com
 DOMAIN-SUFFIX,e.qvxyz.com
 DOMAIN-SUFFIX,e.qxfly.com
@@ -8309,8 +8308,6 @@ URL-REGEX,https://api.zhihu.com/(fringe|zst|real_time|ad-style-service|banners|t
 URL-REGEX,https://api.zhihu.com.*(launch|recommendations)
 URL-REGEX,https://api.zhihu.com/search/(top|tabs|preset)
 URL-REGEX,https://api.zhihu.com/answers/.*/comments/featured-comment-ad
-AND,((USER-AGENT,ZhihuHybrid*), (NOT,((DOMAIN,www.zhihu.com))), (NOT,((DOMAIN,static.zhihu.com))), (NOT,((DOMAIN-SUFFIX,zhimg.com))), (NOT,((DOMAIN,daily.zhihu.com))))
-AND,((USER-AGENT,osee2*), (NOT,((DOMAIN,api.zhihu.com))), (NOT,((DOMAIN,lens.zhihu.com))), (NOT,((DOMAIN,static.zhihu.com))), (NOT,((DOMAIN,www.zhihu.com))), (NOT,((DOMAIN-SUFFIX,zhimg.com))))
 
 URL-REGEX,https?://(e|m).+/((uu|oo).php.+|\d+.x?html\?$)
 URL-REGEX,https?://[^(apple|10010)]+.(com|cn)\/(a|A)d(s|v)?(/|.js)

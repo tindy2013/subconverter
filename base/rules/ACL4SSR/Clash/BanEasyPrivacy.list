@@ -1,7 +1,7 @@
 # 广告列表 adblock rules
 # 内容：EasyPrivacy列表，隐私保护，屏蔽隐私追踪
 # 来源：https://easylist-downloads.adblockplus.org/easyprivacy.txt
-# 更新：2020-06-04 22:05:23
+# 更新：2020-07-01 23:37:24
 # 数量：2525条
 
 DOMAIN-SUFFIX,0sbm.consobaby.co.uk
@@ -23,6 +23,7 @@ DOMAIN-SUFFIX,a.o2u.jp
 DOMAIN-SUFFIX,a.tovarro.com
 DOMAIN-SUFFIX,a8ht.hipp.fr
 DOMAIN-SUFFIX,aa.avvo.com
+DOMAIN-SUFFIX,aax-eu-dub.amazon.com
 DOMAIN-SUFFIX,aax-us-iad.amazon.com
 DOMAIN-SUFFIX,abakus.freenet.de
 DOMAIN-SUFFIX,abs.proxistore.com
@@ -157,6 +158,7 @@ DOMAIN-SUFFIX,analytics.live.com
 DOMAIN-SUFFIX,analytics.liveact.cri-mw.jp
 DOMAIN-SUFFIX,analytics.livestream.com
 DOMAIN-SUFFIX,analytics.localytics.com
+DOMAIN-SUFFIX,analytics.logsss.com
 DOMAIN-SUFFIX,analytics.mailmunch.co
 DOMAIN-SUFFIX,analytics.matchbin.com
 DOMAIN-SUFFIX,analytics.meaww.com
@@ -433,7 +435,6 @@ DOMAIN-SUFFIX,chartaca.com.s3.amazonaws.com
 DOMAIN-SUFFIX,chkpt.zdnet.com
 DOMAIN-SUFFIX,cl.expedia.com
 DOMAIN-SUFFIX,clarium.global.ssl.fastly.net
-DOMAIN-SUFFIX,clc.stackoverflow.com
 DOMAIN-SUFFIX,clck.yandex.com
 DOMAIN-SUFFIX,click.ali213.net
 DOMAIN-SUFFIX,click.appinthestore.com
@@ -672,6 +673,7 @@ DOMAIN-SUFFIX,dfapvmql-q.global.ssl.fastly.net
 DOMAIN-SUFFIX,di8n.bfmtv.com
 DOMAIN-SUFFIX,diagnose.igstatic.com
 DOMAIN-SUFFIX,diamond.transfermarkt.de
+DOMAIN-SUFFIX,direct-events-collector.spot.im
 DOMAIN-SUFFIX,dirt.dennis.co.uk
 DOMAIN-SUFFIX,distillery.wistia.com
 DOMAIN-SUFFIX,dj.renren.com
@@ -943,6 +945,7 @@ DOMAIN-SUFFIX,geoip.pennlive.com
 DOMAIN-SUFFIX,geoip.silive.com
 DOMAIN-SUFFIX,geoip.syracuse.com
 DOMAIN-SUFFIX,geoip.viamichelin.com
+DOMAIN-SUFFIX,geolocation.forbes.com
 DOMAIN-SUFFIX,geoservice.curse.com
 DOMAIN-SUFFIX,gets.faz.net
 DOMAIN-SUFFIX,gj.mmstat.com
@@ -954,7 +957,6 @@ DOMAIN-SUFFIX,glogger.inspcloud.com
 DOMAIN-SUFFIX,gmonitor.aliimg.com
 DOMAIN-SUFFIX,gnar.grammarly.com
 DOMAIN-SUFFIX,go.optifuze.com
-DOMAIN-SUFFIX,go.trouter.skype.com
 DOMAIN-SUFFIX,gobba.myeffect.net
 DOMAIN-SUFFIX,google-analytics.com/batch
 DOMAIN-SUFFIX,google-analytics.com/internal/collect
@@ -1104,7 +1106,6 @@ DOMAIN-SUFFIX,log.hiiir.com
 DOMAIN-SUFFIX,log.hypebeast.com
 DOMAIN-SUFFIX,log.idnes.cz
 DOMAIN-SUFFIX,log.invodo.com
-DOMAIN-SUFFIX,log.kcisa.kr
 DOMAIN-SUFFIX,log.kibboko.com
 DOMAIN-SUFFIX,log.kuwo.cn
 DOMAIN-SUFFIX,log.m.sm.cn
@@ -1132,7 +1133,6 @@ DOMAIN-SUFFIX,log.wilmaa.com
 DOMAIN-SUFFIX,log.worldsoft-cms.info
 DOMAIN-SUFFIX,log1.17173.com
 DOMAIN-SUFFIX,logg.kiwi.com
-DOMAIN-SUFFIX,logger.dailymotion.com
 DOMAIN-SUFFIX,logger.nerdwallet.com
 DOMAIN-SUFFIX,logger.rm.uol.com.br
 DOMAIN-SUFFIX,logger.snackly.co
@@ -1187,13 +1187,13 @@ DOMAIN-SUFFIX,mastertag.q-sis.de
 DOMAIN-SUFFIX,mc.webvisor.com
 DOMAIN-SUFFIX,mc.webvisor.org
 DOMAIN-SUFFIX,mcs.delvenetworks.com
-DOMAIN-SUFFIX,mdn.neowin.net
 DOMAIN-SUFFIX,measure.ameblo.jp
 DOMAIN-SUFFIX,mediametrics.mpsa.com
 DOMAIN-SUFFIX,mediator.mail.ru
 DOMAIN-SUFFIX,mercadolibre.com/tracks
 DOMAIN-SUFFIX,met.vgwort.de
 DOMAIN-SUFFIX,metric-agent.i10c.net
+DOMAIN-SUFFIX,metric.gstatic.com
 DOMAIN-SUFFIX,metric.inetcore.com
 DOMAIN-SUFFIX,metric.nwsource.com
 DOMAIN-SUFFIX,metrics-api.librato.com
@@ -1216,7 +1216,6 @@ DOMAIN-SUFFIX,metrics.sonymusicd2c.com
 DOMAIN-SUFFIX,metrics.ted.com
 DOMAIN-SUFFIX,metrics.toptenreviews.com
 DOMAIN-SUFFIX,metrics.uol.com.br
-DOMAIN-SUFFIX,metrics.upcload.com
 DOMAIN-SUFFIX,metrics.wikinvest.com
 DOMAIN-SUFFIX,metrigo.zalan.do
 DOMAIN-SUFFIX,metrixlablw.customers.luna.net
@@ -1259,8 +1258,6 @@ DOMAIN-SUFFIX,mms.splinternews.com
 DOMAIN-SUFFIX,mms.syracuse.com
 DOMAIN-SUFFIX,mms.theroot.com
 DOMAIN-SUFFIX,mo.moonpig.com
-DOMAIN-SUFFIX,montblanc.lenta.ru
-DOMAIN-SUFFIX,montblanc.rambler.ru
 DOMAIN-SUFFIX,mormont.gamer-network.net
 DOMAIN-SUFFIX,mqs.ioam.de
 DOMAIN-SUFFIX,ms.computerbild.de
@@ -1355,6 +1352,7 @@ DOMAIN-SUFFIX,pbox.photobox.de
 DOMAIN-SUFFIX,pclick.europe.yahoo.com
 DOMAIN-SUFFIX,pclick.internal.yahoo.com
 DOMAIN-SUFFIX,pclick.yahoo.com
+DOMAIN-SUFFIX,pdc.dmleonyc.com
 DOMAIN-SUFFIX,pebed.dm.gg
 DOMAIN-SUFFIX,perf.dugout.com
 DOMAIN-SUFFIX,performanceplay.co.kr
@@ -1488,6 +1486,7 @@ DOMAIN-SUFFIX,rand.com.ru
 DOMAIN-SUFFIX,rat.rakuten.co.jp
 DOMAIN-SUFFIX,rbc.magna.ru
 DOMAIN-SUFFIX,rc.rlcdn.com
+DOMAIN-SUFFIX,rc.vtex.com.br
 DOMAIN-SUFFIX,rcgi.video.qq.com
 DOMAIN-SUFFIX,rcm.shinobi.jp
 DOMAIN-SUFFIX,rcsmetrics.it
@@ -1536,9 +1535,9 @@ DOMAIN-SUFFIX,rs.mail.ru
 DOMAIN-SUFFIX,rs.sinajs.cn
 DOMAIN-SUFFIX,rs.smc.tf
 DOMAIN-SUFFIX,rss.tmgrup.com.tr
+DOMAIN-SUFFIX,rt.flix360.com
 DOMAIN-SUFFIX,rt.prnewswire.com
 DOMAIN-SUFFIX,rta2.metro.co.uk
-DOMAIN-SUFFIX,rtb.connatix.com
 DOMAIN-SUFFIX,rtn.thestar.com
 DOMAIN-SUFFIX,rtt.campanja.com
 DOMAIN-SUFFIX,rum.conde.io
@@ -2025,6 +2024,7 @@ DOMAIN-SUFFIX,tags.cdn.circlesix.co
 DOMAIN-SUFFIX,tags.master-perf-tools.com
 DOMAIN-SUFFIX,tags.msnbc.com
 DOMAIN-SUFFIX,tags.newscgp.com
+DOMAIN-SUFFIX,tags.op-palvelut.fi
 DOMAIN-SUFFIX,tagx.nytimes.com
 DOMAIN-SUFFIX,target.mirtesen.ru
 DOMAIN-SUFFIX,target.mixi.media
@@ -2100,7 +2100,6 @@ DOMAIN-SUFFIX,tpa7.iahorro.com
 DOMAIN-SUFFIX,tpx.tesseradigital.com
 DOMAIN-SUFFIX,tr.bt.matrixspa.it
 DOMAIN-SUFFIX,tr.cloud-media.fr
-DOMAIN-SUFFIX,tr.connatix.com
 DOMAIN-SUFFIX,tr.discuss.com.hk
 DOMAIN-SUFFIX,tr.interlake.net
 DOMAIN-SUFFIX,tr.n2.hk
@@ -2362,7 +2361,6 @@ DOMAIN-SUFFIX,trk.absuite.com.br
 DOMAIN-SUFFIX,trk.adbutter.net
 DOMAIN-SUFFIX,trk.bhs4.com
 DOMAIN-SUFFIX,trk.cloudsna.com
-DOMAIN-SUFFIX,trk.connatix.com
 DOMAIN-SUFFIX,trk.email.dynect.net
 DOMAIN-SUFFIX,trk.flazio.com
 DOMAIN-SUFFIX,trk.freepik.com
@@ -2407,6 +2405,7 @@ DOMAIN-SUFFIX,useg.nextdigital.com.hk
 DOMAIN-SUFFIX,user-metrics.onthemarket.com
 DOMAIN-SUFFIX,userfly.com
 DOMAIN-SUFFIX,usersegment.wpdigital.net
+DOMAIN-SUFFIX,utle.tech426.com
 DOMAIN-SUFFIX,utrack.hexun.com
 DOMAIN-SUFFIX,uts.auction.co.kr
 DOMAIN-SUFFIX,uue2.destinia.ir
@@ -2473,6 +2472,7 @@ DOMAIN-SUFFIX,webcounter.goweb.de
 DOMAIN-SUFFIX,webhit.aftenposten.no
 DOMAIN-SUFFIX,webhit.snd.no
 DOMAIN-SUFFIX,weblog.eseoul.go.kr
+DOMAIN-SUFFIX,weblog.flyasiana.com
 DOMAIN-SUFFIX,weblog.livesport.eu
 DOMAIN-SUFFIX,weblog.strawberrynet.com
 DOMAIN-SUFFIX,weblog2.eseoul.go.kr
