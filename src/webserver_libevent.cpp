@@ -322,7 +322,7 @@ void append_response(const std::string &method, const std::string &uri, const st
     rr.path = uri;
     rr.content_type = content_type;
     rr.rc = response;
-    responses.emplace_back(rr);
+    responses.emplace_back(std::move(rr));
 }
 
 void append_redirect(const std::string &uri, const std::string &target)

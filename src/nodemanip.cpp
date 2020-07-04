@@ -16,10 +16,7 @@ extern int cache_subscription;
 
 void copyNodes(std::vector<nodeInfo> &source, std::vector<nodeInfo> &dest)
 {
-    for(auto &x : source)
-    {
-        dest.emplace_back(x);
-    }
+    std::move(source.begin(), source.end(), std::back_inserter(dest));
 }
 
 int addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID, std::string proxy, string_array &exclude_remarks, string_array &include_remarks, string_array &stream_rules, string_array &time_rules, std::string &subInfo, bool authorized, string_map &request_headers)
@@ -69,8 +66,9 @@ int addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID, std
 
     if(link == "nullnode")
     {
+        node.groupID = 0;
         writeLog(0, "Adding node placeholder...");
-        allNodes.emplace_back(nodeInfo{-1, -1, 0});
+        allNodes.emplace_back(std::move(node));
         return 0;
     }
 
@@ -175,7 +173,7 @@ int addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID, std
         node.groupID = groupID;
         if(custom_group.size())
             node.group = custom_group;
-        allNodes.emplace_back(node);
+        allNodes.emplace_back(std::move(node));
     }
     return 0;
 }

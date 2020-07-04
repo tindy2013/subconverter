@@ -642,7 +642,7 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset
             strLine += "," + rule_group;
             if(count_least(strLine, ',', 3))
                 strLine = regReplace(strLine, "^(.*?,.*?)(,.*)(,.*)$", "$1$3$2");
-            allRules.emplace_back(strLine);
+            allRules.emplace_back(std::move(strLine));
             total_rules++;
             continue;
         }
@@ -683,7 +683,7 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset
             strLine += "," + rule_group;
             if(count_least(strLine, ',', 3))
                 strLine = regReplace(strLine, "^(.*?,.*?)(,.*)(,.*)$", "$1$3$2");
-            allRules.emplace_back(strLine);
+            allRules.emplace_back(std::move(strLine));
             //Rules.push_back(strLine);
         }
     }
@@ -828,7 +828,7 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
                     strLine = regReplace(strLine, rule_match_regex, "$1$3$2");
             }
             strLine = replace_all_distinct(strLine, ",,", ",");
-            allRules.emplace_back(strLine);
+            allRules.emplace_back(std::move(strLine));
             total_rules++;
             continue;
         }
@@ -845,7 +845,7 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
                 if(surge_ver > 2 && remote_path_prefix.size())
                 {
                     strLine = "RULE-SET," + remote_path_prefix + "/getruleset?type=1&url=" + urlsafe_base64_encode(rule_path_typed) + "," + rule_group;
-                    allRules.emplace_back(strLine);
+                    allRules.emplace_back(std::move(strLine));
                     continue;
                 }
                 else if(surge_ver == -1 && remote_path_prefix.size())
@@ -876,7 +876,7 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
                     else
                         strLine = "RULE-SET," + rule_path + "," + rule_group;
 
-                    allRules.emplace_back(strLine);
+                    allRules.emplace_back(std::move(strLine));
                     continue;
                 }
                 else if(surge_ver == -1 && remote_path_prefix.size())
@@ -961,7 +961,7 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
                     if(count_least(strLine, ',', 3))
                         strLine = regReplace(strLine, rule_match_regex, "$1$3$2");
                 }
-                allRules.emplace_back(strLine);
+                allRules.emplace_back(std::move(strLine));
                 total_rules++;
             }
         }
@@ -1306,7 +1306,7 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, const stri
             singleproxy["udp"] = true;
         singleproxy.SetStyle(YAML::EmitterStyle::Flow);
         proxies.push_back(singleproxy);
-        remarks_list.emplace_back(remark);
+        remarks_list.emplace_back(std::move(remark));
         nodelist.emplace_back(x);
     }
 
@@ -1557,12 +1557,12 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, const std::string &base_c
             if(obfsparam.size())
             {
                 args.emplace_back("-g");
-                args.emplace_back(obfsparam);
+                args.emplace_back(std::move(obfsparam));
             }
             if(protoparam.size())
             {
                 args.emplace_back("-G");
-                args.emplace_back(protoparam);
+                args.emplace_back(std::move(protoparam));
             }
             proxy += std::accumulate(std::next(args.begin()), args.end(), args[0], [](std::string a, std::string b)
             {
@@ -1617,7 +1617,6 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, const std::string &base_c
         if(udp)
             proxy += ", udp-relay=true";
 
-        remarks_list.emplace_back(remark);
         if(ext.nodelist)
             output_nodelist += remark + " = " + proxy + "\n";
         else
@@ -1625,6 +1624,7 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, const std::string &base_c
             ini.Set("{NONAME}", remark + " = " + proxy);
             nodelist.emplace_back(x);
         }
+        remarks_list.emplace_back(std::move(remark));
     }
 
     if(ext.nodelist)
@@ -2054,7 +2054,7 @@ void netchToQuan(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rules
         }
 
         ini.Set("{NONAME}", proxyStr);
-        remarks_list.emplace_back(remark);
+        remarks_list.emplace_back(std::move(remark));
         nodelist.emplace_back(x);
     }
 
@@ -2296,7 +2296,7 @@ void netchToQuanX(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rule
         proxyStr += ", tag=" + remark;
 
         ini.Set("{NONAME}", proxyStr);
-        remarks_list.emplace_back(remark);
+        remarks_list.emplace_back(std::move(remark));
         nodelist.emplace_back(x);
     }
 
@@ -2647,7 +2647,7 @@ void netchToMellow(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rul
         }
 
         ini.Set("{NONAME}", proxy);
-        remarks_list.emplace_back(remark);
+        remarks_list.emplace_back(std::move(remark));
         nodelist.emplace_back(x);
     }
 
@@ -2852,7 +2852,7 @@ std::string netchToLoon(std::vector<nodeInfo> &nodes, const std::string &base_co
         {
             ini.Set("{NONAME}", remark + " = " + proxy);
             nodelist.emplace_back(x);
-            remarks_list.emplace_back(remark);
+            remarks_list.emplace_back(std::move(remark));
         }
     }
 

@@ -263,7 +263,7 @@ int renderClashScript(YAML::Node &base_rule, std::vector<ruleset_content> &rules
             strLine += "," + rule_group;
             if(count_least(strLine, ',', 3))
                 strLine = regReplace(strLine, "^(.*?,.*?)(,.*)(,.*)$", "$1$3$2");
-            rules.emplace_back(strLine);
+            rules.emplace_back(std::move(strLine));
             continue;
         }
         else
@@ -290,7 +290,7 @@ int renderClashScript(YAML::Node &base_rule, std::vector<ruleset_content> &rules
                         rules.emplace_back("RULE-SET," + rule_group + "_" + rule_name + "_classical," + rule_group);
                     break;
                 }
-                groups.emplace_back(rule_name);
+                groups.emplace_back(std::move(rule_name));
                 continue;
             }
             if(remote_path_prefix.size())
@@ -302,9 +302,9 @@ int renderClashScript(YAML::Node &base_rule, std::vector<ruleset_content> &rules
                     urls[rule_name] = rule_path_typed;
                     if(clash_classical_ruleset)
                     {
-                        groups.emplace_back(rule_name);
                         if(!script)
                             rules.emplace_back("RULE-SET," + rule_group + "_" + rule_name + "_classical," + rule_group);
+                        groups.emplace_back(std::move(rule_name));
                         continue;
                     }
                 }
@@ -350,12 +350,12 @@ int renderClashScript(YAML::Node &base_rule, std::vector<ruleset_content> &rules
                         strLine += "," + rule_group;
                         if(count_least(strLine, ',', 3))
                             strLine = regReplace(strLine, "^(.*?,.*?)(,.*)(,.*)$", "$1$3$2");
-                        rules.emplace_back(strLine);
+                        rules.emplace_back(std::move(strLine));
                     }
                 }
-                else if(startsWith(strLine, "DOMAIN,") || startsWith(strLine, "DOMAIN-SUFFIX,"))
+                else if(!has_domain[rule_name] && (startsWith(strLine, "DOMAIN,") || startsWith(strLine, "DOMAIN-SUFFIX,")))
                     has_domain[rule_name] = true;
-                else if(startsWith(strLine, "IP-CIDR,") || startsWith(strLine, "IP-CIDR6,"))
+                else if(!has_ipcidr[rule_name] && (startsWith(strLine, "IP-CIDR,") || startsWith(strLine, "IP-CIDR6,")))
                     has_ipcidr[rule_name] = true;
             }
             if(has_domain[rule_name] && !script)
@@ -363,7 +363,7 @@ int renderClashScript(YAML::Node &base_rule, std::vector<ruleset_content> &rules
             if(has_ipcidr[rule_name] && !script)
                 rules.emplace_back("RULE-SET," + rule_group + "_" + rule_name + "_ipcidr," + rule_group);
             if(std::find(groups.begin(), groups.end(), rule_name) == groups.end())
-                groups.emplace_back(rule_name);
+                groups.emplace_back(std::move(rule_name));
         }
     }
     for(std::string &x : groups)

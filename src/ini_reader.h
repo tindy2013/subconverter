@@ -265,7 +265,7 @@ public:
                         read_sections.push_back(curSection); //add to read sections list
                     ini_content.emplace(curSection, itemGroup); //insert previous section to content map
                     if(std::count(section_order.cbegin(), section_order.cend(), curSection) == 0)
-                        section_order.emplace_back(curSection);
+                        section_order.emplace_back(std::move(curSection));
                 }
 
                 eraseElements(itemGroup); //reset section storage

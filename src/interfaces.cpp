@@ -358,7 +358,7 @@ int importItems(string_array &target, bool scope_limit = true)
                 strLine.erase(--lineSize);
             if(!lineSize || strLine[0] == ';' || strLine[0] == '#' || (lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')) //empty lines and comments are ignored
                 continue;
-            result.emplace_back(strLine);
+            result.emplace_back(std::move(strLine));
             itemCount++;
         }
         ss.clear();
@@ -394,7 +394,7 @@ void readRegexMatch(YAML::Node node, const std::string &delimiter, string_array 
             strLine = match + delimiter + rep;
         else
             continue;
-        dest.emplace_back(strLine);
+        dest.emplace_back(std::move(strLine));
     }
     importItems(dest, scope_limit);
 }
@@ -426,7 +426,7 @@ void readEmoji(YAML::Node node, string_array &dest, bool scope_limit = true)
             strLine = match + "," + rep;
         else
             continue;
-        dest.emplace_back(strLine);
+        dest.emplace_back(std::move(strLine));
     }
     importItems(dest, scope_limit);
 }
@@ -451,7 +451,7 @@ void readGroup(YAML::Node node, string_array &dest, bool scope_limit = true)
         std::string url = "http://www.gstatic.com/generate_204", interval = "300", tolerance, timeout;
         object["name"] >>= name;
         object["type"] >>= type;
-        tempArray.emplace_back(name);
+        tempArray.emplace_back(std::move(name));
         tempArray.emplace_back(type);
         object["url"] >>= url;
         object["interval"] >>= interval;
@@ -472,7 +472,7 @@ void readGroup(YAML::Node node, string_array &dest, bool scope_limit = true)
         default:
             if(tempArray.size() < 3)
                 continue;
-            tempArray.emplace_back(url);
+            tempArray.emplace_back(std::move(url));
             tempArray.emplace_back(interval + "," + timeout + "," + tolerance);
         }
 
@@ -480,7 +480,7 @@ void readGroup(YAML::Node node, string_array &dest, bool scope_limit = true)
         {
             return std::move(a) + "`" + std::move(b);
         });
-        dest.emplace_back(strLine);
+        dest.emplace_back(std::move(strLine));
     }
     importItems(dest, scope_limit);
 }
@@ -508,7 +508,7 @@ void readRuleset(YAML::Node node, string_array &dest, bool scope_limit = true)
             strLine = group + ",[]" + name;
         else
             continue;
-        dest.emplace_back(strLine);
+        dest.emplace_back(std::move(strLine));
     }
     importItems(dest, scope_limit);
 }
@@ -540,7 +540,7 @@ void refreshRulesets(string_array &ruleset_list, std::vector<ruleset_content> &r
             writeLog(0, "Adding rule '" + rule_url.substr(2) + "," + rule_group + "'.", LOG_LEVEL_INFO);
             //std::cerr<<"Adding rule '"<<rule_url.substr(2)<<","<<rule_group<<"'."<<std::endl;
             rc = {rule_group, "", "", RULESET_SURGE, std::async(std::launch::async, [rule_url](){return rule_url;})};
-            rca.emplace_back(rc);
+            rca.emplace_back(std::move(rc));
             continue;
         }
         else
@@ -571,7 +571,7 @@ void refreshRulesets(string_array &ruleset_list, std::vector<ruleset_content> &r
             */
             rc = {rule_group, rule_url, rule_url_typed, type, fetchFileAsync(rule_url, proxy, cache_ruleset, async_fetch_ruleset)};
         }
-        rca.emplace_back(rc);
+        rca.emplace_back(std::move(rc));
         /*
         if(rc.rule_content.get().size())
             rca.emplace_back(rc);
@@ -1555,12 +1555,14 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         return "No nodes were found!";
     }
     prepend_insert.define(prepend_insert_url);
-    for(nodeInfo &x : insert_nodes)
+    if(prepend_insert)
     {
-        if(prepend_insert)
-            nodes.emplace(nodes.begin(), x);
-        else
-            nodes.emplace_back(x);
+        std::move(nodes.begin(), nodes.end(), std::back_inserter(insert_nodes));
+        nodes.swap(insert_nodes);
+    }
+    else
+    {
+        std::move(insert_nodes.begin(), insert_nodes.end(), std::back_inserter(nodes));
     }
     //run filter script
     if(filter_script.size())
@@ -2335,7 +2337,7 @@ int simpleGenerator()
         {
             x = trim(x);
             if(std::find(sections.cbegin(), sections.cend(), x) != sections.cend())
-                new_targets.emplace_back(x);
+                new_targets.emplace_back(std::move(x));
             else
             {
                 //std::cerr<<"Artifact \""<<x<<"\" not found in generator settings!\n";

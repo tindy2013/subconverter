@@ -173,7 +173,7 @@ void explodeVmessConf(std::string content, const std::string &custom_port, bool 
                 node.server = add;
                 node.port = to_int(port, 1);
                 node.proxyStr = vmessConstruct(node.group, node.remarks, add, port, type, id, aid, net, cipher, path, host, edge, tls, udp, tfo, scv);
-                nodes.push_back(node);
+                nodes.emplace_back(std::move(node));
             }
             return;
         }
@@ -248,7 +248,7 @@ void explodeVmessConf(std::string content, const std::string &custom_port, bool 
         node.id = index;
         node.server = add;
         node.port = to_int(port, 1);
-        nodes.push_back(node);
+        nodes.emplace_back(std::move(node));
     }
     return;
 }
@@ -379,7 +379,7 @@ void explodeSSD(std::string link, bool libev, const std::string &custom_port, st
         node.port = to_int(port, 1);
         node.proxyStr = ssConstruct(group, remarks, server, port, password, method, plugin, pluginopts, libev);
         node.id = index;
-        nodes.push_back(node);
+        nodes.emplace_back(std::move(node));
         index++;
     }
     return;
@@ -422,7 +422,7 @@ void explodeSSAndroid(std::string ss, bool libev, const std::string &custom_port
         node.server = server;
         node.port = to_int(port, 1);
         node.proxyStr = ssConstruct(group, ps, server, port, password, method, plugin, pluginopts, libev);
-        nodes.push_back(node);
+        nodes.emplace_back(std::move(node));
         index++;
     }
 }
@@ -464,7 +464,7 @@ void explodeSSConf(std::string content, const std::string &custom_port, bool lib
         node.server = server;
         node.port = to_int(port, 1);
         node.proxyStr = ssConstruct(group, ps, server, port, password, method, plugin, pluginopts, libev);
-        nodes.push_back(node);
+        nodes.emplace_back(std::move(node));
         index++;
     }
     return;
@@ -556,7 +556,7 @@ void explodeSSRConf(std::string content, const std::string &custom_port, bool ss
             node.group = SSR_DEFAULT_GROUP;
             node.proxyStr = ssrConstruct(node.group, node.remarks, base64_encode(node.remarks), server, port, protocol, method, obfs, password, obfsparam, protoparam, ssr_libev);
         }
-        nodes.push_back(node);
+        nodes.emplace_back(std::move(node));
         return;
     }
 
@@ -589,7 +589,7 @@ void explodeSSRConf(std::string content, const std::string &custom_port, bool ss
         node.server = server;
         node.port = to_int(port, 1);
         node.proxyStr = ssrConstruct(group, remarks, remarks_base64, server, port, protocol, method, obfs, password, obfsparam, protoparam, ssr_libev);
-        nodes.push_back(node);
+        nodes.emplace_back(std::move(node));
         index++;
     }
     return;
@@ -1109,7 +1109,7 @@ void explodeClash(Node yamlnode, const std::string &custom_port, std::vector<nod
         node.server = server;
         node.port = to_int(port, 1);
         node.id = index;
-        nodes.push_back(node);
+        nodes.emplace_back(std::move(node));
         index++;
     }
     return;
@@ -1703,7 +1703,7 @@ bool explodeSurge(std::string surge, const std::string &custom_port, std::vector
         node.server = server;
         node.port = to_int(port);
         node.id = index;
-        nodes.push_back(node);
+        nodes.emplace_back(std::move(node));
         index++;
     }
     return index;
@@ -1769,7 +1769,7 @@ void explodeSSTap(std::string sstap, const std::string &custom_port, std::vector
         node.id = index;
         node.server = server;
         node.port = to_int(port, 1);
-        nodes.push_back(node);
+        nodes.emplace_back(std::move(node));
     }
 }
 
@@ -1791,7 +1791,7 @@ void explodeNetchConf(std::string netch, bool ss_libev, bool ssr_libev, const st
         explodeNetch("Netch://" + base64_encode(SerializeObject(json["Server"][i])), ss_libev, ssr_libev, custom_port, node);
 
         node.id = index;
-        nodes.push_back(node);
+        nodes.emplace_back(std::move(node));
         index++;
     }
 }
@@ -1965,7 +1965,7 @@ void explodeSub(std::string sub, bool sslibev, bool ssrlibev, const std::string 
             {
                 continue;
             }
-            nodes.push_back(node);
+            nodes.emplace_back(std::move(node));
         }
     }
 }
@@ -2005,20 +2005,20 @@ void filterNodes(std::vector<nodeInfo> &nodes, string_array &exclude_remarks, st
         std::unique_ptr<pcre2_code, decltype(&pcre2_code_free)> pattern(pcre2_compile(reinterpret_cast<const unsigned char*>(exclude_remarks[i].c_str()), PCRE2_ZERO_TERMINATED | PCRE2_MULTILINE, 0, &errornumber, &erroroffset, NULL), &pcre2_code_free);
         if(!pattern)
             return;
-        exclude_patterns.push_back(std::move(pattern));
+        exclude_patterns.emplace_back(std::move(pattern));
         pcre2_jit_compile(exclude_patterns[i].get(), 0);
         std::unique_ptr<pcre2_match_data, decltype(&pcre2_match_data_free)> match_data(pcre2_match_data_create_from_pattern(exclude_patterns[i].get(), NULL), &pcre2_match_data_free);
-        exclude_match_data.push_back(std::move(match_data));
+        exclude_match_data.emplace_back(std::move(match_data));
     }
     for(i = 0; i < include_remarks.size(); i++)
     {
         std::unique_ptr<pcre2_code, decltype(&pcre2_code_free)> pattern(pcre2_compile(reinterpret_cast<const unsigned char*>(include_remarks[i].c_str()), PCRE2_ZERO_TERMINATED | PCRE2_MULTILINE, 0, &errornumber, &erroroffset, NULL), &pcre2_code_free);
         if(!pattern)
             return;
-        include_patterns.push_back(std::move(pattern));
+        include_patterns.emplace_back(std::move(pattern));
         pcre2_jit_compile(include_patterns[i].get(), 0);
         std::unique_ptr<pcre2_match_data, decltype(&pcre2_match_data_free)> match_data(pcre2_match_data_create_from_pattern(include_patterns[i].get(), NULL), &pcre2_match_data_free);
-        include_match_data.push_back(std::move(match_data));
+        include_match_data.emplace_back(std::move(match_data));
     }
     writeLog(LOG_TYPE_INFO, "Filter started.");
     while(iter != nodes.end())

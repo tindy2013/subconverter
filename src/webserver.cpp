@@ -247,14 +247,14 @@ end:
     working_thread--;
 }
 
-void append_response(std::string type, std::string request, std::string content_type, response_callback response)
+void append_response(const std::string &type, const std::string &request, const std::string &content_type, response_callback response)
 {
     responseRoute rr;
     rr.method = type;
     rr.path = request;
     rr.content_type = content_type;
     rr.rc = response;
-    responses.push_back(rr);
+    responses.push_back(std::move(rr));
 }
 
 void stop_web_server()
