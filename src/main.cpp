@@ -17,7 +17,7 @@ extern string_array rulesets;
 extern std::vector<ruleset_content> ruleset_content_array;
 
 #ifndef _WIN32
-void SetConsoleTitle(std::string title)
+void SetConsoleTitle(const std::string &title)
 {
     system(std::string("echo \"\\033]0;" + title + "\\007\\c\"").data());
 }

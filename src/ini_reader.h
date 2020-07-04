@@ -216,7 +216,6 @@ public:
         std::string strLine, thisSection, curSection, itemName, itemVal;
         string_multimap itemGroup, existItemGroup;
         std::stringstream strStrm;
-        unsigned int lineSize = 0;
         char delimiter = getLineBreak(content);
 
         EraseAll(); //first erase all data
@@ -235,7 +234,7 @@ public:
         while(getline(strStrm, strLine, delimiter)) //get one line of content
         {
             last_error_index++;
-            lineSize = strLine.size();
+            string_size lineSize = strLine.size();
             if(lineSize && strLine[lineSize - 1] == '\r') //remove line break
             {
                 strLine.erase(lineSize - 1);
@@ -243,6 +242,7 @@ public:
             }
             if((!lineSize || strLine[0] == ';' || strLine[0] == '#' || (lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')) && !inDirectSaveSection) //empty lines and comments are ignored
                 continue;
+            ProcessEscapeChar(strLine);
             if(strLine[0] == '[' && strLine[lineSize - 1] == ']') //is a section title
             {
                 thisSection = strLine.substr(1, lineSize - 2); //save section title
@@ -347,15 +347,7 @@ public:
     */
     string_array GetSections()
     {
-        string_array retData;
-
-        for(auto &x : ini_content)
-        {
-            retData.emplace_back(x.first);
-        }
-        //std::transform(ini_content.begin(), ini_content.end(), back_inserter(retData), [](auto x) -> std::string {return x.first;});
-
-        return retData;
+        return section_order;
     }
 
     /**
@@ -530,11 +522,9 @@ public:
             cached_section_content = ini_content.at(section);
         }
 
-        for(auto &x : cached_section_content)
-        {
-            if(x.first == itemName)
-                return x.second;
-        }
+        auto iter = std::find_if(cached_section_content.begin(), cached_section_content.end(), [&](auto x) { return x.first == itemName; });
+        if(iter != cached_section_content.end())
+            return iter->second;
 
         return std::string();
     }
@@ -800,9 +790,8 @@ public:
     template <typename T> int SetArray(const std::string &section, const std::string &itemName, const std::string &separator, T &Array)
     {
         std::string data;
-        for(auto &x : Array)
-            data += std::to_string(x) + separator;
-        data = data.substr(0, data.size() - separator.size());
+        std::transform(std::begin(Array), std::end(Array), std::back_inserter(data), [&](auto x) { return std::to_string(x) + separator; });
+        data.erase(data.size() - 1);
         return Set(section, itemName, data);
     }
 

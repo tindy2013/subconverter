@@ -1174,3 +1174,28 @@ std::string toUpper(const std::string &str)
     std::transform(str.begin(), str.end(), std::back_inserter(result), [](unsigned char c) { return std::toupper(c); });
     return result;
 }
+
+void ProcessEscapeChar(std::string &str)
+{
+    string_size pos = str.find('\\');
+    while(pos != str.npos)
+    {
+        if(pos == str.size())
+            break;
+        switch(str[pos + 1])
+        {
+        case 'n':
+            str.replace(pos, 2, "\n");
+            break;
+        case 'r':
+            str.replace(pos, 2, "\r");
+            break;
+        case 't':
+            str.replace(pos, 2, "\t");
+            break;
+        default:
+            str.erase(pos, 1);
+        }
+        pos = str.find('\\', pos);
+    }
+}

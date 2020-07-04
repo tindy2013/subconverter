@@ -2073,7 +2073,7 @@ void filterNodes(std::vector<nodeInfo> &nodes, string_array &exclude_remarks, st
     writeLog(LOG_TYPE_INFO, "Filter done.");
 }
 
-static inline unsigned long long streamToInt(const std::string &stream)
+unsigned long long streamToInt(const std::string &stream)
 {
     if(!stream.size())
         return 0;
