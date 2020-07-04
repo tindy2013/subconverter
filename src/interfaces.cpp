@@ -118,10 +118,7 @@ std::string convertRuleset(const std::string &content, int type)
             strLine = trim(strLine);
             lineSize = strLine.size();
             if(lineSize && strLine[lineSize - 1] == '\r') //remove line break
-            {
-                strLine.erase(lineSize - 1);
-                lineSize--;
-            }
+                strLine.erase(--lineSize);
 
             if(!strLine.empty() && (strLine[0] != ';' && strLine[0] != '#' && !(lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')))
             {
@@ -287,10 +284,7 @@ std::string getRuleset(RESPONSE_CALLBACK_ARGS)
 
         lineSize = strLine.size();
         if(lineSize && strLine[lineSize - 1] == '\r') //remove line break
-        {
-            strLine.erase(lineSize - 1);
-            lineSize--;
-        }
+            strLine.erase(--lineSize);
 
         if(!strLine.empty() && (strLine[0] != ';' && strLine[0] != '#' && !(lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')))
         {
@@ -299,7 +293,7 @@ std::string getRuleset(RESPONSE_CALLBACK_ARGS)
                 if(startsWith(strLine, "IP-CIDR6"))
                     strLine.replace(0, 8, "IP6-CIDR");
                 strLine += "," + group;
-                if(std::count(strLine.begin(), strLine.end(), ',') > 2 && regReplace(strLine, rule_match_regex, "$2") == ",no-resolve")
+                if(count_least(strLine, ',', 3) && regReplace(strLine, rule_match_regex, "$2") == ",no-resolve")
                     strLine = regReplace(strLine, rule_match_regex, "$1$3$2");
                 else
                     strLine = regReplace(strLine, rule_match_regex, "$1$3");
@@ -361,10 +355,7 @@ int importItems(string_array &target, bool scope_limit = true)
         {
             lineSize = strLine.size();
             if(lineSize && strLine[lineSize - 1] == '\r') //remove line break
-            {
-                strLine = strLine.substr(0, lineSize - 1);
-                lineSize--;
-            }
+                strLine.erase(--lineSize);
             if(!lineSize || strLine[0] == ';' || strLine[0] == '#' || (lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')) //empty lines and comments are ignored
                 continue;
             result.emplace_back(strLine);
@@ -411,11 +402,17 @@ void readRegexMatch(YAML::Node node, const std::string &delimiter, string_array 
 void readEmoji(YAML::Node node, string_array &dest, bool scope_limit = true)
 {
     YAML::Node object;
-    std::string url, match, rep, strLine;
+    std::string script, url, match, rep, strLine;
 
     for(unsigned i = 0; i < node.size(); i++)
     {
         object = node[i];
+        object["script"] >>= script;
+        if(script.size())
+        {
+            dest.emplace_back("!!script:" + script);
+            continue;
+        }
         object["import"] >>= url;
         if(url.size())
         {
@@ -2032,17 +2029,14 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
             while(getline(ss, strLine, delimiter))
             {
                 lineSize = strLine.size();
-                if(strLine[lineSize - 1] == '\r') //remove line break
-                {
-                    strLine = strLine.substr(0, lineSize - 1);
-                    lineSize--;
-                }
+                if(lineSize && strLine[lineSize - 1] == '\r') //remove line break
+                    strLine.erase(--lineSize);
                 if(!lineSize || strLine[0] == ';' || strLine[0] == '#' || (lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')) //empty lines and comments are ignored
                     continue;
                 else if(strLine.find("USER-AGENT") == 0 || strLine.find("URL-REGEX") == 0 || strLine.find("PROCESS-NAME") == 0 || strLine.find("AND") == 0 || strLine.find("OR") == 0) //remove unsupported types
                     continue;
                 strLine += strArray[2];
-                if(std::count(strLine.begin(), strLine.end(), ',') > 2)
+                if(count_least(strLine, ',', 3))
                     strLine = regReplace(strLine, "^(.*?,.*?)(,.*)(,.*)$", "$1$3$2");
                 rule.push_back(strLine);
             }
@@ -2210,10 +2204,7 @@ std::string getRewriteRemote(RESPONSE_CALLBACK_ARGS)
         {
             lineSize = strLine.size();
             if(lineSize && strLine[lineSize - 1] == '\r') //remove line break
-            {
-                strLine.erase(lineSize - 1);
-                lineSize--;
-            }
+                strLine.erase(--lineSize);
 
             if(!strLine.empty() && regMatch(strLine, pattern))
             {

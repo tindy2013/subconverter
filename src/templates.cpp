@@ -261,7 +261,7 @@ int renderClashScript(YAML::Node &base_rule, std::vector<ruleset_content> &rules
             if(strLine.find("FINAL") == 0)
                 strLine.replace(0, 5, "MATCH");
             strLine += "," + rule_group;
-            if(std::count(strLine.begin(), strLine.end(), ',') > 2)
+            if(count_least(strLine, ',', 3))
                 strLine = regReplace(strLine, "^(.*?,.*?)(,.*)(,.*)$", "$1$3$2");
             rules.emplace_back(strLine);
             continue;
@@ -329,10 +329,7 @@ int renderClashScript(YAML::Node &base_rule, std::vector<ruleset_content> &rules
             {
                 lineSize = strLine.size();
                 if(lineSize && strLine[lineSize - 1] == '\r') //remove line break
-                {
-                    strLine.erase(lineSize - 1);
-                    lineSize--;
-                }
+                    strLine.erase(--lineSize);
                 if(!lineSize || strLine[0] == ';' || strLine[0] == '#' || (lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')) //empty lines and comments are ignored
                     continue;
 
@@ -351,7 +348,7 @@ int renderClashScript(YAML::Node &base_rule, std::vector<ruleset_content> &rules
                     else
                     {
                         strLine += "," + rule_group;
-                        if(std::count(strLine.begin(), strLine.end(), ',') > 2)
+                        if(count_least(strLine, ',', 3))
                             strLine = regReplace(strLine, "^(.*?,.*?)(,.*)(,.*)$", "$1$3$2");
                         rules.emplace_back(strLine);
                     }

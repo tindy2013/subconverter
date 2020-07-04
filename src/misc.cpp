@@ -1194,8 +1194,10 @@ void ProcessEscapeChar(std::string &str)
             str.replace(pos, 2, "\t");
             break;
         default:
-            str.erase(pos, 1);
+            /// ignore others for backward compatibility
+            //str.erase(pos, 1);
+            break;
         }
-        pos = str.find('\\', pos);
+        pos = str.find('\\', pos + 1);
     }
 }

@@ -236,10 +236,7 @@ public:
             last_error_index++;
             string_size lineSize = strLine.size();
             if(lineSize && strLine[lineSize - 1] == '\r') //remove line break
-            {
-                strLine.erase(lineSize - 1);
-                lineSize--;
-            }
+                strLine.erase(--lineSize);
             if((!lineSize || strLine[0] == ';' || strLine[0] == '#' || (lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')) && !inDirectSaveSection) //empty lines and comments are ignored
                 continue;
             ProcessEscapeChar(strLine);

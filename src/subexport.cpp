@@ -486,13 +486,15 @@ std::string nodeRename(const nodeInfo &node, const string_array &rename_array)
     string_size pos;
     std::string match, rep;
     std::string remark = node.remarks, real_rule;
-    duk_context *ctx = duktape_init();
+    duk_context *ctx = NULL;
     defer(duk_destroy_heap(ctx);)
 
     for(const std::string &x : rename_array)
     {
         if(startsWith(x, "!!script:"))
         {
+            if(!ctx)
+                ctx = duktape_init();
             std::string script = x.substr(9);
             if(startsWith(script, "path:"))
                 script = fileGet(script.substr(5), true);
@@ -547,13 +549,15 @@ std::string addEmoji(const nodeInfo &node, const string_array &emoji_array)
 {
     std::string real_rule;
     string_size pos;
-    duk_context *ctx = duktape_init();
+    duk_context *ctx = NULL;
     defer(duk_destroy_heap(ctx);)
 
     for(const std::string &x : emoji_array)
     {
         if(startsWith(x, "!!script:"))
         {
+            if(!ctx)
+                ctx = duktape_init();
             std::string script = x.substr(9);
             if(startsWith(script, "path:"))
                 script = fileGet(script.substr(5), true);
@@ -636,7 +640,7 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset
             if(strLine.find("FINAL") == 0)
                 strLine.replace(0, 5, "MATCH");
             strLine += "," + rule_group;
-            if(std::count(strLine.begin(), strLine.end(), ',') > 2)
+            if(count_least(strLine, ',', 3))
                 strLine = regReplace(strLine, "^(.*?,.*?)(,.*)(,.*)$", "$1$3$2");
             allRules.emplace_back(strLine);
             total_rules++;
@@ -660,11 +664,8 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset
                 lineSize--;
             }
             */
-            if(lineSize)
-            {
-                strLine = trim(trim_of(strLine, '\r'));
-                lineSize = strLine.size();
-            }
+            if(lineSize && strLine[lineSize - 1] == '\r') //remove line break
+                strLine.erase(--lineSize);
             if(!lineSize || strLine[0] == ';' || strLine[0] == '#' || (lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')) //empty lines and comments are ignored
                 continue;
             /*
@@ -680,7 +681,7 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset
                 strLine = replace_all_distinct(strLine, ",force-remote-dns", "");
             */
             strLine += "," + rule_group;
-            if(std::count(strLine.begin(), strLine.end(), ',') > 2)
+            if(count_least(strLine, ',', 3))
                 strLine = regReplace(strLine, "^(.*?,.*?)(,.*)(,.*)$", "$1$3$2");
             allRules.emplace_back(strLine);
             //Rules.push_back(strLine);
@@ -727,7 +728,7 @@ std::string rulesetToClashStr(YAML::Node &base_rule, std::vector<ruleset_content
             if(strLine.find("FINAL") == 0)
                 strLine.replace(0, 5, "MATCH");
             strLine += "," + rule_group;
-            if(std::count(strLine.begin(), strLine.end(), ',') > 2)
+            if(count_least(strLine, ',', 3))
                 strLine = regReplace(strLine, "^(.*?,.*?)(,.*)(,.*)$", "$1$3$2");
             output_content += " - " + strLine + "\n";
             total_rules++;
@@ -744,17 +745,17 @@ std::string rulesetToClashStr(YAML::Node &base_rule, std::vector<ruleset_content
             if(max_allowed_rules && total_rules > max_allowed_rules)
                 break;
             lineSize = strLine.size();
-            if(lineSize)
+            if(lineSize && strLine[lineSize - 1] == '\r')
             {
-                strLine = trim(trim_of(strLine, '\r'));
+                strLine.erase(lineSize - 1);
                 lineSize = strLine.size();
             }
             if(!lineSize || strLine[0] == ';' || strLine[0] == '#' || (lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')) //empty lines and comments are ignored
                 continue;
-            if(!std::any_of(clash_rule_type.begin(), clash_rule_type.end(), [strLine](std::string type){return startsWith(strLine, type);}))
+            if(std::none_of(clash_rule_type.begin(), clash_rule_type.end(), [strLine](std::string type){return startsWith(strLine, type);}))
                 continue;
             strLine += "," + rule_group;
-            if(std::count(strLine.begin(), strLine.end(), ',') > 2)
+            if(count_least(strLine, ',', 3))
                 strLine = regReplace(strLine, "^(.*?,.*?)(,.*)(,.*)$", "$1$3$2");
             output_content += " - " + strLine + "\n";
             total_rules++;
@@ -816,14 +817,14 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
             strLine += "," + rule_group;
             if(surge_ver == -1 || surge_ver == -2)
             {
-                if(std::count(strLine.begin(), strLine.end(), ',') > 2 && regReplace(strLine, rule_match_regex, "$2") == ",no-resolve")
+                if(count_least(strLine, ',', 3) && regReplace(strLine, rule_match_regex, "$2") == ",no-resolve")
                     strLine = regReplace(strLine, rule_match_regex, "$1$3$2");
                 else
                     strLine = regReplace(strLine, rule_match_regex, "$1$3");
             }
             else
             {
-                if(std::count(strLine.begin(), strLine.end(), ',') > 2)
+                if(count_least(strLine, ',', 3))
                     strLine = regReplace(strLine, rule_match_regex, "$1$3$2");
             }
             strLine = replace_all_distinct(strLine, ",,", ",");
@@ -912,18 +913,8 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
                 if(max_allowed_rules && total_rules > max_allowed_rules)
                     break;
                 lineSize = strLine.size();
-                /*
                 if(lineSize && strLine[lineSize - 1] == '\r') //remove line break
-                {
-                    strLine.erase(lineSize - 1);
-                    lineSize--;
-                }
-                */
-                if(lineSize)
-                {
-                    strLine = trim(trim_of(strLine, '\r'));
-                    lineSize = strLine.size();
-                }
+                    strLine.erase(--lineSize);
                 if(!lineSize || strLine[0] == ';' || strLine[0] == '#' || (lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')) //empty lines and comments are ignored
                     continue;
 
@@ -960,14 +951,14 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
                 {
                     if(startsWith(strLine, "IP-CIDR6"))
                         strLine.replace(0, 8, "IP6-CIDR");
-                    if(std::count(strLine.begin(), strLine.end(), ',') > 2 && regReplace(strLine, rule_match_regex, "$2") == ",no-resolve")
+                    if(count_least(strLine, ',', 3) && regReplace(strLine, rule_match_regex, "$2") == ",no-resolve")
                         strLine = regReplace(strLine, rule_match_regex, "$1$3$2");
                     else
                         strLine = regReplace(strLine, rule_match_regex, "$1$3");
                 }
                 else
                 {
-                    if(std::count(strLine.begin(), strLine.end(), ',') > 2)
+                    if(count_least(strLine, ',', 3))
                         strLine = regReplace(strLine, rule_match_regex, "$1$3$2");
                 }
                 allRules.emplace_back(strLine);

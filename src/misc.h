@@ -131,9 +131,22 @@ template <typename T, typename U> static inline T to_number(const U &value, T de
 
 int to_int(const std::string &str, int def_value = 0);
 
+static inline bool count_least(const std::string &hay, const char needle, size_t cnt)
+{
+    string_size pos = hay.find(needle);
+    while(pos != hay.npos)
+    {
+        cnt--;
+        if(!cnt)
+            return true;
+        pos = hay.find(needle, pos + 1);
+    }
+    return false;
+}
+
 static inline char getLineBreak(const std::string &str)
 {
-    return count(str.begin(), str.end(), '\n') < 1 ? '\r' : '\n';
+    return count_least(str, '\n', 1) ? '\n' : '\r';
 }
 
 class tribool
