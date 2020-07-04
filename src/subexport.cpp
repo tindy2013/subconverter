@@ -74,17 +74,8 @@ std::string hostnameToIPAddr(const std::string &host)
     return retAddr;
 }
 
-std::string vmessConstruct(std::string group, std::string remarks, std::string add, std::string port, std::string type, std::string id, std::string aid, std::string net, std::string cipher, std::string path, std::string host, std::string edge, std::string tls, tribool udp, tribool tfo, tribool scv)
+std::string vmessConstruct(const std::string &group, const std::string &remarks, const std::string &add, const std::string &port, const std::string &type, const std::string &id, const std::string &aid, const std::string &net, const std::string &cipher, const std::string &path, const std::string &host, const std::string &edge, const std::string &tls, tribool udp, tribool tfo, tribool scv)
 {
-    if(!path.size())
-        path = "/";
-    if(!host.size())
-        host = add;
-    if(!id.size())
-        id = "00000000-0000-0000-0000-000000000000"; //fill this field for node with empty id
-    host = trim(host);
-    path = trim(path);
-
     rapidjson::StringBuffer sb;
     rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
     writer.StartObject();
@@ -99,7 +90,7 @@ std::string vmessConstruct(std::string group, std::string remarks, std::string a
     writer.Key("Port");
     writer.Int(to_int(port));
     writer.Key("UserID");
-    writer.String(id.data());
+    writer.String(id.size() ? id.data() : "00000000-0000-0000-0000-000000000000");
     writer.Key("AlterID");
     writer.Int(to_int(aid));
     writer.Key("EncryptMethod");
@@ -107,13 +98,13 @@ std::string vmessConstruct(std::string group, std::string remarks, std::string a
     writer.Key("TransferProtocol");
     writer.String(net.data());
     writer.Key("Host");
-    writer.String(host.data());
+    writer.String(host.size() ? trim(host).data() : add.data());
     writer.Key("Edge");
     writer.String(edge.data());
-    if(net == "ws")
+    if(net == "ws" || net == "http")
     {
         writer.Key("Path");
-        writer.String(path.data());
+        writer.String(path.size() ? trim(path).data() : "/");
     }
     else
     {
@@ -148,7 +139,7 @@ std::string vmessConstruct(std::string group, std::string remarks, std::string a
     return sb.GetString();
 }
 
-std::string ssrConstruct(std::string group, std::string remarks, std::string remarks_base64, std::string server, std::string port, std::string protocol, std::string method, std::string obfs, std::string password, std::string obfsparam, std::string protoparam, bool libev, tribool udp, tribool tfo, tribool scv)
+std::string ssrConstruct(const std::string &group, const std::string &remarks, const std::string &remarks_base64, const std::string &server, const std::string &port, const std::string &protocol, const std::string &method, const std::string &obfs, const std::string &password, const std::string &obfsparam, const std::string &protoparam, bool libev, tribool udp, tribool tfo, tribool scv)
 {
     rapidjson::StringBuffer sb;
     rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
@@ -192,7 +183,7 @@ std::string ssrConstruct(std::string group, std::string remarks, std::string rem
     return sb.GetString();
 }
 
-std::string ssConstruct(std::string group, std::string remarks, std::string server, std::string port, std::string password, std::string method, std::string plugin, std::string pluginopts, bool libev, tribool udp, tribool tfo, tribool scv)
+std::string ssConstruct(const std::string &group, const std::string &remarks, const std::string &server, const std::string &port, const std::string &password, const std::string &method, const std::string &plugin, const std::string &pluginopts, bool libev, tribool udp, tribool tfo, tribool scv)
 {
     rapidjson::StringBuffer sb;
     rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
@@ -234,7 +225,7 @@ std::string ssConstruct(std::string group, std::string remarks, std::string serv
     return sb.GetString();
 }
 
-std::string socksConstruct(std::string group, std::string remarks, std::string server, std::string port, std::string username, std::string password, tribool udp, tribool tfo, tribool scv)
+std::string socksConstruct(const std::string &group, const std::string &remarks, const std::string &server, const std::string &port, const std::string &username, const std::string &password, tribool udp, tribool tfo, tribool scv)
 {
     rapidjson::StringBuffer sb;
     rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
@@ -272,7 +263,7 @@ std::string socksConstruct(std::string group, std::string remarks, std::string s
     return sb.GetString();
 }
 
-std::string httpConstruct(std::string group, std::string remarks, std::string server, std::string port, std::string username, std::string password, bool tls, tribool scv)
+std::string httpConstruct(const std::string &group, const std::string &remarks, const std::string &server, const std::string &port, const std::string &username, const std::string &password, bool tls, tribool scv)
 {
     rapidjson::StringBuffer sb;
     rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
@@ -300,7 +291,7 @@ std::string httpConstruct(std::string group, std::string remarks, std::string se
     return sb.GetString();
 }
 
-std::string trojanConstruct(std::string group, std::string remarks, std::string server, std::string port, std::string password, std::string host, bool tlssecure, tribool udp, tribool tfo, tribool scv)
+std::string trojanConstruct(const std::string &group, const std::string &remarks, const std::string &server, const std::string &port, const std::string &password, const std::string &host, bool tlssecure, tribool udp, tribool tfo, tribool scv)
 {
     rapidjson::StringBuffer sb;
     rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
@@ -340,7 +331,7 @@ std::string trojanConstruct(std::string group, std::string remarks, std::string 
     return sb.GetString();
 }
 
-std::string snellConstruct(std::string group, std::string remarks, std::string server, std::string port, std::string password, std::string obfs, std::string host, tribool udp, tribool tfo, tribool scv)
+std::string snellConstruct(const std::string &group, const std::string &remarks, const std::string &server, const std::string &port, const std::string &password, const std::string &obfs, const std::string &host, tribool udp, tribool tfo, tribool scv)
 {
     rapidjson::StringBuffer sb;
     rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
@@ -380,7 +371,7 @@ std::string snellConstruct(std::string group, std::string remarks, std::string s
     return sb.GetString();
 }
 
-std::string vmessLinkConstruct(std::string remarks, std::string add, std::string port, std::string type, std::string id, std::string aid, std::string net, std::string path, std::string host, std::string tls)
+std::string vmessLinkConstruct(const std::string &remarks, const std::string &add, const std::string &port, const std::string &type, const std::string &id, const std::string &aid, const std::string &net, const std::string &path, const std::string &host, const std::string &tls)
 {
     rapidjson::StringBuffer sb;
     rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
@@ -411,12 +402,12 @@ std::string vmessLinkConstruct(std::string remarks, std::string add, std::string
     return sb.GetString();
 }
 
-bool matchRange(std::string &range, int target)
+bool matchRange(const std::string &range, int target)
 {
     string_array vArray = split(range, ",");
     bool match = false;
     std::string range_begin_str, range_end_str;
-    int range_begin = 0, range_end = 0;
+    int range_begin, range_end;
     static const std::string reg_num = "-?\\d+", reg_range = "(\\d+)-(\\d+)", reg_not = "\\!-?(\\d+)", reg_not_range = "\\!(\\d+)-(\\d+)", reg_less = "(\\d+)-", reg_more = "(\\d+)\\+";
     for(std::string &x : vArray)
     {
@@ -431,7 +422,7 @@ bool matchRange(std::string &range, int target)
             range_begin = to_int(regReplace(x, reg_range, "$1"), INT_MAX);
             range_end = to_int(regReplace(x, reg_range, "$2"), INT_MIN);
             */
-            regGetMatch(x, reg_range, 3, NULL, &range_begin_str, &range_end_str);
+            regGetMatch(x, reg_range, 3, 0, &range_begin_str, &range_end_str);
             range_begin = to_int(range_begin_str, INT_MAX);
             range_end = to_int(range_end_str, INT_MIN);
             if(target >= range_begin && target <= range_end)
@@ -448,7 +439,7 @@ bool matchRange(std::string &range, int target)
             range_begin = to_int(regReplace(x, reg_range, "$1"), INT_MAX);
             range_end = to_int(regReplace(x, reg_range, "$2"), INT_MIN);
             */
-            regGetMatch(x, reg_range, 3, NULL, &range_begin_str, &range_end_str);
+            regGetMatch(x, reg_range, 3, 0, &range_begin_str, &range_end_str);
             range_begin = to_int(range_begin_str, INT_MAX);
             range_end = to_int(range_end_str, INT_MIN);
             if(target >= range_begin && target <= range_end)
@@ -474,14 +465,14 @@ bool applyMatcher(const std::string &rule, std::string &real_rule, const nodeInf
     static const std::string groupid_regex = R"(^!!(?:GROUPID|INSERT)=([\d\-+!,]+)(?:!!(.*))?$)", group_regex = R"(^!!(?:GROUP)=(.*?)(?:!!(.*))?$)";
     if(startsWith(rule, "!!GROUP="))
     {
-        regGetMatch(rule, group_regex, 3, NULL, &group, &ret_real_rule);
+        regGetMatch(rule, group_regex, 3, 0, &group, &ret_real_rule);
         real_rule = ret_real_rule;
         return regFind(node.group, group);
     }
     else if(startsWith(rule, "!!GROUPID=") || startsWith(rule, "!!INSERT="))
     {
         int dir = startsWith(rule, "!!INSERT=") ? -1 : 1;
-        regGetMatch(rule, groupid_regex, 3, NULL, &group, &ret_real_rule);
+        regGetMatch(rule, groupid_regex, 3, 0, &group, &ret_real_rule);
         real_rule = ret_real_rule;
         return matchRange(group, dir * node.groupID);
     }
@@ -618,7 +609,7 @@ void processRemark(std::string &oldremark, std::string &newremark, string_array 
 
 void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset_content_array, bool overwrite_original_rules, bool new_field_name)
 {
-    string_array allRules, vArray;
+    string_array allRules;
     std::string rule_group, retrieved_rules, strLine;
     std::stringstream strStrm;
     const std::string field_name = new_field_name ? "rules" : "Rule";
@@ -706,7 +697,6 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset
 
 std::string rulesetToClashStr(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset_content_array, bool overwrite_original_rules, bool new_field_name)
 {
-    string_array allRules, vArray;
     std::string rule_group, retrieved_rules, strLine;
     std::stringstream strStrm;
     const std::string field_name = new_field_name ? "rules" : "Rule";
@@ -1016,8 +1006,7 @@ void parseGroupTimes(const std::string &src, int *interval, int *tolerance, int 
 
 void groupGenerate(std::string &rule, std::vector<nodeInfo> &nodelist, string_array &filtered_nodelist, bool add_direct)
 {
-    std::string group, real_rule;
-    const std::string groupid_regex = R"(^!!(?:GROUPID|INSERT)=([\d\-+!,]+)(?:!!(.*))?$)", group_regex = R"(^!!(?:GROUP)=(.*?)(?:!!(.*))?$)";
+    std::string real_rule;
     if(startsWith(rule, "[]") && add_direct)
     {
         filtered_nodelist.emplace_back(rule.substr(2));
@@ -1066,7 +1055,7 @@ void groupGenerate(std::string &rule, std::vector<nodeInfo> &nodelist, string_ar
     }
 }
 
-void preprocessNodes(std::vector<nodeInfo> &nodes, extra_settings &ext)
+void preprocessNodes(std::vector<nodeInfo> &nodes, const extra_settings &ext)
 {
     std::for_each(nodes.begin(), nodes.end(), [ext](nodeInfo &x)
     {
@@ -1128,7 +1117,7 @@ void preprocessNodes(std::vector<nodeInfo> &nodes, extra_settings &ext)
     }
 }
 
-void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_array &extra_proxy_group, bool clashR, extra_settings &ext)
+void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, const string_array &extra_proxy_group, bool clashR, const extra_settings &ext)
 {
     YAML::Node proxies, singleproxy, singlegroup, original_groups;
     rapidjson::Document json;
@@ -1138,7 +1127,7 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
     std::string id, aid, transproto, faketype, host, edge, path, quicsecure, quicsecret;
     tribool udp, scv;
     std::vector<nodeInfo> nodelist;
-    bool tlssecure, replace_flag;
+    bool tlssecure;
     string_array vArray, remarks_list, filtered_nodelist;
 
     for(nodeInfo &x : nodes)
@@ -1235,6 +1224,7 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
                     singleproxy["http-opts"]["headers"]["Host"].push_back(host);
                 if(edge.size())
                     singleproxy["http-opts"]["headers"]["Edge"].push_back(edge);
+                break;
             default:
                 continue;
             }
@@ -1247,8 +1237,6 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
             obfs = GetMember(json, "OBFS");
             if(ext.filter_deprecated)
             {
-                if(method == "chacha20" && !clashR) //the mainline core no longer supports chacha20, but clashR core still does
-                    continue;
                 if(std::find(clashr_protocols.cbegin(), clashr_protocols.cend(), protocol) == clashr_protocols.cend())
                     continue;
                 if(std::find(clashr_obfs.cbegin(), clashr_obfs.cend(), obfs) == clashr_obfs.cend())
@@ -1344,15 +1332,13 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
     else
         yamlnode["Proxy"] = proxies;
 
-    std::string groupname;
     string_array providers;
 
-    for(std::string &x : extra_proxy_group)
+    for(const std::string &x : extra_proxy_group)
     {
         singlegroup.reset();
         eraseElements(filtered_nodelist);
         eraseElements(providers);
-        replace_flag = false;
         unsigned int rules_upper_bound = 0;
 
         vArray = split(x, "`");
@@ -1407,6 +1393,7 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
         }
         //singlegroup.SetStyle(YAML::EmitterStyle::Flow);
 
+        bool replace_flag = false;
         for(unsigned int i = 0; i < original_groups.size(); i++)
         {
             if(original_groups[i]["name"].as<std::string>() == vArray[0])
@@ -1426,7 +1413,7 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, string_arr
         yamlnode["Proxy Group"] = original_groups;
 }
 
-std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, bool clashR, extra_settings &ext)
+std::string netchToClash(std::vector<nodeInfo> &nodes, const std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, const string_array &extra_proxy_group, bool clashR, const extra_settings &ext)
 {
     YAML::Node yamlnode;
 
@@ -1467,7 +1454,7 @@ std::string netchToClash(std::vector<nodeInfo> &nodes, std::string &base_conf, s
     return output_content;
 }
 
-std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, int surge_ver, extra_settings &ext)
+std::string netchToSurge(std::vector<nodeInfo> &nodes, const std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, const string_array &extra_proxy_group, int surge_ver, const extra_settings &ext)
 {
     rapidjson::Document json;
     INIReader ini;
@@ -1654,12 +1641,11 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
 
     ini.SetCurrentSection("Proxy Group");
     ini.EraseSection();
-    for(std::string &x : extra_proxy_group)
+    for(const std::string &x : extra_proxy_group)
     {
         //group pref
         std::string url;
         int interval = 0, tolerance = 0, timeout = 0;
-        std::string ssid_default;
         eraseElements(filtered_nodelist);
         unsigned int rules_upper_bound = 0;
         url.clear();
@@ -1735,7 +1721,7 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, std::string &base_conf, s
     return ini.ToString();
 }
 
-std::string netchToSingle(std::vector<nodeInfo> &nodes, int types, extra_settings &ext)
+std::string netchToSingle(std::vector<nodeInfo> &nodes, int types, const extra_settings &ext)
 {
     /// types: SS=1 SSR=2 VMess=4 Trojan=8
     rapidjson::Document json;
@@ -1827,7 +1813,7 @@ std::string netchToSingle(std::vector<nodeInfo> &nodes, int types, extra_setting
         return base64_encode(allLinks);
 }
 
-std::string netchToSSSub(std::string &base_conf, std::vector<nodeInfo> &nodes, extra_settings &ext)
+std::string netchToSSSub(std::string &base_conf, std::vector<nodeInfo> &nodes, const extra_settings &ext)
 {
     rapidjson::Document json, base;
     std::string remark, hostname, password, method;
@@ -1899,7 +1885,7 @@ std::string netchToSSSub(std::string &base_conf, std::vector<nodeInfo> &nodes, e
     return output_content;
 }
 
-std::string netchToQuan(std::vector<nodeInfo> &nodes, std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, extra_settings &ext)
+std::string netchToQuan(std::vector<nodeInfo> &nodes, const std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, const string_array &extra_proxy_group, const extra_settings &ext)
 {
     INIReader ini;
     ini.store_any_line = true;
@@ -1923,7 +1909,7 @@ std::string netchToQuan(std::vector<nodeInfo> &nodes, std::string &base_conf, st
     return ini.ToString();
 }
 
-void netchToQuan(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, extra_settings &ext)
+void netchToQuan(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<ruleset_content> &ruleset_content_array, const string_array &extra_proxy_group, const extra_settings &ext)
 {
     rapidjson::Document json;
     std::string type;
@@ -1931,7 +1917,7 @@ void netchToQuan(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rules
     std::string plugin, pluginopts;
     std::string protocol, protoparam, obfs, obfsparam;
     std::string id, aid, transproto, faketype, host, edge, path, quicsecure, quicsecret;
-    std::string proxyStr, allLinks;
+    std::string proxyStr;
     bool tlssecure;
     std::vector<nodeInfo> nodelist;
     string_array remarks_list;
@@ -2091,7 +2077,7 @@ void netchToQuan(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rules
     std::string singlegroup;
     std::string name, proxies;
     string_array vArray;
-    for(std::string &x : extra_proxy_group)
+    for(const std::string &x : extra_proxy_group)
     {
         eraseElements(filtered_nodelist);
         unsigned int rules_upper_bound = 0;
@@ -2132,7 +2118,7 @@ void netchToQuan(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rules
                 std::string content, celluar, celluar_matcher = R"(^(.*?),?celluar\s?=\s?(.*?)(,.*)$)", rem_a, rem_b;
                 for(auto iter = vArray.begin() + 3; iter != vArray.end(); iter++)
                 {
-                    if(regGetMatch(*iter, celluar_matcher, 4, NULL, &rem_a, &celluar, &rem_b))
+                    if(regGetMatch(*iter, celluar_matcher, 4, 0, &rem_a, &celluar, &rem_b))
                     {
                         content += *iter + "\n";
                         continue;
@@ -2176,7 +2162,7 @@ void netchToQuan(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rules
         rulesetToSurge(ini, ruleset_content_array, -2, ext.overwrite_original_rules, std::string());
 }
 
-std::string netchToQuanX(std::vector<nodeInfo> &nodes, std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, extra_settings &ext)
+std::string netchToQuanX(std::vector<nodeInfo> &nodes, const std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, const string_array &extra_proxy_group, const extra_settings &ext)
 {
     INIReader ini;
     ini.store_any_line = true;
@@ -2207,7 +2193,7 @@ std::string netchToQuanX(std::vector<nodeInfo> &nodes, std::string &base_conf, s
     return ini.ToString();
 }
 
-void netchToQuanX(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, extra_settings &ext)
+void netchToQuanX(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<ruleset_content> &ruleset_content_array, const string_array &extra_proxy_group, const extra_settings &ext)
 {
     rapidjson::Document json;
     std::string type;
@@ -2335,7 +2321,7 @@ void netchToQuanX(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rule
     std::string singlegroup;
     std::string name, proxies;
     string_array vArray;
-    for(std::string &x : extra_proxy_group)
+    for(const std::string &x : extra_proxy_group)
     {
         eraseElements(filtered_nodelist);
         unsigned int rules_upper_bound = 0;
@@ -2476,7 +2462,7 @@ void netchToQuanX(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rule
     }
 }
 
-std::string netchToSSD(std::vector<nodeInfo> &nodes, std::string &group, std::string &userinfo, extra_settings &ext)
+std::string netchToSSD(std::vector<nodeInfo> &nodes, std::string &group, std::string &userinfo, const extra_settings &ext)
 {
     rapidjson::Document json;
     rapidjson::StringBuffer sb;
@@ -2592,7 +2578,7 @@ std::string netchToSSD(std::vector<nodeInfo> &nodes, std::string &group, std::st
     return "ssd://" + base64_encode(sb.GetString());
 }
 
-std::string netchToMellow(std::vector<nodeInfo> &nodes, std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, extra_settings &ext)
+std::string netchToMellow(std::vector<nodeInfo> &nodes, const std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, const string_array &extra_proxy_group, const extra_settings &ext)
 {
     INIReader ini;
     ini.store_any_line = true;
@@ -2604,7 +2590,7 @@ std::string netchToMellow(std::vector<nodeInfo> &nodes, std::string &base_conf, 
     return ini.ToString();
 }
 
-void netchToMellow(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, extra_settings &ext)
+void netchToMellow(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<ruleset_content> &ruleset_content_array, const string_array &extra_proxy_group, const extra_settings &ext)
 {
     rapidjson::Document json;
     std::string proxy;
@@ -2676,7 +2662,7 @@ void netchToMellow(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rul
 
     ini.SetCurrentSection("EndpointGroup");
 
-    for(std::string &x : extra_proxy_group)
+    for(const std::string &x : extra_proxy_group)
     {
         eraseElements(filtered_nodelist);
         unsigned int rules_upper_bound = 0;
@@ -2743,7 +2729,7 @@ void netchToMellow(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rul
         rulesetToSurge(ini, ruleset_content_array, 0, ext.overwrite_original_rules, std::string());
 }
 
-std::string netchToLoon(std::vector<nodeInfo> &nodes, std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, string_array &extra_proxy_group, extra_settings &ext)
+std::string netchToLoon(std::vector<nodeInfo> &nodes, const std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, const string_array &extra_proxy_group, const extra_settings &ext)
 {
     rapidjson::Document json;
     INIReader ini;
@@ -2759,7 +2745,6 @@ std::string netchToLoon(std::vector<nodeInfo> &nodes, std::string &base_conf, st
     //group pref
     std::string url;
     int interval = 0;
-    std::string ssid_default;
 
     string_array vArray, remarks_list, filtered_nodelist;
 
@@ -2885,7 +2870,7 @@ std::string netchToLoon(std::vector<nodeInfo> &nodes, std::string &base_conf, st
 
     ini.SetCurrentSection("Proxy Group");
     ini.EraseSection();
-    for(std::string &x : extra_proxy_group)
+    for(const std::string &x : extra_proxy_group)
     {
         eraseElements(filtered_nodelist);
         unsigned int rules_upper_bound = 0;

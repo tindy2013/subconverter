@@ -185,7 +185,7 @@ void OnReq(evhttp_request *req, void *args)
 
 int start_web_server(void *argv)
 {
-    struct listener_args *args = (listener_args*)argv;
+    struct listener_args *args = reinterpret_cast<listener_args*>(argv);
     std::string listen_address = args->listen_address;
     int port = args->port;
     if (!event_init())
@@ -219,8 +219,8 @@ int start_web_server(void *argv)
 
 void* httpserver_dispatch(void *arg)
 {
-    event_base_dispatch((struct event_base*)arg);
-    event_base_free((struct event_base*)arg); //free resources
+    event_base_dispatch(reinterpret_cast<event_base*>(arg));
+    event_base_free(reinterpret_cast<event_base*>(arg)); //free resources
     return NULL;
 }
 
@@ -247,7 +247,7 @@ int httpserver_bindsocket(std::string listen_address, int listen_port, int backl
     addr.sin_addr.s_addr = inet_addr(listen_address.data());
     addr.sin_port = htons(listen_port);
 
-    ret = ::bind(nfd, (struct sockaddr*)&addr, sizeof(addr));
+    ret = ::bind(nfd, reinterpret_cast<sockaddr*>(&addr), sizeof(addr));
     if (ret < 0)
     {
         closesocket(nfd);
@@ -315,7 +315,7 @@ void stop_web_server()
     SERVER_EXIT_FLAG = true;
 }
 
-void append_response(std::string method, std::string uri, std::string content_type, response_callback response)
+void append_response(const std::string &method, const std::string &uri, const std::string &content_type, response_callback response)
 {
     responseRoute rr;
     rr.method = method;
@@ -325,7 +325,7 @@ void append_response(std::string method, std::string uri, std::string content_ty
     responses.emplace_back(rr);
 }
 
-void append_redirect(std::string uri, std::string target)
+void append_redirect(const std::string &uri, const std::string &target)
 {
     redirect_map[uri] = target;
 }

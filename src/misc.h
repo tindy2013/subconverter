@@ -21,7 +21,7 @@
 
 #define CONCAT(a,b) a ## b
 #define DO_CONCAT(a,b) CONCAT(a,b)
-template <typename T> class __defer_struct final {private: T fn; bool __cancelled = false; public: __defer_struct(T func) : fn(std::move(func)) {} ~__defer_struct() {if(!__cancelled) fn();} void cancel() {__cancelled = true;} };
+template <typename T> class __defer_struct final {private: T fn; bool __cancelled = false; public: explicit __defer_struct(T func) : fn(std::move(func)) {} ~__defer_struct() {if(!__cancelled) fn();} void cancel() {__cancelled = true;} };
 //#define defer(x) std::unique_ptr<void> DO_CONCAT(__defer_deleter_,__LINE__) (nullptr, [&](...){x});
 #define defer(x) __defer_struct DO_CONCAT(__defer_deleter,__LINE__) ([&](...){x;});
 
@@ -79,6 +79,7 @@ std::string UTF8ToCodePoint(const std::string &data);
 std::string GetEnv(const std::string &name);
 std::string toLower(const std::string &str);
 std::string toUpper(const std::string &str);
+void ProcessEscapeChar(std::string &str);
 
 std::string fileGet(const std::string &path, bool scope_limit = false);
 int fileWrite(const std::string &path, const std::string &content, bool overwrite);
@@ -147,7 +148,7 @@ public:
 
     template <typename T> tribool(const T &value) { set(value); }
 
-    tribool(const tribool &value) { *this = value; }
+    explicit tribool(const tribool &value) { *this = value; }
 
     ~tribool() = default;
 

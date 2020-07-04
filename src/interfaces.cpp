@@ -98,7 +98,7 @@ std::string convertRuleset(const std::string &content, int type)
     /// Source: QuanX type,pattern[,group]
     ///         Clash payload:\n  - 'ipcidr/domain/classic(Surge-like)'
 
-    std::string output, strLine, strTemp;
+    std::string output, strLine;
 
     if(type == RULESET_SURGE)
         return content;
@@ -182,7 +182,7 @@ std::string getRuleset(RESPONSE_CALLBACK_ARGS)
     std::string output_content, dummy;
     int type_int = to_int(type, 0);
 
-    if(!url.size() || !type.size() || (type_int == 2 && !group.size()) || (type_int < 1 && type_int > 6))
+    if(!url.size() || !type.size() || (type_int == 2 && !group.size()) || (type_int < 1 || type_int > 6))
     {
         *status_code = 400;
         return "Invalid request!";
@@ -377,7 +377,7 @@ int importItems(string_array &target, bool scope_limit = true)
     return 0;
 }
 
-void readRegexMatch(YAML::Node node, std::string delimiter, string_array &dest, bool scope_limit = true)
+void readRegexMatch(YAML::Node node, const std::string &delimiter, string_array &dest, bool scope_limit = true)
 {
     YAML::Node object;
     std::string script, url, match, rep, strLine;
@@ -519,7 +519,7 @@ void readRuleset(YAML::Node node, string_array &dest, bool scope_limit = true)
 void refreshRulesets(string_array &ruleset_list, std::vector<ruleset_content> &rca)
 {
     eraseElements(rca);
-    std::string rule_group, rule_url, rule_url_typed, dummy;
+    std::string rule_group, rule_url, rule_url_typed;
     ruleset_content rc;
 
     std::string proxy = parseProxy(proxy_ruleset);
@@ -552,14 +552,11 @@ void refreshRulesets(string_array &ruleset_list, std::vector<ruleset_content> &r
             const std::map<std::string, ruleset_type> types = {{"clash-domain:", RULESET_CLASH_DOMAIN}, {"clash-ipcidr:", RULESET_CLASH_IPCIDR}, {"clash-classic:", RULESET_CLASH_CLASSICAL}, \
             {"quanx:", RULESET_QUANX}, {"surge:", RULESET_SURGE}};
             rule_url_typed = rule_url;
-            for(auto &y : types)
+            auto iter = std::find_if(types.begin(), types.end(), [rule_url](auto y){ return startsWith(rule_url, y.first); });
+            if(iter != types.end())
             {
-                if(startsWith(rule_url, y.first))
-                {
-                    rule_url.erase(0, y.first.size());
-                    type = y.second;
-                    break;
-                }
+                rule_url.erase(0, iter->first.size());
+                type = iter->second;
             }
             //std::cerr<<"Updating ruleset url '"<<rule_url<<"' with group '"<<rule_group<<"'."<<std::endl;
             writeLog(0, "Updating ruleset url '" + rule_url + "' with group '" + rule_group + "'.", LOG_LEVEL_INFO);
@@ -874,9 +871,7 @@ void readConf()
         ini.GetAll("exclude_remarks", def_exclude_remarks);
     if(ini.ItemPrefixExist("include_remarks"))
         ini.GetAll("include_remarks", def_include_remarks);
-    filter_script = ini.GetBool("enable_filter") ? replace_all_distinct(ini.Get("filter_script"), "\\n", "\n") : "";
-    if(startsWith(filter_script, "path:"))
-        filter_script = fileGet(filter_script.substr(5), false);
+    filter_script = ini.GetBool("enable_filter") ? ini.Get("filter_script"): "";
     ini.GetIfExist("base_path", base_path);
     ini.GetIfExist("clash_rule_base", clash_rule_base);
     ini.GetIfExist("surge_rule_base", surge_rule_base);
@@ -909,7 +904,7 @@ void readConf()
         tfo_flag.set(ini.Get("tcp_fast_open_flag"));
         scv_flag.set(ini.Get("skip_cert_verify_flag"));
         ini.GetBoolIfExist("sort_flag", do_sort);
-        sort_script = replace_all_distinct(ini.Get("sort_script"), "\\n", "\n");
+        sort_script = ini.Get("sort_script");
         ini.GetBoolIfExist("filter_deprecated_nodes", filter_deprecated);
         ini.GetBoolIfExist("append_sub_userinfo", append_userinfo);
         ini.GetBoolIfExist("clash_use_new_field_name", clash_use_new_field_name);
@@ -1011,7 +1006,6 @@ void readConf()
     if(ini.SectionExist("aliases"))
     {
         ini.EnterSection("aliases");
-        string_multimap tempmap;
         ini.GetItems(tempmap);
         reset_redirect();
         for(auto &x : tempmap)
@@ -1162,7 +1156,7 @@ int loadExternalYAML(YAML::Node &node, ExternalConfig &ext)
 
 int loadExternalConfig(std::string &path, ExternalConfig &ext)
 {
-    std::string base_content, dummy, proxy = parseProxy(proxy_config), config = fetchFile(path, proxy, cache_config);
+    std::string base_content, proxy = parseProxy(proxy_config), config = fetchFile(path, proxy, cache_config);
     if(render_template(config, *ext.tpl_args, base_content, template_path) != 0)
         base_content = config;
 
@@ -1509,7 +1503,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         ext.emoji_array = safe_get_emojis();
     if(ext_rename.size())
         ext.rename_array = split(ext_rename, "`");
-    else
+    else if(ext.rename_array.empty())
         ext.rename_array = safe_get_renames();
 
     //check custom include/exclude settings
@@ -1574,6 +1568,8 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     //run filter script
     if(filter_script.size())
     {
+        if(startsWith(filter_script, "path:"))
+            filter_script = fileGet(filter_script.substr(5), false);
         duk_context *ctx = duktape_init();
         if(ctx)
         {
@@ -2155,11 +2151,7 @@ std::string getProfile(RESPONSE_CALLBACK_ARGS)
 
     contents.emplace("token", token);
     contents.emplace("profile_data", base64_encode(managed_config_prefix + "/getprofile?" + argument));
-    std::string query;
-    for(auto &x : contents)
-    {
-        query += x.first + "=" + UrlEncode(x.second) + "&";
-    }
+    std::string query = std::accumulate(contents.begin(), contents.end(), std::string(), [](const std::string &x, auto y){ return x + y.first + "=" + UrlEncode(y.second) + "&"; });
     query += argument;
     request.argument = query;
     return subconverter(request, response);
@@ -2170,7 +2162,7 @@ std::string getScript(RESPONSE_CALLBACK_ARGS)
     std::string &argument = request.argument;
 
     std::string url = urlsafe_base64_decode(getUrlArg(argument, "url")), dev_id = getUrlArg(argument, "id");
-    std::string output_content, dummy;
+    std::string output_content;
 
     std::string proxy = parseProxy(proxy_config);
 
@@ -2195,7 +2187,7 @@ std::string getRewriteRemote(RESPONSE_CALLBACK_ARGS)
     std::string &argument = request.argument;
 
     std::string url = urlsafe_base64_decode(getUrlArg(argument, "url")), dev_id = getUrlArg(argument, "id");
-    std::string output_content, dummy;
+    std::string output_content;
 
     std::string proxy = parseProxy(proxy_config);
 
@@ -2246,7 +2238,7 @@ std::string parseHostname(inja::Arguments &args)
     for(std::string &x : urls)
     {
         input_content = webGet(x, proxy, cache_config);
-        regGetMatch(input_content, matcher, 2, NULL, &hostname);
+        regGetMatch(input_content, matcher, 2, 0, &hostname);
         if(hostname.size())
         {
             output_content += hostname + ",";
@@ -2432,14 +2424,9 @@ int simpleGenerator()
             continue;
         }
         fileWrite(path, content, true);
-        for(auto &y : headers)
-        {
-            if(y.first == "Subscription-UserInfo")
-            {
-                writeLog(0, "User Info for artifact '" + x + "': " + subInfoToMessage(y.second), LOG_LEVEL_INFO);
-                break;
-            }
-        }
+        auto iter = std::find_if(headers.begin(), headers.end(), [](auto y){ return y.first == "Subscription-UserInfo"; });
+        if(iter != headers.end())
+            writeLog(0, "User Info for artifact '" + x + "': " + subInfoToMessage(iter->second), LOG_LEVEL_INFO);
         //std::cerr<<"Artifact '"<<x<<"' generate SUCCESS!\n\n";
         writeLog(0, "Artifact '" + x + "' generate SUCCESS!\n", LOG_LEVEL_INFO);
         eraseElements(headers);
