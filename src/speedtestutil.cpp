@@ -1924,7 +1924,7 @@ void explodeSub(std::string sub, bool sslibev, bool ssrlibev, const std::string 
     {
         if(!processed && regFind(sub, "\"?(Proxy|proxies)\"?:"))
         {
-            regGetMatch(sub, R"(^(?:Proxy|proxies):$\s(?:(?:^ +?.*$| *?-.*$|)\s)+)", 1, &sub);
+            regGetMatch(sub, R"(^(?:Proxy|proxies):$\s(?:(?:^ +?.*$| *?-.*$|)\s?)+)", 1, &sub);
             Node yamlnode = Load(sub);
             if(yamlnode.size() && (yamlnode["Proxy"].IsDefined() || yamlnode["proxies"].IsDefined()))
             {

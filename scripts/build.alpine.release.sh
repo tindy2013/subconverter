@@ -12,7 +12,7 @@ cd ..
 
 git clone https://github.com/jbeder/yaml-cpp --depth=1
 cd yaml-cpp
-cmake -DYAML_CPP_BUILD_TESTS=OFF -DYAML_CPP_BUILD_TOOLS=OFF . > /dev/null
+cmake -DCMAKE_BUILD_TYPE=Release -DYAML_CPP_BUILD_TESTS=OFF -DYAML_CPP_BUILD_TOOLS=OFF . > /dev/null
 make install -j2 > /dev/null
 cd ..
 
