@@ -41,7 +41,7 @@ private:
     string_array read_sections, section_order;
 
     std::string cached_section;
-    string_multimap cached_section_content;
+    ini_data_struct::iterator cached_section_content;
 
     std::string isolated_items_section;
 
@@ -248,14 +248,12 @@ public:
 
                 if(curSection.size() && (keep_empty_section || itemGroup.size())) //just finished reading a section
                 {
-                    if(ini_content.count(curSection)) //a section with the same name has been inserted
+                    if(ini_content.find(curSection) != ini_content.end()) //a section with the same name has been inserted
                     {
                         if(allow_dup_section_titles || !ini_content.at(curSection).size())
                         {
-                            eraseElements(existItemGroup);
                             existItemGroup = ini_content.at(curSection); //get the old items
-                            for(auto &x : existItemGroup)
-                                itemGroup.emplace(x); //insert them all into new section
+                            itemGroup.merge(existItemGroup); //move old items to new sections
                         }
                         else if(ini_content.at(curSection).size())
                             return __priv_save_error_and_return(INIREADER_EXCEPTION_DUPLICATE); //not allowed, stop
@@ -263,9 +261,9 @@ public:
                     }
                     else if(itemGroup.size())
                         read_sections.push_back(curSection); //add to read sections list
-                    ini_content.emplace(curSection, itemGroup); //insert previous section to content map
-                    if(std::count(section_order.cbegin(), section_order.cend(), curSection) == 0)
-                        section_order.emplace_back(std::move(curSection));
+                    if(std::find(section_order.cbegin(), section_order.cend(), curSection) == section_order.cend())
+                        section_order.emplace_back(curSection); //add to section order if not added before
+                    ini_content.emplace(std::move(curSection), std::move(itemGroup)); //insert previous section to content map
                 }
 
                 eraseElements(itemGroup); //reset section storage
@@ -281,23 +279,25 @@ public:
                     continue;
                 if(!curSection.size()) //not in any section
                     return __priv_save_error_and_return(INIREADER_EXCEPTION_OUTOFBOUND);
-                itemName = trim(strLine.substr(0, strLine.find("=")));
-                itemVal = trim(strLine.substr(strLine.find("=") + 1));
-                itemGroup.emplace(itemName, itemVal); //insert to current section
+                string_size pose = strLine.find("="), posc = strLine.find_first_not_of(' ', pose + 1);
+                itemName = trim(strLine.substr(0, pose));
+                if(posc != strLine.npos) //not a key with empty value
+                {
+                    itemVal = strLine.substr(posc);
+                    itemGroup.emplace(std::move(itemName), std::move(itemVal)); //insert to current section
+                }
             }
             if(include_sections.size() && include_sections == read_sections) //all included sections has been read
                 break; //exit now
         }
         if(curSection.size() && (keep_empty_section || itemGroup.size())) //final section
         {
-            if(ini_content.count(curSection)) //a section with the same name has been inserted
+            if(ini_content.find(curSection) != ini_content.end()) //a section with the same name has been inserted
             {
                 if(allow_dup_section_titles)
                 {
-                    eraseElements(existItemGroup);
                     existItemGroup = ini_content.at(curSection); //get the old items
-                    for(auto &x : existItemGroup)
-                        itemGroup.emplace(x); //insert them all into new section
+                    itemGroup.merge(existItemGroup); //move old items to new sections
                 }
                 else if(ini_content.at(curSection).size())
                     return __priv_save_error_and_return(INIREADER_EXCEPTION_DUPLICATE); //not allowed, stop
@@ -305,9 +305,9 @@ public:
             }
             else if(itemGroup.size())
                 read_sections.emplace_back(curSection); //add to read sections list
-            ini_content.emplace(curSection, itemGroup); //insert this section to content map
-            if(std::count(section_order.cbegin(), section_order.cend(), curSection) == 0)
-                section_order.emplace_back(curSection);
+            if(std::find(section_order.cbegin(), section_order.cend(), curSection) == section_order.cend())
+                section_order.emplace_back(curSection); //add to section order if not added before
+            ini_content.emplace(std::move(curSection), std::move(itemGroup)); //insert this section to content map
         }
         parsed = true;
         return __priv_save_error_and_return(INIREADER_EXCEPTION_NONE); //all done
@@ -355,7 +355,7 @@ public:
         if(!SectionExist(section))
             return __priv_save_error_and_return(INIREADER_EXCEPTION_NOTEXIST);
         current_section = cached_section = section;
-        cached_section_content = ini_content.at(section);
+        cached_section_content = ini_content.find(section);
         return __priv_save_error_and_return(INIREADER_EXCEPTION_NONE);
     }
 
@@ -378,10 +378,10 @@ public:
         if(section != cached_section)
         {
             cached_section = section;
-            cached_section_content= ini_content.at(section);
+            cached_section_content= ini_content.find(section);
         }
-
-        return cached_section_content.find(itemName) != cached_section_content.end();
+        auto &cache = cached_section_content->second;
+        return cache.find(itemName) != cache.end();
     }
 
     /**
@@ -403,10 +403,10 @@ public:
         if(section != cached_section)
         {
             cached_section = section;
-            cached_section_content= ini_content.at(section);
+            cached_section_content = ini_content.find(section);
         }
 
-        for(auto &x : cached_section_content)
+        for(auto &x : cached_section_content->second)
         {
             if(x.first.find(itemName) == 0)
                 return true;
@@ -441,7 +441,22 @@ public:
     {
         eraseElements(ini_content);
         eraseElements(section_order);
+        cached_section.clear();
+        cached_section_content = ini_content.end();
         parsed = false;
+    }
+
+    ini_data_struct::iterator GetItemsRef(const std::string &section)
+    {
+        if(!parsed || !SectionExist(section))
+            return ini_content.end();
+
+        if(cached_section != section)
+        {
+            cached_section = section;
+            cached_section_content = ini_content.find(section);
+        }
+        return cached_section_content;
     }
 
     /**
@@ -449,16 +464,11 @@ public:
     */
     int GetItems(const std::string &section, string_multimap &data)
     {
-        if(!parsed || !SectionExist(section))
+        auto section_ref = GetItemsRef(section);
+        if(section_ref == ini_content.end())
             return __priv_save_error_and_return(INIREADER_EXCEPTION_NOTEXIST);
 
-        if(cached_section != section)
-        {
-            cached_section = section;
-            cached_section_content = ini_content.at(section);
-        }
-
-        data = cached_section_content;
+        data = section_ref->second;
         return __priv_save_error_and_return(INIREADER_EXCEPTION_NONE);
     }
 
@@ -478,12 +488,11 @@ public:
         if(!parsed)
             return __priv_save_error_and_return(INIREADER_EXCEPTION_NOTPARSED);
 
-        string_multimap mapTemp;
-
-        if(GetItems(section, mapTemp) != 0)
+        auto section_ref = GetItemsRef(section);
+        if(section_ref == ini_content.end())
             return __priv_save_error_and_return(INIREADER_EXCEPTION_NOTEXIST);
 
-        for(auto &x : mapTemp)
+        for(auto &x : section_ref->second)
         {
             if(x.first.find(itemName) == 0)
                 results.emplace_back(x.second);
@@ -507,20 +516,16 @@ public:
     {
         if(!parsed || !SectionExist(section))
             return std::string();
-        /*
-        string_multimap mapTemp;
 
-        if(GetItems(section, mapTemp) != 0)
-            return std::string();
-        */
         if(cached_section != section)
         {
             cached_section = section;
-            cached_section_content = ini_content.at(section);
+            cached_section_content = ini_content.find(section);
         }
 
-        auto iter = std::find_if(cached_section_content.begin(), cached_section_content.end(), [&](auto x) { return x.first == itemName; });
-        if(iter != cached_section_content.end())
+        auto &cache = cached_section_content->second;
+        auto iter = std::find_if(cache.begin(), cache.end(), [&](auto x) { return x.first == itemName; });
+        if(iter != cache.end())
             return iter->second;
 
         return std::string();
@@ -804,13 +809,9 @@ public:
     {
         if(!SectionExist(oldName) || SectionExist(newName))
             return __priv_save_error_and_return(INIREADER_EXCEPTION_DUPLICATE);
-        /*
         auto nodeHandler = ini_content.extract(oldName);
         nodeHandler.key() = newName;
         ini_content.insert(std::move(nodeHandler));
-        */
-        ini_content[newName] = std::move(ini_content[oldName]);
-        ini_content.erase(oldName);
         std::replace(section_order.begin(), section_order.end(), oldName, newName);
         return __priv_save_error_and_return(INIREADER_EXCEPTION_NONE);
     }
@@ -827,7 +828,7 @@ public:
         retVal = ini_content.at(section).erase(itemName);
         if(retVal && cached_section == section)
         {
-            cached_section_content = ini_content.at(section);
+            cached_section_content = ini_content.find(section);
         }
         return retVal;
     }
@@ -850,10 +851,6 @@ public:
         if(iter != mapTemp.end())
         {
             mapTemp.erase(iter);
-            if(cached_section == section)
-            {
-                cached_section_content = mapTemp;
-            }
             return __priv_save_error_and_return(INIREADER_EXCEPTION_NONE);
         }
         else
@@ -880,7 +877,7 @@ public:
         eraseElements(ini_content.at(section));
         if(cached_section == section)
         {
-            eraseElements(cached_section_content);
+            cached_section_content = ini_content.end();
             cached_section.erase();
         }
         //section_order.erase(std::find(section_order.begin(), section_order.end(), section));
@@ -900,7 +897,7 @@ public:
     */
     std::string ToString()
     {
-        std::string content;
+        std::string content, itemVal;
 
         if(!parsed)
             return std::string();
@@ -921,9 +918,11 @@ public:
                 {
                     if(iter->first != "{NONAME}")
                         content += iter->first + "=";
-                    content += iter->second + "\n";
+                    itemVal = iter->second;
+                    ProcessEscapeCharReverse(itemVal);
+                    content += itemVal + "\n";
                     if(std::next(iter) == section.end())
-                        strsize = iter->second.size();
+                        strsize = itemVal.size();
                 }
             }
             if(strsize)

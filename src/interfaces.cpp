@@ -91,6 +91,8 @@ std::string parseProxy(const std::string &source)
 const string_array clash_rule_type = {basic_types, "IP-CIDR6", "SRC-PORT", "DST-PORT"};
 const string_array surge_rule_type = {basic_types, "IP-CIDR6", "USER-AGENT", "URL-REGEX", "AND", "OR", "NOT", "PROCESS-NAME", "IN-PORT", "DEST-PORT", "SRC-IP"};
 const string_array quanx_rule_type = {basic_types, "USER-AGENT", "HOST", "HOST-SUFFIX", "HOST-KEYWORD"};
+const std::map<std::string, ruleset_type> ruleset_types = {{"clash-domain:", RULESET_CLASH_DOMAIN}, {"clash-ipcidr:", RULESET_CLASH_IPCIDR}, {"clash-classic:", RULESET_CLASH_CLASSICAL}, \
+            {"quanx:", RULESET_QUANX}, {"surge:", RULESET_SURGE}};
 
 std::string convertRuleset(const std::string &content, int type)
 {
@@ -487,7 +489,7 @@ void readGroup(YAML::Node node, string_array &dest, bool scope_limit = true)
 
 void readRuleset(YAML::Node node, string_array &dest, bool scope_limit = true)
 {
-    std::string strLine, name, url, group;
+    std::string strLine, name, url, group, interval;
     YAML::Node object;
 
     for(unsigned int i = 0; i < node.size(); i++)
@@ -502,8 +504,13 @@ void readRuleset(YAML::Node node, string_array &dest, bool scope_limit = true)
         object["ruleset"] >>= url;
         object["group"] >>= group;
         object["rule"] >>= name;
+        object["interval"] >>= interval;
         if(url.size())
+        {
             strLine = group + "," + url;
+            if(interval.size())
+                strLine += "," + interval;
+        }
         else if(name.size())
             strLine = group + ",[]" + name;
         else
@@ -516,69 +523,43 @@ void readRuleset(YAML::Node node, string_array &dest, bool scope_limit = true)
 void refreshRulesets(string_array &ruleset_list, std::vector<ruleset_content> &rca)
 {
     eraseElements(rca);
-    std::string rule_group, rule_url, rule_url_typed;
+    std::string rule_group, rule_url, rule_url_typed, interval;
     ruleset_content rc;
 
     std::string proxy = parseProxy(proxy_ruleset);
 
     for(std::string &x : ruleset_list)
     {
-        /*
-        vArray = split(x, ",");
-        if(vArray.size() != 2)
-            continue;
-        rule_group = trim(vArray[0]);
-        rule_url = trim(vArray[1]);
-        */
         string_size pos = x.find(",");
-        if(pos == x.npos)
+        if(pos == x.npos || pos == x.size() - 1)
             continue;
         rule_group = trim(x.substr(0, pos));
-        rule_url = trim(x.substr(pos + 1));
-        if(rule_url.find("[]") == 0)
+        if(x.find("[]", pos + 1) == pos + 1)
         {
+            rule_url = trim(x.substr(pos + 1));
             writeLog(0, "Adding rule '" + rule_url.substr(2) + "," + rule_group + "'.", LOG_LEVEL_INFO);
-            //std::cerr<<"Adding rule '"<<rule_url.substr(2)<<","<<rule_group<<"'."<<std::endl;
-            rc = {rule_group, "", "", RULESET_SURGE, std::async(std::launch::async, [rule_url](){return rule_url;})};
-            rca.emplace_back(std::move(rc));
-            continue;
+            rc = {rule_group, "", "", RULESET_SURGE, std::async(std::launch::async, [rule_url](){return rule_url;}), 0};
         }
         else
         {
+            string_size pos2 = x.find(",", pos + 1);
+            rule_url = trim(x.substr(pos + 1, pos2 - pos - 1));
+            if(pos2 != x.npos)
+                interval = x.substr(pos2 + 1);
+            else
+                interval.clear();
             ruleset_type type = RULESET_SURGE;
-            const std::map<std::string, ruleset_type> types = {{"clash-domain:", RULESET_CLASH_DOMAIN}, {"clash-ipcidr:", RULESET_CLASH_IPCIDR}, {"clash-classic:", RULESET_CLASH_CLASSICAL}, \
-            {"quanx:", RULESET_QUANX}, {"surge:", RULESET_SURGE}};
             rule_url_typed = rule_url;
-            auto iter = std::find_if(types.begin(), types.end(), [rule_url](auto y){ return startsWith(rule_url, y.first); });
-            if(iter != types.end())
+            auto iter = std::find_if(ruleset_types.begin(), ruleset_types.end(), [rule_url](auto y){ return startsWith(rule_url, y.first); });
+            if(iter != ruleset_types.end())
             {
                 rule_url.erase(0, iter->first.size());
                 type = iter->second;
             }
-            //std::cerr<<"Updating ruleset url '"<<rule_url<<"' with group '"<<rule_group<<"'."<<std::endl;
             writeLog(0, "Updating ruleset url '" + rule_url + "' with group '" + rule_group + "'.", LOG_LEVEL_INFO);
-            /*
-            if(fileExist(rule_url))
-            {
-                rc = {rule_group, rule_url, fileGet(rule_url)};
-            }
-            else if(startsWith(rule_url, "https://") || startsWith(rule_url, "http://") || startsWith(rule_url, "data:"))
-            {
-                rc = {rule_group, rule_url, webGet(rule_url, proxy, dummy, cache_ruleset)};
-            }
-            else
-                continue;
-            */
-            rc = {rule_group, rule_url, rule_url_typed, type, fetchFileAsync(rule_url, proxy, cache_ruleset, async_fetch_ruleset)};
+            rc = {rule_group, rule_url, rule_url_typed, type, fetchFileAsync(rule_url, proxy, cache_ruleset, async_fetch_ruleset), to_int(interval, 0)};
         }
         rca.emplace_back(std::move(rc));
-        /*
-        if(rc.rule_content.get().size())
-            rca.emplace_back(rc);
-        else
-            //std::cerr<<"Warning: No data was fetched from this link. Skipping..."<<std::endl;
-            writeLog(0, "Warning: No data was fetched from ruleset '" + rule_url + "'. Skipping...", LOG_LEVEL_WARNING);
-        */
     }
 }
 
