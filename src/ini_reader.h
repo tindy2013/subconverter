@@ -38,7 +38,7 @@ private:
     std::string current_section;
     ini_data_struct ini_content;
     string_array exclude_sections, include_sections, direct_save_sections;
-    string_array read_sections, section_order;
+    string_array section_order;
 
     std::string cached_section;
     ini_data_struct::iterator cached_section_content;
@@ -113,7 +113,7 @@ public:
     bool allow_dup_section_titles = false;
 
     /**
-    *  @brief Keep an empty section while parsing
+    *  @brief Keep an empty section while parsing.
     */
     bool keep_empty_section = true;
 
@@ -145,7 +145,6 @@ public:
         current_section = src.current_section;
         exclude_sections = src.exclude_sections;
         include_sections = src.include_sections;
-        read_sections = src.read_sections;
         section_order = src.section_order;
         isolated_items_section = src.isolated_items_section;
         //copy preferences
@@ -153,6 +152,7 @@ public:
         store_any_line = src.store_any_line;
         store_isolated_line = src.store_isolated_line;
         allow_dup_section_titles = src.allow_dup_section_titles;
+        keep_empty_section = src.keep_empty_section;
         return *this;
     }
 
@@ -215,6 +215,7 @@ public:
         bool inExcludedSection = false, inDirectSaveSection = false;
         std::string strLine, thisSection, curSection, itemName, itemVal;
         string_multimap itemGroup, existItemGroup;
+        string_array read_sections;
         std::stringstream strStrm;
         char delimiter = getLineBreak(content);
 
@@ -805,6 +806,9 @@ public:
         return current_section.size() ? SetArray(current_section, itemName, separator, Array) : -1;
     }
 
+    /**
+    *  @brief Rename an existing section.
+    */
     int RenameSection(const std::string &oldName, const std::string &newName)
     {
         if(!SectionExist(oldName) || SectionExist(newName))
@@ -880,7 +884,6 @@ public:
             cached_section_content = ini_content.end();
             cached_section.erase();
         }
-        //section_order.erase(std::find(section_order.begin(), section_order.end(), section));
     }
 
     /**
@@ -890,6 +893,31 @@ public:
     {
         if(current_section.size())
             EraseSection(current_section);
+    }
+
+    /**
+    *  @brief Remove a section from INI.
+    */
+    void RemoveSection(const std::string &section)
+    {
+        if(ini_content.find(section) == ini_content.end())
+            return;
+        ini_content.erase(section);
+        if(cached_section == section)
+        {
+            cached_section.clear();
+            cached_section_content = ini_content.end();
+        }
+        section_order.erase(std::find(section_order.begin(), section_order.end(), section));
+    }
+
+    /**
+    *  @brief Remove current section from INI.
+    */
+    void RemoveSection()
+    {
+        if(current_section.size())
+            RemoveSection(current_section);
     }
 
     /**

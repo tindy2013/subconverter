@@ -32,14 +32,11 @@ install -m0644 ./duk*.h /usr/local/include
 install -m0644 ../extras/module-node/duk_module_node.h /usr/local/include
 cd ../../../..
 
-cp curl/lib/libcurl.a .
-cp yaml-cpp/libyaml-cpp.a .
-cp duktape/dist/source/src/*.a .
 cp /usr/local/lib/libevent.a .
 cp /usr/local/opt/zlib/lib/libz.a .
 cp /usr/local/lib/libpcre2-8.a .
 
-cmake .
+cmake -DCMAKE_BUILD_TYPE=Release .
 make -j8
 rm subconverter
 c++ -Xlinker -unexported_symbol -Xlinker "*" -o base/subconverter -framework CoreFoundation -framework Security $(find CMakeFiles/subconverter.dir/src/ -name "*.o") $(find . -name "*.a") -O3

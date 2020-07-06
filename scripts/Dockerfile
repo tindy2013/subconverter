@@ -15,14 +15,14 @@ RUN apk add --no-cache --virtual .build-tools git g++ build-base linux-headers c
     cc -c -O3 -o duk_module_node.o -I. ../extras/module-node/duk_module_node.c && \
     ar cr libduktape.a duktape.o && \
     ar cr libduktape_module.a duk_module_node.o && \
-    install -m0644 *.a /usr/lib && \
+    install -m0644 ./*.a /usr/lib && \
     install -m0644 duk*.h /usr/include && \
     install -m0644 ../extras/module-node/duk_module_node.h /usr/include && \
     cd ../../../.. && \
     rm -rf duktape /usr/lib/python2.7 && \
     git clone https://github.com/tindy2013/subconverter --depth=1 && \
     cd subconverter && \
-    cmake . && \
+    cmake -DCMAKE_BUILD_TYPE=Release . && \
     make -j4 && \
     mv subconverter base/ && \
     mv base ../ && \

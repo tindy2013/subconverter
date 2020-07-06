@@ -33,7 +33,7 @@ install -m0644 ../extras/module-node/duk_module_node.h /usr/include
 cd ../../../..
 
 export PKG_CONFIG_PATH=/usr/lib64/pkgconfig
-cmake .
+cmake -DCMAKE_BUILD_TYPE=Release .
 make -j2
 rm subconverter
 g++ -o base/subconverter $(find CMakeFiles/subconverter.dir/src/ -name "*.o")  -static -lpcre2-8 -levent -lyaml-cpp -L/usr/lib64 -lcurl -lmbedtls -lmbedcrypto -lmbedx509 -lz -lduktape -lduktape_module -O3 -s  
