@@ -214,7 +214,7 @@ public:
 
         bool inExcludedSection = false, inDirectSaveSection = false;
         std::string strLine, thisSection, curSection, itemName, itemVal;
-        string_multimap itemGroup, existItemGroup;
+        string_multimap itemGroup;
         string_array read_sections;
         std::stringstream strStrm;
         char delimiter = getLineBreak(content);
@@ -235,7 +235,7 @@ public:
         while(getline(strStrm, strLine, delimiter)) //get one line of content
         {
             last_error_index++;
-            string_size lineSize = strLine.size();
+            string_size lineSize = strLine.size(), pos_equal = strLine.find("=");
             if(lineSize && strLine[lineSize - 1] == '\r') //remove line break
                 strLine.erase(--lineSize);
             if((!lineSize || strLine[0] == ';' || strLine[0] == '#' || (lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')) && !inDirectSaveSection) //empty lines and comments are ignored
@@ -253,40 +253,43 @@ public:
                     {
                         if(allow_dup_section_titles || !ini_content.at(curSection).size())
                         {
-                            existItemGroup = ini_content.at(curSection); //get the old items
-                            itemGroup.merge(existItemGroup); //move old items to new sections
+                            auto iter = ini_content.at(curSection); //get the existing section
+                            iter.merge(itemGroup); //move new items to this section
                         }
                         else if(ini_content.at(curSection).size())
                             return __priv_save_error_and_return(INIREADER_EXCEPTION_DUPLICATE); //not allowed, stop
-                        ini_content.erase(curSection); //remove the old section
                     }
-                    else if(itemGroup.size())
-                        read_sections.push_back(curSection); //add to read sections list
-                    if(std::find(section_order.cbegin(), section_order.cend(), curSection) == section_order.cend())
-                        section_order.emplace_back(curSection); //add to section order if not added before
-                    ini_content.emplace(std::move(curSection), std::move(itemGroup)); //insert previous section to content map
+                    else
+                    {
+                        if(itemGroup.size())
+                            read_sections.push_back(curSection); //add to read sections list
+                        if(std::find(section_order.cbegin(), section_order.cend(), curSection) == section_order.cend())
+                            section_order.emplace_back(curSection); //add to section order if not added before
+                        ini_content.emplace(std::move(curSection), std::move(itemGroup)); //insert previous section to content map
+                    }
                 }
-
                 eraseElements(itemGroup); //reset section storage
                 curSection = thisSection; //start a new section
             }
-            else if(((store_any_line && strLine.find("=") == strLine.npos) || inDirectSaveSection) && !inExcludedSection && curSection.size()) //store a line without name
+            else if(((store_any_line && pos_equal == strLine.npos) || inDirectSaveSection) && !inExcludedSection && curSection.size()) //store a line without name
             {
                 itemGroup.emplace("{NONAME}", strLine);
             }
-            else if(strLine.find("=") != strLine.npos) //is an item
+            else if(pos_equal != strLine.npos) //is an item
             {
                 if(inExcludedSection) //this section is excluded
                     continue;
                 if(!curSection.size()) //not in any section
                     return __priv_save_error_and_return(INIREADER_EXCEPTION_OUTOFBOUND);
-                string_size pose = strLine.find("="), posc = strLine.find_first_not_of(' ', pose + 1);
-                itemName = trim(strLine.substr(0, pose));
-                if(posc != strLine.npos) //not a key with empty value
+                string_size pos_value = strLine.find_first_not_of(' ', pos_equal + 1);
+                itemName = trim(strLine.substr(0, pos_equal));
+                if(pos_value != strLine.npos) //not a key with empty value
                 {
-                    itemVal = strLine.substr(posc);
+                    itemVal = strLine.substr(pos_value);
                     itemGroup.emplace(std::move(itemName), std::move(itemVal)); //insert to current section
                 }
+                else
+                    itemGroup.emplace(std::move(itemName), std::string());
             }
             if(include_sections.size() && include_sections == read_sections) //all included sections has been read
                 break; //exit now
@@ -297,18 +300,20 @@ public:
             {
                 if(allow_dup_section_titles)
                 {
-                    existItemGroup = ini_content.at(curSection); //get the old items
-                    itemGroup.merge(existItemGroup); //move old items to new sections
+                    auto &iter = ini_content.at(curSection); //get the existing section
+                    iter.merge(itemGroup); //move new items to this section
                 }
                 else if(ini_content.at(curSection).size())
                     return __priv_save_error_and_return(INIREADER_EXCEPTION_DUPLICATE); //not allowed, stop
-                ini_content.erase(curSection); //remove the old section
             }
-            else if(itemGroup.size())
-                read_sections.emplace_back(curSection); //add to read sections list
-            if(std::find(section_order.cbegin(), section_order.cend(), curSection) == section_order.cend())
-                section_order.emplace_back(curSection); //add to section order if not added before
-            ini_content.emplace(std::move(curSection), std::move(itemGroup)); //insert this section to content map
+            else
+            {
+                if(itemGroup.size())
+                    read_sections.emplace_back(curSection); //add to read sections list
+                if(std::find(section_order.cbegin(), section_order.cend(), curSection) == section_order.cend())
+                    section_order.emplace_back(curSection); //add to section order if not added before
+                ini_content.emplace(std::move(curSection), std::move(itemGroup)); //insert this section to content map
+            }
         }
         parsed = true;
         return __priv_save_error_and_return(INIREADER_EXCEPTION_NONE); //all done
