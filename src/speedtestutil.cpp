@@ -2002,7 +2002,7 @@ void filterNodes(std::vector<nodeInfo> &nodes, string_array &exclude_remarks, st
 
     for(i = 0; i < exclude_remarks.size(); i++)
     {
-        std::unique_ptr<pcre2_code, decltype(&pcre2_code_free)> pattern(pcre2_compile(reinterpret_cast<const unsigned char*>(exclude_remarks[i].c_str()), PCRE2_ZERO_TERMINATED | PCRE2_MULTILINE, 0, &errornumber, &erroroffset, NULL), &pcre2_code_free);
+        std::unique_ptr<pcre2_code, decltype(&pcre2_code_free)> pattern(pcre2_compile(reinterpret_cast<const unsigned char*>(exclude_remarks[i].c_str()), exclude_remarks[i].size(), PCRE2_UTF | PCRE2_MULTILINE | PCRE2_ALT_BSUX, &errornumber, &erroroffset, NULL), &pcre2_code_free);
         if(!pattern)
             return;
         exclude_patterns.emplace_back(std::move(pattern));
@@ -2012,7 +2012,7 @@ void filterNodes(std::vector<nodeInfo> &nodes, string_array &exclude_remarks, st
     }
     for(i = 0; i < include_remarks.size(); i++)
     {
-        std::unique_ptr<pcre2_code, decltype(&pcre2_code_free)> pattern(pcre2_compile(reinterpret_cast<const unsigned char*>(include_remarks[i].c_str()), PCRE2_ZERO_TERMINATED | PCRE2_MULTILINE, 0, &errornumber, &erroroffset, NULL), &pcre2_code_free);
+        std::unique_ptr<pcre2_code, decltype(&pcre2_code_free)> pattern(pcre2_compile(reinterpret_cast<const unsigned char*>(include_remarks[i].c_str()), include_remarks[i].size(), PCRE2_UTF | PCRE2_MULTILINE | PCRE2_ALT_BSUX, &errornumber, &erroroffset, NULL), &pcre2_code_free);
         if(!pattern)
             return;
         include_patterns.emplace_back(std::move(pattern));

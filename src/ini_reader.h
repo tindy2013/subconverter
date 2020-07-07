@@ -223,7 +223,7 @@ public:
         if(do_utf8_to_gbk && is_str_utf8(content))
             content = UTF8ToACP(content); //do conversion if flag is set
 
-        if(store_isolated_line)
+        if(store_isolated_line && isolated_items_section.size())
         {
             curSection = isolated_items_section; //items before any section define will be store in this section
             //check this section first
@@ -384,7 +384,7 @@ public:
         if(section != cached_section)
         {
             cached_section = section;
-            cached_section_content= ini_content.find(section);
+            cached_section_content = ini_content.find(section);
         }
         auto &cache = cached_section_content->second;
         return cache.find(itemName) != cache.end();
