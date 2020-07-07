@@ -48,6 +48,7 @@ struct extra_settings
     tribool udp = tribool();
     tribool tfo = tribool();
     tribool skip_cert_verify = tribool();
+    tribool tls13 = tribool();
     bool clash_classical_ruleset = false;
     std::string sort_script = "";
 };

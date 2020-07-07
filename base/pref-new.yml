@@ -40,9 +40,10 @@ userinfo:
 node_pref:
 #  udp_flag: false
 #  tcp_fast_open_flag: false
+#  skip_cert_verify_flag: false
+#  tls13_flag: false
   sort_flag: false
   sort_script: ""
-#  skip_cert_verify_flag: false
   filter_deprecated_nodes: false
   append_sub_userinfo: true
   clash_use_new_field_name: true

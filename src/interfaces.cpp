@@ -50,7 +50,7 @@ std::mutex on_configuring;
 //preferences
 string_array renames, emojis;
 bool add_emoji = false, remove_old_emoji = false, append_proxy_type = false, filter_deprecated = true;
-tribool udp_flag, tfo_flag, scv_flag, enable_insert;
+tribool udp_flag, tfo_flag, scv_flag, tls13_flag, enable_insert;
 bool do_sort = false, config_update_strict = false;
 bool clash_use_new_field_name = false;
 std::string proxy_config, proxy_ruleset, proxy_subscription;
@@ -650,6 +650,7 @@ void readYAMLConf(YAML::Node &node)
         udp_flag.set(safe_as<std::string>(section["udp_flag"]));
         tfo_flag.set(safe_as<std::string>(section["tcp_fast_open_flag"]));
         scv_flag.set(safe_as<std::string>(section["skip_cert_verify_flag"]));
+        tls13_flag.set(safe_as<std::string>(section["tls13_flag"]));
         section["sort_flag"] >> do_sort;
         section["sort_script"] >> sort_script;
         section["filter_deprecated_nodes"] >> filter_deprecated;
@@ -881,6 +882,7 @@ void readConf()
         udp_flag.set(ini.Get("udp_flag"));
         tfo_flag.set(ini.Get("tcp_fast_open_flag"));
         scv_flag.set(ini.Get("skip_cert_verify_flag"));
+        tls13_flag.set(ini.Get("tls13_flag"));
         ini.GetBoolIfExist("sort_flag", do_sort);
         sort_script = ini.Get("sort_script");
         ini.GetBoolIfExist("filter_deprecated_nodes", filter_deprecated);
@@ -1289,7 +1291,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     tribool sort_flag = getUrlArg(argument, "sort"), use_sort_script = getUrlArg(argument, "sort_script");
     tribool clash_new_field = getUrlArg(argument, "new_name"), clash_script = getUrlArg(argument, "script"), add_insert = getUrlArg(argument, "insert");
     tribool scv = getUrlArg(argument, "scv"), fdn = getUrlArg(argument, "fdn"), expand = getUrlArg(argument, "expand"), append_sub_userinfo = getUrlArg(argument, "append_info");
-    tribool prepend_insert = getUrlArg(argument, "prepend"), classical = getUrlArg(argument, "classic");
+    tribool prepend_insert = getUrlArg(argument, "prepend"), classical = getUrlArg(argument, "classic"), tls13 = getUrlArg(argument, "tls13");
 
     std::string base_content, output_content;
     string_array extra_group, extra_ruleset, include_remarks = def_include_remarks, exclude_remarks = def_exclude_remarks;
@@ -1350,6 +1352,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     ext.tfo.read(tfo).read(tfo_flag);
     ext.udp.read(udp).read(udp_flag);
     ext.skip_cert_verify.read(scv).read(scv_flag);
+    ext.tls13.read(tls13).read(tls13_flag);
 
     ext.sort_flag = sort_flag.get(do_sort);
     use_sort_script.define(sort_script.size() != 0);
@@ -1952,7 +1955,7 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
         return "No nodes were found!";
     }
 
-    extra_settings ext = {true, true, dummy_str_array, dummy_str_array, false, false, false, false, do_sort, filter_deprecated, clash_use_new_field_name, false, "", "", ""};
+    extra_settings ext = {true, true, dummy_str_array, dummy_str_array, false, false, false, false, do_sort, filter_deprecated, clash_use_new_field_name, false, "", "", "", udp_flag, tfo_flag, scv_flag, tls13_flag};
 
     netchToClash(nodes, clash, dummy_str_array, false, ext);
 

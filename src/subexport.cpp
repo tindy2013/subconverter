@@ -74,7 +74,7 @@ std::string hostnameToIPAddr(const std::string &host)
     return retAddr;
 }
 
-std::string vmessConstruct(const std::string &group, const std::string &remarks, const std::string &add, const std::string &port, const std::string &type, const std::string &id, const std::string &aid, const std::string &net, const std::string &cipher, const std::string &path, const std::string &host, const std::string &edge, const std::string &tls, tribool udp, tribool tfo, tribool scv)
+std::string vmessConstruct(const std::string &group, const std::string &remarks, const std::string &add, const std::string &port, const std::string &type, const std::string &id, const std::string &aid, const std::string &net, const std::string &cipher, const std::string &path, const std::string &host, const std::string &edge, const std::string &tls, tribool udp, tribool tfo, tribool scv, tribool tls13)
 {
     rapidjson::StringBuffer sb;
     rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
@@ -135,6 +135,11 @@ std::string vmessConstruct(const std::string &group, const std::string &remarks,
         writer.Key("AllowInsecure");
         writer.Bool(scv);
     }
+    if(!tls13.is_undef())
+    {
+        writer.Key("TLS13");
+        writer.Bool(tls13);
+    }
     writer.EndObject();
     return sb.GetString();
 }
@@ -183,7 +188,7 @@ std::string ssrConstruct(const std::string &group, const std::string &remarks, c
     return sb.GetString();
 }
 
-std::string ssConstruct(const std::string &group, const std::string &remarks, const std::string &server, const std::string &port, const std::string &password, const std::string &method, const std::string &plugin, const std::string &pluginopts, bool libev, tribool udp, tribool tfo, tribool scv)
+std::string ssConstruct(const std::string &group, const std::string &remarks, const std::string &server, const std::string &port, const std::string &password, const std::string &method, const std::string &plugin, const std::string &pluginopts, bool libev, tribool udp, tribool tfo, tribool scv, tribool tls13)
 {
     rapidjson::StringBuffer sb;
     rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
@@ -220,6 +225,11 @@ std::string ssConstruct(const std::string &group, const std::string &remarks, co
     {
         writer.Key("AllowInsecure");
         writer.Bool(scv);
+    }
+    if(!tls13.is_undef())
+    {
+        writer.Key("TLS13");
+        writer.Bool(tls13);
     }
     writer.EndObject();
     return sb.GetString();
@@ -263,7 +273,7 @@ std::string socksConstruct(const std::string &group, const std::string &remarks,
     return sb.GetString();
 }
 
-std::string httpConstruct(const std::string &group, const std::string &remarks, const std::string &server, const std::string &port, const std::string &username, const std::string &password, bool tls, tribool scv)
+std::string httpConstruct(const std::string &group, const std::string &remarks, const std::string &server, const std::string &port, const std::string &username, const std::string &password, bool tls, tribool scv, tribool tls13)
 {
     rapidjson::StringBuffer sb;
     rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
@@ -287,11 +297,16 @@ std::string httpConstruct(const std::string &group, const std::string &remarks, 
         writer.Key("AllowInsecure");
         writer.Bool(scv);
     }
+    if(!tls13.is_undef())
+    {
+        writer.Key("TLS13");
+        writer.Bool(tls13);
+    }
     writer.EndObject();
     return sb.GetString();
 }
 
-std::string trojanConstruct(const std::string &group, const std::string &remarks, const std::string &server, const std::string &port, const std::string &password, const std::string &host, bool tlssecure, tribool udp, tribool tfo, tribool scv)
+std::string trojanConstruct(const std::string &group, const std::string &remarks, const std::string &server, const std::string &port, const std::string &password, const std::string &host, bool tlssecure, tribool udp, tribool tfo, tribool scv, tribool tls13)
 {
     rapidjson::StringBuffer sb;
     rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
@@ -326,6 +341,11 @@ std::string trojanConstruct(const std::string &group, const std::string &remarks
     {
         writer.Key("AllowInsecure");
         writer.Bool(scv);
+    }
+    if(!tls13.is_undef())
+    {
+        writer.Key("TLS13");
+        writer.Bool(tls13);
     }
     writer.EndObject();
     return sb.GetString();
@@ -1354,8 +1374,10 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, const stri
             rules_upper_bound -= 2;
             singlegroup["url"] = vArray[rules_upper_bound];
             parseGroupTimes(vArray[rules_upper_bound + 1], &interval, &tolerance, NULL);
-            singlegroup["interval"] = interval;
-            singlegroup["tolerance"] = tolerance;
+            if(interval)
+                singlegroup["interval"] = interval;
+            if(tolerance)
+                singlegroup["tolerance"] = tolerance;
             break;
         default:
             continue;
@@ -1455,7 +1477,7 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, const std::string &base_c
     std::string protocol, protoparam, obfs, obfsparam;
     std::string id, aid, transproto, faketype, host, edge, path, quicsecure, quicsecret;
     std::string output_nodelist;
-    tribool udp, tfo, scv;
+    tribool udp, tfo, scv, tls13;
     std::vector<nodeInfo> nodelist;
     unsigned short local_port = 1080;
     bool tlssecure;
@@ -1497,9 +1519,11 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, const std::string &base_c
         udp = ext.udp;
         tfo = ext.tfo;
         scv = ext.skip_cert_verify;
+        tls13 = ext.tls13;
         udp.define(GetMember(json, "EnableUDP"));
         tfo.define(GetMember(json, "EnableTFO"));
         scv.define(GetMember(json, "AllowInsecure"));
+        tls13.define(GetMember(json, "TLS13"));
 
         proxy.clear();
 
@@ -1530,6 +1554,8 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, const std::string &base_c
             path = GetMember(json, "Path");
             tlssecure = GetMember(json, "TLSSecure") == "true";
             proxy = "vmess, " + hostname + ", " + port + ", username=" + id + ", tls=" + (tlssecure ? "true" : "false");
+            if(tlssecure && !tls13.is_undef())
+                proxy += ", tls13=" + std::string(tls13 ? "true" : "false");
             switch(hash_(transproto))
             {
             case "tcp"_hash:
@@ -2193,7 +2219,7 @@ void netchToQuanX(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rule
     std::string id, transproto, host, path;
     std::string protocol, protoparam, obfs, obfsparam;
     std::string proxyStr;
-    tribool udp, tfo, scv;
+    tribool udp, tfo, scv, tls13;
     bool tlssecure;
     std::vector<nodeInfo> nodelist;
     string_array remarks_list;
@@ -2217,9 +2243,11 @@ void netchToQuanX(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rule
         udp = ext.udp;
         tfo = ext.tfo;
         scv = ext.skip_cert_verify;
+        tls13 = ext.tls13;
         udp.define(GetMember(json, "EnableUDP"));
         tfo.define(GetMember(json, "EnableTFO"));
         scv.define(GetMember(json, "AllowInsecure"));
+        tls13.define(GetMember(json, "TLS13"));
 
         switch(x.linkType)
         {
@@ -2232,6 +2260,8 @@ void netchToQuanX(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rule
             if(method == "auto")
                 method = "chacha20-ietf-poly1305";
             proxyStr = "vmess = " + hostname + ":" + port + ", method=" + method + ", password=" + id;
+            if(tlssecure && !tls13.is_undef())
+                proxyStr += ", tls13=" + std::string(tls13 ? "true" : "false");
             if(transproto == "ws")
             {
                 if(tlssecure)
