@@ -212,7 +212,7 @@ public:
         if(content.compare(0, 3, "\xEF\xBB\xBF") == 0)
             content.erase(0, 3);
 
-        bool inExcludedSection = false, inDirectSaveSection = false;
+        bool inExcludedSection = false, inDirectSaveSection = false, inIsolatedSection = false;
         std::string strLine, thisSection, curSection, itemName, itemVal;
         string_multimap itemGroup;
         string_array read_sections;
@@ -229,6 +229,7 @@ public:
             //check this section first
             inExcludedSection = __priv_chk_ignore(curSection); //check if this section is excluded
             inDirectSaveSection = __priv_chk_direct_save(curSection); //check if this section requires direct-save
+            inIsolatedSection = true;
         }
         strStrm<<content;
         last_error_index = 0; //reset error index
@@ -259,7 +260,7 @@ public:
                         else if(ini_content.at(curSection).size())
                             return __priv_save_error_and_return(INIREADER_EXCEPTION_DUPLICATE); //not allowed, stop
                     }
-                    else
+                    else if(!inIsolatedSection || isolated_items_section != thisSection)
                     {
                         if(itemGroup.size())
                             read_sections.push_back(curSection); //add to read sections list
@@ -268,6 +269,7 @@ public:
                         ini_content.emplace(std::move(curSection), std::move(itemGroup)); //insert previous section to content map
                     }
                 }
+                inIsolatedSection = false;
                 eraseElements(itemGroup); //reset section storage
                 curSection = thisSection; //start a new section
             }
@@ -298,7 +300,7 @@ public:
         {
             if(ini_content.find(curSection) != ini_content.end()) //a section with the same name has been inserted
             {
-                if(allow_dup_section_titles)
+                if(allow_dup_section_titles || isolated_items_section == thisSection)
                 {
                     auto &iter = ini_content.at(curSection); //get the existing section
                     iter.merge(itemGroup); //move new items to this section
@@ -306,7 +308,7 @@ public:
                 else if(ini_content.at(curSection).size())
                     return __priv_save_error_and_return(INIREADER_EXCEPTION_DUPLICATE); //not allowed, stop
             }
-            else
+            else if(!inIsolatedSection || isolated_items_section != thisSection)
             {
                 if(itemGroup.size())
                     read_sections.emplace_back(curSection); //add to read sections list
@@ -710,7 +712,7 @@ public:
     /**
     *  @brief Add a std::string value with given values.
     */
-    int Set(const std::string &section, const std::string &itemName, const std::string &itemVal)
+    int Set(const std::string &section, std::string itemName, std::string itemVal)
     {
         if(!section.size())
             return __priv_save_error_and_return(INIREADER_EXCEPTION_NOTEXIST);
@@ -721,13 +723,13 @@ public:
         if(SectionExist(section))
         {
             string_multimap &mapTemp = ini_content.at(section);
-            mapTemp.insert(std::pair<std::string, std::string>(itemName, itemVal));
+            mapTemp.insert(std::pair<std::string, std::string>(std::move(itemName), std::move(itemVal)));
         }
         else
         {
             string_multimap mapTemp;
-            mapTemp.insert(std::pair<std::string, std::string>(itemName, itemVal));
-            ini_content.insert(std::pair<std::string, std::multimap<std::string, std::string>>(section, mapTemp));
+            mapTemp.insert(std::pair<std::string, std::string>(std::move(itemName), std::move(itemVal)));
+            ini_content.insert(std::pair<std::string, std::multimap<std::string, std::string>>(section, std::move(mapTemp)));
             section_order.emplace_back(section);
         }
 
@@ -737,89 +739,89 @@ public:
     /**
     *  @brief Add a string value with given values.
     */
-    int Set(const std::string &itemName, const std::string &itemVal)
+    int Set(std::string itemName, std::string itemVal)
     {
         if(!current_section.size())
             return __priv_save_error_and_return(INIREADER_EXCEPTION_NOTEXIST);
-        return Set(current_section, itemName, itemVal);
+        return Set(current_section, std::move(itemName), std::move(itemVal));
     }
 
     /**
     *  @brief Add a boolean value with given values.
     */
-    int SetBool(const std::string &section, const std::string &itemName, bool itemVal)
+    int SetBool(const std::string &section, std::string itemName, bool itemVal)
     {
-        return Set(section, itemName, itemVal ? "true" : "false");
+        return Set(section, std::move(itemName), itemVal ? "true" : "false");
     }
 
     /**
     *  @brief Add a boolean value with given values.
     */
-    int SetBool(const std::string &itemName, bool itemVal)
+    int SetBool(std::string itemName, bool itemVal)
     {
-        return SetBool(current_section, itemName, itemVal);
+        return SetBool(current_section, std::move(itemName), itemVal);
     }
 
     /**
     *  @brief Add a double value with given values.
     */
-    int SetDouble(const std::string &section, const std::string &itemName, double itemVal)
+    int SetDouble(const std::string &section, std::string itemName, double itemVal)
     {
-        return Set(section, itemName, std::to_string(itemVal));
+        return Set(section, std::move(itemName), std::to_string(itemVal));
     }
 
     /**
     *  @brief Add a double value with given values.
     */
-    int SetDouble(const std::string &itemName, double itemVal)
+    int SetDouble(std::string itemName, double itemVal)
     {
-        return SetDouble(current_section, itemName, itemVal);
+        return SetDouble(current_section, std::move(itemName), itemVal);
     }
 
     /**
     *  @brief Add a long value with given values.
     */
-    int SetLong(const std::string &section, const std::string &itemName, long itemVal)
+    int SetLong(const std::string &section, std::string itemName, long itemVal)
     {
-        return Set(section, itemName, std::to_string(itemVal));
+        return Set(section, std::move(itemName), std::to_string(itemVal));
     }
 
     /**
     *  @brief Add a long value with given values.
     */
-    int SetLong(const std::string &itemName, long itemVal)
+    int SetLong(std::string itemName, long itemVal)
     {
-        return SetLong(current_section, itemName, itemVal);
+        return SetLong(current_section, std::move(itemName), itemVal);
     }
 
     /**
     *  @brief Add an array with the given separator.
     */
-    template <typename T> int SetArray(const std::string &section, const std::string &itemName, const std::string &separator, T &Array)
+    template <typename T> int SetArray(const std::string &section, std::string itemName, const std::string &separator, T &Array)
     {
         std::string data;
         std::transform(std::begin(Array), std::end(Array), std::back_inserter(data), [&](auto x) { return std::to_string(x) + separator; });
         data.erase(data.size() - 1);
-        return Set(section, itemName, data);
+        return Set(section, std::move(itemName), data);
     }
 
     /**
     *  @brief Add an array with the given separator.
     */
-    template <typename T> int SetArray(const std::string &itemName, const std::string &separator, T &Array)
+    template <typename T> int SetArray(std::string itemName, const std::string &separator, T &Array)
     {
-        return current_section.size() ? SetArray(current_section, itemName, separator, Array) : -1;
+        return current_section.size() ? SetArray(current_section, std::move(itemName), separator, Array) : -1;
     }
 
     /**
     *  @brief Rename an existing section.
     */
-    int RenameSection(const std::string &oldName, const std::string &newName)
+    int RenameSection(const std::string &oldName, std::string newName)
     {
         if(!SectionExist(oldName) || SectionExist(newName))
             return __priv_save_error_and_return(INIREADER_EXCEPTION_DUPLICATE);
         auto nodeHandler = ini_content.extract(oldName);
-        nodeHandler.key() = newName;
+        nodeHandler.key() = std::move(newName);
         ini_content.insert(std::move(nodeHandler));
         std::replace(section_order.begin(), section_order.end(), oldName, newName);
         return __priv_save_error_and_return(INIREADER_EXCEPTION_NONE);
