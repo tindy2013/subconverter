@@ -1919,7 +1919,7 @@ void explodeSub(std::string sub, bool sslibev, bool ssrlibev, const std::string 
     nodeInfo node;
 
     //try to parse as SSD configuration
-    if(strFind(sub, "ssd://"))
+    if(startsWith(sub, "ssd://"))
     {
         explodeSSD(sub, sslibev, custom_port, nodes);
         processed = true;

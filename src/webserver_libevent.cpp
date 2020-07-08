@@ -32,7 +32,7 @@ struct responseRoute
 std::vector<responseRoute> responses;
 string_map redirect_map;
 
-const char *request_header_whitelist[] = {"user-agent"};
+const char *request_header_blacklist[] = {"host", "user-agent", "accept", "accept-encoding"};
 
 static inline void buffer_cleanup(struct evbuffer *eb)
 {
@@ -124,12 +124,9 @@ void OnReq(evhttp_request *req, void *args)
     struct evkeyval* kv = req->input_headers->tqh_first;
     while (kv)
     {
-        for(auto &x : request_header_whitelist)
-        {
-            if(strcmp(kv->key, x) == 0)
-                request.headers.emplace(kv->key, kv->value);
-            kv = kv->next.tqe_next;
-        }
+        if(std::none_of(std::begin(request_header_blacklist), std::end(request_header_blacklist), [&](auto x){ return strcasecmp(kv->key, x) == 0; }))
+            request.headers.emplace(kv->key, kv->value);
+        kv = kv->next.tqe_next;
     }
     if(user_agent)
         request.headers.emplace("X-User-Agent", user_agent);
