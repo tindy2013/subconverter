@@ -232,8 +232,8 @@ std::string findFileName(const std::string &path)
             pos = 0;
     }
     string_size pos2 = path.rfind('.');
-    if(pos2 < pos)
-        pos2 = path.size() - 1;
+    if(pos2 < pos || pos2 == path.npos)
+        pos2 = path.size();
     return path.substr(pos + 1, pos2 - pos - 1);
 }
 
@@ -246,7 +246,7 @@ int renderClashScript(YAML::Node &base_rule, std::vector<ruleset_content> &rules
     string_array vArray, groups;
     string_map keywords, urls, names;
     std::map<std::string, bool> has_domain, has_ipcidr;
-    std::map<std::string, int> ruleset_interval;
+    std::map<std::string, int> ruleset_interval, rule_type;
     string_array rules;
     int index = 0;
 
@@ -293,6 +293,7 @@ int renderClashScript(YAML::Node &base_rule, std::vector<ruleset_content> &rules
                     rule_name = old_rule_name + "_" + std::to_string(idx++);
                 names[rule_name] = rule_group;
                 urls[rule_name] = "*" + rule_path;
+                rule_type[rule_name] = x.rule_type;
                 ruleset_interval[rule_name] = x.update_interval;
                 switch(x.rule_type)
                 {
@@ -400,13 +401,31 @@ int renderClashScript(YAML::Node &base_rule, std::vector<ruleset_content> &rules
         if(clash_classical_ruleset)
         {
             std::string yaml_key = x;
+
+            switch(rule_type[yaml_key])
+            {
+            case RULESET_CLASH_CLASSICAL:
+                base_rule["rule-providers"][yaml_key]["behavior"] = "classical";
+                base_rule["rule-providers"][yaml_key]["path"] = "./providers/rule-provider_" + x + "_classical.yaml";
+                break;
+            case RULESET_CLASH_DOMAIN:
+                yaml_key += "_domain";
+                base_rule["rule-providers"][yaml_key]["behavior"] = "domain";
+                base_rule["rule-providers"][yaml_key]["path"] = "./providers/rule-provider_" + x + "_domain.yaml";
+                break;
+            case RULESET_CLASH_IPCIDR:
+                yaml_key += "_ipcidr";
+                base_rule["rule-providers"][yaml_key]["behavior"] = "ipcidr";
+                base_rule["rule-providers"][yaml_key]["path"] = "./providers/rule-provider_" + x + "_ipcidr.yaml";
+                break;
+            }
             base_rule["rule-providers"][yaml_key]["type"] = "http";
-            base_rule["rule-providers"][yaml_key]["behavior"] = "classical";
+
             if(url[0] == '*')
                 base_rule["rule-providers"][yaml_key]["url"] = url.substr(1);
             else
                 base_rule["rule-providers"][yaml_key]["url"] = remote_path_prefix + "/getruleset?type=6&url=" + urlsafe_base64_encode(url);
-            base_rule["rule-providers"][yaml_key]["path"] = "./providers/rule-provider_" + x + "_classical.yaml";
+
             if(interval)
                 base_rule["rule-providers"][yaml_key]["interval"] = interval;
         }

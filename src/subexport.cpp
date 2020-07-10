@@ -24,7 +24,7 @@
 #include "yamlcpp_extra.h"
 #include "interfaces.h"
 
-extern bool api_mode;
+extern bool api_mode, surge_ssr_resolve;
 extern string_array ss_ciphers, ssr_ciphers;
 extern size_t max_allowed_rules;
 
@@ -1611,8 +1611,11 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, const std::string &base_c
             {
                 return std::move(a) + "\", args=\"" + std::move(b);
             });
-            proxy += "\", local-port=" + std::to_string(local_port) + ", addresses=" + ((isIPv4(hostname) || isIPv6(hostname)) ? hostname : hostnameToIPAddr(hostname));
-            //proxy += "\", local-port=" + std::to_string(local_port);
+            proxy += "\", local-port=" + std::to_string(local_port);
+            if(isIPv4(hostname) || isIPv6(hostname))
+                proxy += ", addresses=" + hostname;
+            else if(surge_ssr_resolve)
+                proxy += ", addresses=" + hostnameToIPAddr(hostname);
             local_port++;
             break;
         case SPEEDTEST_MESSAGE_FOUNDSOCKS:

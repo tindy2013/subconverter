@@ -30,7 +30,7 @@ std::string listen_address = "127.0.0.1", default_url, insert_url, managed_confi
 int listen_port = 25500, max_pending_connections = 10, max_concurrent_threads = 4;
 bool prepend_insert_url = true;
 bool api_mode = true, write_managed_config = false, enable_rule_generator = true, update_ruleset_on_request = false, overwrite_original_rules = true;
-bool print_debug_info = false, cfw_child_process = false, append_userinfo = true, enable_base_gen = false, async_fetch_ruleset = false;
+bool print_debug_info = false, cfw_child_process = false, append_userinfo = true, enable_base_gen = false, async_fetch_ruleset = false, surge_ssr_resolve = true;
 std::string access_token, base_path = "base";
 extern std::string custom_group;
 extern int global_log_level;
@@ -676,7 +676,10 @@ void readYAMLConf(YAML::Node &node)
     }
 
     if(node["surge_external_proxy"].IsDefined())
+    {
         node["surge_external_proxy"]["surge_ssr_path"] >> surge_ssr_path;
+        node["surge_external_proxy"]["resolve_hostname"] >> surge_ssr_resolve;
+    }
 
     if(node["emojis"].IsDefined())
     {
@@ -869,6 +872,7 @@ void readConf()
     {
         ini.EnterSection("surge_external_proxy");
         ini.GetIfExist("surge_ssr_path", surge_ssr_path);
+        ini.GetBoolIfExist("resolve_hostname", surge_ssr_resolve);
     }
 
     if(ini.SectionExist("node_pref"))

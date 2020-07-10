@@ -62,6 +62,7 @@ managed_config:
 
 surge_external_proxy:
   surge_ssr_path: "" # /usr/bin/ssr-local
+  resolve_hostname: true
 
 emojis:
   add_emoji: true
