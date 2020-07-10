@@ -1,0 +1,27 @@
+payload:
+  # Unbreak 白名单 不应该被广告链接的网站
+
+  # Epicgames
+  - DOMAIN-SUFFIX,ol.epicgames.com
+
+  # Google
+  - DOMAIN,dl.google.com
+  - DOMAIN,mtalk.google.com
+  - DOMAIN-SUFFIX,googletraveladservices.com
+
+  # Mozilla
+  - DOMAIN-SUFFIX,tracking-protection.cdn.mozilla.net
+
+  # Tencent
+  - DOMAIN,livew.l.qq.com
+  - DOMAIN,vd.l.qq.com
+
+  # Strava
+  - DOMAIN,analytics.strava.com
+
+  # Umeng
+  - DOMAIN,msg.umeng.com
+  - DOMAIN,msg.umengcloud.com
+
+  # General
+  - DOMAIN,app.adjust.com

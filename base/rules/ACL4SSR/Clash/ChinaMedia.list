@@ -1,13 +1,16 @@
 # 内容：中国媒体列表
-# 更新：2020-07-01 23:37:26
-# 数量：28条
+# 更新：2020-07-04 22:13:12
+# 数量：31条
 
 # Bilibili 哔哩哔哩
 USER-AGENT,Bilibili*
 USER-AGENT,bili*
+DOMAIN,upos-hz-mirrorakam.akamaized.net
 DOMAIN-SUFFIX,acg.tv
 DOMAIN-SUFFIX,acgvideo.com
 DOMAIN-SUFFIX,b23.tv
+DOMAIN-SUFFIX,bigfun.cn
+DOMAIN-SUFFIX,bigfunapp.cn
 DOMAIN-SUFFIX,biliapi.com
 DOMAIN-SUFFIX,biliapi.net
 DOMAIN-SUFFIX,bilibili.com

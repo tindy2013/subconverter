@@ -1,0 +1,9 @@
+payload:
+  # 内容：Bahamut
+  # 数量：6条
+  # USER-AGENT,Anime*
+  - DOMAIN,gamer-cds.cdn.hinet.net
+  - DOMAIN,gamer2-cds.cdn.hinet.net
+  - DOMAIN-SUFFIX,bahamut.com.tw
+  - DOMAIN-SUFFIX,gamer.com.tw
+  - DOMAIN-SUFFIX,hinet.net

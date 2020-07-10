@@ -4,7 +4,7 @@
 # ACL4SSR标志 如没有，代表不是用ACL4SSR规则
 DOMAIN-SUFFIX,acl4ssr
 
-#本地/局域网地址
+# 本地/局域网地址
 DOMAIN-SUFFIX,ip6-localhost
 DOMAIN-SUFFIX,ip6-loopback
 DOMAIN-SUFFIX,local

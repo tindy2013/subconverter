@@ -1,0 +1,26 @@
+payload:
+  # 内容：Scholar 国内外学术网站
+  # 数量：23条
+  - DOMAIN-SUFFIX,blackwell-synergy.com
+  - DOMAIN-SUFFIX,cabdirect.org
+  - DOMAIN-SUFFIX,cnki.net
+  - DOMAIN-SUFFIX,cqvip.com
+  - DOMAIN-SUFFIX,deepdyve.com
+  - DOMAIN-SUFFIX,els-cdn.com
+  - DOMAIN-SUFFIX,elsevier.com
+  - DOMAIN-SUFFIX,ieee.org
+  - DOMAIN-SUFFIX,jstor.org
+  - DOMAIN-SUFFIX,nature.com
+  - DOMAIN-SUFFIX,osapublishing.org
+  - DOMAIN-SUFFIX,oup.com
+  - DOMAIN-SUFFIX,pkulaw.com
+  - DOMAIN-SUFFIX,readcube.com
+  - DOMAIN-SUFFIX,researchgate.net
+  - DOMAIN-SUFFIX,sciencedirect.com
+  - DOMAIN-SUFFIX,sciencemag.org
+  - DOMAIN-SUFFIX,scopus.com
+  - DOMAIN-SUFFIX,springer.com
+  - DOMAIN-SUFFIX,wanfangdata.com
+  - DOMAIN-SUFFIX,webofknowledge.com
+  - DOMAIN-SUFFIX,westlawchina.com
+  - DOMAIN-SUFFIX,wiley.com

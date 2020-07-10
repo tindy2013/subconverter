@@ -1,0 +1,7 @@
+payload:
+  # 内容：Epic
+  # 数量：4条
+  - DOMAIN-SUFFIX,epicgames.com
+  - DOMAIN-SUFFIX,helpshift.com
+  - DOMAIN-SUFFIX,paragon.com
+  - DOMAIN-SUFFIX,unrealengine.com

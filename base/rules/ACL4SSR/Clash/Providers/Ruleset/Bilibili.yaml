@@ -1,0 +1,21 @@
+payload:
+  # 内容：Bilibili 哔哩哔哩
+  # 数量：18条
+  # USER-AGENT,Bilibili*
+  # USER-AGENT,bili*
+  - DOMAIN,upos-hz-mirrorakam.akamaized.net
+  - DOMAIN-SUFFIX,acg.tv
+  - DOMAIN-SUFFIX,acgvideo.com
+  - DOMAIN-SUFFIX,b23.tv
+  - DOMAIN-SUFFIX,bigfun.cn
+  - DOMAIN-SUFFIX,bigfunapp.cn
+  - DOMAIN-SUFFIX,biliapi.com
+  - DOMAIN-SUFFIX,biliapi.net
+  - DOMAIN-SUFFIX,bilibili.com
+  - DOMAIN-SUFFIX,bilibili.tv
+  - DOMAIN-SUFFIX,biligame.com
+  - DOMAIN-SUFFIX,biligame.net
+  - DOMAIN-SUFFIX,bilivideo.com
+  - DOMAIN-SUFFIX,hdslb.com
+  - DOMAIN-SUFFIX,im9.com
+  - DOMAIN-SUFFIX,smtcdns.net

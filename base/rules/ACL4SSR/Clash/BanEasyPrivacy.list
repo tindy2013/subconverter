@@ -1,8 +1,8 @@
 # 广告列表 adblock rules
 # 内容：EasyPrivacy列表，隐私保护，屏蔽隐私追踪
 # 来源：https://easylist-downloads.adblockplus.org/easyprivacy.txt
-# 更新：2020-07-01 23:37:24
-# 数量：2525条
+# 更新：2020-07-06 21:03:44
+# 数量：2534条
 
 DOMAIN-SUFFIX,0sbm.consobaby.co.uk
 DOMAIN-SUFFIX,0x1f4b0.com
@@ -507,6 +507,7 @@ DOMAIN-SUFFIX,coletor.terra.com
 DOMAIN-SUFFIX,collect.adback.co
 DOMAIN-SUFFIX,collect.igodigital.com
 DOMAIN-SUFFIX,collect.rewardstyle.com
+DOMAIN-SUFFIX,collect.state.centrum24.pl
 DOMAIN-SUFFIX,collect.tianya.cn
 DOMAIN-SUFFIX,collect.usefathom.com
 DOMAIN-SUFFIX,collector-api.99designs.com
@@ -615,6 +616,7 @@ DOMAIN-SUFFIX,cpx.golem.de
 DOMAIN-SUFFIX,cpxl.golem.de
 DOMAIN-SUFFIX,creator.zmags.com
 DOMAIN-SUFFIX,crm-analytics.imweb.ru
+DOMAIN-SUFFIX,crta.metro.co.uk
 DOMAIN-SUFFIX,cse3.chausport.com
 DOMAIN-SUFFIX,csi.gstatic.com
 DOMAIN-SUFFIX,csp-collector.appspot.com
@@ -1005,6 +1007,7 @@ DOMAIN-SUFFIX,i.pokernews.com
 DOMAIN-SUFFIX,i.viafoura.co
 DOMAIN-SUFFIX,ia.51.la
 DOMAIN-SUFFIX,ia.ekstrabladet.dk
+DOMAIN-SUFFIX,iabusprivacy.pmc.com
 DOMAIN-SUFFIX,ib.adnxs.com
 DOMAIN-SUFFIX,ibeat.indiatimes.com
 DOMAIN-SUFFIX,ibs.indiatimes.com
@@ -1264,6 +1267,7 @@ DOMAIN-SUFFIX,ms.computerbild.de
 DOMAIN-SUFFIX,msg.71.am
 DOMAIN-SUFFIX,mtag.mman.kr
 DOMAIN-SUFFIX,mtc.nhk.or.jp
+DOMAIN-SUFFIX,mtrcs.samba.tv
 DOMAIN-SUFFIX,mts-ws.rueducommerce.fr
 DOMAIN-SUFFIX,mv.treehousei.com
 DOMAIN-SUFFIX,mva1.maeva.com
@@ -1357,6 +1361,7 @@ DOMAIN-SUFFIX,pebed.dm.gg
 DOMAIN-SUFFIX,perf.dugout.com
 DOMAIN-SUFFIX,performanceplay.co.kr
 DOMAIN-SUFFIX,performances.bestofmedia.com
+DOMAIN-SUFFIX,perso.aws.arc.pub
 DOMAIN-SUFFIX,petitionermaster.appspot.com
 DOMAIN-SUFFIX,pf.newegg.com
 DOMAIN-SUFFIX,pgt1.voyage-prive.es
@@ -1407,6 +1412,7 @@ DOMAIN-SUFFIX,pixel.naij.com
 DOMAIN-SUFFIX,pixel.newscgp.com
 DOMAIN-SUFFIX,pixel.newscred.com
 DOMAIN-SUFFIX,pixel.newsdiscover.com.au
+DOMAIN-SUFFIX,pixel.parsely.com
 DOMAIN-SUFFIX,pixel.pcworld.com
 DOMAIN-SUFFIX,pixel.propublica.org
 DOMAIN-SUFFIX,pixel.prosieben.de
@@ -1541,6 +1547,7 @@ DOMAIN-SUFFIX,rta2.metro.co.uk
 DOMAIN-SUFFIX,rtn.thestar.com
 DOMAIN-SUFFIX,rtt.campanja.com
 DOMAIN-SUFFIX,rum.conde.io
+DOMAIN-SUFFIX,rum.kobo.com
 DOMAIN-SUFFIX,rum.marquardmedia.hu
 DOMAIN-SUFFIX,rum.minutemediaservices.com
 DOMAIN-SUFFIX,rum.nccgroup-webperf.com
@@ -1561,6 +1568,7 @@ DOMAIN-SUFFIX,sa.bbc.co.uk
 DOMAIN-SUFFIX,sa.sky.it
 DOMAIN-SUFFIX,sa.squareup.com
 DOMAIN-SUFFIX,sa.tf1.fr
+DOMAIN-SUFFIX,sa135.kiro7.com
 DOMAIN-SUFFIX,sa135.macworld.co.uk
 DOMAIN-SUFFIX,sa135.wsbtv.com
 DOMAIN-SUFFIX,sal.isanook.com
@@ -2014,6 +2022,7 @@ DOMAIN-SUFFIX,tag.leadplace.fr
 DOMAIN-SUFFIX,tag.myplay.com
 DOMAIN-SUFFIX,tag.rightmessage.com
 DOMAIN-SUFFIX,tag.rmp.rakuten.com
+DOMAIN-SUFFIX,tag.shopping-feed.com
 DOMAIN-SUFFIX,tag.sonymusic.com
 DOMAIN-SUFFIX,tag.triboomedia.it
 DOMAIN-SUFFIX,tagger.ope.scmp.com
