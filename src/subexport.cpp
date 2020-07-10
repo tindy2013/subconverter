@@ -273,7 +273,7 @@ std::string socksConstruct(const std::string &group, const std::string &remarks,
     return sb.GetString();
 }
 
-std::string httpConstruct(const std::string &group, const std::string &remarks, const std::string &server, const std::string &port, const std::string &username, const std::string &password, bool tls, tribool scv, tribool tls13)
+std::string httpConstruct(const std::string &group, const std::string &remarks, const std::string &server, const std::string &port, const std::string &username, const std::string &password, bool tls, tribool tfo, tribool scv, tribool tls13)
 {
     rapidjson::StringBuffer sb;
     rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
@@ -292,6 +292,13 @@ std::string httpConstruct(const std::string &group, const std::string &remarks, 
     writer.String(username.data());
     writer.Key("Password");
     writer.String(password.data());
+    writer.Key("TLSSecure");
+    writer.Bool(tls);
+    if(!tfo.is_undef())
+    {
+        writer.Key("EnableTFO");
+        writer.Bool(tfo);
+    }
     if(!scv.is_undef())
     {
         writer.Key("AllowInsecure");
@@ -1540,8 +1547,18 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, const std::string &base_c
             {
                 proxy = "custom, "  + hostname + ", " + port + ", " + method + ", " + password + ", https://github.com/ConnersHua/SSEncrypt/raw/master/SSEncrypt.module";
             }
-            if(plugin.size() && pluginopts.size())
-                proxy += "," + replace_all_distinct(pluginopts, ";", ",");
+            if(plugin.size())
+            {
+                switch(hash_(plugin))
+                {
+                case "simple-obfs"_hash:
+                    if(pluginopts.size())
+                        proxy += "," + replace_all_distinct(pluginopts, ";", ",");
+                    break;
+                default:
+                    continue;
+                }
+            }
             break;
         case SPEEDTEST_MESSAGE_FOUNDVMESS:
             if(surge_ver < 4 && surge_ver != -3)
@@ -1638,10 +1655,10 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, const std::string &base_c
             continue;
         }
 
-        if(tfo)
-            proxy += ", tfo=true";
-        if(udp)
-            proxy += ", udp-relay=true";
+        if(!tfo.is_undef())
+            proxy += ", tfo=" + tfo.get_str();
+        if(!udp.is_undef())
+            proxy += ", udp-relay=" + udp.get_str();
 
         if(ext.nodelist)
             output_nodelist += remark + " = " + proxy + "\n";
@@ -2278,8 +2295,36 @@ void netchToQuanX(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rule
             plugin = GetMember(json, "Plugin");
             pluginopts = GetMember(json, "PluginOption");
             proxyStr = "shadowsocks = " + hostname + ":" + port + ", method=" + method + ", password=" + password;
-            if(plugin.size() && pluginopts.size())
-                proxyStr += ", " + replace_all_distinct(pluginopts, ";", ", ");
+            if(plugin.size())
+            {
+                switch(hash_(plugin))
+                {
+                    case "simple-obfs"_hash:
+                        if(pluginopts.size())
+                            proxyStr += ", " + replace_all_distinct(pluginopts, ";", ", ");
+                        break;
+                    case "v2ray-plugin"_hash:
+                        pluginopts = replace_all_distinct(pluginopts, ";", "&");
+                        plugin = getUrlArg(pluginopts, "mode") == "websocket" ? "ws" : "";
+                        host = getUrlArg(pluginopts, "host");
+                        path = getUrlArg(pluginopts, "path");
+                        tlssecure = pluginopts.find("tls") != pluginopts.npos;
+                        if(tlssecure && plugin == "ws")
+                        {
+                            plugin += 's';
+                            if(!tls13.is_undef())
+                                proxyStr += ", tls13=" + std::string(tls13 ? "true" : "false");
+                        }
+                        proxyStr += ", obfs=" + plugin;
+                        if(host.size())
+                            proxyStr += ", obfs-host=" + host;
+                        if(path.size())
+                            proxyStr += ", obfs-uri=" + path;
+                        break;
+                    default: continue;
+                }
+            }
+
             break;
         case SPEEDTEST_MESSAGE_FOUNDSSR:
             password = GetMember(json, "Password");
@@ -2301,7 +2346,11 @@ void netchToQuanX(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rule
 
             proxyStr = "http = " + hostname + ":" + port + ", username=" + (id.size() ? id : "none") + ", password=" + (password.size() ? password : "none");
             if(tlssecure)
+            {
                 proxyStr += ", over-tls=true";
+                if(!tls13.is_undef())
+                    proxyStr += ", tls13=" + std::string(tls13 ? "true" : "false");
+            }
             break;
         case SPEEDTEST_MESSAGE_FOUNDTROJAN:
             password = GetMember(json, "Password");
@@ -2312,17 +2361,19 @@ void netchToQuanX(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rule
             if(tlssecure)
             {
                 proxyStr += ", over-tls=true, tls-host=" + host;
+                if(!tls13.is_undef())
+                    proxyStr += ", tls13=" + std::string(tls13 ? "true" : "false");
             }
             break;
         default:
             continue;
         }
-        if(tfo)
-            proxyStr += ", fast-open=true";
-        if(udp)
-            proxyStr += ", udp-relay=true";
-        if(scv && (x.linkType == SPEEDTEST_MESSAGE_FOUNDHTTP || x.linkType == SPEEDTEST_MESSAGE_FOUNDTROJAN))
-            proxyStr += ", tls-verification=false";
+        if(!tfo.is_undef())
+            proxyStr += ", fast-open=" + tfo.get_str();
+        if(!udp.is_undef())
+            proxyStr += ", udp-relay=" + tfo.get_str();
+        if(!scv.is_undef() && (x.linkType == SPEEDTEST_MESSAGE_FOUNDHTTP || x.linkType == SPEEDTEST_MESSAGE_FOUNDTROJAN))
+            proxyStr += ", tls-verification=" + scv.reverse().get_str();
         proxyStr += ", tag=" + remark;
 
         ini.Set("{NONAME}", proxyStr);

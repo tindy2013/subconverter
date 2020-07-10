@@ -903,7 +903,7 @@ void explodeNetch(std::string netch, bool ss_libev, bool ssr_libev, const std::s
         if(group.empty())
             group = HTTP_DEFAULT_GROUP;
         node.group = group;
-        node.proxyStr = httpConstruct(group, remark, address, port, username, password, type == "HTTPS", scv);
+        node.proxyStr = httpConstruct(group, remark, address, port, username, password, type == "HTTPS", tfo, scv);
         break;
     case "Trojan"_hash:
         host = GetMember(json, "Host");
@@ -1081,7 +1081,7 @@ void explodeClash(Node yamlnode, const std::string &custom_port, std::vector<nod
             singleproxy["tls"] >>= tls;
 
             node.linkType = SPEEDTEST_MESSAGE_FOUNDHTTP;
-            node.proxyStr = httpConstruct(group, ps, server, port, user, password, tls == "true", scv);
+            node.proxyStr = httpConstruct(group, ps, server, port, user, password, tls == "true", tfo, scv);
             break;
         case "trojan"_hash:
             group = TROJAN_DEFAULT_GROUP;
@@ -1242,7 +1242,7 @@ bool explodeSurge(std::string surge, const std::string &custom_port, std::vector
     for(auto &x : proxies)
     {
         std::string remarks, server, port, method, username, password; //common
-        std::string plugin, pluginopts, pluginopts_mode, pluginopts_host = "cloudfront.net", mod_url, mod_md5; //ss
+        std::string plugin, pluginopts, pluginopts_mode, pluginopts_host, mod_url, mod_md5; //ss
         std::string id, net, tls, host, edge, path; //v2
         std::string protocol, protoparam; //ssr
         std::string itemName, itemVal, config;
@@ -1458,7 +1458,7 @@ bool explodeSurge(std::string surge, const std::string &custom_port, std::vector
                     default: continue;
                 }
             }
-            node.proxyStr = httpConstruct(node.group, remarks, server, port, username, password, false, scv);
+            node.proxyStr = httpConstruct(node.group, remarks, server, port, username, password, false, tfo, scv);
             break;
         case "trojan"_hash: // surge 4 style trojan proxy
             node.linkType = SPEEDTEST_MESSAGE_FOUNDTROJAN;
@@ -1546,10 +1546,28 @@ bool explodeSurge(std::string surge, const std::string &custom_port, std::vector
                         case "ssr-protocol"_hash: protocol = itemVal; break;
                         case "ssr-protocol-param"_hash: protoparam = itemVal; break;
                         case "obfs"_hash:
-                            plugin = "simple-obfs";
-                            pluginopts_mode = itemVal;
+                        {
+                            switch(hash_(itemVal))
+                            {
+                            case "http"_hash:
+                            case "tls"_hash:
+                                plugin = "simple-obfs";
+                                pluginopts_mode = itemVal;
+                                break;
+                            case "wss"_hash:
+                                tls = "tls";
+                                [[fallthrough]];
+                            case "ws"_hash:
+                                pluginopts_mode = "websocket";
+                                plugin = "v2ray-plugin";
+                                break;
+                            default:
+                                pluginopts_mode = itemVal;
+                            }
                             break;
+                        }
                         case "obfs-host"_hash: pluginopts_host = itemVal; break;
+                        case "obfs-uri"_hash: path = itemVal; break;
                         case "udp-relay"_hash: udp = itemVal; break;
                         case "fast-open"_hash: tfo = itemVal; break;
                         case "tls13"_hash: tls13 = itemVal; break;
@@ -1558,11 +1576,23 @@ bool explodeSurge(std::string surge, const std::string &custom_port, std::vector
                 }
                 if(remarks.empty())
                     remarks = server + ":" + port;
-                if(plugin.size())
+                switch(hash_(plugin))
                 {
+                case "simple-obfs"_hash:
                     pluginopts = "obfs=" + pluginopts_mode;
                     if(pluginopts_host.size())
                         pluginopts += ";obfs-host=" + pluginopts_host;
+                    break;
+                case "v2ray-plugin"_hash:
+                    if(pluginopts_host.empty() && !isIPv4(server) && !isIPv6(server))
+                        pluginopts_host = server;
+                    pluginopts = "mode=" + pluginopts_mode;
+                    if(pluginopts_host.size())
+                        pluginopts += ";host=" + pluginopts_host;
+                    if(path.size())
+                        pluginopts += ";path=" + path;
+                    pluginopts += ";" + tls;
+                    break;
                 }
 
                 if(protocol.size())
@@ -1681,6 +1711,7 @@ bool explodeSurge(std::string surge, const std::string &custom_port, std::vector
                         case "over-tls"_hash: tls = itemVal; break;
                         case "tls-verification"_hash: scv = itemVal == "false"; break;
                         case "tls13"_hash: tls13 = itemVal; break;
+                        case "fast-open"_hash: tfo = itemVal; break;
                         default: continue;
                     }
                 }
@@ -1697,7 +1728,7 @@ bool explodeSurge(std::string surge, const std::string &custom_port, std::vector
 
                 node.linkType = SPEEDTEST_MESSAGE_FOUNDHTTP;
                 node.group = HTTP_DEFAULT_GROUP;
-                node.proxyStr = httpConstruct(node.group, remarks, server, port, username, password, tls == "true", scv, tls13);
+                node.proxyStr = httpConstruct(node.group, remarks, server, port, username, password, tls == "true", tfo, scv, tls13);
                 break;
             default:
                 continue;

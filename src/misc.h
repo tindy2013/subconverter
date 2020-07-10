@@ -162,7 +162,7 @@ public:
 
     template <typename T> tribool(const T &value) { set(value); }
 
-    explicit tribool(const tribool &value) { *this = value; }
+    tribool(const tribool &value) { *this = value; }
 
     ~tribool() = default;
 
@@ -194,11 +194,29 @@ public:
         return *this;
     }
 
+    tribool reverse()
+    {
+        _M_VALUE = _M_VALUE == -1 ? -1 : (_M_VALUE == 0 ? 1 : 0);
+        return *this;
+    }
+
     bool get(const bool &def_value = false)
     {
         if(_M_VALUE == -1)
             return def_value;
         return _M_VALUE;
+    }
+
+    std::string get_str()
+    {
+        switch(_M_VALUE)
+        {
+        case 0:
+            return "false";
+        case 1:
+            return "true";
+        }
+        return "undef";
     }
 
     template <typename T> bool set(const T &value)

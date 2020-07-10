@@ -1,0 +1,17 @@
+mixed-port: 7890
+allow-lan: true
+mode: Rule
+log-level: info
+external-controller: 127.0.0.1:9090
+proxy-providers:
+  HK:
+    type: http
+    path: proxy-providers/HK.yaml
+    url: {{ getLink("/sub?target=clash&list=true&include=HK&url=https%3A%2F%2Fexample.com%2Fsubscription") }}
+    interval: 86400
+    health-check:
+      enable: true
+      url: http://www.gstatic.com/generate_204
+      interval: 300
+rule-providers: ~
+rules: ~
