@@ -508,11 +508,11 @@ bool applyMatcher(const std::string &rule, std::string &real_rule, const nodeInf
     return true;
 }
 
-std::string nodeRename(const nodeInfo &node, const string_array &rename_array)
+void nodeRename(nodeInfo &node, const string_array &rename_array)
 {
     string_size pos;
     std::string match, rep;
-    std::string remark = node.remarks, real_rule;
+    std::string &remark = node.remarks, original_remark = node.remarks, returned_remark, real_rule;
     duk_context *ctx = NULL;
     defer(duk_destroy_heap(ctx);)
 
@@ -531,8 +531,8 @@ std::string nodeRename(const nodeInfo &node, const string_array &rename_array)
                 {
                     duk_get_global_string(ctx, "rename");
                     duktape_push_nodeinfo(ctx, node);
-                    if(duk_pcall(ctx, 1) == 0)
-                        remark = duktape_get_res_str(ctx);
+                    if(duk_pcall(ctx, 1) == 0 && !(returned_remark = duktape_get_res_str(ctx)).empty())
+                        remark = returned_remark;
                 }
                 else
                 {
@@ -552,8 +552,8 @@ std::string nodeRename(const nodeInfo &node, const string_array &rename_array)
             remark = regReplace(remark, real_rule, rep);
     }
     if(remark.empty())
-        return node.remarks;
-    return remark;
+        remark = original_remark;
+    return;
 }
 
 std::string removeEmoji(const std::string &orig_remark)
@@ -574,7 +574,7 @@ std::string removeEmoji(const std::string &orig_remark)
 
 std::string addEmoji(const nodeInfo &node, const string_array &emoji_array)
 {
-    std::string real_rule;
+    std::string real_rule, ret;
     string_size pos;
     duk_context *ctx = NULL;
     defer(duk_destroy_heap(ctx);)
@@ -594,12 +594,8 @@ std::string addEmoji(const nodeInfo &node, const string_array &emoji_array)
                 {
                     duk_get_global_string(ctx, "getEmoji");
                     duktape_push_nodeinfo(ctx, node);
-                    if(duk_pcall(ctx, 1) == 0)
-                    {
-                         std::string ret = duktape_get_res_str(ctx);
-                         if(ret.size())
-                            return ret + " " + node.remarks;
-                    }
+                    if(duk_pcall(ctx, 1) == 0 && !(ret = duktape_get_res_str(ctx)).empty())
+                        return ret + " " + node.remarks;
                 }
                 else
                 {
@@ -1080,7 +1076,7 @@ void preprocessNodes(std::vector<nodeInfo> &nodes, const extra_settings &ext)
         if(ext.remove_emoji)
             x.remarks = trim(removeEmoji(x.remarks));
 
-        x.remarks = nodeRename(x, ext.rename_array);
+        nodeRename(x, ext.rename_array);
 
         if(ext.add_emoji)
             x.remarks = addEmoji(x, ext.emoji_array);

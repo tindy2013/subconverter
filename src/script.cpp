@@ -193,13 +193,6 @@ int duktape_call_function(duk_context *ctx, const std::string &name, size_t narg
     return duk_pcall(ctx, nargs);
 }
 
-int duktape_get_res_int(duk_context *ctx)
-{
-    int retval = duk_to_int(ctx, -1);
-    duk_pop(ctx);
-    return retval;
-}
-
 int duktape_push_nodeinfo(duk_context *ctx, const nodeInfo &node)
 {
     duk_push_object(ctx);
@@ -237,8 +230,17 @@ int duktape_push_nodeinfo_arr(duk_context *ctx, const nodeInfo &node, duk_idx_t 
     return 0;
 }
 
+int duktape_get_res_int(duk_context *ctx)
+{
+    int retval = duk_to_int(ctx, -1);
+    duk_pop(ctx);
+    return retval;
+}
+
 std::string duktape_get_res_str(duk_context *ctx)
 {
+    if(duk_is_null_or_undefined(ctx, -1))
+        return std::string();
     std::string retstr = duk_safe_to_string(ctx, -1);
     duk_pop(ctx);
     return retstr;
