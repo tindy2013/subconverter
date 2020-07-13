@@ -99,6 +99,10 @@ void signal_handler(int sig)
 
 int main(int argc, char *argv[])
 {
+#ifndef _DEBUG
+    std::string prgpath = argv[0];
+    setcd(prgpath); //first switch to program directory
+#endif // _DEBUG
     if(fileExist("pref.yml"))
         pref_path = "pref.yml";
     chkArg(argc, argv);
@@ -125,10 +129,6 @@ int main(int argc, char *argv[])
     signal(SIGINT, signal_handler);
 
     SetConsoleTitle("SubConverter " VERSION);
-#ifndef _DEBUG
-    std::string prgpath = argv[0];
-    setcd(prgpath); //first switch to program directory
-#endif // _DEBUG
     readConf();
     if(!update_ruleset_on_request)
         refreshRulesets(rulesets, ruleset_content_array);

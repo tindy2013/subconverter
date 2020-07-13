@@ -55,6 +55,7 @@ std::string ACPToUTF8(const std::string &str_src);
 std::string trim_of(const std::string& str, char target, bool before = true, bool after = true);
 std::string trim(const std::string& str, bool before = true, bool after = true);
 std::string trim_quote(const std::string &str, bool before = true, bool after = true);
+void trim_self_of(std::string &str, char target, bool before = true, bool after = true);
 std::string getSystemProxy();
 std::string rand_str(const int len);
 bool is_str_utf8(const std::string &data);

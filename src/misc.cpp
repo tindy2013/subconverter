@@ -451,6 +451,20 @@ std::string getSystemProxy()
 #endif // _WIN32
 }
 
+void trim_self_of(std::string &str, char target, bool before, bool after)
+{
+    if (!before && !after)
+        return;
+    std::string::size_type pos = str.size() - 1;
+    if (after)
+        pos = str.find_last_not_of(target);
+    if (pos != std::string::npos)
+        str.erase(pos + 1);
+    if (before)
+        pos = str.find_first_not_of(target);
+    str.erase(0, pos);
+}
+
 std::string trim_of(const std::string& str, char target, bool before, bool after)
 {
     if (!before && !after)

@@ -85,6 +85,7 @@ void explodeVmess(std::string vmess, const std::string &custom_port, nodeInfo &n
         break;
     }
 
+    add = trim(add);
     node.linkType = SPEEDTEST_MESSAGE_FOUNDVMESS;
     node.group = V2RAY_DEFAULT_GROUP;
     node.remarks = ps;

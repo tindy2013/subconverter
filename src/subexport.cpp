@@ -1548,6 +1548,7 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, const std::string &base_c
                 switch(hash_(plugin))
                 {
                 case "simple-obfs"_hash:
+                case "obfs-local"_hash:
                     if(pluginopts.size())
                         proxy += "," + replace_all_distinct(pluginopts, ";", ",");
                     break;
@@ -2299,6 +2300,7 @@ void netchToQuanX(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rule
                 switch(hash_(plugin))
                 {
                     case "simple-obfs"_hash:
+                    case "obfs-local"_hash:
                         if(pluginopts.size())
                             proxyStr += ", " + replace_all_distinct(pluginopts, ";", ", ");
                         break;
