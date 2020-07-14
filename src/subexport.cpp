@@ -90,21 +90,21 @@ std::string vmessConstruct(const std::string &group, const std::string &remarks,
     writer.Key("Port");
     writer.Int(to_int(port));
     writer.Key("UserID");
-    writer.String(id.size() ? id.data() : "00000000-0000-0000-0000-000000000000");
+    writer.String(id.empty() ? "00000000-0000-0000-0000-000000000000" : id.data());
     writer.Key("AlterID");
     writer.Int(to_int(aid));
     writer.Key("EncryptMethod");
     writer.String(cipher.data());
     writer.Key("TransferProtocol");
-    writer.String(net.data());
+    writer.String(net.empty() ? "tcp" : net.data());
     writer.Key("Host");
-    writer.String(host.size() ? trim(host).data() : add.data());
+    writer.String(host.empty() ? add.data() : trim(host).data());
     writer.Key("Edge");
     writer.String(edge.data());
     if(net == "ws" || net == "http")
     {
         writer.Key("Path");
-        writer.String(path.size() ? trim(path).data() : "/");
+        writer.String(path.empty() ? "/" : trim(path).data());
     }
     else
     {

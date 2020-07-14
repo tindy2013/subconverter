@@ -2,7 +2,6 @@
 #define SPEEDTESTUTIL_H_INCLUDED
 
 #include <string>
-#include <yaml-cpp/yaml.h>
 
 #include "misc.h"
 #include "nodeinfo.h"
