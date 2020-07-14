@@ -2671,6 +2671,7 @@ void netchToMellow(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rul
     std::string plugin, pluginopts;
     std::string id, aid, transproto, faketype, host, path, quicsecure, quicsecret, tlssecure;
     std::string url;
+    tribool tfo, scv;
     std::vector<nodeInfo> nodelist;
     string_array vArray, remarks_list, filtered_nodelist;
 
@@ -2692,6 +2693,11 @@ void netchToMellow(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rul
         password = GetMember(json, "Password");
         method = GetMember(json, "EncryptMethod");
 
+        tfo = ext.tfo;
+        scv = ext.skip_cert_verify;
+        tfo.define(GetMember(json, "EnableTFO"));
+        scv.define(GetMember(json, "AllowInsecure"));
+
         switch(x.linkType)
         {
         case SPEEDTEST_MESSAGE_FOUNDSS:
@@ -2712,11 +2718,36 @@ void netchToMellow(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rul
             if(path.size())
                 proxy += path;
             proxy += "?network=" + transproto;
-            if(transproto == "ws")
+            switch(hash_(transproto))
             {
+            case "ws"_hash:
                 proxy += "&ws.host=" + UrlEncode(host);
+                break;
+            case "http"_hash:
+                if(!host.empty())
+                    proxy += "&http.host=" + UrlEncode(host);
+                break;
+            case "quic"_hash:
+                quicsecure = GetMember(json, "QUICSecure");
+                quicsecret = GetMember(json, "QUICSecret");
+                if(!quicsecure.empty())
+                    proxy += "&quic.security=" + quicsecure + "&quic.key=" + quicsecret;
+                break;
+            case "kcp"_hash:
+                break;
+            case "tcp"_hash:
+                break;
             }
             proxy += "&tls=" + tlssecure;
+            if(tlssecure == "true")
+            {
+                if(!host.empty())
+                    proxy += "&tls.servername=" + UrlEncode(host);
+            }
+            if(!scv.is_undef())
+                proxy += "&tls.allowinsecure=" + scv.get_str();
+            if(!tfo.is_undef())
+                proxy += "&sockopt.tcpfastopen=" + tfo.get_str();
             break;
         case SPEEDTEST_MESSAGE_FOUNDSOCKS:
             proxy = remark + ", builtin, socks, address=" + hostname + ", port=" + port + ", user=" + username + ", pass=" + password;
