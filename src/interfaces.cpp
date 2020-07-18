@@ -1694,7 +1694,6 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         managed_url = managed_config_prefix + "/sub?" + argument;
 
     //std::cerr<<"Generate target: ";
-    int surge_ver;
     proxy = parseProxy(proxy_config);
     switch(hash_(target))
     {
