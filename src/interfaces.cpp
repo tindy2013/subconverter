@@ -94,6 +94,97 @@ const string_array quanx_rule_type = {basic_types, "USER-AGENT", "HOST", "HOST-S
 const std::map<std::string, ruleset_type> ruleset_types = {{"clash-domain:", RULESET_CLASH_DOMAIN}, {"clash-ipcidr:", RULESET_CLASH_IPCIDR}, {"clash-classic:", RULESET_CLASH_CLASSICAL}, \
             {"quanx:", RULESET_QUANX}, {"surge:", RULESET_SURGE}};
 
+struct UAProfile
+{
+    std::string head;
+    std::string version_match;
+    std::string version_target;
+    std::string target;
+    tribool clash_new_name;
+    int surge_ver = -1;
+};
+
+const std::vector<UAProfile> UAMatchList = {
+    {"ClashForAndroid","\\/([0-9.]+)","2.0","clash",true},
+    {"ClashForAndroid","\\/([0-9.]+)R","","clashr",false},
+    {"ClashForAndroid","","","clash",false},
+    {"ClashforWindows","\\/([0-9.]+)","0.11","clash",true},
+    {"ClashforWindows","","","clash",false},
+    {"ClashX Pro","","","clash",true},
+    {"ClashX","\\/([0-9.]+)","0.13","clash",true},
+    {"Clash","","","clash",true},
+    {"Kitsunebi","","","v2ray"},
+    {"LoonWidget","","","loon"},
+    {"Pharos","","","mixed"},
+    {"Potatso","","","mixed"},
+    {"Quantumult%20X","","","quanx"},
+    {"Quantumult","","","quan"},
+    {"Qv2ray","","","v2ray"},
+    {"Shadowrocket","","","mixed"},
+    {"Surfboard","","","surfboard"},
+    {"Surge","\\/([0-9.]+).*x86","906","surge",false,4}, /// Surge for Mac (supports VMess)
+    {"Surge","\\/([0-9.]+).*x86","368","surge",false,3}, /// Surge for Mac (supports new rule types and Shadowsocks without plugin)
+    {"Surge","\\/([0-9.]+)","1419","surge",false,4}, /// Surge iOS 4 (first version)
+    {"Surge","\\/([0-9.]+)","900","surge",false,3}, /// Surge iOS 3 (approx)
+    {"Surge","","","surge",false,2}, /// any version of Surge as fallback
+    {"Trojan-Qt5","","","trojan"},
+    {"V2rayU","","","v2ray"},
+    {"V2RayX","","","v2ray"}
+};
+
+bool verGreaterEqual(const std::string &src_ver, const std::string &target_ver)
+{
+    int part_src, part_target;
+    string_size src_pos_beg = 0, src_pos_end = 0, target_pos_beg = 0, target_pos_end = 0;
+    while(true)
+    {
+        src_pos_end = src_ver.find('.', src_pos_beg);
+        if(src_pos_end == src_ver.npos)
+            src_pos_end = src_ver.size();
+        part_src = std::stoi(src_ver.substr(src_pos_beg, src_pos_end - src_pos_beg));
+        target_pos_end = target_ver.find('.', target_pos_beg);
+        if(target_pos_end == target_ver.npos)
+            target_pos_end = target_ver.size();
+        part_target = std::stoi(target_ver.substr(target_pos_beg, target_pos_end - target_pos_beg));
+        if(part_src > part_target)
+            break;
+        else if(part_src < part_target)
+            return false;
+        else if(src_pos_end >= src_ver.size() - 1 || target_pos_end >= target_ver.size() - 1)
+            break;
+        src_pos_beg = src_pos_end + 1;
+        target_pos_beg = target_pos_end + 1;
+    }
+    return true;
+
+}
+
+void matchUserAgent(const std::string &user_agent, std::string &target, tribool &clash_new_name, int &surge_ver)
+{
+    if(user_agent.empty())
+        return;
+    for(const UAProfile &x : UAMatchList)
+    {
+        if(startsWith(user_agent, x.head))
+        {
+            if(!x.version_match.empty())
+            {
+                std::string version;
+                if(regGetMatch(user_agent, x.version_match, 2, 0, &version))
+                    continue;
+                if(!x.version_target.empty() && !verGreaterEqual(version, x.version_target))
+                    continue;
+            }
+            target = x.target;
+            clash_new_name = x.clash_new_name;
+            if(x.surge_ver != -1)
+                surge_ver = x.surge_ver;
+            return;
+        }
+    }
+    return;
+}
+
 std::string convertRuleset(const std::string &content, int type)
 {
     /// Target: Surge type,pattern[,flag]
@@ -1268,7 +1359,12 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     std::string &argument = request.argument;
     int *status_code = &response.status_code;
 
-    std::string target = getUrlArg(argument, "target");
+    std::string target = getUrlArg(argument, "target"), version = getUrlArg(argument, "ver");
+    tribool clash_new_field = getUrlArg(argument, "new_name");
+    int surge_ver = version.size() ? to_int(version, 3) : 3;
+    if(target == "auto")
+        matchUserAgent(request.headers["X-User-Agent"], target, clash_new_field, surge_ver);
+
     switch(hash_(target))
     {
     case "clash"_hash: case "clashr"_hash: case "surge"_hash: case "quan"_hash: case "quanx"_hash: case "loon"_hash: case "surfboard"_hash: case "mellow"_hash: case "ss"_hash: case "ssd"_hash: case "ssr"_hash: case "sssub"_hash: case "v2ray"_hash: case "trojan"_hash: case "mixed"_hash:
@@ -1283,7 +1379,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
 
     /// string values
     std::string url = UrlDecode(getUrlArg(argument, "url"));
-    std::string group = UrlDecode(getUrlArg(argument, "group")), upload_path = getUrlArg(argument, "upload_path"), version = getUrlArg(argument, "ver");
+    std::string group = UrlDecode(getUrlArg(argument, "group")), upload_path = getUrlArg(argument, "upload_path");
     std::string include = UrlDecode(getUrlArg(argument, "include")), exclude = UrlDecode(getUrlArg(argument, "exclude"));
     std::string groups = urlsafe_base64_decode(getUrlArg(argument, "groups")), ruleset = urlsafe_base64_decode(getUrlArg(argument, "ruleset")), config = UrlDecode(getUrlArg(argument, "config"));
     std::string dev_id = getUrlArg(argument, "dev_id"), filename = getUrlArg(argument, "filename"), interval_str = getUrlArg(argument, "interval"), strict_str = getUrlArg(argument, "strict");
@@ -1293,7 +1389,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     tribool upload = getUrlArg(argument, "upload"), emoji = getUrlArg(argument, "emoji"), emoji_add = getUrlArg(argument, "add_emoji"), emoji_remove = getUrlArg(argument, "remove_emoji");
     tribool append_type = getUrlArg(argument, "append_type"), tfo = getUrlArg(argument, "tfo"), udp = getUrlArg(argument, "udp"), nodelist = getUrlArg(argument, "list");
     tribool sort_flag = getUrlArg(argument, "sort"), use_sort_script = getUrlArg(argument, "sort_script");
-    tribool clash_new_field = getUrlArg(argument, "new_name"), clash_script = getUrlArg(argument, "script"), add_insert = getUrlArg(argument, "insert");
+    tribool clash_script = getUrlArg(argument, "script"), add_insert = getUrlArg(argument, "insert");
     tribool scv = getUrlArg(argument, "scv"), fdn = getUrlArg(argument, "fdn"), expand = getUrlArg(argument, "expand"), append_sub_userinfo = getUrlArg(argument, "append_info");
     tribool prepend_insert = getUrlArg(argument, "prepend"), classical = getUrlArg(argument, "classic"), tls13 = getUrlArg(argument, "tls13");
 
@@ -1632,7 +1728,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
             uploadGist(target, upload_path, output_content, false);
         break;
     case "surge"_hash:
-        surge_ver = version.size() ? to_int(version, 3) : 3;
+
         writeLog(0, "Generate target: Surge " + std::to_string(surge_ver), LOG_LEVEL_INFO);
 
         if(ext.nodelist)

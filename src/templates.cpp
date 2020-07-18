@@ -13,6 +13,14 @@
 
 extern std::string managed_config_prefix;
 
+namespace inja
+{
+    void convert_dot_to_json_pointer(nonstd::string_view dot, std::string& out)
+    {
+        out = std::move(JsonNode(dot, 0).ptr);
+    }
+}
+
 static inline void parse_json_pointer(nlohmann::json &json, const std::string &path, const std::string &value)
 {
     std::string pointer;
@@ -52,6 +60,7 @@ int render_template(const std::string &content, const template_args &vars, std::
     inja::FunctionStorage m_callbacks;
     inja::TemplateStorage m_included_templates;
     inja::ParserConfig m_parser_config;
+    inja::RenderConfig m_render_config;
 
     m_lexer_config.trim_blocks = true;
     m_lexer_config.lstrip_blocks = true;
@@ -99,7 +108,7 @@ int render_template(const std::string &content, const template_args &vars, std::
             parse_json_pointer(data, dest + "." + std::to_string(index), vArray[index]);
         return std::string();
     });
-    m_callbacks.add_callback("join", INJA_VARARGS, [](inja::Arguments &args)
+    m_callbacks.add_callback("join", -1, [](inja::Arguments &args)
     {
         std::string result;
         for(auto iter = args.begin(); iter != args.end(); iter++)
@@ -134,14 +143,14 @@ int render_template(const std::string &content, const template_args &vars, std::
     {
         return endsWith(args.at(0)->get<std::string>(), args.at(1)->get<std::string>());
     });
-    m_callbacks.add_callback("or", INJA_VARARGS, [](inja::Arguments &args)
+    m_callbacks.add_callback("or", -1, [](inja::Arguments &args)
     {
         for(auto iter = args.begin(); iter != args.end(); iter++)
             if((*iter)->get<int>())
                 return true;
         return false;
     });
-    m_callbacks.add_callback("and", INJA_VARARGS, [](inja::Arguments &args)
+    m_callbacks.add_callback("and", -1, [](inja::Arguments &args)
     {
         for(auto iter = args.begin(); iter != args.end(); iter++)
             if(!(*iter)->get<int>())
@@ -169,8 +178,8 @@ int render_template(const std::string &content, const template_args &vars, std::
     m_parser_config.include_scope_limit = true;
     m_parser_config.include_scope = include_scope;
 
-    inja::Parser parser(m_parser_config, m_lexer_config, m_included_templates);
-    inja::Renderer renderer(m_included_templates, m_callbacks);
+    inja::Parser parser(m_parser_config, m_lexer_config, m_included_templates, m_callbacks);
+    inja::Renderer renderer(m_render_config, m_included_templates, m_callbacks);
 
     try
     {
