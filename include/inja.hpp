@@ -3607,7 +3607,7 @@ class Renderer : public NodeVisitor  {
     } break;
     case Op::Exists: {
       auto &&name = get_arguments<1>(node)[0]->get_ref<const std::string &>();
-      result_ptr = std::make_shared<json>(json_input->find(name) != json_input->end());
+      result_ptr = std::make_shared<json>(json_input->contains(json::json_pointer(JsonNode(name, 0).ptr)));
       json_tmp_stack.push_back(result_ptr);
       json_eval_stack.push(result_ptr.get());
     } break;
