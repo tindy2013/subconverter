@@ -28,7 +28,7 @@ string_array def_exclude_remarks, def_include_remarks, rulesets, stream_rules, t
 std::vector<ruleset_content> ruleset_content_array;
 std::string listen_address = "127.0.0.1", default_url, insert_url, managed_config_prefix;
 int listen_port = 25500, max_pending_connections = 10, max_concurrent_threads = 4;
-bool prepend_insert_url = true;
+bool prepend_insert_url = true, skip_failed_links = false;
 bool api_mode = true, write_managed_config = false, enable_rule_generator = true, update_ruleset_on_request = false, overwrite_original_rules = true;
 bool print_debug_info = false, cfw_child_process = false, append_userinfo = true, enable_base_gen = false, async_fetch_ruleset = false, surge_ssr_resolve = true;
 std::string access_token, base_path = "base";
@@ -891,6 +891,7 @@ void readYAMLConf(YAML::Node &node)
                 cache_subscription = cache_config = cache_ruleset = 0; //disable cache
         }
         node["advanced"]["async_fetch_ruleset"] >> async_fetch_ruleset;
+        node["advanced"]["skip_failed_links"] >> skip_failed_links;
     }
 }
 
@@ -1141,6 +1142,7 @@ void readConf()
         }
     }
     ini.GetBoolIfExist("async_fetch_ruleset", async_fetch_ruleset);
+    ini.GetBoolIfExist("skip_failed_links", skip_failed_links);
 
     //std::cerr<<"Read preference settings completed."<<std::endl;
     writeLog(0, "Read preference settings completed.", LOG_LEVEL_INFO);
@@ -1611,8 +1613,13 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
             writeLog(0, "Fetching node data from url '" + x + "'.", LOG_LEVEL_INFO);
             if(addNodes(x, insert_nodes, groupID, proxy, exclude_remarks, include_remarks, stream_temp, time_temp, subInfo, authorized, request.headers) == -1)
             {
-                *status_code = 400;
-                return std::string("The following link doesn't contain any valid node info: " + x);
+                if(skip_failed_links)
+                    writeLog(0, "The following link doesn't contain any valid node info: " + x, LOG_LEVEL_WARNING);
+                else
+                {
+                    *status_code = 400;
+                    return "The following link doesn't contain any valid node info: " + x;
+                }
             }
             groupID--;
         }
@@ -1627,8 +1634,13 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         writeLog(0, "Fetching node data from url '" + x + "'.", LOG_LEVEL_INFO);
         if(addNodes(x, nodes, groupID, proxy, exclude_remarks, include_remarks, stream_temp, time_temp, subInfo, authorized, request.headers) == -1)
         {
-            *status_code = 400;
-            return std::string("The following link doesn't contain any valid node info: " + x);
+            if(skip_failed_links)
+                writeLog(0, "The following link doesn't contain any valid node info: " + x, LOG_LEVEL_WARNING);
+            else
+            {
+                *status_code = 400;
+                return "The following link doesn't contain any valid node info: " + x;
+            }
         }
         groupID++;
     }
@@ -2042,8 +2054,13 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
         writeLog(0, "Fetching node data from url '" + x + "'.", LOG_LEVEL_INFO);
         if(addNodes(x, nodes, 0, proxy, dummy_str_array, dummy_str_array, dummy_str_array, dummy_str_array, subInfo, !api_mode, request.headers) == -1)
         {
-            *status_code = 400;
-            return std::string("The following link doesn't contain any valid node info: " + x);
+            if(skip_failed_links)
+                writeLog(0, "The following link doesn't contain any valid node info: " + x, LOG_LEVEL_WARNING);
+            else
+            {
+                *status_code = 400;
+                return "The following link doesn't contain any valid node info: " + x;
+            }
         }
     }
 

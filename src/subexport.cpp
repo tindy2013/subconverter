@@ -1402,11 +1402,11 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, const stri
             singlegroup["use"] = providers;
         else
         {
-            if(!filtered_nodelist.size())
+            if(filtered_nodelist.empty())
                 filtered_nodelist.emplace_back("DIRECT");
-
-            singlegroup["proxies"] = filtered_nodelist;
         }
+        if(!filtered_nodelist.empty())
+            singlegroup["proxies"] = filtered_nodelist;
         //singlegroup.SetStyle(YAML::EmitterStyle::Flow);
 
         bool replace_flag = false;
