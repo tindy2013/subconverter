@@ -28,8 +28,9 @@ extern bool api_mode, surge_ssr_resolve;
 extern string_array ss_ciphers, ssr_ciphers;
 extern size_t max_allowed_rules;
 
-const string_array clashr_protocols = {"auth_aes128_md5", "auth_aes128_sha1"};
-const string_array clashr_obfs = {"plain", "http_simple", "http_post", "tls1.2_ticket_auth"};
+const string_array clashr_protocols = {"origin", "auth_sha1_v4", "auth_aes128_md5", "auth_aes128_sha1", "auth_chain_a", "auth_chain_b"};
+const string_array clashr_obfs = {"plain", "http_simple", "http_post", "random_head", "tls1.2_ticket_auth", "tls1.2_ticket_fastauth"};
+const string_array clash_ssr_ciphers = {"rc4-md5", "aes-128-ctr", "aes-192-ctr", "aes-256-ctr", "aes-128-cfb", "aes-192-cfb", "aes-256-cfb", "chacha20-ietf", "xchacha20"};
 
 /// rule type lists
 #define basic_types "DOMAIN", "DOMAIN-SUFFIX", "DOMAIN-KEYWORD", "IP-CIDR", "SRC-IP-CIDR", "GEOIP", "MATCH", "FINAL"
@@ -1249,13 +1250,13 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, const stri
             }
             break;
         case SPEEDTEST_MESSAGE_FOUNDSSR:
-            if(!clashR)
-                continue;
             //ignoring all nodes with unsupported obfs, protocols and encryption
             protocol = GetMember(json, "Protocol");
             obfs = GetMember(json, "OBFS");
             if(ext.filter_deprecated)
             {
+                if(!clashR && std::find(clash_ssr_ciphers.cbegin(), clash_ssr_ciphers.cend(), method) == clash_ssr_ciphers.cend())
+                    continue;
                 if(std::find(clashr_protocols.cbegin(), clashr_protocols.cend(), protocol) == clashr_protocols.cend())
                     continue;
                 if(std::find(clashr_obfs.cbegin(), clashr_obfs.cend(), obfs) == clashr_obfs.cend())
@@ -1270,9 +1271,17 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, const stri
             if(std::all_of(password.begin(), password.end(), ::isdigit) && !password.empty())
                 singleproxy["password"].SetTag("str");
             singleproxy["protocol"] = protocol;
-            singleproxy["protocolparam"] = protoparam;
             singleproxy["obfs"] = obfs;
-            singleproxy["obfsparam"] = obfsparam;
+            if(clashR)
+            {
+                singleproxy["protocolparam"] = protoparam;
+                singleproxy["obfsparam"] = obfsparam;
+            }
+            else
+            {
+                singleproxy["protocol-param"] = protoparam;
+                singleproxy["obfs-param"] = obfsparam;
+            }
             break;
         case SPEEDTEST_MESSAGE_FOUNDSOCKS:
             singleproxy["type"] = "socks5";
