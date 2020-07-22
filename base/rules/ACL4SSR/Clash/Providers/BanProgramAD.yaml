@@ -100,7 +100,6 @@ payload:
   - DOMAIN-SUFFIX,amdc.alipay.com
   - DOMAIN-SUFFIX,atanx.alicdn.com
   - DOMAIN-SUFFIX,atanx2.alicdn.com
-  - DOMAIN-SUFFIX,click.mz.simba.taobao.com
   - DOMAIN-SUFFIX,fav.simba.taobao.com
   - DOMAIN-SUFFIX,g.click.taobao.com
   - DOMAIN-SUFFIX,g.tbcdn.cn
@@ -251,8 +250,6 @@ payload:
   - DOMAIN-SUFFIX,eiv.baidu.cn
   - DOMAIN-SUFFIX,eiv.baidu.com
   - DOMAIN-SUFFIX,em.baidu.com
-  - DOMAIN-SUFFIX,entry.baidu.cn
-  - DOMAIN-SUFFIX,entry.baidu.com
   - DOMAIN-SUFFIX,ers.baidu.com
   - DOMAIN-SUFFIX,f10.baidu.com
   - DOMAIN-SUFFIX,fc-.cdn.bcebos.com
@@ -567,8 +564,12 @@ payload:
   - DOMAIN-SUFFIX,a.market.xiaomi.com
   - DOMAIN-SUFFIX,ad.xiaomi.com
   - DOMAIN-SUFFIX,ad1.xiaomi.com
+  - DOMAIN-SUFFIX,adv.sec.intl.miui.com
+  - DOMAIN-SUFFIX,adv.sec.miui.com
   - DOMAIN-SUFFIX,bss.pandora.xiaomi.com
+  - DOMAIN-SUFFIX,cdn.cnbj1.fds.api.mi-img.com
   - DOMAIN-SUFFIX,d.g.mi.com
+  - DOMAIN-SUFFIX,data.mistat.xiaomi.com
   - DOMAIN-SUFFIX,de.pandora.xiaomi.com
   - DOMAIN-SUFFIX,dvb.pandora.xiaomi.com
   - DOMAIN-SUFFIX,jellyfish.pandora.xiaomi.com
@@ -606,12 +607,24 @@ payload:
 
   # QQ
   - DOMAIN-KEYWORD,omgmtaw
+  - DOMAIN,adsmind.apdcdn.tc.qq.com
+  - DOMAIN,adsmind.gdtimg.com
+  - DOMAIN,adsmind.tc.qq.com
+  - DOMAIN,pgdt.gtimg.cn
+  - DOMAIN,pgdt.gtimg.com
+  - DOMAIN,pgdt.ugdtimg.com
+  - DOMAIN,splashqqlive.gtimg.com
+  - DOMAIN,wa.gtimg.com
+  - DOMAIN,wxsnsdy.wxs.qq.com
+  - DOMAIN,wxsnsdythumb.wxs.qq.com
   - DOMAIN-SUFFIX,act.qq.com
   - DOMAIN-SUFFIX,ad.qun.qq.com
   - DOMAIN-SUFFIX,adsfile.qq.com
   - DOMAIN-SUFFIX,bugly.qq.com
   - DOMAIN-SUFFIX,buluo.qq.com
+  - DOMAIN-SUFFIX,e.qq.com
   - DOMAIN-SUFFIX,gdt.qq.com
+  - DOMAIN-SUFFIX,l.qq.com
   - DOMAIN-SUFFIX,monitor.qq.com
   - DOMAIN-SUFFIX,pingma.qq.com
   - DOMAIN-SUFFIX,pingtcss.qq.com
@@ -791,7 +804,6 @@ payload:
   - DOMAIN-SUFFIX,geo.yahoo.com
   - DOMAIN-SUFFIX,js-apac-ss.ysm.yahoo.com
   - DOMAIN-SUFFIX,locdrop.query.yahoo.com
-  - DOMAIN-SUFFIX,m.yap.yahoo.com
   - DOMAIN-SUFFIX,onepush.query.yahoo.com
   - DOMAIN-SUFFIX,p3p.yahoo.com
   - DOMAIN-SUFFIX,partnerads.ysm.yahoo.com
@@ -936,8 +948,6 @@ payload:
   - DOMAIN-SUFFIX,stat.pptv.com
 
   # QQ Live
-  - DOMAIN-SUFFIX,aiseet.aa.atianqi.com
-  - DOMAIN-SUFFIX,aiseet.atianqi.com
   - DOMAIN-SUFFIX,btrace.video.qq.com
   - DOMAIN-SUFFIX,c.l.qq.com
   - DOMAIN-SUFFIX,dp3.qq.com
@@ -1044,7 +1054,6 @@ payload:
   - DOMAIN-SUFFIX,match.rtbidder.net
   - DOMAIN-SUFFIX,n-st.vip.com
   - DOMAIN-SUFFIX,pop.uusee.com
-  - DOMAIN-SUFFIX,static.bshare.cn
   - DOMAIN-SUFFIX,static.duoshuo.com
   - DOMAIN-SUFFIX,t.cr-nielsen.com
   - DOMAIN-SUFFIX,terren.cntv.cn

@@ -1,7 +1,7 @@
 payload:
   # 内容：国外媒体列表
-  # 更新：2020-07-06 21:10:50
-  # 数量：276条
+  # 更新：2020-07-15 20:27:26
+  # 数量：277条
 
   # ABC
   - DOMAIN-SUFFIX,edgedatg.com
@@ -353,6 +353,7 @@ payload:
   - DOMAIN-KEYWORD,youtube
   - DOMAIN,youtubei.googleapis.com
   - DOMAIN,yt3.ggpht.com
+  - DOMAIN-SUFFIX,app-measurement.com
   - DOMAIN-SUFFIX,googlevideo.com
   - DOMAIN-SUFFIX,gvt2.com
   - DOMAIN-SUFFIX,youtu.be

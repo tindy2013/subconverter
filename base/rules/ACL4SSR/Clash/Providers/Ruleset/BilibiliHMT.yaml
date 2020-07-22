@@ -1,0 +1,11 @@
+payload:
+  # 内容：BilibiliHMT 哔哩哔哩 港澳台番剧
+  # 数量：8条
+  - DOMAIN,upos-hz-mirrorakam.akamaized.net
+  - DOMAIN-SUFFIX,acgvideo.com
+  - DOMAIN-SUFFIX,bilibili.com
+  - IP-CIDR,119.29.29.29/32
+  - IP-CIDR,150.116.92.250/32
+  - IP-CIDR,203.107.1.34/32
+  - IP-CIDR,203.107.1.65/32
+  - IP-CIDR,203.107.1.66/32
