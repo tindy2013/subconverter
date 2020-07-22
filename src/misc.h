@@ -155,7 +155,7 @@ class tribool
 {
 private:
 
-    int _M_VALUE = -1;
+    char _M_VALUE = 0;
 
 public:
 
@@ -179,14 +179,15 @@ public:
         return *this;
     }
 
-    operator bool() const { return _M_VALUE == 1; }
+    operator bool() const { return _M_VALUE == 3; }
 
-    bool is_undef() { return _M_VALUE == -1; }
+    bool is_undef() { return _M_VALUE <= 1; }
 
-    template <typename T> void define(const T &value)
+    template <typename T> tribool define(const T &value)
     {
-        if(_M_VALUE == -1)
+        if(_M_VALUE <= 1)
             *this = value;
+        return *this;
     }
 
     template <typename T> tribool read(const T &value)
@@ -197,13 +198,14 @@ public:
 
     tribool reverse()
     {
-        _M_VALUE = _M_VALUE == -1 ? -1 : (_M_VALUE == 0 ? 1 : 0);
+        if(_M_VALUE > 1)
+            _M_VALUE = _M_VALUE > 2 ? 2 : 3;
         return *this;
     }
 
     bool get(const bool &def_value = false)
     {
-        if(_M_VALUE == -1)
+        if(_M_VALUE <= 1)
             return def_value;
         return _M_VALUE;
     }
@@ -212,9 +214,9 @@ public:
     {
         switch(_M_VALUE)
         {
-        case 0:
+        case 2:
             return "false";
-        case 1:
+        case 3:
             return "true";
         }
         return "undef";
@@ -222,8 +224,8 @@ public:
 
     template <typename T> bool set(const T &value)
     {
-        _M_VALUE = value;
-        return _M_VALUE;
+        _M_VALUE = (bool)value + 2;
+        return _M_VALUE > 2;
     }
 
     bool set(const std::string &str)
@@ -232,23 +234,23 @@ public:
         {
         case "true"_hash:
         case "1"_hash:
-            _M_VALUE = 1;
+            _M_VALUE = 3;
             break;
         case "false"_hash:
         case "0"_hash:
-            _M_VALUE = 0;
+            _M_VALUE = 2;
             break;
         default:
             if(to_int(str, 0) > 1)
-                _M_VALUE = 1;
+                _M_VALUE = 3;
             else
-                _M_VALUE = -1;
+                _M_VALUE = 0;
             break;
         }
         return _M_VALUE;
     }
 
-    void clear() { _M_VALUE = -1; }
+    void clear() { _M_VALUE = 0; }
 };
 
 #ifndef HAVE_TO_STRING

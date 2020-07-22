@@ -868,6 +868,8 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
                 if(surge_ver > 2 && remote_path_prefix.size())
                 {
                     strLine = "RULE-SET," + remote_path_prefix + "/getruleset?type=1&url=" + urlsafe_base64_encode(rule_path_typed) + "," + rule_group;
+                    if(x.update_interval)
+                        strLine += ",update-interval=" + std::to_string(x.update_interval);
                     allRules.emplace_back(std::move(strLine));
                     continue;
                 }
@@ -898,6 +900,9 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
                     }
                     else
                         strLine = "RULE-SET," + rule_path + "," + rule_group;
+
+                    if(x.update_interval)
+                        strLine += ",update-interval=" + std::to_string(x.update_interval);
 
                     allRules.emplace_back(std::move(strLine));
                     continue;

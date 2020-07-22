@@ -1240,7 +1240,7 @@ int loadExternalConfig(std::string &path, ExternalConfig &ext)
     try
     {
         YAML::Node yaml = YAML::Load(base_content);
-        if(yaml.size() && yaml["custom"])
+        if(yaml.size() && yaml["custom"].IsDefined())
             return loadExternalYAML(yaml, ext);
     }
     catch (YAML::Exception &e)
