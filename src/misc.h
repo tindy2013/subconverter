@@ -207,7 +207,7 @@ public:
     {
         if(_M_VALUE <= 1)
             return def_value;
-        return _M_VALUE;
+        return _M_VALUE == 3;
     }
 
     std::string get_str()
