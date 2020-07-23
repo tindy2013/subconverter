@@ -2386,7 +2386,7 @@ void netchToQuanX(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rule
         if(!tfo.is_undef())
             proxyStr += ", fast-open=" + tfo.get_str();
         if(!udp.is_undef())
-            proxyStr += ", udp-relay=" + tfo.get_str();
+            proxyStr += ", udp-relay=" + udp.get_str();
         if(!scv.is_undef() && (x.linkType == SPEEDTEST_MESSAGE_FOUNDHTTP || x.linkType == SPEEDTEST_MESSAGE_FOUNDTROJAN))
             proxyStr += ", tls-verification=" + scv.reverse().get_str();
         proxyStr += ", tag=" + remark;
