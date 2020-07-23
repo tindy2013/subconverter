@@ -6,6 +6,9 @@ For running this docker, simply use the following commands:
 ```bash
 # run the container detached, forward internal port 25500 to host port 25500
 docker run -d --restart=always -p 25500:25500 tindy2013/subconverter:latest
+# if you are deploying this project to a production environment, you may choose to 
+# use the latest released version. <version> can be found in Github release page
+docker run -d --restart=always -p 25500:25500 tindy2013/subconverter:<version>
 # then check its status
 curl http://localhost:25500
 # if you see `subconverter vx.x.x backend` then the container is up and running
