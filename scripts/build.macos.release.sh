@@ -3,13 +3,13 @@ set -xe
 
 brew reinstall rapidjson libevent zlib pcre2 pkgconfig
 
-git clone https://github.com/curl/curl --depth=1
-cd curl
+#git clone https://github.com/curl/curl --depth=1
+#cd curl
 #./buildconf > /dev/null
 #./configure --with-ssl=/usr/local/opt/openssl@1.1 --without-mbedtls --disable-ldap --disable-ldaps --disable-rtsp --without-libidn2 > /dev/null
-cmake -DCMAKE_USE_SECTRANSP=ON -DHTTP_ONLY=ON -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_USE_LIBSSH2=OFF . > /dev/null
-make -j8 > /dev/null
-cd ..
+#cmake -DCMAKE_USE_SECTRANSP=ON -DHTTP_ONLY=ON -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_USE_LIBSSH2=OFF . > /dev/null
+#make -j8 > /dev/null
+#cd ..
 
 git clone https://github.com/jbeder/yaml-cpp --depth=1
 cd yaml-cpp
@@ -39,7 +39,7 @@ cp /usr/local/lib/libpcre2-8.a .
 cmake -DCMAKE_BUILD_TYPE=Release .
 make -j8
 rm subconverter
-c++ -Xlinker -unexported_symbol -Xlinker "*" -o base/subconverter -framework CoreFoundation -framework Security $(find CMakeFiles/subconverter.dir/src/ -name "*.o") $(find . -name "*.a") -O3
+c++ -Xlinker -unexported_symbol -Xlinker "*" -o base/subconverter -framework CoreFoundation -framework Security $(find CMakeFiles/subconverter.dir/src/ -name "*.o") $(find . -name "*.a") -lcurl -O3
 
 cd base
 chmod +rx subconverter
