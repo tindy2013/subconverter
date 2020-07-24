@@ -134,18 +134,17 @@ const std::vector<UAProfile> UAMatchList = {
 
 bool verGreaterEqual(const std::string &src_ver, const std::string &target_ver)
 {
-    int part_src, part_target;
-    string_size src_pos_beg = 0, src_pos_end = 0, target_pos_beg = 0, target_pos_end = 0;
+    string_size src_pos_beg = 0, src_pos_end, target_pos_beg = 0, target_pos_end;
     while(true)
     {
         src_pos_end = src_ver.find('.', src_pos_beg);
         if(src_pos_end == src_ver.npos)
             src_pos_end = src_ver.size();
-        part_src = std::stoi(src_ver.substr(src_pos_beg, src_pos_end - src_pos_beg));
+        int part_src = std::stoi(src_ver.substr(src_pos_beg, src_pos_end - src_pos_beg));
         target_pos_end = target_ver.find('.', target_pos_beg);
         if(target_pos_end == target_ver.npos)
             target_pos_end = target_ver.size();
-        part_target = std::stoi(target_ver.substr(target_pos_beg, target_pos_end - target_pos_beg));
+        int part_target = std::stoi(target_ver.substr(target_pos_beg, target_pos_end - target_pos_beg));
         if(part_src > part_target)
             break;
         else if(part_src < part_target)

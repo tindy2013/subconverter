@@ -36,7 +36,7 @@ std::string getTime(int type)
     return std::string(tmpbuf);
 }
 
-void writeLog(int type, std::string content, int level)
+void writeLog(int type, const std::string &content, int level)
 {
     if(level > global_log_level)
         return;

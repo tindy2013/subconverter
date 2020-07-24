@@ -1868,7 +1868,6 @@ std::string netchToSSSub(std::string &base_conf, std::vector<nodeInfo> &nodes, c
     std::string plugin, pluginopts;
     std::string protocol, obfs;
     std::string output_content;
-    int port;
 
     rapidjson::Document::AllocatorType &alloc = json.GetAllocator();
     json.SetObject();
@@ -1897,7 +1896,7 @@ std::string netchToSSSub(std::string &base_conf, std::vector<nodeInfo> &nodes, c
 
         remark = x.remarks;
         hostname = x.server;
-        port = (unsigned short)stoi(GetMember(json, "Port"));
+        int port = (unsigned short)stoi(GetMember(json, "Port"));
         password = GetMember(json, "Password");
         method = GetMember(json, "EncryptMethod");
         plugin = GetMember(json, "Plugin");

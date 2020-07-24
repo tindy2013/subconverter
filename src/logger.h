@@ -36,7 +36,7 @@ int makeDir(const char *path);
 std::string getTime(int type);
 void logInit(bool rpcmode);
 void resultInit();
-void writeLog(int type, std::string content, int level = LOG_LEVEL_VERBOSE);
+void writeLog(int type, const std::string &content, int level = LOG_LEVEL_VERBOSE);
 void logEOF();
 
 /*

@@ -128,7 +128,7 @@ public:
     /**
     *  @brief Parse a file during initialization.
     */
-    INIReader(const std::string &filePath)
+    explicit INIReader(const std::string &filePath)
     {
         parsed = false;
         ParseFile(filePath);

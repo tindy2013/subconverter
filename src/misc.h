@@ -163,7 +163,7 @@ public:
 
     template <typename T> tribool(const T &value) { set(value); }
 
-    tribool(const tribool &value) { *this = value; }
+    explicit tribool(const tribool &value) { *this = value; }
 
     ~tribool() = default;
 

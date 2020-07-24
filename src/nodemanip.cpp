@@ -19,7 +19,7 @@ void copyNodes(std::vector<nodeInfo> &source, std::vector<nodeInfo> &dest)
     std::move(source.begin(), source.end(), std::back_inserter(dest));
 }
 
-int addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID, std::string proxy, string_array &exclude_remarks, string_array &include_remarks, string_array &stream_rules, string_array &time_rules, std::string &subInfo, bool authorized, string_map &request_headers)
+int addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID, const std::string &proxy, string_array &exclude_remarks, string_array &include_remarks, string_array &stream_rules, string_array &time_rules, std::string &subInfo, bool authorized, string_map &request_headers)
 {
     int linkType = -1;
     std::vector<nodeInfo> nodes;

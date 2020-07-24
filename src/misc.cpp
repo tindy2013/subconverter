@@ -134,7 +134,7 @@ unsigned char ToHex(unsigned char x)
 
 unsigned char FromHex(unsigned char x)
 {
-    unsigned char y = '\0';
+    unsigned char y;
     if (x >= 'A' && x <= 'Z')
         y = x - 'A' + 10;
     else if (x >= 'a' && x <= 'z')
@@ -208,8 +208,7 @@ std::string base64_encode(const std::string &string_to_encode)
     unsigned int in_len = string_to_encode.size();
 
     std::string ret;
-    int i = 0;
-    int j = 0;
+    int i = 0, j;
     unsigned char char_array_3[3];
     unsigned char char_array_4[4];
 
@@ -256,7 +255,7 @@ std::string base64_decode(const std::string &encoded_string, bool accept_urlsafe
     string_size in_len = encoded_string.size();
     string_size i = 0;
     string_size in_ = 0;
-    unsigned char char_array_4[4], char_array_3[3], uchar = 0;
+    unsigned char char_array_4[4], char_array_3[3], uchar;
     static unsigned char dtable[256], itable[256], table_ready = 0;
     std::string ret;
 
@@ -1157,7 +1156,7 @@ std::string getFormData(const std::string &raw_data)
 std::string UTF8ToCodePoint(const std::string &data)
 {
     std::stringstream ss;
-    int charcode = 0;
+    int charcode;
     for(std::string::size_type i = 0; i < data.size(); i++)
     {
         charcode = data[i] & 0xff;
