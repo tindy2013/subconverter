@@ -1,8 +1,8 @@
 # 广告列表 adblock rules
 # 内容：EasyPrivacy列表，隐私保护，屏蔽隐私追踪
 # 来源：https://easylist-downloads.adblockplus.org/easyprivacy.txt
-# 更新：2020-07-20 21:31:24
-# 数量：2531条
+# 更新：2020-07-26 11:38:50
+# 数量：2540条
 
 DOMAIN-SUFFIX,0sbm.consobaby.co.uk
 DOMAIN-SUFFIX,0x1f4b0.com
@@ -51,6 +51,7 @@ DOMAIN-SUFFIX,adv-sv-stat.focus.cn
 DOMAIN-SUFFIX,adv.drtuber.com
 DOMAIN-SUFFIX,advancedtracker.appspot.com
 DOMAIN-SUFFIX,aevents.izooto.com
+DOMAIN-SUFFIX,affilate.hh.ru
 DOMAIN-SUFFIX,affiliate.iamplify.com
 DOMAIN-SUFFIX,affiliate.resellerclub.com
 DOMAIN-SUFFIX,affiliates.genealogybank.com
@@ -226,6 +227,7 @@ DOMAIN-SUFFIX,analytics.tout.com
 DOMAIN-SUFFIX,analytics.tradedoubler.com
 DOMAIN-SUFFIX,analytics.traderlink.com
 DOMAIN-SUFFIX,analytics.tribeca.vidavee.com
+DOMAIN-SUFFIX,analytics.twentytwowords.com
 DOMAIN-SUFFIX,analytics.unibuddy.co
 DOMAIN-SUFFIX,analytics.upworthy.com
 DOMAIN-SUFFIX,analytics.urx.io
@@ -279,6 +281,7 @@ DOMAIN-SUFFIX,athenatmpbeacon.theglobeandmail.ca
 DOMAIN-SUFFIX,atlas.astrology.com
 DOMAIN-SUFFIX,atrack.allposters.com
 DOMAIN-SUFFIX,atrack.art.com
+DOMAIN-SUFFIX,ats.alot.com
 DOMAIN-SUFFIX,attributiontrackingga.googlecode.com
 DOMAIN-SUFFIX,audience-mostread.r7.com
 DOMAIN-SUFFIX,audience.acpm.fr
@@ -375,6 +378,7 @@ DOMAIN-SUFFIX,bournemouthecho-gb.bournemouthecho.co.uk
 DOMAIN-SUFFIX,brain.foresee.com
 DOMAIN-SUFFIX,bravo.israelweather.co.il
 DOMAIN-SUFFIX,bright.bncnt.com
+DOMAIN-SUFFIX,browser-updater.yandex.net
 DOMAIN-SUFFIX,bt.mediaimpact.de
 DOMAIN-SUFFIX,btn.clickability.com
 DOMAIN-SUFFIX,btrace.qq.com
@@ -386,6 +390,7 @@ DOMAIN-SUFFIX,bulb.76.my
 DOMAIN-SUFFIX,bzclk.baidu.com
 DOMAIN-SUFFIX,c.bigmir.net
 DOMAIN-SUFFIX,c.gazetevatan.com
+DOMAIN-SUFFIX,c.holmesmind.com
 DOMAIN-SUFFIX,c.imedia.cz
 DOMAIN-SUFFIX,c.ipaddress.com
 DOMAIN-SUFFIX,c.live.com
@@ -431,6 +436,7 @@ DOMAIN-SUFFIX,chanalytics.merchantadvantage.com
 DOMAIN-SUFFIX,chartaca.com.s3.amazonaws.com
 DOMAIN-SUFFIX,chkpt.zdnet.com
 DOMAIN-SUFFIX,cl.expedia.com
+DOMAIN-SUFFIX,clancy.spiceworks.com
 DOMAIN-SUFFIX,clarium.global.ssl.fastly.net
 DOMAIN-SUFFIX,clck.yandex.com
 DOMAIN-SUFFIX,click.ali213.net
@@ -1844,6 +1850,7 @@ DOMAIN-SUFFIX,stats.digg.com
 DOMAIN-SUFFIX,stats.digital-natives.de
 DOMAIN-SUFFIX,stats.dnaindia.com
 DOMAIN-SUFFIX,stats.edicy.com
+DOMAIN-SUFFIX,stats.embedcdn.cc
 DOMAIN-SUFFIX,stats.extremetech.com
 DOMAIN-SUFFIX,stats.fd.nl
 DOMAIN-SUFFIX,stats.fittkaumaass.de
@@ -1909,6 +1916,7 @@ DOMAIN-SUFFIX,stats.ulixes.pl
 DOMAIN-SUFFIX,stats.united-domains.de
 DOMAIN-SUFFIX,stats.urban-media.com
 DOMAIN-SUFFIX,stats.uswitch.com
+DOMAIN-SUFFIX,stats.varrando.com
 DOMAIN-SUFFIX,stats.viddler.com
 DOMAIN-SUFFIX,stats.videodelivery.net
 DOMAIN-SUFFIX,stats.visistat.com
@@ -2002,6 +2010,7 @@ DOMAIN-SUFFIX,t.raptorsmartadvisor.com
 DOMAIN-SUFFIX,t.regionsjob.com
 DOMAIN-SUFFIX,t.sgc.io
 DOMAIN-SUFFIX,t.sharethis.com
+DOMAIN-SUFFIX,t.signalayer.com
 DOMAIN-SUFFIX,t.smile.eu
 DOMAIN-SUFFIX,t.wayfair.ca
 DOMAIN-SUFFIX,t.wayfair.co.uk
@@ -2156,7 +2165,6 @@ DOMAIN-SUFFIX,track.omg2.com
 DOMAIN-SUFFIX,track.omgpl.com
 DOMAIN-SUFFIX,track.pnicnik.live
 DOMAIN-SUFFIX,track.pricespider.com
-DOMAIN-SUFFIX,track.pushbullet.com
 DOMAIN-SUFFIX,track.qcri.org
 DOMAIN-SUFFIX,track.qoof.com
 DOMAIN-SUFFIX,track.ra.icast.cn
@@ -2251,6 +2259,7 @@ DOMAIN-SUFFIX,tracking.3ds.com
 DOMAIN-SUFFIX,tracking.adalyser.com
 DOMAIN-SUFFIX,tracking.aegpresents.com
 DOMAIN-SUFFIX,tracking.aita.gov.vn
+DOMAIN-SUFFIX,tracking.alarabiya.net
 DOMAIN-SUFFIX,tracking.ancestry.com
 DOMAIN-SUFFIX,tracking.base.de
 DOMAIN-SUFFIX,tracking.batanga.com
