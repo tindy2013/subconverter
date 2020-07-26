@@ -5,7 +5,7 @@
 #include <sstream>
 #include <map>
 #include <vector>
-#include <algorithm>
+#include <numeric>
 
 #include "misc.h"
 
@@ -800,7 +800,7 @@ public:
     template <typename T> int SetArray(const std::string &section, std::string itemName, const std::string &separator, T &Array)
     {
         std::string data;
-        std::transform(std::begin(Array), std::end(Array), std::back_inserter(data), [&](auto x) { return std::to_string(x) + separator; });
+        data = std::accumulate(std::begin(Array), std::end(Array), std::string(), [&](auto a, auto b) { return std::move(a) + std::to_string(b) + separator; });
         data.erase(data.size() - 1);
         return Set(section, std::move(itemName), data);
     }

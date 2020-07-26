@@ -175,6 +175,7 @@ void explodeVmessConf(std::string content, const std::string &custom_port, bool 
                 node.port = to_int(port, 1);
                 node.proxyStr = vmessConstruct(node.group, node.remarks, add, port, type, id, aid, net, cipher, path, host, edge, tls, udp, tfo, scv);
                 nodes.emplace_back(std::move(node));
+                node = nodeInfo();
             }
             return;
         }
@@ -250,6 +251,7 @@ void explodeVmessConf(std::string content, const std::string &custom_port, bool 
         node.server = add;
         node.port = to_int(port, 1);
         nodes.emplace_back(std::move(node));
+        node = nodeInfo();
     }
     return;
 }
@@ -381,6 +383,7 @@ void explodeSSD(std::string link, bool libev, const std::string &custom_port, st
         node.proxyStr = ssConstruct(group, remarks, server, port, password, method, plugin, pluginopts, libev);
         node.id = index;
         nodes.emplace_back(std::move(node));
+        node = nodeInfo();
         index++;
     }
     return;
@@ -424,6 +427,7 @@ void explodeSSAndroid(std::string ss, bool libev, const std::string &custom_port
         node.port = to_int(port, 1);
         node.proxyStr = ssConstruct(group, ps, server, port, password, method, plugin, pluginopts, libev);
         nodes.emplace_back(std::move(node));
+        node = nodeInfo();
         index++;
     }
 }
@@ -466,6 +470,7 @@ void explodeSSConf(std::string content, const std::string &custom_port, bool lib
         node.port = to_int(port, 1);
         node.proxyStr = ssConstruct(group, ps, server, port, password, method, plugin, pluginopts, libev);
         nodes.emplace_back(std::move(node));
+        node = nodeInfo();
         index++;
     }
     return;
@@ -558,6 +563,7 @@ void explodeSSRConf(std::string content, const std::string &custom_port, bool ss
             node.proxyStr = ssrConstruct(node.group, node.remarks, base64_encode(node.remarks), server, port, protocol, method, obfs, password, obfsparam, protoparam, ssr_libev);
         }
         nodes.emplace_back(std::move(node));
+        node = nodeInfo();
         return;
     }
 
@@ -591,6 +597,7 @@ void explodeSSRConf(std::string content, const std::string &custom_port, bool ss
         node.port = to_int(port, 1);
         node.proxyStr = ssrConstruct(group, remarks, remarks_base64, server, port, protocol, method, obfs, password, obfsparam, protoparam, ssr_libev);
         nodes.emplace_back(std::move(node));
+        node = nodeInfo();
         index++;
     }
     return;
@@ -1111,6 +1118,7 @@ void explodeClash(Node yamlnode, const std::string &custom_port, std::vector<nod
         node.port = to_int(port, 1);
         node.id = index;
         nodes.emplace_back(std::move(node));
+        node = nodeInfo();
         index++;
     }
     return;
@@ -1742,6 +1750,7 @@ bool explodeSurge(std::string surge, const std::string &custom_port, std::vector
         node.port = to_int(port);
         node.id = index;
         nodes.emplace_back(std::move(node));
+        node = nodeInfo();
         index++;
     }
     return index;
@@ -1808,6 +1817,7 @@ void explodeSSTap(std::string sstap, const std::string &custom_port, std::vector
         node.server = server;
         node.port = to_int(port, 1);
         nodes.emplace_back(std::move(node));
+        node = nodeInfo();
     }
 }
 
@@ -1830,6 +1840,7 @@ void explodeNetchConf(std::string netch, bool ss_libev, bool ssr_libev, const st
 
         node.id = index;
         nodes.emplace_back(std::move(node));
+        node = nodeInfo();
         index++;
     }
 }
@@ -2004,6 +2015,7 @@ void explodeSub(std::string sub, bool sslibev, bool ssrlibev, const std::string 
                 continue;
             }
             nodes.emplace_back(std::move(node));
+            node = nodeInfo();
         }
     }
 }
