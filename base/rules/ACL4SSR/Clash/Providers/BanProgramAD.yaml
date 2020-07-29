@@ -567,7 +567,6 @@ payload:
   - DOMAIN-SUFFIX,adv.sec.intl.miui.com
   - DOMAIN-SUFFIX,adv.sec.miui.com
   - DOMAIN-SUFFIX,bss.pandora.xiaomi.com
-  - DOMAIN-SUFFIX,cdn.cnbj1.fds.api.mi-img.com
   - DOMAIN-SUFFIX,d.g.mi.com
   - DOMAIN-SUFFIX,data.mistat.xiaomi.com
   - DOMAIN-SUFFIX,de.pandora.xiaomi.com

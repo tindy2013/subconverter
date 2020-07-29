@@ -5711,6 +5711,7 @@ payload:
   # Steam
   - DOMAIN-SUFFIX,fanatical.com
   - DOMAIN-SUFFIX,humblebundle.com
+  - DOMAIN-SUFFIX,steam-chat.com
   - DOMAIN-SUFFIX,steamcommunity.com
   - DOMAIN-SUFFIX,steampowered.com
   - DOMAIN-SUFFIX,steamstatic.com

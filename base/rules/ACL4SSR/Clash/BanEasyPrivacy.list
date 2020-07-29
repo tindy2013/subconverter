@@ -1,8 +1,8 @@
 # 广告列表 adblock rules
 # 内容：EasyPrivacy列表，隐私保护，屏蔽隐私追踪
 # 来源：https://easylist-downloads.adblockplus.org/easyprivacy.txt
-# 更新：2020-07-26 11:38:50
-# 数量：2540条
+# 更新：2020-07-28 21:35:47
+# 数量：2543条
 
 DOMAIN-SUFFIX,0sbm.consobaby.co.uk
 DOMAIN-SUFFIX,0x1f4b0.com
@@ -21,6 +21,7 @@ DOMAIN-SUFFIX,a.20minutes.fr
 DOMAIN-SUFFIX,a.mobify.com
 DOMAIN-SUFFIX,a.o2u.jp
 DOMAIN-SUFFIX,a.tovarro.com
+DOMAIN-SUFFIX,a2-eng.spankbang.com
 DOMAIN-SUFFIX,a8ht.hipp.fr
 DOMAIN-SUFFIX,aa.avvo.com
 DOMAIN-SUFFIX,aax-eu-dub.amazon.com
@@ -655,6 +656,7 @@ DOMAIN-SUFFIX,data.glamour.ru
 DOMAIN-SUFFIX,data.mic.com
 DOMAIN-SUFFIX,data.minute.ly
 DOMAIN-SUFFIX,data.queryly.com
+DOMAIN-SUFFIX,data.reactandshare.com
 DOMAIN-SUFFIX,data.studybreakmedia.com
 DOMAIN-SUFFIX,data.younow.com
 DOMAIN-SUFFIX,datadog-service.mvfglobal.com
@@ -862,9 +864,9 @@ DOMAIN-SUFFIX,experience.contextly.com
 DOMAIN-SUFFIX,f.staticlp.com
 DOMAIN-SUFFIX,f1tbit.com
 DOMAIN-SUFFIX,f7ds.liberation.fr
-DOMAIN-SUFFIX,fast.appcues.com
 DOMAIN-SUFFIX,fast.forbes.com
 DOMAIN-SUFFIX,fathom.pixeldrain.com
+DOMAIN-SUFFIX,fathom.status.im
 DOMAIN-SUFFIX,fc.vodafone.de
 DOMAIN-SUFFIX,feesocrald.com
 DOMAIN-SUFFIX,felitb.rightinthebox.com
@@ -930,7 +932,6 @@ DOMAIN-SUFFIX,geo.play.it
 DOMAIN-SUFFIX,geo.q5media.net
 DOMAIN-SUFFIX,geo.xcel.io
 DOMAIN-SUFFIX,geo.yahoo.com
-DOMAIN-SUFFIX,geoapi.indiatimes.com
 DOMAIN-SUFFIX,geobar.ziffdavisinternational.com
 DOMAIN-SUFFIX,geobeacon.ign.com
 DOMAIN-SUFFIX,geoip-lookup.vice.com
@@ -1072,6 +1073,7 @@ DOMAIN-SUFFIX,l.ooyala.com
 DOMAIN-SUFFIX,l.player.ooyala.com
 DOMAIN-SUFFIX,l.popin.cc
 DOMAIN-SUFFIX,l.sharethis.com
+DOMAIN-SUFFIX,la-sync.taboola.com
 DOMAIN-SUFFIX,laas.americanexpress.com
 DOMAIN-SUFFIX,laurel.macrovision.com
 DOMAIN-SUFFIX,laurel.rovicorp.com
@@ -1343,6 +1345,7 @@ DOMAIN-SUFFIX,p.pagesjaunes.fr
 DOMAIN-SUFFIX,p.tencentmind.com
 DOMAIN-SUFFIX,p.travelsmarter.net
 DOMAIN-SUFFIX,p.yotpo.com
+DOMAIN-SUFFIX,p2-eng.spankbang.com
 DOMAIN-SUFFIX,page-events-ustats.udemy.com
 DOMAIN-SUFFIX,pageinfo.motorsport.com
 DOMAIN-SUFFIX,pages-stats.rbl.ms

@@ -1,4 +1,4 @@
-# Update > 2020.6.29 Go advertising rule Integration lhie1 and ConnersHua
+# Update > 2020.7.27 Go advertising rule Integration lhie1 and ConnersHua
 DOMAIN-SUFFIX,mcupdate.gstarcad.com
 DOMAIN-SUFFIX,adx.open-adx.com
 DOMAIN-SUFFIX,adservice.sigmob.cn
@@ -5830,7 +5830,6 @@ DOMAIN-SUFFIX,promos.fling.com
 DOMAIN-SUFFIX,promote.biz.weibo.cn
 DOMAIN-SUFFIX,promote.caixin.com
 DOMAIN-SUFFIX,promote.pair.com
-DOMAIN-SUFFIX,promotion.aliyun.com
 DOMAIN-SUFFIX,promotion.gomlab.com
 DOMAIN-SUFFIX,promotions.iasbet.com
 DOMAIN-SUFFIX,propellerads.com
