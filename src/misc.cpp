@@ -198,7 +198,7 @@ std::string UrlDecode(const std::string& str)
 /*
 static inline bool is_base64(unsigned char c)
 {
-    return (isalnum(c) || (c == '+') || (c == '/'));
+    return (isalnum(c) || (c == '+') || (c == '/') || (c == '-') || (c == '_'));
 }
 */
 
@@ -280,7 +280,12 @@ std::string base64_decode(const std::string &encoded_string, bool accept_urlsafe
     {
         uchar = encoded_string[in_]; // make compiler happy
         if (!(accept_urlsafe ? itable[uchar] : (itable[uchar] == 1))) // break away from the while condition
+        {
+            ret += uchar; // not base64 encoded data, copy to result
+            in_++;
+            i = 0;
             continue;
+        }
         char_array_4[i++] = uchar;
         in_++;
         if (i == 4)
@@ -696,10 +701,10 @@ bool regFind(const std::string &src, const std::string &match)
     return reg.match(src, "g");
 }
 
-std::string regReplace(const std::string &src, const std::string &match, const std::string &rep, bool global)
+std::string regReplace(const std::string &src, const std::string &match, const std::string &rep, bool global, bool multiline)
 {
     jp::Regex reg;
-    reg.setPattern(match).addModifier("m").addPcre2Option(PCRE2_UTF|PCRE2_MULTILINE|PCRE2_ALT_BSUX).compile();
+    reg.setPattern(match).addModifier(multiline ? "m" : "").addPcre2Option(PCRE2_UTF|PCRE2_MULTILINE|PCRE2_ALT_BSUX).compile();
     if(!reg)
         return src;
     return reg.replace(src, rep, global ? "gx" : "x");
@@ -747,7 +752,7 @@ int regGetMatch(const std::string &src, const std::string &match, size_t group_c
 
 std::string regTrim(const std::string &src)
 {
-    return regReplace(src, "^\\s*?([\\s\\S]*)\\s*$", "$1", false);
+    return regReplace(src, "^\\s*([\\s\\S]*)\\s*$", "$1", false, false);
 }
 
 std::string speedCalc(double speed)

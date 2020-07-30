@@ -719,7 +719,7 @@ void explodeHTTPSub(std::string link, const std::string &custom_port, nodeInfo &
 
 void explodeTrojan(std::string trojan, const std::string &custom_port, nodeInfo &node)
 {
-    std::string server, port, psk, addition, remark, host;
+    std::string server, port, psk, addition, group, remark, host;
     tribool tfo, scv;
     trojan.erase(0, 9);
     string_size pos = trojan.rfind("#");
@@ -746,18 +746,21 @@ void explodeTrojan(std::string trojan, const std::string &custom_port, nodeInfo 
     host = getUrlArg(addition, "peer");
     tfo = getUrlArg(addition, "tfo");
     scv = getUrlArg(addition, "allowInsecure");
+    group = UrlDecode(getUrlArg(addition, "group"));
 
     if(remark.empty())
         remark = server + ":" + port;
     if(host.empty() && !isIPv4(server) && !isIPv6(server))
         host = server;
+    if(group.empty())
+        group = TROJAN_DEFAULT_GROUP;
 
     node.linkType = SPEEDTEST_MESSAGE_FOUNDTROJAN;
-    node.group = TROJAN_DEFAULT_GROUP;
+    node.group = group;
     node.remarks = remark;
     node.server = server;
     node.port = to_int(port, 1);
-    node.proxyStr = trojanConstruct(node.group, remark, server, port, psk, host, true, tribool(), tfo, scv);
+    node.proxyStr = trojanConstruct(group, remark, server, port, psk, host, true, tribool(), tfo, scv);
 }
 
 void explodeQuan(const std::string &quan, const std::string &custom_port, nodeInfo &node)
@@ -1140,7 +1143,7 @@ void explodeShadowrocket(std::string rocket, const std::string &custom_port, nod
         port = custom_port;
     if(port == "0")
         return;
-    remarks = UrlDecode(getUrlArg(addition, "remark"));
+    remarks = UrlDecode(getUrlArg(addition, "remarks"));
     obfs = getUrlArg(addition, "obfs");
     if(obfs.size())
     {
@@ -1996,7 +1999,7 @@ void explodeSub(std::string sub, bool sslibev, bool ssrlibev, const std::string 
     //try to parse as normal subscription
     if(!processed)
     {
-        sub = urlsafe_base64_decode(trim(sub));
+        sub = urlsafe_base64_decode(sub);
         if(regFind(sub, "(vmess|shadowsocks|http|trojan)\\s*?="))
         {
             if(explodeSurge(sub, custom_port, nodes, sslibev))

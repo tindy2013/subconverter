@@ -87,10 +87,7 @@ std::string parseProxy(const std::string &source)
     return proxy;
 }
 
-#define basic_types "DOMAIN", "DOMAIN-SUFFIX", "DOMAIN-KEYWORD", "IP-CIDR", "SRC-IP-CIDR", "GEOIP", "MATCH", "FINAL"
-const string_array clash_rule_type = {basic_types, "IP-CIDR6", "SRC-PORT", "DST-PORT"};
-const string_array surge_rule_type = {basic_types, "IP-CIDR6", "USER-AGENT", "URL-REGEX", "AND", "OR", "NOT", "PROCESS-NAME", "IN-PORT", "DEST-PORT", "SRC-IP"};
-const string_array quanx_rule_type = {basic_types, "USER-AGENT", "HOST", "HOST-SUFFIX", "HOST-KEYWORD"};
+extern string_array clash_rule_type, surge_rule_type, quanx_rule_type;
 const std::map<std::string, ruleset_type> ruleset_types = {{"clash-domain:", RULESET_CLASH_DOMAIN}, {"clash-ipcidr:", RULESET_CLASH_IPCIDR}, {"clash-classic:", RULESET_CLASH_CLASSICAL}, \
             {"quanx:", RULESET_QUANX}, {"surge:", RULESET_SURGE}};
 

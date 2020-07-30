@@ -34,11 +34,11 @@ const string_array clash_ssr_ciphers = {"rc4-md5", "aes-128-ctr", "aes-192-ctr",
 
 /// rule type lists
 #define basic_types "DOMAIN", "DOMAIN-SUFFIX", "DOMAIN-KEYWORD", "IP-CIDR", "SRC-IP-CIDR", "GEOIP", "MATCH", "FINAL"
-const string_array clash_rule_type = {basic_types, "IP-CIDR6", "SRC-PORT", "DST-PORT"};
-const string_array surge2_rule_type = {basic_types, "IP-CIDR6", "USER-AGENT", "URL-REGEX", "PROCESS-NAME", "IN-PORT", "DEST-PORT", "SRC-IP"};
-const string_array surge_rule_type = {basic_types, "IP-CIDR6", "USER-AGENT", "URL-REGEX", "AND", "OR", "NOT", "PROCESS-NAME", "IN-PORT", "DEST-PORT", "SRC-IP"};
-const string_array quanx_rule_type = {basic_types, "USER-AGENT", "HOST", "HOST-SUFFIX", "HOST-KEYWORD"};
-const string_array surfb_rule_type = {basic_types, "IP-CIDR6", "PROCESS-NAME", "IN-PORT", "DEST-PORT", "SRC-IP"};
+string_array clash_rule_type = {basic_types, "IP-CIDR6", "SRC-PORT", "DST-PORT"};
+string_array surge2_rule_type = {basic_types, "IP-CIDR6", "USER-AGENT", "URL-REGEX", "PROCESS-NAME", "IN-PORT", "DEST-PORT", "SRC-IP"};
+string_array surge_rule_type = {basic_types, "IP-CIDR6", "USER-AGENT", "URL-REGEX", "AND", "OR", "NOT", "PROCESS-NAME", "IN-PORT", "DEST-PORT", "SRC-IP"};
+string_array quanx_rule_type = {basic_types, "USER-AGENT", "HOST", "HOST-SUFFIX", "HOST-KEYWORD"};
+string_array surfb_rule_type = {basic_types, "IP-CIDR6", "PROCESS-NAME", "IN-PORT", "DEST-PORT", "SRC-IP"};
 
 std::string hostnameToIPAddr(const std::string &host)
 {
