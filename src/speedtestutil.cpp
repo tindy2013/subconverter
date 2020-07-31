@@ -1077,9 +1077,15 @@ void explodeClash(Node yamlnode, const std::string &custom_port, std::vector<nod
             singleproxy["cipher"] >>= cipher;
             singleproxy["password"] >>= password;
             singleproxy["protocol"] >>= protocol;
-            singleproxy["protocolparam"] >>= protoparam;
             singleproxy["obfs"] >>= obfs;
-            singleproxy["obfsparam"] >>= obfsparam;
+            if(singleproxy["protocol-param"].IsDefined())
+                singleproxy["protocol-param"] >>= protoparam;
+            else
+                singleproxy["protocolparam"] >>= protoparam;
+            if(singleproxy["obfs-param"].IsDefined())
+                singleproxy["obfs-param"] >>= obfsparam;
+            else
+                singleproxy["obfsparam"] >>= obfsparam;
 
             node.linkType = SPEEDTEST_MESSAGE_FOUNDSSR;
             node.proxyStr = ssrConstruct(group, ps, base64_encode(ps), server, port, protocol, cipher, obfs, password, obfsparam, protoparam, ssr_libev, udp, tfo, scv);
