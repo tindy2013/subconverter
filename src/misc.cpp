@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <stdarg.h>
 #include <sys/stat.h>
+#include <cstdlib>
 
 /*
 #ifdef USE_STD_REGEX
@@ -1091,6 +1092,7 @@ int to_int(const std::string &str, int def_value)
 {
     if(str.empty())
         return def_value;
+    /*
     int retval = 0;
     char c;
     std::stringstream ss(str);
@@ -1100,6 +1102,8 @@ int to_int(const std::string &str, int def_value)
         return def_value;
     else
         return retval;
+    */
+    return std::atoi(str.data());
 }
 
 std::string getFormData(const std::string &raw_data)
