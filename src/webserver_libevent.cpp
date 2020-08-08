@@ -32,7 +32,7 @@ struct responseRoute
 std::vector<responseRoute> responses;
 string_map redirect_map;
 
-const char *request_header_blacklist[] = {"host", "user-agent", "accept", "accept-encoding"};
+const char *request_header_blacklist[] = {"host", "accept", "accept-encoding"};
 
 static inline void buffer_cleanup(struct evbuffer *eb)
 {
@@ -89,8 +89,8 @@ static inline int process_request(Request &request, Response &response, std::str
 void OnReq(evhttp_request *req, void *args)
 {
     const char *req_content_type = evhttp_find_header(req->input_headers, "Content-Type"), *req_ac_method = evhttp_find_header(req->input_headers, "Access-Control-Request-Method");
-    const char *req_method = req_ac_method == NULL ? EVBUFFER_LENGTH(req->input_buffer) == 0 ? "GET" : "POST" : "OPTIONS", *uri = req->uri;
-    const char *user_agent = evhttp_find_header(req->input_headers, "User-Agent");
+    const char *uri = req->uri, *internal_flag = evhttp_find_header(req->input_headers, "SubConverter-Request");
+
     char *client_ip;
     u_short client_port;
     evhttp_connection_get_peer(evhttp_request_get_connection(req), &client_ip, &client_port);
@@ -99,7 +99,7 @@ void OnReq(evhttp_request *req, void *args)
     int retVal;
     std::string postdata, content_type, return_data;
 
-    if(user_agent != NULL && user_agent_str.compare(user_agent) == 0)
+    if(internal_flag != NULL && strcmp(internal_flag, "1") == 0)
     {
         evhttp_send_error(req, 500, "Loop request detected!");
         return;
@@ -118,7 +118,13 @@ void OnReq(evhttp_request *req, void *args)
 
     Request request;
     Response response;
-    request.method = req_method;
+    switch(req->type)
+    {
+        case EVHTTP_REQ_GET: request.method = "GET"; break;
+        case EVHTTP_REQ_POST: request.method = "POST"; break;
+        case EVHTTP_REQ_OPTIONS: request.method = "OPTIONS"; break;
+        default: break;
+    }
     request.url = uri;
 
     struct evkeyval* kv = req->input_headers->tqh_first;
@@ -128,8 +134,6 @@ void OnReq(evhttp_request *req, void *args)
             request.headers.emplace(kv->key, kv->value);
         kv = kv->next.tqe_next;
     }
-    if(user_agent)
-        request.headers.emplace("X-User-Agent", user_agent);
     request.headers.emplace("X-Client-IP", client_ip);
 
     retVal = process_request(request, response, return_data);

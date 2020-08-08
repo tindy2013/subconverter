@@ -104,11 +104,9 @@ static int curlGet(const FetchArgument argument, FetchResult &result)
     if(argument.request_headers)
     {
         for(auto &x : *argument.request_headers)
-        {
-            if(toLower(x.first) != "user-agent")
-                list = curl_slist_append(list, (x.first + ": " + x.second).data());
-        }
+            list = curl_slist_append(list, (x.first + ": " + x.second).data());
     }
+    list = curl_slist_append(list, "SubConverter-Request: 1");
     if(list)
         curl_easy_setopt(curl_handle, CURLOPT_HTTPHEADER, list);
 
