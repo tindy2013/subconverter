@@ -133,6 +133,7 @@ advanced:
   max_concurrent_threads: 2
   max_allowed_rulesets: 0
   max_allowed_rules: 0
+  max_allowd_download_size: 0
   enable_base_gen: false
   enable_cache: false
   cache_subscription: 60

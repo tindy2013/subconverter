@@ -22,8 +22,15 @@ extern int global_log_level;
 typedef std::lock_guard<std::mutex> guarded_mutex;
 std::mutex cache_rw_lock;
 
+long max_allowed_download_size = 1048576L;
+
 //std::string user_agent_str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36";
 std::string user_agent_str = "subconverter/" VERSION " cURL/" LIBCURL_VERSION;
+
+struct curl_progress_data
+{
+    long size_limit = 0L;
+};
 
 static inline void curl_init()
 {
@@ -55,12 +62,19 @@ static int dummy_writer(char *data, size_t size, size_t nmemb, void *writerData)
 
 static int size_checker(void *clientp, double dltotal, double dlnow, double ultotal, double ulnow)
 {
-    if(dltotal > 1048576.0)
-        return 1;
+    if(clientp)
+    {
+        curl_progress_data *data = reinterpret_cast<curl_progress_data*>(clientp);
+        if(data->size_limit)
+        {
+            if(dltotal > data->size_limit || dlnow > data->size_limit)
+                return 1;
+        }
+    }
     return 0;
 }
 
-static inline void curl_set_common_options(CURL *curl_handle, const char *url, long max_file_size = 1048576L)
+static inline void curl_set_common_options(CURL *curl_handle, const char *url, curl_progress_data *data)
 {
     curl_easy_setopt(curl_handle, CURLOPT_URL, url);
     curl_easy_setopt(curl_handle, CURLOPT_VERBOSE, global_log_level == LOG_LEVEL_VERBOSE ? 1L : 0L);
@@ -72,9 +86,13 @@ static inline void curl_set_common_options(CURL *curl_handle, const char *url, l
     curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYHOST, 0L);
     curl_easy_setopt(curl_handle, CURLOPT_TIMEOUT, 15L);
     curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, user_agent_str.data());
-    if(max_file_size)
-        curl_easy_setopt(curl_handle, CURLOPT_MAXFILESIZE, max_file_size);
-    curl_easy_setopt(curl_handle, CURLOPT_PROGRESSFUNCTION, size_checker);
+    if(data)
+    {
+        if(data->size_limit)
+            curl_easy_setopt(curl_handle, CURLOPT_MAXFILESIZE, data->size_limit);
+        curl_easy_setopt(curl_handle, CURLOPT_XFERINFOFUNCTION, size_checker);
+        curl_easy_setopt(curl_handle, CURLOPT_XFERINFODATA, data);
+    }
 }
 
 //static std::string curlGet(const std::string &url, const std::string &proxy, std::string &response_headers, CURLcode &return_code, const string_map &request_headers)
@@ -99,7 +117,8 @@ static int curlGet(const FetchArgument argument, FetchResult &result)
         else
             curl_easy_setopt(curl_handle, CURLOPT_PROXY, argument.proxy.data());
     }
-    curl_set_common_options(curl_handle, new_url.data());
+    curl_progress_data limit = {max_allowed_download_size};
+    curl_set_common_options(curl_handle, new_url.data(), &limit);
 
     if(argument.request_headers)
     {
@@ -246,7 +265,8 @@ int curlPost(const std::string &url, const std::string &data, const std::string 
     for(const std::string &x : request_headers)
         list = curl_slist_append(list, x.data());
 
-    curl_set_common_options(curl_handle, url.data(), 0L);
+    curl_progress_data limit;
+    curl_set_common_options(curl_handle, url.data(), &limit);
     curl_easy_setopt(curl_handle, CURLOPT_POST, 1L);
     curl_easy_setopt(curl_handle, CURLOPT_POSTFIELDS, data.data());
     curl_easy_setopt(curl_handle, CURLOPT_POSTFIELDSIZE, data.size());
@@ -289,7 +309,8 @@ int curlPatch(const std::string &url, const std::string &data, const std::string
     for(const std::string &x : request_headers)
         list = curl_slist_append(list, x.data());
 
-    curl_set_common_options(curl_handle, url.data(), 0L);
+    curl_progress_data limit;
+    curl_set_common_options(curl_handle, url.data(), &limit);
     curl_easy_setopt(curl_handle, CURLOPT_CUSTOMREQUEST, "PATCH");
     curl_easy_setopt(curl_handle, CURLOPT_POSTFIELDS, data.data());
     curl_easy_setopt(curl_handle, CURLOPT_POSTFIELDSIZE, data.size());
@@ -331,7 +352,8 @@ int curlHead(const std::string &url, const std::string &proxy, const string_arra
     for(const std::string &x : request_headers)
         list = curl_slist_append(list, x.data());
 
-    curl_set_common_options(curl_handle, url.data());
+    curl_progress_data limit;
+    curl_set_common_options(curl_handle, url.data(), &limit);
     curl_easy_setopt(curl_handle, CURLOPT_HEADERFUNCTION, writer);
     curl_easy_setopt(curl_handle, CURLOPT_HEADERDATA, &response_headers);
     curl_easy_setopt(curl_handle, CURLOPT_NOBODY, 1L);

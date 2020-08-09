@@ -34,6 +34,7 @@ bool print_debug_info = false, cfw_child_process = false, append_userinfo = true
 std::string access_token, base_path = "base";
 extern std::string custom_group;
 extern int global_log_level;
+extern long max_allowed_download_size;
 string_map aliases_map;
 
 //global variables for template
@@ -874,6 +875,7 @@ void readYAMLConf(YAML::Node &node)
         node["advanced"]["enable_base_gen"] >> enable_base_gen;
         node["advanced"]["max_allowed_rulesets"] >> max_allowed_rulesets;
         node["advanced"]["max_allowed_rules"] >> max_allowed_rules;
+        node["advanced"]["max_allowed_download_size"] >> max_allowed_download_size;
         if(node["advanced"]["enable_cache"].IsDefined())
         {
             if(safe_as<bool>(node["advanced"]["enable_cache"]))
@@ -1122,6 +1124,7 @@ void readConf()
     ini.GetBoolIfExist("enable_base_gen", enable_base_gen);
     ini.GetNumberIfExist("max_allowed_rulesets", max_allowed_rulesets);
     ini.GetNumberIfExist("max_allowed_rules", max_allowed_rules);
+    ini.GetNumberIfExist("max_allowed_download_size", max_allowed_download_size);
     if(ini.ItemExist("enable_cache"))
     {
         if(ini.GetBool("enable_cache"))
