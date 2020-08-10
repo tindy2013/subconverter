@@ -649,6 +649,7 @@ void refreshRulesets(string_array &ruleset_list, std::vector<ruleset_content> &r
         }
         rca.emplace_back(std::move(rc));
     }
+    rca.shrink_to_fit();
 }
 
 void readYAMLConf(YAML::Node &node)
