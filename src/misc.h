@@ -190,7 +190,7 @@ public:
         return *this;
     }
 
-    template <typename T> tribool read(const T &value)
+    template <typename T> tribool parse(const T &value)
     {
         define(value);
         return *this;

@@ -647,7 +647,7 @@ void explodeSocks(std::string link, const std::string &custom_port, nodeInfo &no
     node.proxyStr = socksConstruct(group, remarks, server, port, username, password);
 }
 
-void explodeHTTP(const std::string link, const std::string &custom_port, nodeInfo &node)
+void explodeHTTP(const std::string &link, const std::string &custom_port, nodeInfo &node)
 {
     std::string group, remarks, server, port, username, password;
     server = getUrlArg(link, "server");
@@ -1942,7 +1942,7 @@ int explodeConfContent(const std::string &content, const std::string &custom_por
         return SPEEDTEST_ERROR_NONE;
 }
 
-void explode(std::string link, bool sslibev, bool ssrlibev, const std::string &custom_port, nodeInfo &node)
+void explode(const std::string &link, bool sslibev, bool ssrlibev, const std::string &custom_port, nodeInfo &node)
 {
     // TODO: replace strFind with startsWith if appropriate
     if(strFind(link, "ssr://"))

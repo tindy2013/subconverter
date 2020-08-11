@@ -1460,7 +1460,9 @@ struct LexerConfig {
   std::string statement_close_force_rstrip {"-%}"};
   std::string line_statement {"##"};
   std::string expression_open {"{{"};
+  std::string expression_open_force_lstrip {"{{-"};
   std::string expression_close {"}}"};
+  std::string expression_close_force_rstrip {"-}}"};
   std::string comment_open {"{#"};
   std::string comment_close {"#}"};
   std::string open_chars {"#{"};
@@ -1484,6 +1486,9 @@ struct LexerConfig {
     }
     if (open_chars.find(expression_open[0]) == std::string::npos) {
       open_chars += expression_open[0];
+    }
+    if (open_chars.find(expression_open_force_lstrip[0]) == std::string::npos) {
+      open_chars += expression_open_force_lstrip[0];
     }
     if (open_chars.find(comment_open[0]) == std::string::npos) {
       open_chars += comment_open[0];
@@ -1786,7 +1791,7 @@ struct Token {
     Unknown,
     Eof,
   };
-  
+
   Kind kind {Kind::Unknown};
   nonstd::string_view text;
 
@@ -1895,6 +1900,7 @@ class Lexer {
   enum class State {
     Text,
     ExpressionStart,
+    ExpressionStartForceLstrip,
     ExpressionBody,
     LineStart,
     LineBody,
@@ -1918,8 +1924,6 @@ class Lexer {
   nonstd::string_view m_in;
   size_t tok_start;
   size_t pos;
-  bool temp_trim_flag = false;
-
 
   Token scan_body(nonstd::string_view close, Token::Kind closeKind, nonstd::string_view close_trim = nonstd::string_view(), bool trim = false) {
   again:
@@ -1942,22 +1946,13 @@ class Lexer {
       return tok;
     }
 
-    if (ch == '-') {
-      if (inja::string_view::starts_with(m_in.substr(tok_start + 1), close)) {
-        tok_start += 1;
-        temp_trim_flag = true;
-      } else
-        return make_token(Token::Kind::Unknown);
-    }
-
     if (inja::string_view::starts_with(m_in.substr(tok_start), close)) {
       state = State::Text;
       pos = tok_start + close.size();
       Token tok = make_token(closeKind);
-      if (trim || temp_trim_flag) {
+      if (trim) {
         skip_whitespaces_and_first_newline();
       }
-      temp_trim_flag = false;
       return tok;
     }
 
@@ -2192,7 +2187,12 @@ public:
       nonstd::string_view open_str = m_in.substr(pos);
       bool must_lstrip = false;
       if (inja::string_view::starts_with(open_str, config.expression_open)) {
-        state = State::ExpressionStart;
+        if (inja::string_view::starts_with(open_str, config.expression_open_force_lstrip)) {
+          state = State::ExpressionStartForceLstrip;
+          must_lstrip = true;
+        } else {
+          state = State::ExpressionStart;
+        }
       } else if (inja::string_view::starts_with(open_str, config.statement_open)) {
         if (inja::string_view::starts_with(open_str, config.statement_open_no_lstrip)) {
           state = State::StatementStartNoLstrip;
@@ -2227,11 +2227,11 @@ public:
     case State::ExpressionStart: {
       state = State::ExpressionBody;
       pos += config.expression_open.size();
-      // whitespace control
-      if (m_in[pos] == '-') {
-        pos += 1;
-        temp_trim_flag = true;
-      }
+      return make_token(Token::Kind::ExpressionOpen);
+    }
+    case State::ExpressionStartForceLstrip: {
+      state = State::ExpressionBody;
+      pos += config.expression_open_force_lstrip.size();
       return make_token(Token::Kind::ExpressionOpen);
     }
     case State::LineStart: {
@@ -2260,7 +2260,7 @@ public:
       return make_token(Token::Kind::CommentOpen);
     }
     case State::ExpressionBody:
-      return scan_body(config.expression_close, Token::Kind::ExpressionClose);
+      return scan_body(config.expression_close, Token::Kind::ExpressionClose, config.expression_close_force_rstrip);
     case State::LineBody:
       return scan_body("\n", Token::Kind::LineStatementClose);
     case State::StatementBody:
@@ -2869,7 +2869,7 @@ class Parser {
         // Functions
         } else if (peek_tok.kind == Token::Kind::LeftParen) {
           operator_stack.emplace(std::make_shared<FunctionNode>(static_cast<std::string>(tok.text), tok.text.data() - tmpl.content.c_str()));
-          function_stack.emplace(operator_stack.top().get(), current_paren_level);       
+          function_stack.emplace(operator_stack.top().get(), current_paren_level);
 
         // Variables
         } else {
@@ -3477,10 +3477,10 @@ class Renderer : public NodeVisitor  {
   void visit(const JsonNode& node) {
     if (json_additional_data.contains(node.ptr)) {
       json_eval_stack.push(&json_additional_data[node.ptr]);
-    
+
     } else if (json_input->contains(node.ptr)) {
       json_eval_stack.push(&(*json_input)[node.ptr]);
-    
+
     } else {
       // Try to evaluate as a no-argument callback
       auto function_data = function_storage.find_function(node.name, 0);

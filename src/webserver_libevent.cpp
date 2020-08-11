@@ -55,7 +55,7 @@ static inline int process_request(Request &request, Response &response, std::str
 
     for(responseRoute &x : responses)
     {
-        if(request.method == "OPTIONS" && request.postdata.find(x.method) != 0 && x.path == request.url)
+        if(request.method == "OPTIONS" && startsWith(request.postdata, x.method) && x.path == request.url)
         {
             return 1;
         }
@@ -227,19 +227,23 @@ void* httpserver_dispatch(void *arg)
 
 int httpserver_bindsocket(std::string listen_address, int listen_port, int backlog)
 {
-    int ret;
     SOCKET nfd;
     nfd = socket(AF_INET, SOCK_STREAM, 0);
     if (nfd <= 0)
+        return -1;
+
+    int one = 1;
+    if (setsockopt(nfd, SOL_SOCKET, SO_REUSEADDR, (char *)&one, sizeof(int)) < 0)
     {
         closesocket(nfd);
         return -1;
     }
-
-    int one = 1;
-    ret = setsockopt(nfd, SOL_SOCKET, SO_REUSEADDR, (char *)&one, sizeof(int));
 #ifdef SO_NOSIGPIPE
-    ret = setsockopt(nfd, SOL_SOCKET, SO_NOSIGPIPE, (char *)&one, sizeof(int));
+    if (setsockopt(nfd, SOL_SOCKET, SO_NOSIGPIPE, (char *)&one, sizeof(int)) < 0)
+    {
+        closesocket(nfd);
+        return -1;
+    }
 #endif
 
     struct sockaddr_in addr;
@@ -248,14 +252,7 @@ int httpserver_bindsocket(std::string listen_address, int listen_port, int backl
     addr.sin_addr.s_addr = inet_addr(listen_address.data());
     addr.sin_port = htons(listen_port);
 
-    ret = ::bind(nfd, reinterpret_cast<sockaddr*>(&addr), sizeof(addr));
-    if (ret < 0)
-    {
-        closesocket(nfd);
-        return -1;
-    }
-    ret = listen(nfd, backlog);
-    if (ret < 0)
+    if (::bind(nfd, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) < 0 || listen(nfd, backlog) < 0)
     {
         closesocket(nfd);
         return -1;
@@ -272,7 +269,7 @@ int start_web_server_multi(void *argv)
     struct listener_args *args = reinterpret_cast<listener_args*>(argv);
     std::string listen_address = args->listen_address;
     int port = args->port, nthreads = args->max_workers;
-    int i, ret;
+    int i;
 
     int nfd = httpserver_bindsocket(listen_address, port, args->max_conn);
     if (nfd < 0)
@@ -288,18 +285,16 @@ int start_web_server_multi(void *argv)
         struct evhttp *httpd = evhttp_new(base[i]);
         if (httpd == NULL)
             return -1;
-        ret = evhttp_accept_socket(httpd, nfd);
-        if (ret != 0)
+        if (evhttp_accept_socket(httpd, nfd) != 0)
             return -1;
 
         evhttp_set_allowed_methods(httpd, EVHTTP_REQ_GET | EVHTTP_REQ_POST | EVHTTP_REQ_OPTIONS);
         evhttp_set_gencb(httpd, OnReq, nullptr);
         evhttp_set_timeout(httpd, 30);
-        ret = pthread_create(&ths[i], NULL, httpserver_dispatch, base[i]);
-        if (ret != 0)
+        if (pthread_create(&ths[i], NULL, httpserver_dispatch, base[i]) != 0)
             return -1;
     }
-    while(!SERVER_EXIT_FLAG)
+    while (!SERVER_EXIT_FLAG)
         sleep(200); //block forever until receive stop signal
 
     for (i = 0; i < nthreads; i++)

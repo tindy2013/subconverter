@@ -135,7 +135,7 @@ int main(int argc, char *argv[])
     generateBase();
 
     std::string env_api_mode = GetEnv("API_MODE"), env_managed_prefix = GetEnv("MANAGED_PREFIX"), env_token = GetEnv("API_TOKEN");
-    api_mode = tribool().read(toLower(env_api_mode)).get(api_mode);
+    api_mode = tribool().parse(toLower(env_api_mode)).get(api_mode);
     if(env_managed_prefix.size())
         managed_config_prefix = env_managed_prefix;
     if(env_token.size())
@@ -156,15 +156,12 @@ int main(int argc, char *argv[])
 
     append_response("GET", "/refreshrules", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
-        std::string &argument = request.argument;
-        int *status_code = &response.status_code;
-
         if(access_token.size())
         {
-            std::string token = getUrlArg(argument, "token");
+            std::string token = getUrlArg(request.argument, "token");
             if(token != access_token)
             {
-                *status_code = 403;
+                response.status_code = 403;
                 return "Forbidden\n";
             }
         }
@@ -175,15 +172,12 @@ int main(int argc, char *argv[])
 
     append_response("GET", "/readconf", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
-        std::string &argument = request.argument;
-        int *status_code = &response.status_code;
-
         if(access_token.size())
         {
-            std::string token = getUrlArg(argument, "token");
+            std::string token = getUrlArg(request.argument, "token");
             if(token != access_token)
             {
-                *status_code = 403;
+                response.status_code = 403;
                 return "Forbidden\n";
             }
         }
@@ -194,27 +188,23 @@ int main(int argc, char *argv[])
 
     append_response("POST", "/updateconf", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
-        std::string &argument = request.argument;
-        std::string postdata = request.postdata;
-        int *status_code = &response.status_code;
-
         if(access_token.size())
         {
-            std::string token = getUrlArg(argument, "token");
+            std::string token = getUrlArg(request.argument, "token");
             if(token != access_token)
             {
-                *status_code = 403;
+                response.status_code = 403;
                 return "Forbidden\n";
             }
         }
-        std::string type = getUrlArg(argument, "type");
+        std::string type = getUrlArg(request.argument, "type");
         if(type == "form")
-            fileWrite(pref_path, getFormData(postdata), true);
+            fileWrite(pref_path, getFormData(request.postdata), true);
         else if(type == "direct")
-            fileWrite(pref_path, postdata, true);
+            fileWrite(pref_path, request.postdata, true);
         else
         {
-            *status_code = 501;
+            response.status_code = 501;
             return "Not Implemented\n";
         }
 
@@ -247,15 +237,13 @@ int main(int argc, char *argv[])
     {
         append_response("GET", "/get", "text/plain;charset=utf-8", [](RESPONSE_CALLBACK_ARGS) -> std::string
         {
-            std::string &argument = request.argument;
-            std::string url = UrlDecode(getUrlArg(argument, "url"));
+            std::string url = UrlDecode(getUrlArg(request.argument, "url"));
             return webGet(url, "");
         });
 
         append_response("GET", "/getlocal", "text/plain;charset=utf-8", [](RESPONSE_CALLBACK_ARGS) -> std::string
         {
-            std::string &argument = request.argument;
-            return fileGet(UrlDecode(getUrlArg(argument, "path")));
+            return fileGet(UrlDecode(getUrlArg(request.argument, "path")));
         });
     }
 

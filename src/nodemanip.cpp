@@ -146,7 +146,7 @@ int addNodes(std::string link, std::vector<nodeInfo> &allNodes, int groupID, con
             writeLog(LOG_TYPE_ERROR, "Invalid configuration file!");
             return -1;
         }
-        if(strSub.find("ssd://") == 0)
+        if(startsWith(strSub, "ssd://"))
         {
             getSubInfoFromSSD(strSub, subInfo);
         }

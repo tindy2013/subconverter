@@ -40,6 +40,6 @@ g++ -o base/subconverter $(find CMakeFiles/subconverter.dir/src/ -name "*.o")  -
 
 cd base
 chmod +rx subconverter
-chmod +r *
+chmod +r ./*
 cd ..
 mv base subconverter

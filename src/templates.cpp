@@ -17,7 +17,7 @@ namespace inja
 {
     void convert_dot_to_json_pointer(nonstd::string_view dot, std::string& out)
     {
-        out = std::move(JsonNode(dot, 0).ptr);
+        out = JsonNode::convert_dot_to_json_ptr(dot);
     }
 }
 
@@ -283,7 +283,7 @@ int renderClashScript(YAML::Node &base_rule, std::vector<ruleset_content> &rules
                 }
                 continue;
             }
-            if(strLine.find("FINAL") == 0)
+            if(startsWith(strLine, "FINAL"))
                 strLine.replace(0, 5, "MATCH");
             strLine += "," + rule_group;
             if(count_least(strLine, ',', 3))

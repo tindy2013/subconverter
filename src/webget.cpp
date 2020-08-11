@@ -96,7 +96,7 @@ static inline void curl_set_common_options(CURL *curl_handle, const char *url, c
 }
 
 //static std::string curlGet(const std::string &url, const std::string &proxy, std::string &response_headers, CURLcode &return_code, const string_map &request_headers)
-static int curlGet(const FetchArgument argument, FetchResult &result)
+static int curlGet(const FetchArgument &argument, FetchResult &result)
 {
     CURL *curl_handle;
     std::string *data = result.content, new_url = argument.url;
@@ -281,7 +281,7 @@ int curlPost(const std::string &url, const std::string &data, const std::string 
 
     if(res == CURLE_OK)
     {
-        res = curl_easy_getinfo(curl_handle, CURLINFO_HTTP_CODE, &retVal);
+        curl_easy_getinfo(curl_handle, CURLINFO_HTTP_CODE, &retVal);
     }
 
     curl_easy_cleanup(curl_handle);

@@ -658,10 +658,10 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset
             writeLog(0, "Failed to fetch ruleset or ruleset is empty: '" + x.rule_path + "'!", LOG_LEVEL_WARNING);
             continue;
         }
-        if(retrieved_rules.find("[]") == 0)
+        if(startsWith(retrieved_rules, "[]"))
         {
             strLine = retrieved_rules.substr(2);
-            if(strLine.find("FINAL") == 0)
+            if(startsWith(strLine, "FINAL"))
                 strLine.replace(0, 5, "MATCH");
             strLine += "," + rule_group;
             if(count_least(strLine, ',', 3))

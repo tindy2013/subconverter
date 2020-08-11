@@ -21,7 +21,7 @@ void explodeQuan(const std::string &quan, const std::string &custom_port, nodeIn
 void explodeShadowrocket(std::string kit, const std::string &custom_port, nodeInfo &node);
 void explodeKitsunebi(std::string kit, const std::string &custom_port, nodeInfo &node);
 /// Parse a link
-void explode(std::string link, bool sslibev, bool ssrlibev, const std::string &custom_port, nodeInfo &node);
+void explode(const std::string &link, bool sslibev, bool ssrlibev, const std::string &custom_port, nodeInfo &node);
 void explodeSSD(std::string link, bool libev, const std::string &custom_port, std::vector<nodeInfo> &nodes);
 void explodeSub(std::string sub, bool sslibev, bool ssrlibev, const std::string &custom_port, std::vector<nodeInfo> &nodes);
 int explodeConf(std::string filepath, const std::string &custom_port, bool sslibev, bool ssrlibev, std::vector<nodeInfo> &nodes);

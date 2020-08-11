@@ -596,14 +596,13 @@ namespace md5 {
         unsigned char* sig_p;
         char* str_p;
         char* max_p;
-        unsigned int high, low;
 
         str_p = str_;
         max_p = str_ + str_len;
 
         for (sig_p = (unsigned char*)signature_; sig_p < (unsigned char*)signature_ + MD5_SIZE; sig_p++) {
-            high = *sig_p / 16;
-            low = *sig_p % 16;
+            unsigned int high = *sig_p / 16;
+            unsigned int low = *sig_p % 16;
             /* account for 2 chars */
             if (str_p + 1 >= max_p) {
                 break;
@@ -640,15 +639,14 @@ namespace md5 {
         unsigned char *sig_p;
         const char *str_p;
         char* hex;
-        unsigned int high, low, val;
 
         hex = (char*)md5::HEX_STRING;
         sig_p = static_cast<unsigned char*>(signature_);
 
         for (str_p = str_; str_p < str_ + MD5_SIZE * 2; str_p += 2) {
-            high = strchr(hex, *str_p) - hex;
-            low = strchr(hex, *(str_p + 1)) - hex;
-            val = high * 16 + low;
+            unsigned int high = strchr(hex, *str_p) - hex;
+            unsigned int low = strchr(hex, *(str_p + 1)) - hex;
+            unsigned int val = high * 16 + low;
             *sig_p++ = val;
         }
     }

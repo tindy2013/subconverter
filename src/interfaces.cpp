@@ -1451,10 +1451,10 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         expand.define(true);
 
     /// read preference from argument, assign global var if not in argument
-    ext.tfo.read(tfo).read(tfo_flag);
-    ext.udp.read(udp).read(udp_flag);
-    ext.skip_cert_verify.read(scv).read(scv_flag);
-    ext.tls13.read(tls13).read(tls13_flag);
+    ext.tfo.parse(tfo).parse(tfo_flag);
+    ext.udp.parse(udp).parse(udp_flag);
+    ext.skip_cert_verify.parse(scv).parse(scv_flag);
+    ext.tls13.parse(tls13).parse(tls13_flag);
 
     ext.sort_flag = sort_flag.get(do_sort);
     use_sort_script.define(sort_script.size() != 0);
@@ -2032,11 +2032,11 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
         singlegroup["type"] = type;
         for(unsigned int i = 1; i < dummy_str_array.size(); i++)
         {
-            if(dummy_str_array[i].find("url") == 0)
+            if(startsWith(dummy_str_array[i], "url"))
                 singlegroup["url"] = trim(dummy_str_array[i].substr(dummy_str_array[i].find("=") + 1));
-            else if(dummy_str_array[i].find("interval") == 0)
+            else if(startsWith(dummy_str_array[i], "interval"))
                 singlegroup["interval"] = trim(dummy_str_array[i].substr(dummy_str_array[i].find("=") + 1));
-            else if(dummy_str_array[i].find("policy-path") == 0)
+            else if(startsWith(dummy_str_array[i], "policy-path"))
                 links.emplace_back(trim(dummy_str_array[i].substr(dummy_str_array[i].find("=") + 1)));
             else
                 singlegroup["proxies"].push_back(trim(dummy_str_array[i]));
@@ -2114,9 +2114,7 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
     std::string::size_type lineSize;
     for(std::string &x : dummy_str_array)
     {
-        if(x.find("USER-AGENT") == 0 || x.find("URL-REGEX") == 0 || x.find("PROCESS-NAME") == 0 || x.find("AND") == 0 || x.find("OR") == 0) //remove unsupported types
-            continue;
-        else if(x.find("RULE-SET") == 0)
+        if(startsWith(x, "RULE-SET"))
         {
             strArray = split(x, ",");
             if(strArray.size() != 3)
@@ -2135,7 +2133,7 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
                     strLine.erase(--lineSize);
                 if(!lineSize || strLine[0] == ';' || strLine[0] == '#' || (lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')) //empty lines and comments are ignored
                     continue;
-                else if(strLine.find("USER-AGENT") == 0 || strLine.find("URL-REGEX") == 0 || strLine.find("PROCESS-NAME") == 0 || strLine.find("AND") == 0 || strLine.find("OR") == 0) //remove unsupported types
+                else if(!std::any_of(clash_rule_type.begin(), clash_rule_type.end(), [&strLine](std::string type){return startsWith(strLine, type);})) //remove unsupported types
                     continue;
                 strLine += strArray[2];
                 if(count_least(strLine, ',', 3))
@@ -2145,6 +2143,8 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
             ss.clear();
             continue;
         }
+        else if(!std::any_of(clash_rule_type.begin(), clash_rule_type.end(), [&strLine](std::string type){return startsWith(strLine, type);}))
+            continue;
         rule.push_back(x);
     }
     clash[rule_name] = rule;
@@ -2456,12 +2456,10 @@ int simpleGenerator()
     std::string proxy = parseProxy(proxy_subscription);
     Request request;
     Response response;
-    int &ret_code = response.status_code;
-    string_map &headers = response.headers;
     for(std::string &x : sections)
     {
         arguments.clear();
-        ret_code = 200;
+        response.status_code = 200;
         //std::cerr<<"Generating artifact '"<<x<<"'...\n";
         writeLog(0, "Generating artifact '" + x + "'...", LOG_LEVEL_INFO);
         ini.EnterSection(x);
@@ -2508,7 +2506,7 @@ int simpleGenerator()
             request.argument = arguments;
             content = subconverter(request, response);
         }
-        if(ret_code != 200)
+        if(response.status_code != 200)
         {
             //std::cerr<<"Artifact '"<<x<<"' generate ERROR! Reason: "<<content<<"\n\n";
             writeLog(0, "Artifact '" + x + "' generate ERROR! Reason: " + content + "\n", LOG_LEVEL_ERROR);
@@ -2517,12 +2515,12 @@ int simpleGenerator()
             continue;
         }
         fileWrite(path, content, true);
-        auto iter = std::find_if(headers.begin(), headers.end(), [](auto y){ return y.first == "Subscription-UserInfo"; });
-        if(iter != headers.end())
+        auto iter = std::find_if(response.headers.begin(), response.headers.end(), [](auto y){ return y.first == "Subscription-UserInfo"; });
+        if(iter != response.headers.end())
             writeLog(0, "User Info for artifact '" + x + "': " + subInfoToMessage(iter->second), LOG_LEVEL_INFO);
         //std::cerr<<"Artifact '"<<x<<"' generate SUCCESS!\n\n";
         writeLog(0, "Artifact '" + x + "' generate SUCCESS!\n", LOG_LEVEL_INFO);
-        eraseElements(headers);
+        eraseElements(response.headers);
     }
     //std::cerr<<"All artifact generated. Exiting...\n";
     writeLog(0, "All artifact generated. Exiting...", LOG_LEVEL_INFO);
@@ -2537,7 +2535,7 @@ std::string renderTemplate(RESPONSE_CALLBACK_ARGS)
     std::string path = UrlDecode(getUrlArg(argument, "path"));
     writeLog(0, "Trying to render template '" + path + "'...", LOG_LEVEL_INFO);
 
-    if(path.find(template_path) != 0 || !fileExist(path))
+    if(startsWith(path, template_path) || !fileExist(path))
     {
         *status_code = 404;
         return "Not found";

@@ -1,7 +1,8 @@
-FROM alpine:latest
-MAINTAINER Tindy X <tindy.it@gmail.com>
+FROM alpine:3.12
+LABEL maintainer "tindy.it@gmail.com"
 
 # build minimized
+WORKDIR /
 RUN apk add --no-cache --virtual .build-tools git g++ build-base linux-headers cmake python2 && \
     apk add --no-cache --virtual .build-deps curl-dev rapidjson-dev libevent-dev pcre2-dev yaml-cpp-dev && \
     git clone https://github.com/svaarala/duktape --depth=1 && \

@@ -43,7 +43,7 @@ c++ -Xlinker -unexported_symbol -Xlinker "*" -o base/subconverter -framework Cor
 
 cd base
 chmod +rx subconverter
-chmod +r *
+chmod +r ./*
 cd ..
 mv base subconverter
 
