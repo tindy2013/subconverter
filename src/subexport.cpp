@@ -1740,11 +1740,24 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, const std::string &base_c
         if(!filtered_nodelist.size())
             filtered_nodelist.emplace_back("DIRECT");
 
+        if(filtered_nodelist.size() == 1)
+        {
+            proxy = toLower(filtered_nodelist[0]);
+            bool match_flag = false;
+            switch(hash_(proxy))
+            {
+            case "direct"_hash:
+            case "reject"_hash:
+            case "reject-tinygif"_hash:
+                ini.Set("Proxy", "{NONAME}", vArray[0] + " = " + proxy);
+                match_flag = true;
+                break;
+            }
+            if(match_flag)
+                continue;
+        }
+
         proxy = vArray[1] + ",";
-        /*
-        for(std::string &y : filtered_nodelist)
-            proxy += "," + y;
-        */
         proxy += std::accumulate(std::next(filtered_nodelist.cbegin()), filtered_nodelist.cend(), filtered_nodelist[0], [](std::string a, std::string b)
         {
             return std::move(a) + "," + std::move(b);
