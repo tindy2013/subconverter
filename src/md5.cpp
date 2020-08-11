@@ -9,7 +9,7 @@ namespace md5 {
      * T denotes the integer part of the i-th element of the function:
      * T[i] = 4294967296 * abs(sin(i)), where i is in radians.
      */
-    const unsigned int T[64] = {
+    const uint32_t T[64] = {
         0xd76aa478, 0xe8c7b756, 0x242070db, 0xc1bdceee, 0xf57c0faf, 0x4787c62a, 0xa8304613, 0xfd469501,
         0x698098d8, 0x8b44f7af, 0xffff5bb1, 0x895cd7be, 0x6b901122, 0xfd987193, 0xa679438e, 0x49b40821,
         0xf61e2562, 0xc040b340, 0x265e5a51, 0xe9b6c7aa, 0xd62f105d, 0x02441453, 0xd8a1e681, 0xe7d3fbc8,
@@ -23,24 +23,24 @@ namespace md5 {
     /*
      * Constants for the MD5 Transform routine as defined in RFC 1321
      */
-    const unsigned int S1[4] = {7, 12, 17, 22};
-    const unsigned int S2[4] = {5, 9,  14, 20};
-    const unsigned int S3[4] = {4, 11, 16, 23};
-    const unsigned int S4[4] = {6, 10, 15, 21};
+    const uint32_t S1[4] = {7, 12, 17, 22};
+    const uint32_t S2[4] = {5, 9,  14, 20};
+    const uint32_t S3[4] = {4, 11, 16, 23};
+    const uint32_t S4[4] = {6, 10, 15, 21};
 
     /*
      * Function to perform the cyclic left rotation of blocks of data
      */
-    inline unsigned int cyclic_left_rotate(unsigned int data, unsigned int shift_bits) {
+    inline uint32_t cyclic_left_rotate(uint32_t data, uint32_t shift_bits) {
         return (data << shift_bits) | (data >> (32 - shift_bits));
     }
 
-    inline unsigned int F(unsigned int x, unsigned int y, unsigned int z) {return (x & y) | (~x & z);};
-    inline unsigned int G(unsigned int x, unsigned int y, unsigned int z) {return (x & z) | (y & ~z);};
-    inline unsigned int H(unsigned int x, unsigned int y, unsigned int z) {return x ^ y ^ z;};
-    inline unsigned int I(unsigned int x, unsigned int y, unsigned int z) {return y ^ (x | ~z);};
+    inline uint32_t F(uint32_t x, uint32_t y, uint32_t z) {return (x & y) | (~x & z);};
+    inline uint32_t G(uint32_t x, uint32_t y, uint32_t z) {return (x & z) | (y & ~z);};
+    inline uint32_t H(uint32_t x, uint32_t y, uint32_t z) {return x ^ y ^ z;};
+    inline uint32_t I(uint32_t x, uint32_t y, uint32_t z) {return y ^ (x | ~z);};
 
-    inline void FF(unsigned int &a, unsigned int b, unsigned int c, unsigned int d, unsigned int Xk, unsigned int s, unsigned int i) {
+    inline void FF(uint32_t &a, uint32_t b, uint32_t c, uint32_t d, uint32_t Xk, uint32_t s, uint32_t i) {
         #if MD5_DEBUG
             std::cout << "\nA: " << a << "\nB: " << b << "\nC: " << c << "\nD: " << d << "\nX[" << i << "]: " << Xk << "\ns: " << S1[s] << "\nT: " << T[i] << "\n";
         #endif
@@ -54,7 +54,7 @@ namespace md5 {
         #endif
     };
 
-    inline void GG(unsigned int &a, unsigned int b, unsigned int c, unsigned int d, unsigned int Xk, unsigned int s, unsigned int i) {
+    inline void GG(uint32_t &a, uint32_t b, uint32_t c, uint32_t d, uint32_t Xk, uint32_t s, uint32_t i) {
         #if MD5_DEBUG
             std::cout << "\nA: " << a << "\nB: " << b << "\nC: " << c << "\nD: " << d << "\nX[" << i - 16 << "]: " << Xk << "\ns: " << S2[s] << "\nT: " << T[i] << "\n";
         #endif // MD5_DEBUG
@@ -68,7 +68,7 @@ namespace md5 {
         #endif // MD5_DEBUG
     };
 
-    inline void HH(unsigned int &a, unsigned int b, unsigned int c, unsigned int d, unsigned int Xk, unsigned int s, unsigned int i) {
+    inline void HH(uint32_t &a, uint32_t b, uint32_t c, uint32_t d, uint32_t Xk, uint32_t s, uint32_t i) {
         #if MD5_DEBUG
             std::cout << "\nA: " << a << "\nB: " << b << "\nC: " << c << "\nD: " << d << "\nX[" << i - 32 << "]: " << Xk << "\ns: " << S3[s] << "\nT: " << T[i] << "\n";
         #endif // MD5_DEBUG
@@ -81,7 +81,7 @@ namespace md5 {
             std::cout << "A = " << a << "\n";
         #endif // MD5_DEBUG
     };
-    inline void II(unsigned int &a, unsigned int b, unsigned int c, unsigned int d, unsigned int Xk, unsigned int s, unsigned int i) {
+    inline void II(uint32_t &a, uint32_t b, uint32_t c, uint32_t d, uint32_t Xk, uint32_t s, uint32_t i) {
         #if MD5_DEBUG
             std::cout << "\nA: " << a << "\nB: " << b << "\nC: " << c << "\nD: " << d << "\nX[" << i - 48 << "]: " << Xk << "\ns: " << S4[s] << "\nT: " << T[i] << "\n";
         #endif // MD5_DEBUG
@@ -163,7 +163,7 @@ namespace md5 {
      *
      * signature - A 16 byte buffer that will contain the MD5 signature.
      */
-    md5_t::md5_t(const void* input, const unsigned int input_length, void* signature) {
+    md5_t::md5_t(const void* input, const uint32_t input_length, void* signature) {
         /* initialize the computation context */
         initialise();
 
@@ -192,9 +192,9 @@ namespace md5 {
      *
      * input_length - The length of the buffer.
      */
-    void md5_t::process(const void* input, const unsigned int input_length) {
+    void md5_t::process(const void* input, const uint32_t input_length) {
         if (!finished) {
-            unsigned int processed = 0;
+            uint32_t processed = 0;
 
             /*
              * If we have any data stored from a previous call to process then we use these
@@ -257,7 +257,7 @@ namespace md5 {
                 message_length[1]++;
             message_length[0] += stored_size;
 
-            int pad = md5::BLOCK_SIZE - (sizeof(unsigned int) * 2) - stored_size;
+            int pad = md5::BLOCK_SIZE - (sizeof(uint32_t) * 2) - stored_size;
             if (pad <= 0)
                 pad += md5::BLOCK_SIZE;
 
@@ -276,14 +276,14 @@ namespace md5 {
              * Put the 64-bit file length in _bits_ (i.e. *8) at the end of the
              * buffer. appears to be in beg-endian format in the buffer?
              */
-            unsigned int size_low = ((message_length[0] & 0x1FFFFFFF) << 3);
-            memcpy(stored + stored_size, &size_low, sizeof(unsigned int));
-            stored_size += sizeof(unsigned int);
+            uint32_t size_low = ((message_length[0] & 0x1FFFFFFF) << 3);
+            memcpy(stored + stored_size, &size_low, sizeof(uint32_t));
+            stored_size += sizeof(uint32_t);
 
             /* shift the high word over by 3 and add in the top 3 bits from the low */
-            unsigned int size_high = (message_length[1] << 3) | ((message_length[0] & 0xE0000000) >> 29);
-            memcpy(stored + stored_size, &size_high, sizeof(unsigned int));
-            stored_size += sizeof(unsigned int);
+            uint32_t size_high = (message_length[1] << 3) | ((message_length[0] & 0xE0000000) >> 29);
+            memcpy(stored + stored_size, &size_high, sizeof(uint32_t));
+            stored_size += sizeof(uint32_t);
 
             /*
              * process the last block of data.
@@ -391,6 +391,7 @@ namespace md5 {
         message_length[0] = 0;
         message_length[1] = 0;
         stored_size = 0;
+        memset(&stored, 0, BLOCK_SIZE * 2);
 
         finished = false;
     }
@@ -425,13 +426,13 @@ namespace md5 {
         message_length[0] += BLOCK_SIZE;
 
         // Copy the block into X. */
-        unsigned int X[16];
-        for (unsigned int i = 0; i < 16; i++) {
+        uint32_t X[16];
+        for (uint32_t i = 0; i < 16; i++) {
             memcpy(X + i, block + 4 * i, 4);
         }
 
         /* Save A as AA, B as BB, C as CC, and D as DD. */
-        unsigned int AA = A, BB = B, CC = C, DD = D;
+        uint32_t AA = A, BB = B, CC = C, DD = D;
 
         /* Round 1
          * Let [abcd k s i] denote the operation
@@ -563,10 +564,10 @@ namespace md5 {
      * result - A 16 byte buffer that will contain the MD5 signature.
      */
     void md5_t::get_result(void *result) {
-        memcpy((char*)result, &A, sizeof(unsigned int));
-        memcpy((char*)result + sizeof(unsigned int), &B, sizeof(unsigned int));
-        memcpy((char*)result + 2 * sizeof(unsigned int), &C, sizeof(unsigned int));
-        memcpy((char*)result + 3 * sizeof(unsigned int), &D, sizeof(unsigned int));
+        memcpy((char*)result, &A, sizeof(uint32_t));
+        memcpy((char*)result + sizeof(uint32_t), &B, sizeof(uint32_t));
+        memcpy((char*)result + 2 * sizeof(uint32_t), &C, sizeof(uint32_t));
+        memcpy((char*)result + 3 * sizeof(uint32_t), &D, sizeof(uint32_t));
     }
 
     /****************************** Exported Functions ******************************/
@@ -601,8 +602,8 @@ namespace md5 {
         max_p = str_ + str_len;
 
         for (sig_p = (unsigned char*)signature_; sig_p < (unsigned char*)signature_ + MD5_SIZE; sig_p++) {
-            unsigned int high = *sig_p / 16;
-            unsigned int low = *sig_p % 16;
+            uint32_t high = *sig_p / 16;
+            uint32_t low = *sig_p % 16;
             /* account for 2 chars */
             if (str_p + 1 >= max_p) {
                 break;
@@ -644,9 +645,9 @@ namespace md5 {
         sig_p = static_cast<unsigned char*>(signature_);
 
         for (str_p = str_; str_p < str_ + MD5_SIZE * 2; str_p += 2) {
-            unsigned int high = strchr(hex, *str_p) - hex;
-            unsigned int low = strchr(hex, *(str_p + 1)) - hex;
-            unsigned int val = high * 16 + low;
+            uint32_t high = strchr(hex, *str_p) - hex;
+            uint32_t low = strchr(hex, *(str_p + 1)) - hex;
+            uint32_t val = high * 16 + low;
             *sig_p++ = val;
         }
     }

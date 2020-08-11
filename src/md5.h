@@ -6,15 +6,15 @@
  * external programs only.  The MD5 routines themselves reference the
  * signature as 4 unsigned 32-bit integers.
  */
-const unsigned int MD5_SIZE = (4 * sizeof(unsigned int));   /* 16 */
-const unsigned int MD5_STRING_SIZE = 2 * MD5_SIZE + 1;      /* 33 */
+const uint32_t MD5_SIZE = (4 * sizeof(uint32_t));       /* 16 */
+const uint32_t MD5_STRING_SIZE = 2 * MD5_SIZE + 1;      /* 33 */
 
  namespace md5 {
     /*
      * The MD5 algorithm works on blocks of characters of 64 bytes.  This
      * is an internal value only and is not necessary for external use.
      */
-    const unsigned int BLOCK_SIZE = 64;
+    const uint32_t BLOCK_SIZE = 64;
 
     class md5_t {
         public:
@@ -60,7 +60,7 @@ const unsigned int MD5_STRING_SIZE = 2 * MD5_SIZE + 1;      /* 33 */
              *
              * signature_ - A 16 byte buffer that will contain the MD5 signature.
              */
-            md5_t(const void* input, const unsigned int input_length, void* signature_ = NULL);
+            md5_t(const void* input, const uint32_t input_length, void* signature_ = NULL);
 
             /*
              * process
@@ -80,7 +80,7 @@ const unsigned int MD5_STRING_SIZE = 2 * MD5_SIZE + 1;      /* 33 */
              *
              * input_length - The length of the buffer.
              */
-            void process(const void* input, const unsigned int input_length);
+            void process(const void* input, const uint32_t input_length);
 
             /*
              * finish
@@ -144,13 +144,13 @@ const unsigned int MD5_STRING_SIZE = 2 * MD5_SIZE + 1;      /* 33 */
             void process_block(const unsigned char*);
             void get_result(void*);
 
-            unsigned int A;                             /* accumulator 1 */
-            unsigned int B;                             /* accumulator 2 */
-            unsigned int C;                             /* accumulator 3 */
-            unsigned int D;                             /* accumulator 4 */
+            uint32_t A;                                 /* accumulator 1 */
+            uint32_t B;                                 /* accumulator 2 */
+            uint32_t C;                                 /* accumulator 3 */
+            uint32_t D;                                 /* accumulator 4 */
 
-            unsigned int message_length[2];             /* length of data */
-            unsigned int stored_size;                   /* length of stored bytes */
+            uint32_t message_length[2];                 /* length of data */
+            uint32_t stored_size;                       /* length of stored bytes */
             unsigned char stored[md5::BLOCK_SIZE * 2];  /* stored bytes */
 
             bool finished;                              /* object state */

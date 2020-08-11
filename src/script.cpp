@@ -23,7 +23,7 @@ std::string foldPathString(const std::string &path)
         pos_up = output.find("../", pos_unres);
         if(pos_up == output.npos)
             break;
-        else if(pos_up == 0)
+        if(pos_up == 0)
         {
             pos_unres = pos_up + 3;
             continue;
