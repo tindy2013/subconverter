@@ -54,6 +54,7 @@ bool add_emoji = false, remove_old_emoji = false, append_proxy_type = false, fil
 tribool udp_flag, tfo_flag, scv_flag, tls13_flag, enable_insert;
 bool do_sort = false, config_update_strict = false;
 bool clash_use_new_field_name = false;
+std::string clash_proxies_style = "flow";
 std::string proxy_config, proxy_ruleset, proxy_subscription;
 int config_update_interval = 0;
 std::string sort_script, filter_script;
@@ -745,6 +746,7 @@ void readYAMLConf(YAML::Node &node)
         section["filter_deprecated_nodes"] >> filter_deprecated;
         section["append_sub_userinfo"] >> append_userinfo;
         section["clash_use_new_field_name"] >> clash_use_new_field_name;
+        section["clash_proxies_style"] >> clash_proxies_style;
     }
 
     if(section["rename_node"].IsSequence())
@@ -983,6 +985,7 @@ void readConf()
         ini.GetBoolIfExist("filter_deprecated_nodes", filter_deprecated);
         ini.GetBoolIfExist("append_sub_userinfo", append_userinfo);
         ini.GetBoolIfExist("clash_use_new_field_name", clash_use_new_field_name);
+        ini.GetIfExist("clash_proxies_style", clash_proxies_style);
         if(ini.ItemPrefixExist("rename_node"))
         {
             ini.GetAll("rename_node", tempArray);
@@ -1449,6 +1452,8 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     ext.append_proxy_type = append_type.get(append_proxy_type);
     if((target == "clash" || target == "clashr") && clash_script.is_undef())
         expand.define(true);
+
+    ext.clash_proxies_style = clash_proxies_style;
 
     /// read preference from argument, assign global var if not in argument
     ext.tfo.parse(tfo).parse(tfo_flag);
@@ -2072,6 +2077,7 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
     }
 
     extra_settings ext = {true, true, dummy_str_array, dummy_str_array, false, false, false, false, do_sort, filter_deprecated, clash_use_new_field_name, false, "", "", "", udp_flag, tfo_flag, scv_flag, tls13_flag};
+    ext.clash_proxies_style = clash_proxies_style;
 
     netchToClash(nodes, clash, dummy_str_array, false, ext);
 

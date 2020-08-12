@@ -51,6 +51,7 @@ struct extra_settings
     tribool tls13 = tribool();
     bool clash_classical_ruleset = false;
     std::string sort_script = "";
+    std::string clash_proxies_style = "flow";
 };
 
 void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset_content_array, bool overwrite_original_rules, bool new_field_name);

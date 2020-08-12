@@ -1149,6 +1149,20 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, const stri
     std::vector<nodeInfo> nodelist;
     bool tlssecure;
     string_array vArray, remarks_list, filtered_nodelist;
+    /// proxies style
+    bool block = false, compact = false;
+    switch(hash_(ext.clash_proxies_style))
+    {
+    case "block"_hash:
+        block = true;
+        break;
+    default:
+    case "flow"_hash:
+        break;
+    case "compact"_hash:
+        compact = true;
+        break;
+    }
 
     for(nodeInfo &x : nodes)
     {
@@ -1341,11 +1355,17 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, const stri
 
         if(udp)
             singleproxy["udp"] = true;
-        singleproxy.SetStyle(YAML::EmitterStyle::Flow);
+        if(block)
+            singleproxy.SetStyle(YAML::EmitterStyle::Block);
+        else
+            singleproxy.SetStyle(YAML::EmitterStyle::Flow);
         proxies.push_back(singleproxy);
         remarks_list.emplace_back(std::move(remark));
         nodelist.emplace_back(x);
     }
+
+    if(compact)
+        proxies.SetStyle(YAML::EmitterStyle::Flow);
 
     if(ext.nodelist)
     {
