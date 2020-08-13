@@ -569,25 +569,25 @@ void explodeSSRConf(std::string content, const std::string &custom_port, bool ss
 
     for(unsigned int i = 0; i < json["configs"].Size(); i++)
     {
-        json["configs"][i]["group"] >> group;
+        group = GetMember(json["configs"][i], "group");
         if(group.empty())
             group = SSR_DEFAULT_GROUP;
-        json["configs"][i]["remarks"] >> remarks;
-        json["configs"][i]["server"] >> server;
+        remarks = GetMember(json["configs"][i], "remarks");
+        server = GetMember(json["configs"][i], "server");
         port = custom_port.size() ? custom_port : GetMember(json["configs"][i], "server_port");
         if(port == "0")
             continue;
         if(remarks.empty())
             remarks = server + ":" + port;
 
-        json["configs"][i]["remarks_base64"] >> remarks_base64;
-        json["configs"][i]["password"] >> password;
-        json["configs"][i]["method"] >> method;
+        remarks_base64 = GetMember(json["configs"][i], "remarks_base64"); // electron-ssr does not contain this field
+        password = GetMember(json["configs"][i], "password");
+        method = GetMember(json["configs"][i], "method");
 
-        json["configs"][i]["protocol"] >> protocol;
-        json["configs"][i]["protocolparam"] >> protoparam;
-        json["configs"][i]["obfs"] >> obfs;
-        json["configs"][i]["obfsparam"] >> obfsparam;
+        protocol = GetMember(json["configs"][i], "protocol");
+        protoparam = GetMember(json["configs"][i], "protocolparam");
+        obfs = GetMember(json["configs"][i], "obfs");
+        obfsparam = GetMember(json["configs"][i], "obfsparam");
 
         node.linkType = SPEEDTEST_MESSAGE_FOUNDSSR;
         node.group = group;

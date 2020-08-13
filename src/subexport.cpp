@@ -1763,18 +1763,14 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, const std::string &base_c
         if(filtered_nodelist.size() == 1)
         {
             proxy = toLower(filtered_nodelist[0]);
-            bool match_flag = false;
             switch(hash_(proxy))
             {
             case "direct"_hash:
             case "reject"_hash:
             case "reject-tinygif"_hash:
                 ini.Set("Proxy", "{NONAME}", vArray[0] + " = " + proxy);
-                match_flag = true;
-                break;
-            }
-            if(match_flag)
                 continue;
+            }
         }
 
         proxy = vArray[1] + ",";
