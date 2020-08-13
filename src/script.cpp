@@ -9,8 +9,8 @@
 #include "socket.h"
 #include "webget.h"
 
-extern int cache_config;
-extern std::string proxy_config;
+extern int gCacheConfig;
+extern std::string gProxyConfig;
 
 std::string parseProxy(const std::string &source);
 
@@ -109,7 +109,7 @@ static duk_ret_t fetch(duk_context *ctx)
 {
     std::string filepath, proxy;
     duktape_get_arguments_str(ctx, 1, 2, &filepath, &proxy);
-    std::string content = fetchFile(filepath, proxy, cache_config);
+    std::string content = fetchFile(filepath, proxy, gCacheConfig);
     duk_push_lstring(ctx, content.c_str(), content.size());
     return 1;
 }
@@ -138,7 +138,7 @@ static duk_ret_t getGeoIP(duk_context *ctx)
     if(address.empty())
         duk_push_undefined(ctx);
     else
-        duk_push_string(ctx, fetchFile("https://api.ip.sb/geoip/" + address, parseProxy(proxy), cache_config).c_str());
+        duk_push_string(ctx, fetchFile("https://api.ip.sb/geoip/" + address, parseProxy(proxy), gCacheConfig).c_str());
     return 1;
 }
 

@@ -24,9 +24,9 @@
 #include "yamlcpp_extra.h"
 #include "interfaces.h"
 
-extern bool api_mode, surge_ssr_resolve;
+extern bool gAPIMode, gSurgeResolveHostname;
 extern string_array ss_ciphers, ssr_ciphers;
-extern size_t max_allowed_rules;
+extern size_t gMaxAllowedRules;
 
 const string_array clashr_protocols = {"origin", "auth_sha1_v4", "auth_aes128_md5", "auth_aes128_sha1", "auth_chain_a", "auth_chain_b"};
 const string_array clashr_obfs = {"plain", "http_simple", "http_post", "random_head", "tls1.2_ticket_auth", "tls1.2_ticket_fastauth"};
@@ -34,11 +34,11 @@ const string_array clash_ssr_ciphers = {"rc4-md5", "aes-128-ctr", "aes-192-ctr",
 
 /// rule type lists
 #define basic_types "DOMAIN", "DOMAIN-SUFFIX", "DOMAIN-KEYWORD", "IP-CIDR", "SRC-IP-CIDR", "GEOIP", "MATCH", "FINAL"
-string_array clash_rule_type = {basic_types, "IP-CIDR6", "SRC-PORT", "DST-PORT"};
-string_array surge2_rule_type = {basic_types, "IP-CIDR6", "USER-AGENT", "URL-REGEX", "PROCESS-NAME", "IN-PORT", "DEST-PORT", "SRC-IP"};
-string_array surge_rule_type = {basic_types, "IP-CIDR6", "USER-AGENT", "URL-REGEX", "AND", "OR", "NOT", "PROCESS-NAME", "IN-PORT", "DEST-PORT", "SRC-IP"};
-string_array quanx_rule_type = {basic_types, "USER-AGENT", "HOST", "HOST-SUFFIX", "HOST-KEYWORD"};
-string_array surfb_rule_type = {basic_types, "IP-CIDR6", "PROCESS-NAME", "IN-PORT", "DEST-PORT", "SRC-IP"};
+string_array ClashRuleTypes = {basic_types, "IP-CIDR6", "SRC-PORT", "DST-PORT"};
+string_array Surge2RuleTypes = {basic_types, "IP-CIDR6", "USER-AGENT", "URL-REGEX", "PROCESS-NAME", "IN-PORT", "DEST-PORT", "SRC-IP"};
+string_array SurgeRuleTypes = {basic_types, "IP-CIDR6", "USER-AGENT", "URL-REGEX", "AND", "OR", "NOT", "PROCESS-NAME", "IN-PORT", "DEST-PORT", "SRC-IP"};
+string_array QuanXRuleTypes = {basic_types, "USER-AGENT", "HOST", "HOST-SUFFIX", "HOST-KEYWORD"};
+string_array SurfRuleTypes = {basic_types, "IP-CIDR6", "PROCESS-NAME", "IN-PORT", "DEST-PORT", "SRC-IP"};
 
 std::string hostnameToIPAddr(const std::string &host)
 {
@@ -649,7 +649,7 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset
 
     for(ruleset_content &x : ruleset_content_array)
     {
-        if(max_allowed_rules && total_rules > max_allowed_rules)
+        if(gMaxAllowedRules && total_rules > gMaxAllowedRules)
             break;
         rule_group = x.rule_group;
         retrieved_rules = x.rule_content.get();
@@ -678,7 +678,7 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset
         std::string::size_type lineSize;
         while(getline(strStrm, strLine, delimiter))
         {
-            if(max_allowed_rules && total_rules > max_allowed_rules)
+            if(gMaxAllowedRules && total_rules > gMaxAllowedRules)
                 break;
             lineSize = strLine.size();
             /*
@@ -696,7 +696,7 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset
             if(strLine.find("USER-AGENT") == 0 || strLine.find("URL-REGEX") == 0 || strLine.find("PROCESS-NAME") == 0 || strLine.find("AND") == 0 || strLine.find("OR") == 0) //remove unsupported types
                 continue;
             */
-            if(!std::any_of(clash_rule_type.begin(), clash_rule_type.end(), [strLine](std::string type){return startsWith(strLine, type);}))
+            if(!std::any_of(ClashRuleTypes.begin(), ClashRuleTypes.end(), [strLine](std::string type){return startsWith(strLine, type);}))
                 continue;
             /*
             if(strLine.find("IP-CIDR") == 0)
@@ -737,7 +737,7 @@ std::string rulesetToClashStr(YAML::Node &base_rule, std::vector<ruleset_content
 
     for(ruleset_content &x : ruleset_content_array)
     {
-        if(max_allowed_rules && total_rules > max_allowed_rules)
+        if(gMaxAllowedRules && total_rules > gMaxAllowedRules)
             break;
         rule_group = x.rule_group;
         retrieved_rules = x.rule_content.get();
@@ -766,7 +766,7 @@ std::string rulesetToClashStr(YAML::Node &base_rule, std::vector<ruleset_content
         std::string::size_type lineSize;
         while(getline(strStrm, strLine, delimiter))
         {
-            if(max_allowed_rules && total_rules > max_allowed_rules)
+            if(gMaxAllowedRules && total_rules > gMaxAllowedRules)
                 break;
             lineSize = strLine.size();
             if(lineSize && strLine[lineSize - 1] == '\r')
@@ -776,7 +776,7 @@ std::string rulesetToClashStr(YAML::Node &base_rule, std::vector<ruleset_content
             }
             if(!lineSize || strLine[0] == ';' || strLine[0] == '#' || (lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')) //empty lines and comments are ignored
                 continue;
-            if(std::none_of(clash_rule_type.begin(), clash_rule_type.end(), [strLine](std::string type){return startsWith(strLine, type);}))
+            if(std::none_of(ClashRuleTypes.begin(), ClashRuleTypes.end(), [strLine](std::string type){return startsWith(strLine, type);}))
                 continue;
             strLine += "," + rule_group;
             if(count_least(strLine, ',', 3))
@@ -828,7 +828,7 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
 
     for(ruleset_content &x : ruleset_content_array)
     {
-        if(max_allowed_rules && total_rules > max_allowed_rules)
+        if(gMaxAllowedRules && total_rules > gMaxAllowedRules)
             break;
         rule_group = x.rule_group;
         rule_path = x.rule_path;
@@ -939,7 +939,7 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
             std::string::size_type lineSize;
             while(getline(strStrm, strLine, delimiter))
             {
-                if(max_allowed_rules && total_rules > max_allowed_rules)
+                if(gMaxAllowedRules && total_rules > gMaxAllowedRules)
                     break;
                 lineSize = strLine.size();
                 if(lineSize && strLine[lineSize - 1] == '\r') //remove line break
@@ -955,22 +955,22 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
                         continue;
                     [[fallthrough]];
                 case -1:
-                    if(!std::any_of(quanx_rule_type.begin(), quanx_rule_type.end(), [strLine](std::string type){return startsWith(strLine, type);}))
+                    if(!std::any_of(QuanXRuleTypes.begin(), QuanXRuleTypes.end(), [strLine](std::string type){return startsWith(strLine, type);}))
                         continue;
                     break;
                 case -3:
-                    if(!std::any_of(surfb_rule_type.begin(), surfb_rule_type.end(), [strLine](std::string type){return startsWith(strLine, type);}))
+                    if(!std::any_of(SurfRuleTypes.begin(), SurfRuleTypes.end(), [strLine](std::string type){return startsWith(strLine, type);}))
                         continue;
                     break;
                 default:
                     if(surge_ver > 2)
                     {
-                        if(!std::any_of(surge_rule_type.begin(), surge_rule_type.end(), [strLine](std::string type){return startsWith(strLine, type);}))
+                        if(!std::any_of(SurgeRuleTypes.begin(), SurgeRuleTypes.end(), [strLine](std::string type){return startsWith(strLine, type);}))
                             continue;
                     }
                     else
                     {
-                        if(!std::any_of(surge2_rule_type.begin(), surge2_rule_type.end(), [strLine](std::string type){return startsWith(strLine, type);}))
+                        if(!std::any_of(Surge2RuleTypes.begin(), Surge2RuleTypes.end(), [strLine](std::string type){return startsWith(strLine, type);}))
                             continue;
                     }
                 }
@@ -1645,7 +1645,7 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, const std::string &base_c
             proxy += "\", local-port=" + std::to_string(local_port);
             if(isIPv4(hostname) || isIPv6(hostname))
                 proxy += ", addresses=" + hostname;
-            else if(surge_ssr_resolve)
+            else if(gSurgeResolveHostname)
                 proxy += ", addresses=" + hostnameToIPAddr(hostname);
             local_port++;
             break;

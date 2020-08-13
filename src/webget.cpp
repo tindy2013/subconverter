@@ -16,13 +16,13 @@
 #endif // _stat
 #endif // _WIN32
 
-extern bool print_debug_info, serve_cache_on_fetch_fail;
-extern int global_log_level;
+extern bool gPrintDbgInfo, gServeCacheOnFetchFail;
+extern int gLogLevel;
 
 typedef std::lock_guard<std::mutex> guarded_mutex;
 std::mutex cache_rw_lock;
 
-long max_allowed_download_size = 1048576L;
+long gMaxAllowedDownloadSize = 1048576L;
 
 //std::string user_agent_str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36";
 std::string user_agent_str = "subconverter/" VERSION " cURL/" LIBCURL_VERSION;
@@ -60,7 +60,7 @@ static int dummy_writer(char *data, size_t size, size_t nmemb, void *writerData)
     return size * nmemb;
 }
 
-static int size_checker(void *clientp, double dltotal, double dlnow, double ultotal, double ulnow)
+static int size_checker(void *clientp, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow)
 {
     if(clientp)
     {
@@ -77,7 +77,7 @@ static int size_checker(void *clientp, double dltotal, double dlnow, double ulto
 static inline void curl_set_common_options(CURL *curl_handle, const char *url, curl_progress_data *data)
 {
     curl_easy_setopt(curl_handle, CURLOPT_URL, url);
-    curl_easy_setopt(curl_handle, CURLOPT_VERBOSE, global_log_level == LOG_LEVEL_VERBOSE ? 1L : 0L);
+    curl_easy_setopt(curl_handle, CURLOPT_VERBOSE, gLogLevel == LOG_LEVEL_VERBOSE ? 1L : 0L);
     curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 0L);
     curl_easy_setopt(curl_handle, CURLOPT_NOSIGNAL, 1L);
     curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1L);
@@ -117,7 +117,8 @@ static int curlGet(const FetchArgument &argument, FetchResult &result)
         else
             curl_easy_setopt(curl_handle, CURLOPT_PROXY, argument.proxy.data());
     }
-    curl_progress_data limit = {max_allowed_download_size};
+    curl_progress_data limit;
+    limit.size_limit = gMaxAllowedDownloadSize;
     curl_set_common_options(curl_handle, new_url.data(), &limit);
 
     if(argument.request_headers)
@@ -234,7 +235,7 @@ std::string webGet(const std::string &url, const std::string &proxy, unsigned in
         }
         else
         {
-            if(fileExist(path) && serve_cache_on_fetch_fail) // failed, check if cache exist
+            if(fileExist(path) && gServeCacheOnFetchFail) // failed, check if cache exist
             {
                 writeLog(0, "Fetch failed. Serving cached content."); // cache exist, serving cache
                 guarded_mutex guard(cache_rw_lock);

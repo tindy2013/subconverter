@@ -11,7 +11,7 @@
 #include "misc.h"
 #include "webget.h"
 
-extern std::string managed_config_prefix;
+extern std::string gManagedConfigPrefix;
 
 namespace inja
 {
@@ -133,7 +133,7 @@ int render_template(const std::string &content, const template_args &vars, std::
     });
     m_callbacks.add_callback("getLink", 1, [](inja::Arguments &args)
     {
-        return managed_config_prefix + args.at(0)->get<std::string>();
+        return gManagedConfigPrefix + args.at(0)->get<std::string>();
     });
     m_callbacks.add_callback("startsWith", 2, [](inja::Arguments &args)
     {
