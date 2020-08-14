@@ -1643,7 +1643,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     case "clash"_hash: case "clashr"_hash:
         writeLog(0, argTarget == "clashr" ? "Generate target: ClashR" : "Generate target: Clash", LOG_LEVEL_INFO);
         tpl_args.local_vars["clash.new_field_name"] = ext.clash_new_field_name ? "true" : "false";
-        response.headers["profile-update-interval"] = interval / 3600;
+        response.headers["profile-update-interval"] = std::to_string(interval / 3600);
         if(ext.nodelist)
         {
             YAML::Node yamlnode;
@@ -2048,7 +2048,7 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
     }
     clash[rule_name] = rule;
 
-    response.headers["profile-update-interval"] = gUpdateInterval / 3600;
+    response.headers["profile-update-interval"] = std::to_string(gUpdateInterval / 3600);
     writeLog(0, "Conversion completed.", LOG_LEVEL_INFO);
     return YAML::Dump(clash);
 }
