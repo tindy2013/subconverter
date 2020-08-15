@@ -1534,6 +1534,7 @@ using json = nlohmann::json;
 
 using Arguments = std::vector<const json *>;
 using CallbackFunction = std::function<json(Arguments &args)>;
+using VoidCallbackFunction = std::function<void(Arguments &args)>;
 
 /*!
  * \brief Class for builtin functions and user-defined callbacks.
@@ -2161,6 +2162,11 @@ public:
     pos = 0;
     state = State::Text;
     minus_state = MinusState::Number;
+
+    // Consume byte order mark (BOM) for UTF-8
+    if (inja::string_view::starts_with(m_in, "\xEF\xBB\xBF")) {
+      m_in = m_in.substr(3);
+    }
   }
 
   Token scan() {
@@ -2206,8 +2212,7 @@ public:
       } else if (inja::string_view::starts_with(open_str, config.comment_open)) {
         state = State::CommentStart;
         must_lstrip = config.lstrip_blocks;
-      } else if ((pos == 0 || m_in[pos - 1] == '\n') &&
-                 inja::string_view::starts_with(open_str, config.line_statement)) {
+      } else if ((pos == 0 || m_in[pos - 1] == '\n') && inja::string_view::starts_with(open_str, config.line_statement)) {
         state = State::LineStart;
       } else {
         pos += 1; // wasn't actually an opening sequence
@@ -3378,7 +3383,10 @@ class Renderer : public NodeVisitor  {
 
   void print_json(const std::shared_ptr<json> value) {
     if (value->is_string()) {
-      *output_stream << value->get_ref<const std::string &>();
+      *output_stream << value->get_ref<const json::string_t&>();
+    } else if (value->is_number_integer()) {
+      *output_stream << value->get<const json::number_integer_t>();
+    } else if (value->is_null()) {
     } else {
       *output_stream << value->dump();
     }
@@ -3476,11 +3484,11 @@ class Renderer : public NodeVisitor  {
 
   void visit(const JsonNode& node) {
     if (json_additional_data.contains(node.ptr)) {
-      json_eval_stack.push(&json_additional_data[node.ptr]);
-
+      json_eval_stack.push(&(json_additional_data[node.ptr]));
+    
     } else if (json_input->contains(node.ptr)) {
       json_eval_stack.push(&(*json_input)[node.ptr]);
-
+    
     } else {
       // Try to evaluate as a no-argument callback
       auto function_data = function_storage.find_function(node.name, 0);
@@ -3564,7 +3572,7 @@ class Renderer : public NodeVisitor  {
     case Op::Add: {
       auto args = get_arguments<2>(node);
       if (args[0]->is_string() && args[1]->is_string()) {
-        result_ptr = std::make_shared<json>(args[0]->get<std::string>() + args[1]->get<std::string>());
+        result_ptr = std::make_shared<json>(args[0]->get_ref<const std::string&>() + args[1]->get_ref<const std::string&>());
         json_tmp_stack.push_back(result_ptr);
       } else if (args[0]->is_number_integer() && args[1]->is_number_integer()) {
         result_ptr = std::make_shared<json>(args[0]->get<int>() + args[1]->get<int>());
@@ -3915,6 +3923,7 @@ public:
     json_input = &data;
     if (loop_data) {
       json_additional_data = *loop_data;
+      current_loop_data = &json_additional_data["loop"];
     }
 
     current_template->root.accept(*this);
@@ -3979,7 +3988,9 @@ public:
   /// Sets the opener and closer for template expressions
   void set_expression(const std::string &open, const std::string &close) {
     lexer_config.expression_open = open;
+    lexer_config.expression_open_force_lstrip = open + "-";
     lexer_config.expression_close = close;
+    lexer_config.expression_close_force_rstrip = "-" + close;
     lexer_config.update_open_chars();
   }
 
@@ -4088,7 +4099,14 @@ public:
   @brief Adds a variadic callback
   */
   void add_callback(const std::string &name, const CallbackFunction &callback) {
-    function_storage.add_callback(name, -1, callback);
+    add_callback(name, -1, callback);
+  }
+
+  /*!
+  @brief Adds a variadic void callback
+  */
+  void add_void_callback(const std::string &name, const VoidCallbackFunction &callback) {
+    add_void_callback(name, -1, callback);
   }
 
   /*!
@@ -4096,6 +4114,13 @@ public:
   */
   void add_callback(const std::string &name, int num_args, const CallbackFunction &callback) {
     function_storage.add_callback(name, num_args, callback);
+  }
+
+  /*!
+  @brief Adds a void callback with given number or arguments
+  */
+  void add_void_callback(const std::string &name, int num_args, const VoidCallbackFunction &callback) {
+    function_storage.add_callback(name, num_args, [callback](Arguments& args) { callback(args); return json(); });
   }
 
   /** Includes a template with a given name into the environment.
