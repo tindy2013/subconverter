@@ -1,6 +1,7 @@
 # 内容：HBO
-# 数量：9条
+# 数量：10条
 USER-AGENT,HBO%20NOW*
+USER-AGENT,HBOMAX*
 DOMAIN-SUFFIX,execute-api.ap-southeast-1.amazonaws.com
 DOMAIN-SUFFIX,hbo.com
 DOMAIN-SUFFIX,hboasia.com

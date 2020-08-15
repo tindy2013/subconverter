@@ -27,6 +27,9 @@ DOMAIN-SUFFIX,dl.google.com
 # > Microsoft
 DOMAIN-SUFFIX,msftconnecttest.com
 
+# > Mugglepay
+DOMAIN-SUFFIX,invoice.mugglepay.com
+
 # > Proxy plugin
 PROCESS-NAME,v2ray
 PROCESS-NAME,ss-local

@@ -1,0 +1,4 @@
+# > YouTubeMusic
+# ⚠️ 注意，需要放置在 YouTube.list 之前
+USER-AGENT,com.google.ios.youtubemusic*
+USER-AGENT,YouTubeMusic*

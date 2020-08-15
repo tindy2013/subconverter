@@ -1,0 +1,11 @@
+# > Apple News
+DOMAIN,gspe1-ssl.ls.apple.com // 必要，但会导致「地图」使用「TOMTOM」版本数据
+PROCESS-NAME,News
+USER-AGENT,AppleNews*
+# USER-AGENT,News* // 「今日头条」亦使用此，故不启用
+USER-AGENT,com.apple.news*
+DOMAIN-SUFFIX,apple.news
+DOMAIN,news-client.apple.com
+DOMAIN,news-edge.apple.com
+DOMAIN,news-events.apple.com
+DOMAIN,apple.comscoreresearch.com

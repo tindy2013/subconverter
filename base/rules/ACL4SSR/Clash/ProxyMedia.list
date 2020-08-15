@@ -1,6 +1,6 @@
 # 内容：国外媒体列表
-# 更新：2020-07-26 20:28:45
-# 数量：277条
+# 更新：2020-08-12 23:58:29
+# 数量：283条
 
 # ABC
 DOMAIN-SUFFIX,edgedatg.com
@@ -8,10 +8,7 @@ DOMAIN-SUFFIX,go.com
 
 # AbemaTV
 USER-AGENT,AbemaTV*
-DOMAIN,abematv.akamaized.net
-DOMAIN,ds-linear-abematv.akamaized.net
-DOMAIN,ds-vod-abematv.akamaized.net
-DOMAIN,linear-abematv.akamaized.net
+DOMAIN-KEYWORD,abematv.akamaized.net
 DOMAIN-SUFFIX,abema.io
 DOMAIN-SUFFIX,abema.tv
 DOMAIN-SUFFIX,ameba.jp
@@ -25,14 +22,7 @@ DOMAIN-SUFFIX,channel4.com
 # Amazon
 USER-AGENT,InstantVideo.US*
 USER-AGENT,Prime%20Video*
-DOMAIN-KEYWORD,avoddashs
-DOMAIN,avodmp4s3ww-a.akamaihd.net
-DOMAIN,d1v5ir2lpwr8os.cloudfront.net
-DOMAIN,d22qjgkvxw22r6.cloudfront.net
-DOMAIN,d25xi40x97liuc.cloudfront.net
-DOMAIN,dmqdd6hw24ucf.cloudfront.net
 DOMAIN-SUFFIX,aiv-cdn.net
-DOMAIN-SUFFIX,aiv-delivery.net
 DOMAIN-SUFFIX,amazonaws.co.uk
 DOMAIN-SUFFIX,amazonaws.com
 DOMAIN-SUFFIX,amazonvideo.com
@@ -93,6 +83,7 @@ USER-AGENT,Disney*
 USER-AGENT,Disney+*
 DOMAIN,cdn.cdn.unid.go.com
 DOMAIN,cdn.registerdisney.go.com
+DOMAIN,global.edge.bamgrid.com
 DOMAIN-SUFFIX,bamgrid.com
 DOMAIN-SUFFIX,braze.com
 DOMAIN-SUFFIX,conviva.com
@@ -119,12 +110,19 @@ DOMAIN-SUFFIX,uplynk.com
 
 # FoxPlus
 USER-AGENT,FOXPlus*
+DOMAIN,cdn-fox-networks-group-green.akamaized.net
+DOMAIN,d3cv4a9a9wh0bt.cloudfront.net
+DOMAIN,foxsports01-i.akamaihd.net
+DOMAIN,foxsports02-i.akamaihd.net
+DOMAIN,foxsports03-i.akamaihd.net
+DOMAIN,staticasiafox.akamaized.net
 DOMAIN-SUFFIX,akamaized.net
 DOMAIN-SUFFIX,foxplus.com
 DOMAIN-SUFFIX,theplatform.com
 
 # HBO
 USER-AGENT,HBO%20NOW*
+USER-AGENT,HBOMAX*
 DOMAIN-SUFFIX,execute-api.ap-southeast-1.amazonaws.com
 DOMAIN-SUFFIX,hbo.com
 DOMAIN-SUFFIX,hboasia.com
@@ -173,6 +171,7 @@ DOMAIN-SUFFIX,itvstatic.com
 # JOOX
 USER-AGENT,JOOX*
 USER-AGENT,WeMusic*
+DOMAIN-KEYWORD,jooxweb-api
 DOMAIN-SUFFIX,joox.com
 
 # Japonx
@@ -244,9 +243,12 @@ DOMAIN-SUFFIX,nflxso.net
 DOMAIN-SUFFIX,nflxvideo.net
 IP-CIDR,8.41.4.0/24,no-resolve
 IP-CIDR,23.246.0.0/18,no-resolve
+IP-CIDR,34.210.42.111/32,no-resolve
 IP-CIDR,37.77.184.0/21,no-resolve
 IP-CIDR,38.72.126.0/24,no-resolve
 IP-CIDR,45.57.0.0/17,no-resolve
+IP-CIDR,52.89.124.203/32,no-resolve
+IP-CIDR,54.148.37.5/32,no-resolve
 IP-CIDR,64.120.128.0/17,no-resolve
 IP-CIDR,66.197.128.0/17,no-resolve
 IP-CIDR,69.53.224.0/19,no-resolve
@@ -306,7 +308,7 @@ DOMAIN-SUFFIX,tidal-cms.s3.amazonaws.com
 DOMAIN-SUFFIX,tidal.com
 DOMAIN-SUFFIX,tidalhifi.com
 
-# TaiWanGood
+# TaiWanGood 台湾好
 USER-AGENT,TaiwanGood*
 DOMAIN,hamifans.emome.net
 DOMAIN-SUFFIX,skyking.com.tw
@@ -314,8 +316,12 @@ DOMAIN-SUFFIX,skyking.com.tw
 # TikTok
 USER-AGENT,TikTok*
 DOMAIN-KEYWORD,-tiktokcdn-com
+DOMAIN-SUFFIX,byteoversea.com
+DOMAIN-SUFFIX,ibytedtos.com
+DOMAIN-SUFFIX,ipstatp.com
 DOMAIN-SUFFIX,muscdn.com
 DOMAIN-SUFFIX,musical.ly
+DOMAIN-SUFFIX,tiktok.com
 DOMAIN-SUFFIX,tiktokcdn.com
 DOMAIN-SUFFIX,tiktokv.com
 

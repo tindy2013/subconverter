@@ -1,0 +1,7 @@
+# Telegram US
+IP-CIDR,91.108.12.0/27,no-resolve
+IP-CIDR,149.154.172.0/22,no-resolve
+IP-CIDR6,2001:b28:f23d:f001::e/128,no-resolve
+IP-CIDR6,2001:b28:f23d:f003::e/128,no-resolve
+IP-CIDR6,2001:b28:f23d:f001::a/128,no-resolve
+IP-CIDR6,2001:b28:f23d:f003::a/128,no-resolve

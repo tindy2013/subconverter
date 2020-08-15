@@ -1,7 +1,13 @@
 # 内容：Twitter
-# 数量：5条
+# 数量：11条
 DOMAIN-KEYWORD,twitter
+DOMAIN-SUFFIX,periscope.tv
+DOMAIN-SUFFIX,pscp.tv
 DOMAIN-SUFFIX,t.co
 DOMAIN-SUFFIX,twimg.co
 DOMAIN-SUFFIX,twimg.com
 DOMAIN-SUFFIX,twimg.org
+DOMAIN-SUFFIX,twitpic.com
+DOMAIN-SUFFIX,twitter.com
+DOMAIN-SUFFIX,twitter.jp
+DOMAIN-SUFFIX,vine.co

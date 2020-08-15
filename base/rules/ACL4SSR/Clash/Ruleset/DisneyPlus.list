@@ -1,9 +1,10 @@
 # 内容：DisneyPlus
-# 数量：12条
+# 数量：13条
 USER-AGENT,Disney*
 USER-AGENT,Disney+*
 DOMAIN,cdn.cdn.unid.go.com
 DOMAIN,cdn.registerdisney.go.com
+DOMAIN,global.edge.bamgrid.com
 DOMAIN-SUFFIX,bamgrid.com
 DOMAIN-SUFFIX,braze.com
 DOMAIN-SUFFIX,conviva.com

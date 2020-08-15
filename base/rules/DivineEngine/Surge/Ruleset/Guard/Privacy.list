@@ -1,0 +1,24 @@
+# Privacy
+DOMAIN,track.tiara.daum.net
+DOMAIN,track.tiara.kakao.com
+DOMAIN,trackapp.guahao.cn
+DOMAIN,zgsdk.zhugeio.com
+
+# > 58
+DOMAIN,track.58.com
+DOMAIN,tracklog.58.com
+# > Facebook
+# DOMAIN,graph.facebook.com
+# > Google
+DOMAIN-SUFFIX,googletagmanager.com
+DOMAIN,ssl.google-analytics.com
+DOMAIN,www.google-analytics.com
+# > MI
+DOMAIN-SUFFIX,tracking.miui.com
+DOMAIN,data.mistat.xiaomi.com
+DOMAIN,tracking.intl.miui.com
+# > Tencent
+DOMAIN,pingma.qq.com
+DOMAIN,btrace.qq.com
+DOMAIN,mtrace.qq.com
+DOMAIN,safebrowsing.urlsec.qq.com

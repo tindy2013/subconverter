@@ -1,8 +1,0 @@
-payload:
-  # 内容：Sony
-  # 数量：5条
-  - DOMAIN-SUFFIX,playstation.com
-  - DOMAIN-SUFFIX,playstation.net
-  - DOMAIN-SUFFIX,playstationnetwork.com
-  - DOMAIN-SUFFIX,sony.com
-  - DOMAIN-SUFFIX,sonyentertainmentnetwork.com

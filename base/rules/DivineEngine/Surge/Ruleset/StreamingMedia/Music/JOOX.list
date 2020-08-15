@@ -1,0 +1,5 @@
+# > JOOX
+USER-AGENT,JOOX*
+USER-AGENT,WeMusic*
+DOMAIN-SUFFIX,joox.com
+DOMAIN-KEYWORD,jooxweb-api

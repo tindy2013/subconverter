@@ -1,0 +1,6 @@
+# > Apple Music
+PROCESS-NAME,Music
+USER-AGENT,Music*
+DOMAIN,aod.itunes.apple.com
+DOMAIN,mvod.itunes.apple.com
+DOMAIN,streamingaudio.itunes.apple.com
