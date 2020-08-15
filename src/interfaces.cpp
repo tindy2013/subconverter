@@ -2435,7 +2435,7 @@ std::string renderTemplate(RESPONSE_CALLBACK_ARGS)
     std::string path = UrlDecode(getUrlArg(argument, "path"));
     writeLog(0, "Trying to render template '" + path + "'...", LOG_LEVEL_INFO);
 
-    if(startsWith(path, gTemplatePath) || !fileExist(path))
+    if(!startsWith(path, gTemplatePath) || !fileExist(path))
     {
         *status_code = 404;
         return "Not found";

@@ -96,8 +96,6 @@ void OnReq(evhttp_request *req, void *args)
     evhttp_connection_get_peer(evhttp_request_get_connection(req), &client_ip, &client_port);
     //std::cerr<<"Accept connection from client "<<client_ip<<":"<<client_port<<"\n";
     writeLog(0, "Accept connection from client " + std::string(client_ip) + ":" + std::to_string(client_port), LOG_LEVEL_DEBUG);
-    int retVal;
-    std::string postdata, content_type, return_data;
 
     if(internal_flag != NULL && strcmp(internal_flag, "1") == 0)
     {
@@ -105,19 +103,19 @@ void OnReq(evhttp_request *req, void *args)
         return;
     }
 
+    Request request;
+    Response response;
     if(EVBUFFER_LENGTH(req->input_buffer) != 0)
     {
-        postdata.assign((char *)EVBUFFER_DATA(req->input_buffer), EVBUFFER_LENGTH(req->input_buffer));
+        request.postdata.assign((char *)EVBUFFER_DATA(req->input_buffer), EVBUFFER_LENGTH(req->input_buffer));
         if(req_content_type != NULL && strcmp(req_content_type, "application/x-www-form-urlencoded") == 0)
-            postdata = UrlDecode(postdata);
+            request.postdata = UrlDecode(request.postdata);
     }
     else if(req_ac_method != NULL)
     {
-        postdata.assign(req_ac_method);
+        request.postdata.assign(req_ac_method);
     }
 
-    Request request;
-    Response response;
     switch(req->type)
     {
         case EVHTTP_REQ_GET: request.method = "GET"; break;
@@ -136,8 +134,9 @@ void OnReq(evhttp_request *req, void *args)
     }
     request.headers.emplace("X-Client-IP", client_ip);
 
-    retVal = process_request(request, response, return_data);
-    content_type = response.content_type;
+    std::string return_data;
+    int retVal = process_request(request, response, return_data);
+    std::string content_type = response.content_type;
 
     auto *OutBuf = evhttp_request_get_output_buffer(req);
     //struct evbuffer *OutBuf = evbuffer_new();
