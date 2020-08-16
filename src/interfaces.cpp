@@ -95,7 +95,7 @@ struct UAProfile
     std::string version_match;
     std::string version_target;
     std::string target;
-    tribool clash_new_name;
+    tribool clash_new_name = tribool();
     int surge_ver = -1;
 };
 

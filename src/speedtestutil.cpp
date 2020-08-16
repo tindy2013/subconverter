@@ -32,7 +32,12 @@ void explodeVmess(std::string vmess, const std::string &custom_port, nodeInfo &n
     std::string version, ps, add, port, type, id, aid, net, path, host, tls;
     Document jsondata;
     std::vector<std::string> vArray;
-    if(regMatch(vmess, "vmess://(.*?)\\?(.*)")) //shadowrocket style link
+    if(regMatch(vmess, "vmess://(.*?)@(.*)"))
+    {
+        explodeStdVMess(vmess, custom_port, node);
+        return;
+    }
+    else if(regMatch(vmess, "vmess://(.*?)\\?(.*)")) //shadowrocket style link
     {
         explodeShadowrocket(vmess, custom_port, node);
         return;
@@ -1001,26 +1006,27 @@ void explodeClash(Node yamlnode, const std::string &custom_port, std::vector<nod
             {
                 switch(hash_(safe_as<std::string>(singleproxy["plugin"])))
                 {
-                    case "obfs"_hash:
-                        plugin = "simple-obfs";
-                        if(singleproxy["plugin-opts"].IsDefined())
-                        {
-                            singleproxy["plugin-opts"]["mode"] >>= pluginopts_mode;
-                            singleproxy["plugin-opts"]["host"] >>= pluginopts_host;
-                        }
-                        break;
-                    case "v2ray-plugin"_hash:
-                        plugin = "v2ray-plugin";
-                        if(singleproxy["plugin-opts"].IsDefined())
-                        {
-                            singleproxy["plugin-opts"]["mode"] >>= pluginopts_mode;
-                            singleproxy["plugin-opts"]["host"] >>= pluginopts_host;
-                            tls = safe_as<bool>(singleproxy["plugin-opts"]["tls"]) ? "tls;" : "";
-                            singleproxy["plugin-opts"]["path"] >>= path;
-                            pluginopts_mux = safe_as<bool>(singleproxy["plugin-opts"]["mux"]) ? "mux=4;" : "";
-                        }
-                        break;
-                    default: break;
+                case "obfs"_hash:
+                    plugin = "simple-obfs";
+                    if(singleproxy["plugin-opts"].IsDefined())
+                    {
+                        singleproxy["plugin-opts"]["mode"] >>= pluginopts_mode;
+                        singleproxy["plugin-opts"]["host"] >>= pluginopts_host;
+                    }
+                    break;
+                case "v2ray-plugin"_hash:
+                    plugin = "v2ray-plugin";
+                    if(singleproxy["plugin-opts"].IsDefined())
+                    {
+                        singleproxy["plugin-opts"]["mode"] >>= pluginopts_mode;
+                        singleproxy["plugin-opts"]["host"] >>= pluginopts_host;
+                        tls = safe_as<bool>(singleproxy["plugin-opts"]["tls"]) ? "tls;" : "";
+                        singleproxy["plugin-opts"]["path"] >>= path;
+                        pluginopts_mux = safe_as<bool>(singleproxy["plugin-opts"]["mux"]) ? "mux=4;" : "";
+                    }
+                    break;
+                default:
+                    break;
                 }
             }
             else if(singleproxy["obfs"].IsDefined())
@@ -1133,6 +1139,57 @@ void explodeClash(Node yamlnode, const std::string &custom_port, std::vector<nod
     return;
 }
 
+void explodeStdVMess(std::string vmess, const std::string &custom_port, nodeInfo &node)
+{
+    std::string add, port, type, id, aid, net, path, host, tls, remarks;
+    std::string addition;
+    vmess = vmess.substr(8);
+    string_size pos;
+
+    pos = vmess.rfind("#");
+    if(pos != vmess.npos)
+    {
+        remarks = UrlDecode(vmess.substr(pos + 1));
+        vmess.erase(pos);
+    }
+    const std::string stdvmess_matcher = R"(^([a-z]+)(?:\+([a-z]+))?:([\da-f]{4}(?:[\da-f]{4}-){4}[\da-f]{12})-(\d+)@(.+):(\d+)(?:\/?\?(.*))?$)";
+    if(regGetMatch(vmess, stdvmess_matcher, 8, 0, &net, &tls, &id, &aid, &add, &port, &addition))
+        return;
+
+    switch(hash_(net))
+    {
+    case "tcp"_hash:
+    case "kcp"_hash:
+        type = getUrlArg(addition, "type");
+        break;
+    case "http"_hash:
+    case "ws"_hash:
+        host = getUrlArg(addition, "host");
+        path = getUrlArg(addition, "path");
+        break;
+    case "quic"_hash:
+        type = getUrlArg(addition, "security");
+        host = getUrlArg(addition, "type");
+        path = getUrlArg(addition, "key");
+        break;
+    default:
+        return;
+    }
+
+    if(!custom_port.empty())
+        port = custom_port;
+    if(remarks.empty())
+        remarks = add + ":" + port;
+
+    node.linkType = SPEEDTEST_MESSAGE_FOUNDVMESS;
+    node.group = V2RAY_DEFAULT_GROUP;
+    node.remarks = remarks;
+    node.server = add;
+    node.port = to_int(port, 0);
+    node.proxyStr = vmessConstruct(node.group, remarks, add, port, type, id, aid, net, "auto", path, host, "", tls);
+    return;
+}
+
 void explodeShadowrocket(std::string rocket, const std::string &custom_port, nodeInfo &node)
 {
     std::string add, port, type, id, aid, net = "tcp", path, host, tls, cipher, remarks;
@@ -1140,8 +1197,9 @@ void explodeShadowrocket(std::string rocket, const std::string &custom_port, nod
     std::string addition;
     rocket = rocket.substr(8);
 
-    addition = rocket.substr(rocket.find("?") + 1);
-    rocket = rocket.substr(0, rocket.find("?"));
+    string_size pos = rocket.find("?");
+    addition = rocket.substr(pos + 1);
+    rocket.erase(pos);
 
     if(regGetMatch(urlsafe_base64_decode(rocket), "(.*?):(.*)@(.*):(.*)", 5, 0, &cipher, &id, &add, &port))
         return;

@@ -127,6 +127,7 @@ static int curlGet(const FetchArgument &argument, FetchResult &result)
             list = curl_slist_append(list, (x.first + ": " + x.second).data());
     }
     list = curl_slist_append(list, "SubConverter-Request: 1");
+    list = curl_slist_append(list, "SubConverter-Version: " VERSION);
     if(list)
         curl_easy_setopt(curl_handle, CURLOPT_HTTPHEADER, list);
 
