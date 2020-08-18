@@ -37,6 +37,9 @@ extern int gLogLevel;
 extern long gMaxAllowedDownloadSize;
 string_map gAliases;
 
+extern bool gServeFile;
+extern std::string gServeFileRoot;
+
 //global variables for template
 std::string gTemplatePath = "templates";
 string_map gTemplateVars;
@@ -837,6 +840,8 @@ void readYAMLConf(YAML::Node &node)
     {
         node["server"]["listen"] >> gListenAddress;
         node["server"]["port"] >> gListenPort;
+        node["server"]["serve_file_root"] >>= gServeFileRoot;
+        gServeFile = !gServeFileRoot.empty();
     }
 
     if(node["advanced"].IsDefined())
@@ -1088,6 +1093,8 @@ void readConf()
     ini.EnterSection("server");
     ini.GetIfExist("listen", gListenAddress);
     ini.GetIntIfExist("port", gListenPort);
+    gServeFileRoot = ini.Get("serve_file_root");
+    gServeFile = !gServeFileRoot.empty();
 
     ini.EnterSection("advanced");
     std::string log_level;

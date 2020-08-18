@@ -143,10 +143,12 @@ int main(int argc, char *argv[])
     if(gGeneratorMode)
         return simpleGenerator();
 
+    /*
     append_response("GET", "/", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
         return "subconverter " VERSION " backend\n";
     });
+    */
 
     append_response("GET", "/version", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {

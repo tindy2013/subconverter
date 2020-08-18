@@ -21,6 +21,72 @@
 extern std::string user_agent_str;
 std::atomic_bool SERVER_EXIT_FLAG(false);
 
+// file server
+bool gServeFile = false;
+std::string gServeFileRoot;
+
+struct MIME_type
+{
+    std::string extension;
+    std::string mimetype;
+};
+
+MIME_type mime_types[] = {{"html htm shtml","text/html"},
+                          {"css",           "text/css"},
+                          {"jpeg jpg",      "image/jpeg"},
+                          {"js",            "application/javascript"},
+                          {"txt",           "text/plain"},
+                          {"png",           "image/png"},
+                          {"ico",           "image/x-icon"},
+                          {"svg svgz",      "image/svg+xml"},
+                          {"woff",          "application/font-woff"},
+                          {"json",          "application/json"}};
+
+bool matchSpaceSeparatedList(const std::string& source, const std::string &target)
+{
+    string_size pos_begin = 0, pos_end, total = source.size();
+    while(pos_begin < total)
+    {
+        pos_end = source.find(' ', pos_begin);
+        if(pos_end == source.npos)
+            pos_end = total;
+        if(source.compare(pos_begin, pos_end - pos_begin, target) == 0)
+            return true;
+        pos_begin = pos_end + 1;
+    }
+    return false;
+}
+
+std::string checkMIMEType(const std::string filename)
+{
+    string_size name_begin = 0, name_end = 0;
+    name_begin = filename.rfind('/');
+    if(name_begin == filename.npos)
+        name_begin = 0;
+    name_end = filename.rfind('.');
+    if(name_end == filename.npos || name_end < name_begin || name_end == filename.size() - 1)
+        return "application/octet-stream";
+    std::string extension = filename.substr(name_end + 1);
+    for(MIME_type &x : mime_types)
+        if(matchSpaceSeparatedList(x.extension, extension))
+            return x.mimetype;
+    return "application/octet-stream";
+}
+
+int serveFile(const std::string &filename, std::string &content_type, std::string &return_data)
+{
+    std::string realname = gServeFileRoot + filename;
+    if(filename.compare("/") == 0)
+        realname += "index.html";
+    if(!fileExist(realname))
+        return 1;
+
+    return_data = fileGet(realname, false);
+    content_type = checkMIMEType(realname);
+    writeLog(0, "file-server: serving '" + filename + "' type '" + content_type + "'", LOG_LEVEL_INFO);
+    return 0;
+}
+
 struct responseRoute
 {
     std::string method;
@@ -81,6 +147,12 @@ static inline int process_request(Request &request, Response &response, std::str
         }
         response.content_type = "REDIRECT";
         return 0;
+    }
+
+    if(gServeFile)
+    {
+        if(request.method.compare("GET") == 0 && serveFile(request.url, response.content_type, return_data) == 0)
+            return 0;
     }
 
     return -1;
