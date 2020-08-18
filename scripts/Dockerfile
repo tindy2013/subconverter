@@ -25,7 +25,7 @@ RUN apk add --no-cache --virtual .build-tools git g++ build-base linux-headers c
     cd subconverter && \
     cmake -DCMAKE_BUILD_TYPE=Release . && \
     make -j4 && \
-    mv subconverter base/ && \
+    mv subconverter /usr/bin && \
     mv base ../ && \
     cd .. && \
     rm -rf subconverter && \
@@ -34,4 +34,4 @@ RUN apk add --no-cache --virtual .build-tools git g++ build-base linux-headers c
 
 # set entry
 WORKDIR /base
-CMD ./subconverter
+CMD subconverter
