@@ -34,7 +34,7 @@ const string_array clash_ssr_ciphers = {"rc4-md5", "aes-128-ctr", "aes-192-ctr",
 
 /// rule type lists
 #define basic_types "DOMAIN", "DOMAIN-SUFFIX", "DOMAIN-KEYWORD", "IP-CIDR", "SRC-IP-CIDR", "GEOIP", "MATCH", "FINAL"
-string_array ClashRuleTypes = {basic_types, "IP-CIDR6", "SRC-PORT", "DST-PORT"};
+string_array ClashRuleTypes = {basic_types, "IP-CIDR6", "SRC-PORT", "DST-PORT", "PROCESS-NAME"};
 string_array Surge2RuleTypes = {basic_types, "IP-CIDR6", "USER-AGENT", "URL-REGEX", "PROCESS-NAME", "IN-PORT", "DEST-PORT", "SRC-IP"};
 string_array SurgeRuleTypes = {basic_types, "IP-CIDR6", "USER-AGENT", "URL-REGEX", "AND", "OR", "NOT", "PROCESS-NAME", "IN-PORT", "DEST-PORT", "SRC-IP"};
 string_array QuanXRuleTypes = {basic_types, "USER-AGENT", "HOST", "HOST-SUFFIX", "HOST-KEYWORD"};
@@ -1528,6 +1528,7 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, const std::string &base_c
     ini.AddDirectSaveSection("Rule");
     ini.AddDirectSaveSection("MITM");
     ini.AddDirectSaveSection("Script");
+    ini.AddDirectSaveSection("Host");
     ini.AddDirectSaveSection("URL Rewrite");
     ini.AddDirectSaveSection("Header Rewrite");
     if(ini.Parse(base_conf) != 0 && !ext.nodelist)
@@ -2586,7 +2587,7 @@ std::string netchToSSD(std::vector<nodeInfo> &nodes, std::string &group, std::st
     rapidjson::Document json;
     rapidjson::StringBuffer sb;
     rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
-    std::string remark, hostname, password, method;
+    std::string hostname, password, method;
     std::string plugin, pluginopts;
     std::string protocol, protoparam, obfs, obfsparam;
     int port, index = 0;
@@ -2629,7 +2630,6 @@ std::string netchToSSD(std::vector<nodeInfo> &nodes, std::string &group, std::st
     {
         json.Parse(x.proxyStr.data());
 
-        remark = "\"" + replace_all_distinct(UTF8ToCodePoint(x.remarks), "\\u1f1", "\\ud83c\\udd") + "\""; //convert UTF-8 characters to code points
         hostname = GetMember(json, "Hostname");
         port = (unsigned short)to_int(GetMember(json, "Port"));
         password = GetMember(json, "Password");
@@ -2660,7 +2660,7 @@ std::string netchToSSD(std::vector<nodeInfo> &nodes, std::string &group, std::st
             writer.Key("plugin_options");
             writer.String(pluginopts.data());
             writer.Key("remarks");
-            writer.RawValue(remark.data(), remark.size(), rapidjson::Type::kStringType);
+            writer.String(x.remarks.data());
             writer.Key("id");
             writer.Int(index);
             writer.EndObject();
@@ -2677,9 +2677,8 @@ std::string netchToSSD(std::vector<nodeInfo> &nodes, std::string &group, std::st
                 writer.String(method.data());
                 writer.Key("password");
                 writer.String(password.data());
-                writer.String(pluginopts.data());
                 writer.Key("remarks");
-                writer.RawValue(remark.data(), remark.size(), rapidjson::Type::kStringType);
+                writer.String(x.remarks.data());
                 writer.Key("id");
                 writer.Int(index);
                 writer.EndObject();
