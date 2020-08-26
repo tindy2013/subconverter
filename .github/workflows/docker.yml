@@ -14,10 +14,9 @@ jobs:
 
       - name: Set up docker buildx
         id: buildx
-        uses: crazy-max/ghaction-docker-buildx@v2
+        uses: crazy-max/ghaction-docker-buildx@v3
         with:
           buildx-version: latest
-          skip-cache: false
           qemu-version: latest
 
       - name: Docker login
