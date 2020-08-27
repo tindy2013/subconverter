@@ -169,6 +169,7 @@ int render_template(const std::string &content, const template_args &vars, std::
         switch(hash_(value))
         {
         case "true"_hash:
+        case "1"_hash:
             return 1;
         default:
             return 0;

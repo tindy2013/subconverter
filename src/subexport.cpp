@@ -848,7 +848,7 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
             }
             else
             {
-                if(count_least(strLine, ',', 3))
+                if(!startsWith(strLine, "AND") && !startsWith(strLine, "OR") && !startsWith(strLine, "NOT") && count_least(strLine, ',', 3))
                     strLine = regReplace(strLine, rule_match_regex, "$1$3$2");
             }
             strLine = replace_all_distinct(strLine, ",,", ",");
@@ -987,7 +987,7 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
                 }
                 else
                 {
-                    if(count_least(strLine, ',', 3))
+                    if(!startsWith(strLine, "AND") && !startsWith(strLine, "OR") && !startsWith(strLine, "NOT") && count_least(strLine, ',', 3))
                         strLine = regReplace(strLine, rule_match_regex, "$1$3$2");
                 }
                 allRules.emplace_back(std::move(strLine));
