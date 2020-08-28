@@ -107,9 +107,24 @@ static duk_ret_t native_print(duk_context *ctx)
 
 static duk_ret_t fetch(duk_context *ctx)
 {
+    /*
     std::string filepath, proxy;
     duktape_get_arguments_str(ctx, 1, 2, &filepath, &proxy);
     std::string content = fetchFile(filepath, proxy, gCacheConfig);
+    duk_push_lstring(ctx, content.c_str(), content.size());
+    */
+    std::string filepath, proxy, method, postdata, content;
+    if(duktape_get_arguments_str(ctx, 1, 4, &filepath, &proxy, &method, &postdata) == 0)
+        return 0;
+    switch(hash_(method))
+    {
+    case "POST"_hash:
+        webPost(filepath, postdata, proxy, string_array{}, &content);
+        break;
+    default:
+        content = fetchFile(filepath, proxy, gCacheConfig);
+        break;
+    }
     duk_push_lstring(ctx, content.c_str(), content.size());
     return 1;
 }
