@@ -79,6 +79,10 @@ jobs:
         install -m0644 ./duk*.h /mingw64/include
         install -m0644 ../extras/module-node/duk_module_node.h /mingw64/include
         cd ../../../..
+        git clone https://github.com/Tencent/rapidjson --depth=1
+        cd rapidjson
+        install -d include/* /mingw64/include/
+        cd ..
         cmake -DCMAKE_BUILD_TYPE=Release -G "Unix Makefiles" .
         make -j4
         rm subconverter.exe
