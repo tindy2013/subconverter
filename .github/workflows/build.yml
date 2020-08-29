@@ -63,7 +63,7 @@ jobs:
         git clone https://github.com/jbeder/yaml-cpp --depth=1
         cd yaml-cpp
         cmake -DCMAKE_BUILD_TYPE=Release -DYAML_CPP_BUILD_TESTS=OFF -DYAML_CPP_BUILD_TOOLS=OFF -DCMAKE_INSTALL_PREFIX=/mingw64 -G "Unix Makefiles" .
-        make install -j8 > /dev/null
+        make install -j4
         cd ..
         git clone https://github.com/svaarala/duktape --depth=1
         cd duktape
@@ -81,7 +81,8 @@ jobs:
         cd ../../../..
         git clone https://github.com/Tencent/rapidjson --depth=1
         cd rapidjson
-        install -d include/* /mingw64/include/
+        cmake -DRAPIDJSON_BUILD_DOC=OFF -DRAPIDJSON_BUILD_EXAMPLES=OFF -DRAPIDJSON_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX=/mingw64 -G "Unix Makefiles" .
+        make install -j4
         cd ..
         cmake -DCMAKE_BUILD_TYPE=Release -G "Unix Makefiles" .
         make -j4
