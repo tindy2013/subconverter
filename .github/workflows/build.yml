@@ -107,6 +107,7 @@ jobs:
       with:
         update: true
         install: base-devel git mingw-w64-i686-gcc mingw-w64-i686-cmake mingw-w64-i686-libevent mingw-w64-i686-pcre2 python2 python2-pip
+        msystem: MINGW32
     - name: Build
       run: |
         git clone https://github.com/curl/curl --depth=1
