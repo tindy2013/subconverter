@@ -94,3 +94,57 @@ jobs:
       with:
         name: subconverter_win64
         path: subconverter/
+
+  windows32_build:
+    name: Windows x86 Build
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+    - uses: actions/checkout@v2
+    - uses: msys2/setup-msys2@v2
+      with:
+        update: true
+        install: base-devel git mingw-w64-i686-gcc mingw-w64-i686-cmake mingw-w64-i686-libevent mingw-w64-i686-pcre2 python2 python2-pip
+    - name: Build
+      run: |
+        git clone https://github.com/curl/curl --depth=1
+        cd curl
+        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_USE_LIBSSH2=OFF -DHTTP_ONLY=ON -DCMAKE_USE_SCHANNEL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_CURL_EXE=OFF -DCMAKE_INSTALL_PREFIX=/mingw32 -G "Unix Makefiles" .
+        make install -j4
+        cd ..
+        git clone https://github.com/jbeder/yaml-cpp --depth=1
+        cd yaml-cpp
+        cmake -DCMAKE_BUILD_TYPE=Release -DYAML_CPP_BUILD_TESTS=OFF -DYAML_CPP_BUILD_TOOLS=OFF -DCMAKE_INSTALL_PREFIX=/mingw32 -G "Unix Makefiles" .
+        make install -j4
+        cd ..
+        git clone https://github.com/svaarala/duktape --depth=1
+        cd duktape
+        pip2 install PyYAML
+        mkdir dist
+        python2 util/dist.py
+        cd dist/source/src
+        gcc -c -O3 -o duktape.o duktape.c
+        gcc -c -O3 -o duk_module_node.o -I. ../extras/module-node/duk_module_node.c
+        ar cr libduktape.a duktape.o
+        ar cr libduktape_module.a duk_module_node.o
+        install -m0644 ./*.a /mingw32/lib
+        install -m0644 ./duk*.h /mingw32/include
+        install -m0644 ../extras/module-node/duk_module_node.h /mingw32/include
+        cd ../../../..
+        git clone https://github.com/Tencent/rapidjson --depth=1
+        cd rapidjson
+        cmake -DRAPIDJSON_BUILD_DOC=OFF -DRAPIDJSON_BUILD_EXAMPLES=OFF -DRAPIDJSON_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX=/mingw32 -G "Unix Makefiles" .
+        make install -j4
+        cd ..
+        cmake -DCMAKE_BUILD_TYPE=Release -G "Unix Makefiles" .
+        make -j4
+        rm subconverter.exe
+        g++ $(find CMakeFiles/subconverter.dir/src -name "*.obj") curl/lib/libcurl.a -o base/subconverter.exe -static -levent -lpcre2-8 -lduktape -lduktape_module -lyaml-cpp -lcrypt32 -lws2_32 -lwsock32 -lz -s
+        mv base subconverter
+    - name: Upload
+      uses: actions/upload-artifact@v1
+      with:
+        name: subconverter_win32
+        path: subconverter/
