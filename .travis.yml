@@ -96,7 +96,7 @@ jobs:
          $msys2 pacman --sync --noconfirm --needed base-devel git mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-libevent mingw-w64-x86_64-pcre2 python2 python2-pip
          taskkill //IM gpg-agent.exe //F
          export PATH=/C/tools/msys64/mingw64/bin:$PATH
-         export MAKE=mingw32-make
+         export MAKE=make
       before_cache:
       - |-
         $msys2 pacman --sync --clean --noconfirm
