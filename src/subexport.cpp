@@ -2036,7 +2036,11 @@ void netchToQuan(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rules
                 method = "chacha20-ietf-poly1305";
             proxyStr = remark + " = vmess, " + hostname + ", " + port + ", " + method + ", \"" + id + "\", group=" + x.group;
             if(tlssecure)
+            {
                 proxyStr += ", over-tls=true, tls-host=" + host;
+                if(!scv.is_undef())
+                    proxyStr += ", certificate=" + std::string(scv.get() ? "0" : "1");
+            }
             if(transproto == "ws")
             {
                 proxyStr += ", obfs=ws, obfs-path=\"" + path + "\", obfs-header=\"Host: " + host;
@@ -2044,8 +2048,6 @@ void netchToQuan(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rules
                     proxyStr += "[Rr][Nn]Edge: " + edge;
                 proxyStr += "\"";
             }
-            if(!scv.is_undef())
-                proxyStr += ", certificate=" + std::string(scv.get() ? "0" : "1");
 
             if(ext.nodelist)
                 proxyStr = "vmess://" + urlsafe_base64_encode(proxyStr);
@@ -2109,9 +2111,9 @@ void netchToQuan(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rules
                 proxyStr += ", over-tls=true";
                 if(host.size())
                     proxyStr += ", tls-host=" + host;
+                if(!scv.is_undef())
+                    proxyStr += ", certificate=" + std::string(scv.get() ? "0" : "1");
             }
-            if(!scv.is_undef())
-                proxyStr += ", certificate=" + std::string(scv.get() ? "0" : "1");
 
             if(ext.nodelist)
                 proxyStr = "http://" + urlsafe_base64_encode(proxyStr);
@@ -2132,9 +2134,9 @@ void netchToQuan(std::vector<nodeInfo> &nodes, INIReader &ini, std::vector<rules
                 proxyStr += ", over-tls=true";
                 if(host.size())
                     proxyStr += ", tls-host=" + host;
+                if(!scv.is_undef())
+                    proxyStr += ", certificate=" + std::string(scv.get() ? "0" : "1");
             }
-            if(!scv.is_undef())
-                proxyStr += ", certificate=" + std::string(scv.get() ? "0" : "1");
 
             if(ext.nodelist)
                 proxyStr = "socks://" + urlsafe_base64_encode(proxyStr);
