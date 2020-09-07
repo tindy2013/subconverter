@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 //#include <mutex>
+#include <thread>
 #include <atomic>
 
 #include <curl/curl.h>
