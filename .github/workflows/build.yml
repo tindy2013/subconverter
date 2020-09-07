@@ -40,3 +40,44 @@ jobs:
       with:
         name: subconverter_darwin64
         path: subconverter/
+
+  windows64_build:
+    name: Windows x86_64 Build
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+    - uses: actions/checkout@v2
+    - uses: msys2/setup-msys2@v2
+      with:
+        update: true
+        install: base-devel git mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-libevent mingw-w64-x86_64-pcre2 python2 python2-pip
+    - name: Build
+      run: bash scripts/build.windows.release.sh
+    - name: Upload
+      uses: actions/upload-artifact@v1
+      with:
+        name: subconverter_win64
+        path: subconverter/
+
+  windows32_build:
+    name: Windows x86 Build
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+    - uses: actions/checkout@v2
+    - uses: msys2/setup-msys2@v2
+      with:
+        update: true
+        install: base-devel git mingw-w64-i686-gcc mingw-w64-i686-cmake mingw-w64-i686-libevent mingw-w64-i686-pcre2 python2 python2-pip
+        msystem: MINGW32
+    - name: Build
+      run: bash scripts/build.windows.release.sh
+    - name: Upload
+      uses: actions/upload-artifact@v1
+      with:
+        name: subconverter_win32
+        path: subconverter/
