@@ -1,7 +1,8 @@
 #include <iostream>
 #include <unistd.h>
 #include <sys/stat.h>
-#include <mutex>
+//#include <mutex>
+#include <atomic>
 
 #include <curl/curl.h>
 
@@ -19,8 +20,76 @@
 extern bool gPrintDbgInfo, gServeCacheOnFetchFail;
 extern int gLogLevel;
 
+/*
 typedef std::lock_guard<std::mutex> guarded_mutex;
 std::mutex cache_rw_lock;
+*/
+
+class RWLock
+{
+#define WRITE_LOCK_STATUS -1
+#define FREE_STATUS 0
+private:
+    const std::thread::id NULL_THREAD;
+    const bool WRITE_FIRST;
+    std::thread::id m_write_thread_id;
+    std::atomic_int m_lockCount;
+    std::atomic_uint m_writeWaitCount;
+public:
+    RWLock(const RWLock&) = delete;
+    RWLock& operator=(const RWLock&) = delete;
+    RWLock(bool writeFirst = true): WRITE_FIRST(writeFirst), m_write_thread_id(), m_lockCount(0), m_writeWaitCount(0) {}
+    virtual ~RWLock() = default;
+    int readLock()
+    {
+        if (std::this_thread::get_id() != m_write_thread_id)
+        {
+            int count;
+            if (WRITE_FIRST)
+                do {
+                    while ((count = m_lockCount) == WRITE_LOCK_STATUS || m_writeWaitCount > 0);
+                } while (!m_lockCount.compare_exchange_weak(count, count + 1));
+            else
+                do {
+                    while ((count = m_lockCount) == WRITE_LOCK_STATUS);
+                } while (!m_lockCount.compare_exchange_weak(count, count + 1));
+        }
+        return m_lockCount;
+    }
+    int readUnlock()
+    {
+        if (std::this_thread::get_id() != m_write_thread_id)
+            --m_lockCount;
+        return m_lockCount;
+    }
+    int writeLock()
+    {
+        if (std::this_thread::get_id() != m_write_thread_id)
+        {
+            ++m_writeWaitCount;
+            for (int zero = FREE_STATUS; !m_lockCount.compare_exchange_weak(zero, WRITE_LOCK_STATUS); zero = FREE_STATUS);
+            --m_writeWaitCount;
+            m_write_thread_id = std::this_thread::get_id();
+        }
+        return m_lockCount;
+    }
+    int writeUnlock()
+    {
+        if (std::this_thread::get_id() != m_write_thread_id)
+        {
+            throw std::runtime_error("writeLock/Unlock mismatch");
+        }
+        if (WRITE_LOCK_STATUS != m_lockCount)
+        {
+            throw std::runtime_error("RWLock internal error");
+        }
+        m_write_thread_id = NULL_THREAD;
+        m_lockCount.store(FREE_STATUS);
+        return m_lockCount;
+    }
+};
+
+RWLock cache_rw_lock;
 
 long gMaxAllowedDownloadSize = 1048576L;
 
@@ -216,7 +285,9 @@ std::string webGet(const std::string &url, const std::string &proxy, unsigned in
             if(difftime(now, mtime) <= cache_ttl) // within TTL
             {
                 writeLog(0, "CACHE HIT: '" + url + "', using local cache.");
-                guarded_mutex guard(cache_rw_lock);
+                //guarded_mutex guard(cache_rw_lock);
+                cache_rw_lock.readLock();
+                defer(cache_rw_lock.readUnlock();)
                 if(response_headers)
                     *response_headers = fileGet(path_header, true);
                 return fileGet(path, true);
@@ -229,7 +300,9 @@ std::string webGet(const std::string &url, const std::string &proxy, unsigned in
         curlGet(argument, fetch_res);
         if(return_code == CURLE_OK) // success, save new cache
         {
-            guarded_mutex guard(cache_rw_lock);
+            //guarded_mutex guard(cache_rw_lock);
+            cache_rw_lock.writeLock();
+            defer(cache_rw_lock.writeUnlock();)
             fileWrite(path, content, true);
             if(response_headers)
                 fileWrite(path_header, *response_headers, true);
@@ -239,7 +312,9 @@ std::string webGet(const std::string &url, const std::string &proxy, unsigned in
             if(fileExist(path) && gServeCacheOnFetchFail) // failed, check if cache exist
             {
                 writeLog(0, "Fetch failed. Serving cached content."); // cache exist, serving cache
-                guarded_mutex guard(cache_rw_lock);
+                //guarded_mutex guard(cache_rw_lock);
+                cache_rw_lock.readLock();
+                defer(cache_rw_lock.readUnlock();)
                 content = fileGet(path, true);
                 if(response_headers)
                     *response_headers = fileGet(path_header, true);
@@ -252,6 +327,14 @@ std::string webGet(const std::string &url, const std::string &proxy, unsigned in
     //return curlGet(url, proxy, response_headers, return_code);
     curlGet(argument, fetch_res);
     return content;
+}
+
+void flushCache()
+{
+    //guarded_mutex guard(cache_rw_lock);
+    cache_rw_lock.writeLock();
+    defer(cache_rw_lock.writeUnlock();)
+    operateFiles("cache", [](std::string file){ remove(("cache/" + file).data()); return 0; });
 }
 
 int curlPost(const std::string &url, const std::string &data, const std::string &proxy, const string_array &request_headers, std::string *retData)
