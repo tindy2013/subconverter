@@ -335,7 +335,7 @@ void flushCache()
     //guarded_mutex guard(cache_rw_lock);
     cache_rw_lock.writeLock();
     defer(cache_rw_lock.writeUnlock();)
-    operateFiles("cache", [](std::string file){ remove(("cache/" + file).data()); return 0; });
+    operateFiles("cache", [](const std::string &file){ remove(("cache/" + file).data()); return 0; });
 }
 
 int curlPost(const std::string &url, const std::string &data, const std::string &proxy, const string_array &request_headers, std::string *retData)
