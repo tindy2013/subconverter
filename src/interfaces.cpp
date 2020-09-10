@@ -1339,9 +1339,14 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     if(argTarget == "auto")
         matchUserAgent(request.headers["User-Agent"], argTarget, argClashNewField, intSurgeVer);
 
+    /// don't try to load groups or rulesets when generating simple subscriptions
+    bool lSimpleSubscription = false;
     switch(hash_(argTarget))
     {
-    case "clash"_hash: case "clashr"_hash: case "surge"_hash: case "quan"_hash: case "quanx"_hash: case "loon"_hash: case "surfboard"_hash: case "mellow"_hash: case "ss"_hash: case "ssd"_hash: case "ssr"_hash: case "sssub"_hash: case "v2ray"_hash: case "trojan"_hash: case "mixed"_hash:
+    case "ss"_hash: case "ssd"_hash: case "ssr"_hash: case "sssub"_hash: case "v2ray"_hash: case "trojan"_hash: case "mixed"_hash:
+        lSimpleSubscription = true;
+        break;
+    case "clash"_hash: case "clashr"_hash: case "surge"_hash: case "quan"_hash: case "quanx"_hash: case "loon"_hash: case "surfboard"_hash: case "mellow"_hash:
         break;
     default:
         *status_code = 400;
@@ -1378,11 +1383,11 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     if(std::find(gRegexBlacklist.cbegin(), gRegexBlacklist.cend(), argIncludeRemark) != gRegexBlacklist.cend() || std::find(gRegexBlacklist.cbegin(), gRegexBlacklist.cend(), argExcludeRemark) != gRegexBlacklist.cend())
         return "Invalid request!";
 
-    //for external configuration
+    /// for external configuration
     std::string lClashBase = gClashBase, lSurgeBase = gSurgeBase, lMellowBase = gMellowBase, lSurfboardBase = gSurfboardBase;
     std::string lQuanBase = gQuanBase, lQuanXBase = gQuanXBase, lLoonBase = gLoonBase, lSSSubBase = gSSSubBase;
 
-    //validate urls
+    /// validate urls
     argEnableInsert.define(gEnableInsert);
     if(!argUrl.size() && (!gAPIMode || authorized))
         argUrl = gDefaultUrls;
@@ -1392,7 +1397,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         return "Invalid request!";
     }
 
-    //load request arguments as template variables
+    /// load request arguments as template variables
     string_array req_args = split(argument, "&");
     string_map req_arg_map;
     for(std::string &x : req_args)
@@ -1408,15 +1413,15 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         req_arg_map[x.substr(0, pos)] = x.substr(pos + 1);
     }
 
-    //save template variables
+    /// save template variables
     template_args tpl_args;
     tpl_args.global_vars = gTemplateVars;
     tpl_args.request_params = req_arg_map;
 
-    //check for proxy settings
+    /// check for proxy settings
     std::string proxy = parseProxy(gProxySubscription);
 
-    //check other flags
+    /// check other flags
     ext.append_proxy_type = argAppendType.get(gAppendType);
     if((argTarget == "clash" || argTarget == "clashr") && argGenClashScript.is_undef())
         argExpandRulesets.define(true);
@@ -1463,20 +1468,24 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         {
             if(!ext.nodelist)
             {
-                checkExternalBase(extconf.clash_rule_base, lClashBase);
-                checkExternalBase(extconf.surge_rule_base, lSurgeBase);
-                checkExternalBase(extconf.surfboard_rule_base, lSurfboardBase);
-                checkExternalBase(extconf.mellow_rule_base, lMellowBase);
-                checkExternalBase(extconf.quan_rule_base, lQuanBase);
-                checkExternalBase(extconf.quanx_rule_base, lQuanXBase);
-                checkExternalBase(extconf.loon_rule_base, lLoonBase);
                 checkExternalBase(extconf.sssub_rule_base, lSSSubBase);
-                if(extconf.surge_ruleset.size())
-                    lCustomRulesets = extconf.surge_ruleset;
-                if(extconf.custom_proxy_group.size())
-                    lCustomProxyGroups = extconf.custom_proxy_group;
-                ext.enable_rule_generator = extconf.enable_rule_generator;
-                ext.overwrite_original_rules = extconf.overwrite_original_rules;
+                if(!lSimpleSubscription)
+                {
+                    checkExternalBase(extconf.clash_rule_base, lClashBase);
+                    checkExternalBase(extconf.surge_rule_base, lSurgeBase);
+                    checkExternalBase(extconf.surfboard_rule_base, lSurfboardBase);
+                    checkExternalBase(extconf.mellow_rule_base, lMellowBase);
+                    checkExternalBase(extconf.quan_rule_base, lQuanBase);
+                    checkExternalBase(extconf.quanx_rule_base, lQuanXBase);
+                    checkExternalBase(extconf.loon_rule_base, lLoonBase);
+
+                    if(extconf.surge_ruleset.size())
+                        lCustomRulesets = extconf.surge_ruleset;
+                    if(extconf.custom_proxy_group.size())
+                        lCustomProxyGroups = extconf.custom_proxy_group;
+                    ext.enable_rule_generator = extconf.enable_rule_generator;
+                    ext.overwrite_original_rules = extconf.overwrite_original_rules;
+                }
             }
             if(extconf.rename.size())
                 ext.rename_array = extconf.rename;
@@ -1493,15 +1502,18 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     }
     else
     {
-        //loading custom groups
-        if(argCustomGroups.size() && !ext.nodelist)
-            lCustomProxyGroups = split(argCustomGroups, "@");
+        if(!lSimpleSubscription)
+        {
+            //loading custom groups
+            if(argCustomGroups.size() && !ext.nodelist)
+                lCustomProxyGroups = split(argCustomGroups, "@");
 
-        //loading custom rulesets
-        if(argCustomRulesets.size() && !ext.nodelist)
-            lCustomRulesets = split(argCustomRulesets, "@");
+            //loading custom rulesets
+            if(argCustomRulesets.size() && !ext.nodelist)
+                lCustomRulesets = split(argCustomRulesets, "@");
+        }
     }
-    if(ext.enable_rule_generator && !ext.nodelist)
+    if(ext.enable_rule_generator && !ext.nodelist && !lSimpleSubscription)
     {
         if(lCustomRulesets != gCustomRulesets)
             refreshRulesets(lCustomRulesets, lRulesetContent);

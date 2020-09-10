@@ -413,13 +413,13 @@ std::string vmessLinkConstruct(const std::string &remarks, const std::string &ad
     writer.Key("port");
     writer.Int(to_int(port));
     writer.Key("type");
-    writer.String(type.data());
+    writer.String(type.empty() ? "none" : type.data());
     writer.Key("id");
     writer.String(id.data());
     writer.Key("aid");
     writer.Int(to_int(aid));
     writer.Key("net");
-    writer.String(net.data());
+    writer.String(net.empty() ? "tcp" : net.data());
     writer.Key("path");
     writer.String(path.data());
     writer.Key("host");
