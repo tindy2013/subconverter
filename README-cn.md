@@ -84,12 +84,13 @@
 注意：
 
 1. Shadowrocket 用户可以使用 `ss`、`ssr` 以及 `v2ray` 参数
-
 2. 类 TG 代理的 HTTP/Socks 链接由于没有命名设定，所以可以在后方插入`&remarks=`进行命名，同时也可以插入 `&group=` 设置组别名称，以上两个参数需要经过 [URLEncode](https://www.urlencoder.org/) 处理，例如
 
    - tg://http?server=1.2.3.4&port=233&user=user&pass=pass&remarks=Example&group=xxx
-
    - https://t.me/http?server=1.2.3.4&port=233&user=user&pass=pass&remarks=Example&group=xxx
+   
+3. 可以在`&remarks=`中加入Vmess链接，需要一个base64编码的Json格式服务器配置，参考：[v2rayN 分享链接 ver.2](https://github.com/2dust/v2rayN/wiki/分享链接格式说明(ver-2))，例如
+   - `vmess://<base64编码过的字符串>`
 
 ---
 
@@ -313,7 +314,7 @@ http://127.0.0.1:25500/getprofile?name=%NAME%&token=%TOKEN%
 
 <details>
 <summary>举个例子：</summary>
-  
+
 以上述 [进阶链接](#进阶链接) 的例子而言，`formyairport.ini` 内的内容应当是：
 
  ```txt
