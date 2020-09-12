@@ -112,7 +112,7 @@ const std::vector<UAProfile> UAMatchList = {
     {"ClashX","\\/([0-9.]+)","0.13","clash",true},
     {"Clash","","","clash",true},
     {"Kitsunebi","","","v2ray"},
-    {"LoonWidget","","","loon"},
+    {"Loon","","","loon"},
     {"Pharos","","","mixed"},
     {"Potatso","","","mixed"},
     {"Quantumult%20X","","","quanx"},
