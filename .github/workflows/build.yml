@@ -56,6 +56,8 @@ jobs:
       with:
         update: true
         install: base-devel git mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-libevent mingw-w64-x86_64-pcre2
+        msystem: MINGW64
+        path-type: inherit
     - name: Build
       run: bash scripts/build.windows.release.sh
     - name: Upload
@@ -80,6 +82,7 @@ jobs:
         update: true
         install: base-devel git mingw-w64-i686-gcc mingw-w64-i686-cmake mingw-w64-i686-libevent mingw-w64-i686-pcre2
         msystem: MINGW32
+        path-type: inherit
     - name: Build
       run: bash scripts/build.windows.release.sh
     - name: Upload

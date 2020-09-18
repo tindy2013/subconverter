@@ -103,7 +103,6 @@ jobs:
       cache:
         directories:
         - $HOME/AppData/Local/Temp/chocolatey
-        - /C/tools/msys64
       script:
         - $mingw64 bash scripts/build.windows.release.sh
       before_deploy:
@@ -138,7 +137,6 @@ jobs:
       cache:
         directories:
         - $HOME/AppData/Local/Temp/chocolatey
-        - /C/tools/msys64
       script:
         - $mingw32 bash scripts/build.windows.release.sh
       before_deploy:
