@@ -213,6 +213,17 @@ int main(int argc, char *argv[])
         return "done\n";
     });
 
+    append_response("GET", "/flushcache", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
+    {
+        if(getUrlArg(request.argument, "token") != gAccessToken)
+        {
+            response.status_code = 403;
+            return "Forbidden";
+        }
+        flushCache();
+        return "done";
+    });
+
     append_response("GET", "/sub", "text/plain;charset=utf-8", subconverter);
 
     append_response("GET", "/sub2clashr", "text/plain;charset=utf-8", simpleToClashR);

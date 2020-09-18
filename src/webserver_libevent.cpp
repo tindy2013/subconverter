@@ -57,7 +57,7 @@ bool matchSpaceSeparatedList(const std::string& source, const std::string &targe
     return false;
 }
 
-std::string checkMIMEType(const std::string filename)
+std::string checkMIMEType(const std::string &filename)
 {
     string_size name_begin = 0, name_end = 0;
     name_begin = filename.rfind('/');
@@ -102,6 +102,7 @@ const char *request_header_blacklist[] = {"host", "accept", "accept-encoding"};
 
 static inline void buffer_cleanup(struct evbuffer *eb)
 {
+    (void)eb;
     //evbuffer_free(eb);
 #ifdef MALLOC_TRIM
     malloc_trim(0);
@@ -121,7 +122,7 @@ static inline int process_request(Request &request, Response &response, std::str
 
     for(responseRoute &x : responses)
     {
-        if(request.method == "OPTIONS" && startsWith(request.postdata, x.method) && x.path == request.url)
+        if(request.method == "OPTIONS" && matchSpaceSeparatedList(replace_all_distinct(request.postdata, ",", ""), x.method) && x.path == request.url)
         {
             return 1;
         }
@@ -160,6 +161,7 @@ static inline int process_request(Request &request, Response &response, std::str
 
 void OnReq(evhttp_request *req, void *args)
 {
+    (void)args;
     const char *req_content_type = evhttp_find_header(req->input_headers, "Content-Type"), *req_ac_method = evhttp_find_header(req->input_headers, "Access-Control-Request-Method");
     const char *uri = req->uri, *internal_flag = evhttp_find_header(req->input_headers, "SubConverter-Request");
 
@@ -193,6 +195,9 @@ void OnReq(evhttp_request *req, void *args)
         case EVHTTP_REQ_GET: request.method = "GET"; break;
         case EVHTTP_REQ_POST: request.method = "POST"; break;
         case EVHTTP_REQ_OPTIONS: request.method = "OPTIONS"; break;
+        case EVHTTP_REQ_PUT: request.method = "PUT"; break;
+        case EVHTTP_REQ_PATCH: request.method = "PATCH"; break;
+        case EVHTTP_REQ_DELETE: request.method = "DELETE"; break;
         default: break;
     }
     request.url = uri;
@@ -276,7 +281,7 @@ int start_web_server(void *argv)
         return -1;
     }
 
-    evhttp_set_allowed_methods(Server.get(), EVHTTP_REQ_GET | EVHTTP_REQ_POST | EVHTTP_REQ_OPTIONS);
+    evhttp_set_allowed_methods(Server.get(), EVHTTP_REQ_GET | EVHTTP_REQ_POST | EVHTTP_REQ_OPTIONS | EVHTTP_REQ_PUT | EVHTTP_REQ_PATCH | EVHTTP_REQ_DELETE);
     evhttp_set_gencb(Server.get(), OnReq, nullptr);
     evhttp_set_timeout(Server.get(), 30);
     if (event_dispatch() == -1)
