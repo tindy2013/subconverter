@@ -16,7 +16,6 @@ cd ..
 git clone https://github.com/svaarala/duktape --depth=1
 cd duktape
 make -C src-tools
-python2 util/dist.py
 node src-tools/index.js dist --output-directory dist
 cd dist/src
 gcc -c -O3 -o duktape.o duktape.c
