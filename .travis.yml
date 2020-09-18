@@ -87,13 +87,13 @@ jobs:
       - |-
          [[ ! -f C:/tools/msys64/msys2_shell.cmd ]] && rm -rf C:/tools/msys64
          choco uninstall -y mingw
-         choco upgrade --no-progress -y msys2
+         choco upgrade --no-progress -y msys2 nodejs
          export msys2='cmd //C RefreshEnv.cmd '
          export msys2+='& set MSYS=winsymlinks:nativestrict '
          export msys2+='& C:\\tools\\msys64\\msys2_shell.cmd -defterm -no-start'
          export mingw64="$msys2 -mingw64 -full-path -here -c "\"\$@"\" --"
          export msys2+=" -msys2 -c "\"\$@"\" --"
-         $msys2 pacman --sync --noconfirm --needed base-devel git mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-libevent mingw-w64-x86_64-pcre2 python2 python2-pip
+         $msys2 pacman --sync --noconfirm --needed base-devel git mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-libevent mingw-w64-x86_64-pcre2
          taskkill //IM gpg-agent.exe //F
          export PATH=/C/tools/msys64/mingw64/bin:$PATH
          export MAKE=make
@@ -103,7 +103,6 @@ jobs:
       cache:
         directories:
         - $HOME/AppData/Local/Temp/chocolatey
-        - /C/tools/msys64
       script:
         - $mingw64 bash scripts/build.windows.release.sh
       before_deploy:
@@ -122,13 +121,13 @@ jobs:
       - |-
          [[ ! -f C:/tools/msys64/msys2_shell.cmd ]] && rm -rf C:/tools/msys64
          choco uninstall -y mingw
-         choco upgrade --no-progress -y msys2
+         choco upgrade --no-progress -y msys2 nodejs
          export msys2='cmd //C RefreshEnv.cmd '
          export msys2+='& set MSYS=winsymlinks:nativestrict '
          export msys2+='& C:\\tools\\msys64\\msys2_shell.cmd -defterm -no-start'
          export mingw32="$msys2 -mingw32 -full-path -here -c "\"\$@"\" --"
          export msys2+=" -msys2 -c "\"\$@"\" --"
-         $msys2 pacman --sync --noconfirm --needed base-devel git mingw-w64-i686-gcc mingw-w64-i686-cmake mingw-w64-i686-libevent mingw-w64-i686-pcre2 python2 python2-pip
+         $msys2 pacman --sync --noconfirm --needed base-devel git mingw-w64-i686-gcc mingw-w64-i686-cmake mingw-w64-i686-libevent mingw-w64-i686-pcre2
          taskkill //IM gpg-agent.exe //F
          export PATH=/C/tools/msys64/mingw64/bin:$PATH
          export MAKE=make
@@ -138,7 +137,6 @@ jobs:
       cache:
         directories:
         - $HOME/AppData/Local/Temp/chocolatey
-        - /C/tools/msys64
       script:
         - $mingw32 bash scripts/build.windows.release.sh
       before_deploy:

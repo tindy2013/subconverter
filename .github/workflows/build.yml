@@ -49,10 +49,15 @@ jobs:
         shell: msys2 {0}
     steps:
     - uses: actions/checkout@v2
+    - uses: actions/setup-node@v2-beta
+      with:
+        node-version: '12'
     - uses: msys2/setup-msys2@v2
       with:
         update: true
-        install: base-devel git mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-libevent mingw-w64-x86_64-pcre2 python2 python2-pip
+        install: base-devel git mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-libevent mingw-w64-x86_64-pcre2
+        msystem: MINGW64
+        path-type: inherit
     - name: Build
       run: bash scripts/build.windows.release.sh
     - name: Upload
@@ -69,11 +74,15 @@ jobs:
         shell: msys2 {0}
     steps:
     - uses: actions/checkout@v2
+    - uses: actions/setup-node@v2-beta
+      with:
+        node-version: '12'
     - uses: msys2/setup-msys2@v2
       with:
         update: true
-        install: base-devel git mingw-w64-i686-gcc mingw-w64-i686-cmake mingw-w64-i686-libevent mingw-w64-i686-pcre2 python2 python2-pip
+        install: base-devel git mingw-w64-i686-gcc mingw-w64-i686-cmake mingw-w64-i686-libevent mingw-w64-i686-pcre2
         msystem: MINGW32
+        path-type: inherit
     - name: Build
       run: bash scripts/build.windows.release.sh
     - name: Upload
