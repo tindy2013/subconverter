@@ -93,7 +93,7 @@ jobs:
          export msys2+='& C:\\tools\\msys64\\msys2_shell.cmd -defterm -no-start'
          export mingw64="$msys2 -mingw64 -full-path -here -c "\"\$@"\" --"
          export msys2+=" -msys2 -c "\"\$@"\" --"
-         $msys2 pacman --sync --noconfirm --needed base-devel git mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-libevent mingw-w64-x86_64-pcre2 python2 python2-pip
+         $msys2 pacman --sync --noconfirm --needed base-devel git mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-libevent mingw-w64-x86_64-pcre2
          taskkill //IM gpg-agent.exe //F
          export PATH=/C/tools/msys64/mingw64/bin:$PATH
          export MAKE=make
@@ -128,7 +128,7 @@ jobs:
          export msys2+='& C:\\tools\\msys64\\msys2_shell.cmd -defterm -no-start'
          export mingw32="$msys2 -mingw32 -full-path -here -c "\"\$@"\" --"
          export msys2+=" -msys2 -c "\"\$@"\" --"
-         $msys2 pacman --sync --noconfirm --needed base-devel git mingw-w64-i686-gcc mingw-w64-i686-cmake mingw-w64-i686-libevent mingw-w64-i686-pcre2 python2 python2-pip
+         $msys2 pacman --sync --noconfirm --needed base-devel git mingw-w64-i686-gcc mingw-w64-i686-cmake mingw-w64-i686-libevent mingw-w64-i686-pcre2
          taskkill //IM gpg-agent.exe //F
          export PATH=/C/tools/msys64/mingw64/bin:$PATH
          export MAKE=make
