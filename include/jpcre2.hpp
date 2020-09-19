@@ -1,25 +1,25 @@
 /* *****************************************************************************
  * ******************* C++ wrapper for PCRE2 Library ****************************
  * *****************************************************************************
- *            Copyright (c) 2015-2018 Md. Jahidul Hamid
- * 
+ *            Copyright (c) Md. Jahidul Hamid
+ *
  * -----------------------------------------------------------------------------
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  *     * Redistributions of source code must retain the above copyright notice,
  *       this list of conditions and the following disclaimer.
- * 
+ *
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- * 
- *     * The names of its contributors may not be used to endorse or promote 
+ *
+ *     * The names of its contributors may not be used to endorse or promote
  *       products derived from this software without specific prior written
  *       permission.
- *       
+ *
  * Disclaimer:
- * 
+ *
  *     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  *     AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  *     IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -40,7 +40,7 @@
  * If your `pcre2.h` header is not in standard include paths, you may include `pcre2.h` with correct path before including `jpcre2.hpp`
  * manually. In this case you will have to define `PCRE2_CODE_UNIT_WIDTH` before including `pcre2.h`.
  * Make sure to link required PCRE2 libraries when compiling.
- * 
+ *
  * @author [Md Jahidul Hamid](https://github.com/neurobin)
  */
 
@@ -70,11 +70,14 @@
 #include <climits>      // CHAR_BIT
 #include <cstdlib>      // std::abort()
 
-#if __cplusplus >= 201103L
+#if __cplusplus >= 201103L || _MSVC_LANG >= 201103L
+    #define JPCRE2_USE_MINIMUM_CXX_11 1
     #include <utility>
     #ifndef JPCRE2_USE_FUNCTION_POINTER_CALLBACK
         #include <functional>   // std::function
     #endif
+#else
+    #define JPCRE2_USE_MINIMUM_CXX_11 0
 #endif
 
 #define JPCRE2_UNUSED(x) ((void)(x))
@@ -84,6 +87,12 @@
 #else
     #define JPCRE2_ASSERT(cond, msg) jpcre2::jassert(cond, msg, __FILE__, __LINE__)
     #define JPCRE2_VECTOR_DATA_ASSERT(cond, name) jpcre2::_jvassert(cond, name, __FILE__, __LINE__)
+#endif
+
+// In Windows, Windows.h defines ERROR macro
+// It conflicts with our jpcre2::ERROR namespace
+#ifdef ERROR
+#undef ERROR
 #endif
 
 
@@ -101,7 +110,7 @@ namespace jpcre2 {
 
 ///Define for JPCRE2 version.
 ///It can be used to support changes in different versions of the lib.
-#define JPCRE2_VERSION 103103L
+#define JPCRE2_VERSION 103201L
 
 /** @namespace jpcre2::INFO
  *  Namespace to provide information about JPCRE2 library itself.
@@ -109,10 +118,10 @@ namespace jpcre2 {
  */
 namespace INFO {
     static const char NAME[] = "JPCRE2";               ///< Name of the project
-    static const char FULL_VERSION[] = "10.31.03";     ///< Full version string
+    static const char FULL_VERSION[] = "10.32.01";     ///< Full version string
     static const char VERSION_GENRE[] = "10";          ///< Generation, depends on original PCRE2 version
-    static const char VERSION_MAJOR[] = "31";          ///< Major version, updated when API change is made
-    static const char VERSION_MINOR[] = "03";          ///< Minor version, includes bug fix or minor feature upgrade
+    static const char VERSION_MAJOR[] = "32";          ///< Major version, updated when API change is made
+    static const char VERSION_MINOR[] = "01";          ///< Minor version, includes bug fix or minor feature upgrade
     static const char VERSION_PRE_RELEASE[] = "";      ///< Alpha or beta (testing) release version
 }
 
@@ -252,7 +261,7 @@ template<> struct Pcre2Func<8> {
         pcre2_compile_context_free_8(ccontext);
     }
     static Pcre2Type<8>::CompileContext* compile_context_copy(Pcre2Type<8>::CompileContext* ccontext){
-    return pcre2_compile_context_copy_8(ccontext); 
+    return pcre2_compile_context_copy_8(ccontext);
     }
     static const unsigned char * maketables(Pcre2Type<8>::GeneralContext* gcontext){
         return pcre2_maketables_8(gcontext);
@@ -272,28 +281,28 @@ template<> struct Pcre2Func<8> {
         return pcre2_jit_compile_8(code, options);
     }
     static int substitute( const Pcre2Type<8>::Pcre2Code *code,
-                    Pcre2Type<8>::Pcre2Sptr subject, 
-                    PCRE2_SIZE length, 
-                    PCRE2_SIZE startoffset, 
-                    uint32_t options, 
-                    Pcre2Type<8>::MatchData *match_data, 
-                    Pcre2Type<8>::MatchContext *mcontext, 
-                    Pcre2Type<8>::Pcre2Sptr replacement, 
-                    PCRE2_SIZE rlength, 
-                    Pcre2Type<8>::Pcre2Uchar *outputbuffer, 
+                    Pcre2Type<8>::Pcre2Sptr subject,
+                    PCRE2_SIZE length,
+                    PCRE2_SIZE startoffset,
+                    uint32_t options,
+                    Pcre2Type<8>::MatchData *match_data,
+                    Pcre2Type<8>::MatchContext *mcontext,
+                    Pcre2Type<8>::Pcre2Sptr replacement,
+                    PCRE2_SIZE rlength,
+                    Pcre2Type<8>::Pcre2Uchar *outputbuffer,
                     PCRE2_SIZE *outlengthptr){
         return pcre2_substitute_8( code, subject, length, startoffset, options, match_data,
                                    mcontext, replacement, rlength, outputbuffer, outlengthptr);
-    } 
+    }
     //~ static int substring_get_bynumber(Pcre2Type<8>::MatchData *match_data,
-                                        //~ uint32_t number, 
-                                        //~ Pcre2Type<8>::Pcre2Uchar **bufferptr, 
+                                        //~ uint32_t number,
+                                        //~ Pcre2Type<8>::Pcre2Uchar **bufferptr,
                                         //~ PCRE2_SIZE *bufflen){
         //~ return pcre2_substring_get_bynumber_8(match_data, number, bufferptr, bufflen);
     //~ }
     //~ static int substring_get_byname(Pcre2Type<8>::MatchData *match_data,
-                                        //~ Pcre2Type<8>::Pcre2Sptr name, 
-                                        //~ Pcre2Type<8>::Pcre2Uchar **bufferptr, 
+                                        //~ Pcre2Type<8>::Pcre2Sptr name,
+                                        //~ Pcre2Type<8>::Pcre2Uchar **bufferptr,
                                         //~ PCRE2_SIZE *bufflen){
         //~ return pcre2_substring_get_byname_8(match_data, name, bufferptr, bufflen);
     //~ }
@@ -315,14 +324,14 @@ template<> struct Pcre2Func<8> {
                               const Pcre2Type<8>::Pcre2Code *code,
                               Pcre2Type<8>::GeneralContext *gcontext){
         return pcre2_match_data_create_from_pattern_8(code, gcontext);
-                                
+
     }
-    static int match(  const Pcre2Type<8>::Pcre2Code *code, 
-                            Pcre2Type<8>::Pcre2Sptr subject, 
-                            PCRE2_SIZE length, 
-                            PCRE2_SIZE startoffset, 
-                            uint32_t options, 
-                            Pcre2Type<8>::MatchData *match_data, 
+    static int match(  const Pcre2Type<8>::Pcre2Code *code,
+                            Pcre2Type<8>::Pcre2Sptr subject,
+                            PCRE2_SIZE length,
+                            PCRE2_SIZE startoffset,
+                            uint32_t options,
+                            Pcre2Type<8>::MatchData *match_data,
                             Pcre2Type<8>::MatchContext *mcontext){
         return pcre2_match_8(code, subject, length, startoffset, options, match_data, mcontext);
     }
@@ -336,9 +345,9 @@ template<> struct Pcre2Func<8> {
         return pcre2_pattern_info_8(code, what, where);
     }
     static int set_newline(Pcre2Type<8>::CompileContext *ccontext, uint32_t value){
-        return pcre2_set_newline_8(ccontext, value); 
+        return pcre2_set_newline_8(ccontext, value);
     }
-    //~ static void jit_stack_assign(Pcre2Type<8>::MatchContext *mcontext, 
+    //~ static void jit_stack_assign(Pcre2Type<8>::MatchContext *mcontext,
                                  //~ Pcre2Type<8>::JitCallback callback_function,
                                  //~ void *callback_data){
         //~ pcre2_jit_stack_assign_8(mcontext, callback_function, callback_data);
@@ -376,7 +385,7 @@ template<> struct Pcre2Func<16> {
         pcre2_compile_context_free_16(ccontext);
     }
     static Pcre2Type<16>::CompileContext* compile_context_copy(Pcre2Type<16>::CompileContext* ccontext){
-    return pcre2_compile_context_copy_16(ccontext); 
+    return pcre2_compile_context_copy_16(ccontext);
     }
     static const unsigned char * maketables(Pcre2Type<16>::GeneralContext* gcontext){
         return pcre2_maketables_16(gcontext);
@@ -396,28 +405,28 @@ template<> struct Pcre2Func<16> {
         return pcre2_jit_compile_16(code, options);
     }
     static int substitute( const Pcre2Type<16>::Pcre2Code *code,
-                    Pcre2Type<16>::Pcre2Sptr subject, 
-                    PCRE2_SIZE length, 
-                    PCRE2_SIZE startoffset, 
-                    uint32_t options, 
-                    Pcre2Type<16>::MatchData *match_data, 
-                    Pcre2Type<16>::MatchContext *mcontext, 
-                    Pcre2Type<16>::Pcre2Sptr replacement, 
-                    PCRE2_SIZE rlength, 
-                    Pcre2Type<16>::Pcre2Uchar *outputbuffer, 
+                    Pcre2Type<16>::Pcre2Sptr subject,
+                    PCRE2_SIZE length,
+                    PCRE2_SIZE startoffset,
+                    uint32_t options,
+                    Pcre2Type<16>::MatchData *match_data,
+                    Pcre2Type<16>::MatchContext *mcontext,
+                    Pcre2Type<16>::Pcre2Sptr replacement,
+                    PCRE2_SIZE rlength,
+                    Pcre2Type<16>::Pcre2Uchar *outputbuffer,
                     PCRE2_SIZE *outlengthptr){
         return pcre2_substitute_16( code, subject, length, startoffset, options, match_data,
                                    mcontext, replacement, rlength, outputbuffer, outlengthptr);
-    } 
+    }
     //~ static int substring_get_bynumber(Pcre2Type<16>::MatchData *match_data,
-                                        //~ uint32_t number, 
-                                        //~ Pcre2Type<16>::Pcre2Uchar **bufferptr, 
+                                        //~ uint32_t number,
+                                        //~ Pcre2Type<16>::Pcre2Uchar **bufferptr,
                                         //~ PCRE2_SIZE *bufflen){
         //~ return pcre2_substring_get_bynumber_16(match_data, number, bufferptr, bufflen);
     //~ }
     //~ static int substring_get_byname(Pcre2Type<16>::MatchData *match_data,
-                                        //~ Pcre2Type<16>::Pcre2Sptr name, 
-                                        //~ Pcre2Type<16>::Pcre2Uchar **bufferptr, 
+                                        //~ Pcre2Type<16>::Pcre2Sptr name,
+                                        //~ Pcre2Type<16>::Pcre2Uchar **bufferptr,
                                         //~ PCRE2_SIZE *bufflen){
         //~ return pcre2_substring_get_byname_16(match_data, name, bufferptr, bufflen);
     //~ }
@@ -439,14 +448,14 @@ template<> struct Pcre2Func<16> {
                               const Pcre2Type<16>::Pcre2Code *code,
                               Pcre2Type<16>::GeneralContext *gcontext){
         return pcre2_match_data_create_from_pattern_16(code, gcontext);
-                                
+
     }
-    static int match(  const Pcre2Type<16>::Pcre2Code *code, 
-                            Pcre2Type<16>::Pcre2Sptr subject, 
-                            PCRE2_SIZE length, 
-                            PCRE2_SIZE startoffset, 
-                            uint32_t options, 
-                            Pcre2Type<16>::MatchData *match_data, 
+    static int match(  const Pcre2Type<16>::Pcre2Code *code,
+                            Pcre2Type<16>::Pcre2Sptr subject,
+                            PCRE2_SIZE length,
+                            PCRE2_SIZE startoffset,
+                            uint32_t options,
+                            Pcre2Type<16>::MatchData *match_data,
                             Pcre2Type<16>::MatchContext *mcontext){
         return pcre2_match_16(code, subject, length, startoffset, options, match_data, mcontext);
     }
@@ -460,9 +469,9 @@ template<> struct Pcre2Func<16> {
         return pcre2_pattern_info_16(code, what, where);
     }
     static int set_newline(Pcre2Type<16>::CompileContext *ccontext, uint32_t value){
-        return pcre2_set_newline_16(ccontext, value); 
+        return pcre2_set_newline_16(ccontext, value);
     }
-    //~ static void jit_stack_assign(Pcre2Type<16>::MatchContext *mcontext, 
+    //~ static void jit_stack_assign(Pcre2Type<16>::MatchContext *mcontext,
                                  //~ Pcre2Type<16>::JitCallback callback_function,
                                  //~ void *callback_data){
         //~ pcre2_jit_stack_assign_16(mcontext, callback_function, callback_data);
@@ -500,7 +509,7 @@ template<> struct Pcre2Func<32> {
         pcre2_compile_context_free_32(ccontext);
     }
     static Pcre2Type<32>::CompileContext* compile_context_copy(Pcre2Type<32>::CompileContext* ccontext){
-    return pcre2_compile_context_copy_32(ccontext); 
+    return pcre2_compile_context_copy_32(ccontext);
     }
     static const unsigned char * maketables(Pcre2Type<32>::GeneralContext* gcontext){
         return pcre2_maketables_32(gcontext);
@@ -520,28 +529,28 @@ template<> struct Pcre2Func<32> {
         return pcre2_jit_compile_32(code, options);
     }
     static int substitute( const Pcre2Type<32>::Pcre2Code *code,
-                    Pcre2Type<32>::Pcre2Sptr subject, 
-                    PCRE2_SIZE length, 
-                    PCRE2_SIZE startoffset, 
-                    uint32_t options, 
-                    Pcre2Type<32>::MatchData *match_data, 
-                    Pcre2Type<32>::MatchContext *mcontext, 
-                    Pcre2Type<32>::Pcre2Sptr replacement, 
-                    PCRE2_SIZE rlength, 
-                    Pcre2Type<32>::Pcre2Uchar *outputbuffer, 
+                    Pcre2Type<32>::Pcre2Sptr subject,
+                    PCRE2_SIZE length,
+                    PCRE2_SIZE startoffset,
+                    uint32_t options,
+                    Pcre2Type<32>::MatchData *match_data,
+                    Pcre2Type<32>::MatchContext *mcontext,
+                    Pcre2Type<32>::Pcre2Sptr replacement,
+                    PCRE2_SIZE rlength,
+                    Pcre2Type<32>::Pcre2Uchar *outputbuffer,
                     PCRE2_SIZE *outlengthptr){
         return pcre2_substitute_32( code, subject, length, startoffset, options, match_data,
                                    mcontext, replacement, rlength, outputbuffer, outlengthptr);
-    } 
+    }
     //~ static int substring_get_bynumber(Pcre2Type<32>::MatchData *match_data,
-                                        //~ uint32_t number, 
-                                        //~ Pcre2Type<32>::Pcre2Uchar **bufferptr, 
+                                        //~ uint32_t number,
+                                        //~ Pcre2Type<32>::Pcre2Uchar **bufferptr,
                                         //~ PCRE2_SIZE *bufflen){
         //~ return pcre2_substring_get_bynumber_32(match_data, number, bufferptr, bufflen);
     //~ }
     //~ static int substring_get_byname(Pcre2Type<32>::MatchData *match_data,
-                                        //~ Pcre2Type<32>::Pcre2Sptr name, 
-                                        //~ Pcre2Type<32>::Pcre2Uchar **bufferptr, 
+                                        //~ Pcre2Type<32>::Pcre2Sptr name,
+                                        //~ Pcre2Type<32>::Pcre2Uchar **bufferptr,
                                         //~ PCRE2_SIZE *bufflen){
         //~ return pcre2_substring_get_byname_32(match_data, name, bufferptr, bufflen);
     //~ }
@@ -563,14 +572,14 @@ template<> struct Pcre2Func<32> {
                               const Pcre2Type<32>::Pcre2Code *code,
                               Pcre2Type<32>::GeneralContext *gcontext){
         return pcre2_match_data_create_from_pattern_32(code, gcontext);
-                                
+
     }
-    static int match(  const Pcre2Type<32>::Pcre2Code *code, 
-                            Pcre2Type<32>::Pcre2Sptr subject, 
-                            PCRE2_SIZE length, 
-                            PCRE2_SIZE startoffset, 
-                            uint32_t options, 
-                            Pcre2Type<32>::MatchData *match_data, 
+    static int match(  const Pcre2Type<32>::Pcre2Code *code,
+                            Pcre2Type<32>::Pcre2Sptr subject,
+                            PCRE2_SIZE length,
+                            PCRE2_SIZE startoffset,
+                            uint32_t options,
+                            Pcre2Type<32>::MatchData *match_data,
                             Pcre2Type<32>::MatchContext *mcontext){
         return pcre2_match_32(code, subject, length, startoffset, options, match_data, mcontext);
     }
@@ -584,9 +593,9 @@ template<> struct Pcre2Func<32> {
         return pcre2_pattern_info_32(code, what, where);
     }
     static int set_newline(Pcre2Type<32>::CompileContext *ccontext, uint32_t value){
-        return pcre2_set_newline_32(ccontext, value); 
+        return pcre2_set_newline_32(ccontext, value);
     }
-    //~ static void jit_stack_assign(Pcre2Type<32>::MatchContext *mcontext, 
+    //~ static void jit_stack_assign(Pcre2Type<32>::MatchContext *mcontext,
                                  //~ Pcre2Type<32>::JitCallback callback_function,
                                  //~ void *callback_data){
         //~ pcre2_jit_stack_assign_32(mcontext, callback_function, callback_data);
@@ -624,31 +633,31 @@ template<> struct Pcre2Func<32> {
 ///implicit conversion will kick in and take care of things for you.
 class Modifier{
     std::string mod;
-    
+
     public:
     ///Default constructor.
     Modifier(){}
-    
+
     ///Constructor that takes a std::string.
     ///@param x std::string as a reference.
     Modifier(std::string const& x):mod(x){}
-    
+
     ///Constructor that takes char const * (null safety is provided by this one)
     ///@param x char const *
     Modifier(char const *x):mod(x?x:""){}
-    
+
     ///Returns the modifier string
     ///@return modifier string (std::string)
     std::string str() const { return mod; }
-    
+
     ///Returns the c_str() of modifier string
     ///@return char const *
     char const * c_str() const { return mod.c_str(); }
-    
+
     ///Returns the length of the modifier string
     ///@return length
     SIZE_T length() const{ return mod.length(); }
-    
+
     ///operator[] overload to access character by index.
     ///@param i index
     ///@return character at index i.
@@ -681,7 +690,7 @@ namespace MOD {
                                           PCRE2_DUPNAMES,                             // Modifier J
                                           PCRE2_UNGREEDY                              // Modifier U
                                         };
-                                              
+
 
     // String of compile modifier characters for JPCRE2 options
     static const char CJ_N[] = "S";
@@ -720,8 +729,8 @@ namespace MOD {
     // Array of action (match) modifier values for JPCRE2 options
     static const jpcre2::Uint MJ_V[1] = { FIND_ALL,                                   // Modifier  g
                                         };
-                           
-    static inline void toOption(Modifier const& mod, bool x, 
+
+    static inline void toOption(Modifier const& mod, bool x,
                                 Uint const * J_V, char const * J_N, SIZE_T SJ,
                                 Uint const * V, char const * N, SIZE_T S,
                                 Uint* po, Uint* jo,
@@ -733,43 +742,43 @@ namespace MOD {
             //First check for JPCRE2 mods
             for(SIZE_T j = 0; j < SJ; ++j){
                 if(J_N[j] == mod[i]) {
-                    if(x) *jo |= J_V[j]; 
-                    else  *jo &= ~J_V[j]; 
+                    if(x) *jo |= J_V[j];
+                    else  *jo &= ~J_V[j];
                     goto endfor;
                 }
             }
-            
+
             //Now check for PCRE2 mods
             for(SIZE_T j = 0; j< S; ++j){
                 if(N[j] == mod[i]){
-                    if(x) *po |= V[j]; 
-                    else  *po &= ~V[j]; 
+                    if(x) *po |= V[j];
+                    else  *po &= ~V[j];
                     goto endfor;
                 }
             }
-            
+
             //Modifier didn't match, invalid modifier
             *en = (int)ERROR::INVALID_MODIFIER;
             *eo = (int)mod[i];
-            
+
             endfor:;
         }
     }
-    
+
     static inline void toMatchOption(Modifier const& mod, bool x, Uint* po, Uint* jo, int* en, SIZE_T* eo){
         toOption(mod, x,
                  MJ_V, MJ_N, sizeof(MJ_V)/sizeof(Uint),
                  M_V, M_N, sizeof(M_V)/sizeof(Uint),
                  po, jo, en, eo);
     }
-    
+
     static inline void toReplaceOption(Modifier const& mod, bool x, Uint* po, Uint* jo, int* en, SIZE_T* eo){
         toOption(mod, x,
                  RJ_V, RJ_N, sizeof(RJ_V)/sizeof(Uint),
                  R_V, R_N, sizeof(R_V)/sizeof(Uint),
                  po, jo, en, eo);
     }
-    
+
     static inline void toCompileOption(Modifier const& mod, bool x, Uint* po, Uint* jo, int* en, SIZE_T* eo){
         toOption(mod, x,
                  CJ_V, CJ_N, sizeof(CJ_V)/sizeof(Uint),
@@ -796,32 +805,32 @@ namespace MOD {
         }
         return mod;
     }
-    
+
     static inline std::string fromMatchOption(Uint po, Uint jo){
         return fromOption(MJ_V, MJ_N, sizeof(MJ_V)/sizeof(Uint),
                           M_V, M_N, sizeof(M_V)/sizeof(Uint),
                           po, jo);
     }
-    
+
     static inline std::string fromReplaceOption(Uint po, Uint jo){
         return fromOption(RJ_V, RJ_N, sizeof(RJ_V)/sizeof(Uint),
                           R_V, R_N, sizeof(R_V)/sizeof(Uint),
                           po, jo);
     }
-    
+
     static inline std::string fromCompileOption(Uint po, Uint jo){
         return fromOption(CJ_V, CJ_N, sizeof(CJ_V)/sizeof(Uint),
                           C_V, C_N, sizeof(C_V)/sizeof(Uint),
                           po, jo);
     }
-    
+
 } //MOD namespace ends
 
 ///Lets you create custom modifier tables.
 ///An instance of this class can be passed to
 ///match, replace or compile related class objects.
 class ModifierTable{
-    
+
     std::string tabjms;
     std::string tabms;
     std::string tabjrs;
@@ -834,11 +843,11 @@ class ModifierTable{
     VecOpt tabrv;
     VecOpt tabjcv;
     VecOpt tabcv;
-    
+
     void toOption(Modifier const& mod, bool x,
                   VecOpt const& J_V, std::string const& J_N,
                   VecOpt const& V, std::string const& N,
-                  Uint* po, Uint* jo, int* en, SIZE_T* eo 
+                  Uint* po, Uint* jo, int* en, SIZE_T* eo
                   ) const{
         SIZE_T SJ = J_V.size();
         SIZE_T S = V.size();
@@ -850,7 +859,7 @@ class ModifierTable{
                      po, jo, en, eo
                      );
     }
-    
+
     std::string fromOption(VecOpt const& J_V, std::string const& J_N,
                            VecOpt const& V, std::string const& N,
                            Uint po, Uint jo) const{
@@ -862,21 +871,21 @@ class ModifierTable{
                      V.empty()?0:&V[0], N.c_str(), S,
                      po, jo);
     }
-    
+
     void parseModifierTable(std::string& tabjs, VecOpt& tabjv,
                             std::string& tab_s, VecOpt& tab_v,
                             std::string const& tabs, VecOpt const& tabv);
     public:
-    
+
     ///Default constructor that creates an empty modifier table.
     ModifierTable(){}
-    
+
     ///@overload
     ///@param deflt Initialize with default table if true, otherwise keep empty.
     ModifierTable(bool deflt){
         if(deflt) setAllToDefault();
     }
-    
+
     ///Reset the match modifier table to its initial (empty) state including memory.
     ///@return A reference to the calling ModifierTable object.
     ModifierTable& resetMatchModifierTable(){
@@ -886,7 +895,7 @@ class ModifierTable{
         VecOpt().swap(tabmv);
         return *this;
     }
-    
+
     ///Reset the replace modifier table to its initial (empty) state including memory.
     ///@return A reference to the calling ModifierTable object.
     ModifierTable& resetReplaceModifierTable(){
@@ -896,7 +905,7 @@ class ModifierTable{
         VecOpt().swap(tabrv);
         return *this;
     }
-    
+
     ///Reset the compile modifier table to its initial (empty) state including memory.
     ///@return A reference to the calling ModifierTable object.
     ModifierTable& resetCompileModifierTable(){
@@ -906,7 +915,7 @@ class ModifierTable{
         VecOpt().swap(tabcv);
         return *this;
     }
-    
+
     ///Reset the modifier tables to their initial (empty) state including memory.
     ///@return A reference to the calling ModifierTable object.
     ModifierTable& reset(){
@@ -915,7 +924,7 @@ class ModifierTable{
         resetCompileModifierTable();
         return *this;
     }
-    
+
     ///Clear the match modifier table to its initial (empty) state.
     ///Memory may retain for further use.
     ///@return A reference to the calling ModifierTable object.
@@ -926,7 +935,7 @@ class ModifierTable{
         tabmv.clear();
         return *this;
     }
-    
+
     ///Clear the replace modifier table to its initial (empty) state.
     ///Memory may retain for further use.
     ///@return A reference to the calling ModifierTable object.
@@ -937,7 +946,7 @@ class ModifierTable{
         tabrv.clear();
         return *this;
     }
-    
+
     ///Clear the compile modifier table to its initial (empty) state.
     ///Memory may retain for further use.
     ///@return A reference to the calling ModifierTable object.
@@ -948,7 +957,7 @@ class ModifierTable{
         tabcv.clear();
         return *this;
     }
-    
+
     ///Clear the modifier tables to their initial (empty) state.
     ///Memory may retain for further use.
     ///@return A reference to the calling ModifierTable object.
@@ -958,7 +967,7 @@ class ModifierTable{
         clearCompileModifierTable();
         return *this;
     }
-    
+
     ///Modifier parser for match related options.
     ///@param mod modifier string
     ///@param x whether to add or remove the modifers.
@@ -969,7 +978,7 @@ class ModifierTable{
     void toMatchOption(Modifier const& mod, bool x, Uint* po, Uint* jo, int* en, SIZE_T* eo) const {
         toOption(mod, x,tabjmv,tabjms,tabmv, tabms,po,jo,en,eo);
     }
-    
+
     ///Modifier parser for replace related options.
     ///@param mod modifier string
     ///@param x whether to add or remove the modifers.
@@ -980,7 +989,7 @@ class ModifierTable{
     void toReplaceOption(Modifier const& mod, bool x, Uint* po, Uint* jo, int* en, SIZE_T* eo) const {
         return toOption(mod, x,tabjrv,tabjrs,tabrv,tabrs,po,jo,en,eo);
     }
-    
+
     ///Modifier parser for compile related options.
     ///@param mod modifier string
     ///@param x whether to add or remove the modifers.
@@ -991,7 +1000,7 @@ class ModifierTable{
     void toCompileOption(Modifier const& mod, bool x, Uint* po, Uint* jo, int* en, SIZE_T* eo) const {
         return toOption(mod, x,tabjcv,tabjcs,tabcv,tabcs,po,jo,en,eo);
     }
-    
+
     ///Take match related option value and convert to modifier string.
     ///@param po PCRE2 option.
     ///@param jo JPCRE2 option.
@@ -999,7 +1008,7 @@ class ModifierTable{
     std::string fromMatchOption(Uint po, Uint jo) const {
         return fromOption(tabjmv,tabjms,tabmv,tabms,po,jo);
     }
-    
+
     ///Take replace related option value and convert to modifier string.
     ///@param po PCRE2 option.
     ///@param jo JPCRE2 option.
@@ -1007,7 +1016,7 @@ class ModifierTable{
     std::string fromReplaceOption(Uint po, Uint jo) const {
         return fromOption(tabjrv,tabjrs,tabrv,tabrs,po,jo);
     }
-    
+
     ///Take compile related option value and convert to modifier string.
     ///@param po PCRE2 option.
     ///@param jo JPCRE2 option.
@@ -1015,7 +1024,7 @@ class ModifierTable{
     std::string fromCompileOption(Uint po, Uint jo) const {
         return fromOption(tabjcv,tabjcs,tabcv,tabcs,po,jo);
     }
-    
+
     ///Set modifier table for match.
     ///Takes a string and a vector of sequential options.
     ///@param tabs modifier string (list of modifiers)
@@ -1025,7 +1034,7 @@ class ModifierTable{
         parseModifierTable(tabjms, tabjmv, tabms, tabmv, tabs, tabv);
         return *this;
     }
-    
+
     ///Set modifier table for match.
     ///Takes a string and an array of sequential options.
     ///@param tabs modifier string (list of modifiers)
@@ -1038,7 +1047,7 @@ class ModifierTable{
         } else clearMatchModifierTable();
         return *this;
     }
-    
+
     ///@overload
     ///...
     ///This one takes modifier and value by array.
@@ -1055,7 +1064,7 @@ class ModifierTable{
         } else clearMatchModifierTable();
         return *this;
     }
-    
+
     ///Set modifier table for replace.
     ///Takes a string and a vector of sequential options.
     ///@param tabs modifier string (list of modifiers)
@@ -1065,7 +1074,7 @@ class ModifierTable{
         parseModifierTable(tabjrs, tabjrv, tabrs, tabrv, tabs, tabv);
         return *this;
     }
-    
+
     ///Set modifier table for replace.
     ///Takes a string and an array of sequential options.
     ///@param tabs modifier string (list of modifiers)
@@ -1078,7 +1087,7 @@ class ModifierTable{
         } else clearReplaceModifierTable();
         return *this;
     }
-    
+
     ///@overload
     ///...
     ///This one takes modifier and value by array.
@@ -1095,7 +1104,7 @@ class ModifierTable{
         } else clearReplaceModifierTable();
         return *this;
     }
-    
+
     ///Set modifier table for compile.
     ///Takes a string and a vector of sequential options.
     ///@param tabs modifier string (list of modifiers)
@@ -1105,7 +1114,7 @@ class ModifierTable{
         parseModifierTable(tabjcs, tabjcv, tabcs, tabcv, tabs, tabv);
         return *this;
     }
-    
+
     ///Set modifier table for compile.
     ///Takes a string and an array of sequential options.
     ///@param tabs modifier string (list of modifiers)
@@ -1118,7 +1127,7 @@ class ModifierTable{
         } else clearCompileModifierTable();
         return *this;
     }
-    
+
     ///@overload
     ///...
     ///This one takes modifier and value by array.
@@ -1135,7 +1144,7 @@ class ModifierTable{
         } else clearCompileModifierTable();
         return *this;
     }
-    
+
     ///Set match modifie table to default
     ///@return A reference to the calling ModifierTable object.
     ModifierTable& setMatchModifierTableToDefault(){
@@ -1145,7 +1154,7 @@ class ModifierTable{
         tabmv = VecOpt(MOD::M_V, MOD::M_V + sizeof(MOD::M_V)/sizeof(Uint));
         return *this;
     }
-    
+
     ///Set replace modifier table to default.
     ///@return A reference to the calling ModifierTable object.
     ModifierTable& setReplaceModifierTableToDefault(){
@@ -1155,7 +1164,7 @@ class ModifierTable{
         tabrv = VecOpt(MOD::R_V, MOD::R_V + sizeof(MOD::R_V)/sizeof(Uint));
         return *this;
     }
-    
+
     ///Set compile modifier table to default.
     ///@return A reference to the calling ModifierTable object.
     ModifierTable& setCompileModifierTableToDefault(){
@@ -1165,7 +1174,7 @@ class ModifierTable{
         tabcv = VecOpt(MOD::C_V, MOD::C_V + sizeof(MOD::C_V)/sizeof(Uint));
         return *this;
     }
-    
+
     ///Set all tables to default.
     ///@return A reference to the calling ModifierTable object.
     ModifierTable& setAllToDefault(){
@@ -1188,7 +1197,7 @@ template<> inline std::basic_string<char> MSG<char>::INVALID_MODIFIER(){ return 
 template<> inline std::basic_string<wchar_t> MSG<wchar_t>::INVALID_MODIFIER(){ return L"Invalid modifier: "; }
 template<> inline std::basic_string<char> MSG<char>::INSUFFICIENT_OVECTOR(){ return "ovector wasn't big enough"; }
 template<> inline std::basic_string<wchar_t> MSG<wchar_t>::INSUFFICIENT_OVECTOR(){ return L"ovector wasn't big enough"; }
-#if __cplusplus >= 201103L
+#if JPCRE2_USE_MINIMUM_CXX_11
 template<> inline std::basic_string<char16_t> MSG<char16_t>::INVALID_MODIFIER(){ return u"Invalid modifier: "; }
 template<> inline std::basic_string<char32_t> MSG<char32_t>::INVALID_MODIFIER(){ return U"Invalid modifier: "; }
 template<> inline std::basic_string<char16_t> MSG<char16_t>::INSUFFICIENT_OVECTOR(){ return u"ovector wasn't big enough"; }
@@ -1221,8 +1230,8 @@ template<> inline std::basic_string<char32_t> MSG<char32_t>::INSUFFICIENT_OVECTO
 ///```cpp
 ///typedef jpcre2::select<Char_T> jp;
 ///```
-#if __cplusplus >= 201103L
-template<typename Char_T, template<typename...> class Map=std::map> 
+#if JPCRE2_USE_MINIMUM_CXX_11
+template<typename Char_T, template<typename...> class Map=std::map>
 #else
 template<typename Char_T>
 #endif
@@ -1230,7 +1239,7 @@ struct select{
 
     ///Typedef for character (`char`, `wchar_t`, `char16_t`, `char32_t`)
     typedef Char_T Char;
-    
+
     //typedef Char_T Char;
     ///Typedef for string (`std::string`, `std::wstring`, `std::u16string`, `std::u32string`).
     ///Defined as `std::basic_string<Char_T>`.
@@ -1240,10 +1249,10 @@ struct select{
     ///char | std::string
     ///wchar_t | std::wstring
     ///char16_t | std::u16string (>=C++11)
-    ///char32_t | std::u32string (>=C++11) 
+    ///char32_t | std::u32string (>=C++11)
     typedef typename std::basic_string<Char_T> String;
-    
-    #if __cplusplus >= 201103L
+
+    #if JPCRE2_USE_MINIMUM_CXX_11
     ///Map for Named substrings.
     typedef class Map<String, String> MapNas;
     ///Substring name to Substring number map.
@@ -1254,21 +1263,21 @@ struct select{
     ///Substring name to Substring number map.
     typedef typename std::map<String, SIZE_T> MapNtN;
     #endif
-    
+
     ///Allow spelling mistake of MapNtN as MapNtn.
     typedef MapNtN MapNtn;
-    
+
     ///Vector for Numbered substrings (Sub container).
-    typedef typename std::vector<String> NumSub;     
+    typedef typename std::vector<String> NumSub;
     ///Vector of matches with named substrings.
-    typedef typename std::vector<MapNas> VecNas;   
-    ///Vector of substring name to substring number map.       
+    typedef typename std::vector<MapNas> VecNas;
+    ///Vector of substring name to substring number map.
     typedef typename std::vector<MapNtN> VecNtN;
-    ///Allow spelling mistake of VecNtN as VecNtn.            
+    ///Allow spelling mistake of VecNtN as VecNtn.
     typedef VecNtN VecNtn;
-    ///Vector of matches with numbered substrings.  
+    ///Vector of matches with numbered substrings.
     typedef typename std::vector<NumSub> VecNum;
-    
+
     //These are to shorten the code
     typedef typename Pcre2Type<sizeof( Char_T ) * CHAR_BIT>::Pcre2Uchar Pcre2Uchar;
     typedef typename Pcre2Type<sizeof( Char_T ) * CHAR_BIT>::Pcre2Sptr Pcre2Sptr;
@@ -1279,17 +1288,17 @@ struct select{
     typedef typename Pcre2Type<sizeof( Char_T ) * CHAR_BIT>::MatchContext MatchContext;
     typedef typename Pcre2Type<sizeof( Char_T ) * CHAR_BIT>::JitCallback JitCallback;
     typedef typename Pcre2Type<sizeof( Char_T ) * CHAR_BIT>::JitStack JitStack;
-    
+
     template<typename T>
     static String toString(T); //prevent implicit type conversion of T
-    
+
     ///Converts a Char_T to jpcre2::select::String
     ///@param a Char_T
     ///@return jpcre2::select::String
     static String toString(Char a){
         return a?String(1, a):String();
     }
-    
+
     ///@overload
     ///...
     ///Converts a Char_T const * to jpcre2::select::String
@@ -1298,7 +1307,7 @@ struct select{
     static String toString(Char const *a){
         return a?String(a):String();
     }
-    
+
     ///@overload
     ///...
     ///Converts a Char_T* to jpcre2::select::String
@@ -1307,7 +1316,7 @@ struct select{
     static String toString(Char* a){
         return a?String(a):String();
     }
-    
+
     ///@overload
     ///...
     ///Converts a PCRE2_UCHAR to String
@@ -1316,7 +1325,7 @@ struct select{
     static String toString(Pcre2Uchar* a) {
         return a?String((Char*) a):String();
     }
-    
+
     ///Retruns error message from PCRE2 error number
     ///@param err_num error number (negative)
     ///@return message as jpcre2::select::String.
@@ -1324,8 +1333,8 @@ struct select{
         Pcre2Uchar buffer[sizeof(Char)*CHAR_BIT*1024];
         Pcre2Func<sizeof( Char_T ) * CHAR_BIT>::get_error_message(err_num, buffer, sizeof(buffer));
         return toString((Pcre2Uchar*) buffer);
-    }          
-    
+    }
+
     ///Returns error message (either JPCRE2 or PCRE2) from error number and error offset
     ///@param err_num error number (negative for PCRE2, positive for JPCRE2)
     ///@param err_off error offset
@@ -1345,15 +1354,15 @@ struct select{
     class RegexMatch;
     class RegexReplace;
     class MatchEvaluator;
-    
+
     /** Provides public constructors to create RegexMatch objects.
      * Every RegexMatch object should be associated with a Regex object.
      * This class stores a pointer to its' associated Regex object, thus when
      * the content of the associated Regex object is changed, there will be no need to
      * set the pointer again.
-     * 
+     *
      * Examples:
-     * 
+     *
      * ```cpp
      * jp::Regex re;
      * jp::RegexMatch rm;
@@ -1363,44 +1372,44 @@ struct select{
      * rm.match();  // 7 matches
      * ```
      */
-    class RegexMatch { 
+    class RegexMatch {
 
-    private: 
+    private:
 
         friend class MatchEvaluator;
 
-        Regex const *re;              
+        Regex const *re;
 
         String m_subject;
         String const *m_subject_ptr;
-        Uint match_opts;        
-        Uint jpcre2_match_opts; 
+        Uint match_opts;
+        Uint jpcre2_match_opts;
         MatchContext *mcontext;
         ModifierTable const * modtab;
         MatchData * mdata;
-        
+
         PCRE2_SIZE _start_offset; //name collision, use _ at start
 
-        VecNum* vec_num;        
-        VecNas* vec_nas;        
-        VecNtN* vec_ntn;        
-        
+        VecNum* vec_num;
+        VecNas* vec_nas;
+        VecNtN* vec_ntn;
+
         VecOff* vec_soff;
         VecOff* vec_eoff;
 
-        bool getNumberedSubstrings(int, Pcre2Sptr, PCRE2_SIZE*);   
+        bool getNumberedSubstrings(int, Pcre2Sptr, PCRE2_SIZE*, uint32_t);
 
-        bool getNamedSubstrings(int, int, Pcre2Sptr, Pcre2Sptr, PCRE2_SIZE*);   
-        
+        bool getNamedSubstrings(int, int, Pcre2Sptr, Pcre2Sptr, PCRE2_SIZE*);
+
         void init_vars() {
             re = 0;
-            vec_num = 0; 
-            vec_nas = 0; 
+            vec_num = 0;
+            vec_nas = 0;
             vec_ntn = 0;
             vec_soff = 0;
             vec_eoff = 0;
-            match_opts = 0; 
-            jpcre2_match_opts = 0; 
+            match_opts = 0;
+            jpcre2_match_opts = 0;
             error_number = 0;
             error_offset = 0;
             _start_offset = 0;
@@ -1409,14 +1418,14 @@ struct select{
             modtab = 0;
             mdata = 0;
         }
-        
+
         void onlyCopy(RegexMatch const &rm){
             re = rm.re; //only pointer should be copied
-            
+
             //pointer to subject may point to m_subject or other user data
             m_subject_ptr = (rm.m_subject_ptr == &rm.m_subject) ? &m_subject  //not &rm.m_subject
                                                                 : rm.m_subject_ptr;
-                        
+
             //underlying data of vectors are not handled by RegexMatch
             //thus it's safe to just copy the pointers.
             vec_num = rm.vec_num;
@@ -1424,7 +1433,7 @@ struct select{
             vec_ntn = rm.vec_ntn;
             vec_soff = rm.vec_soff;
             vec_eoff = rm.vec_eoff;
-            
+
             match_opts = rm.match_opts;
             jpcre2_match_opts = rm.jpcre2_match_opts;
             error_number = rm.error_number;
@@ -1434,13 +1443,13 @@ struct select{
             modtab = rm.modtab;
             mdata = rm.mdata;
         }
-        
+
         void deepCopy(RegexMatch const &rm){
             m_subject = rm.m_subject;
             onlyCopy(rm);
         }
-        
-        #if __cplusplus >= 201103L
+
+        #if JPCRE2_USE_MINIMUM_CXX_11
         void deepMove(RegexMatch& rm){
             m_subject = std::move_if_noexcept(rm.m_subject);
             onlyCopy(rm);
@@ -1450,17 +1459,17 @@ struct select{
         friend class Regex;
 
         protected:
-        
+
         int error_number;
         PCRE2_SIZE error_offset;
 
-    public: 
-    
+    public:
+
         ///Default constructor.
         RegexMatch(){
             init_vars();
         }
-    
+
         ///@overload
         ///...
         ///Creates a RegexMatch object associating a Regex object.
@@ -1470,7 +1479,7 @@ struct select{
             init_vars();
             re = r;
         }
-        
+
         ///@overload
         ///...
         ///Copy constructor.
@@ -1479,7 +1488,7 @@ struct select{
             init_vars();
             deepCopy(rm);
         }
-        
+
         ///Overloaded copy-assignment operator.
         ///@param rm RegexMatch object
         ///@return A reference to the calling RegexMatch object.
@@ -1488,8 +1497,8 @@ struct select{
             deepCopy(rm);
             return *this;
         }
-        
-        #if __cplusplus >= 201103L
+
+        #if JPCRE2_USE_MINIMUM_CXX_11
         ///@overload
         ///...
         ///Move constructor.
@@ -1501,7 +1510,7 @@ struct select{
             init_vars();
             deepMove(rm);
         }
-        
+
         ///@overload
         ///...
         ///Overloaded move-assignment operator.
@@ -1516,10 +1525,10 @@ struct select{
             return *this;
         }
         #endif
-        
+
         ///Destructor
         ///Frees all internal memories that were used.
-        virtual ~RegexMatch() {} 
+        virtual ~RegexMatch() {}
 
         ///Reset all class variables to its default (initial) state including memory.
         ///Data in the vectors will retain (as it's external)
@@ -1528,9 +1537,9 @@ struct select{
         virtual RegexMatch& reset() {
             String().swap(m_subject); //not ptr , external string won't be modified.
             init_vars();
-            return *this; 
-        } 
-        
+            return *this;
+        }
+
         ///Clear all class variables (may retain some memory for further use).
         ///Data in the vectors will retain (as it's external)
         ///You will need to pass vector pointers again after calling this function to get match results.
@@ -1538,9 +1547,9 @@ struct select{
         virtual RegexMatch& clear(){
             m_subject.clear(); //not ptr , external string won't be modified.
             init_vars();
-            return *this; 
+            return *this;
         }
-        
+
         ///reset match related errors to zero.
         ///If you want to examine the error status of a function call in the method chain,
         ///add this function just before your target function so that the error is set to zero
@@ -1554,43 +1563,43 @@ struct select{
             error_offset = 0;
             return *this;
         }
-        
+
         /// Returns the last error number
         ///@return Last error number
-        virtual int getErrorNumber() const { 
-            return error_number; 
-        } 
+        virtual int getErrorNumber() const {
+            return error_number;
+        }
 
         /// Returns the last error offset
         ///@return Last error offset
-        virtual int getErrorOffset() const  { 
-            return (int)error_offset; 
-        } 
-        
+        virtual int getErrorOffset() const  {
+            return (int)error_offset;
+        }
+
         /// Returns the last error message
         ///@return Last error message
         virtual String getErrorMessage() const  {
-            #if __cplusplus >= 201103L
+            #if JPCRE2_USE_MINIMUM_CXX_11
             return select<Char, Map>::getErrorMessage(error_number, error_offset);
             #else
-            return select<Char>::getErrorMessage(error_number, error_offset); 
+            return select<Char>::getErrorMessage(error_number, error_offset);
             #endif
-        } 
-        
+        }
+
         ///Get subject string (by value).
         ///@return subject string
         ///@see RegexReplace::getSubject()
         virtual String getSubject() const  {
-            return *m_subject_ptr; 
-        } 
-        
+            return *m_subject_ptr;
+        }
+
         ///Get pointer to subject string.
         ///Data can not be changed with this pointer.
-        ///@return constant subject string pointer 
+        ///@return constant subject string pointer
         ///@see RegexReplace::getSubjectPointer()
-        virtual String const * getSubjectPointer() const  { 
+        virtual String const * getSubjectPointer() const  {
             return m_subject_ptr;
-        } 
+        }
 
 
         /// Calculate modifier string from PCRE2 and JPCRE2 options and return it.
@@ -1610,37 +1619,37 @@ struct select{
         virtual std::string getModifier() const {
             return modtab ? modtab->fromMatchOption(match_opts, jpcre2_match_opts)
                           : MOD::fromMatchOption(match_opts, jpcre2_match_opts);
-        } 
-        
+        }
+
         ///Get the modifier table that is set,
         ///@return pointer to constant ModifierTable.
         virtual ModifierTable const* getModifierTable(){
             return modtab;
         }
-        
-    
+
+
         ///Get PCRE2 option
         ///@return PCRE2 option for match operation
         ///@see Regex::getPcre2Option()
         ///@see RegexReplace::getPcre2Option()
-        virtual Uint getPcre2Option() const  { 
-            return match_opts; 
-        } 
+        virtual Uint getPcre2Option() const  {
+            return match_opts;
+        }
 
         /// Get JPCRE2 option
         ///@return JPCRE2 options for math operation
         ///@see Regex::getJpcre2Option()
         ///@see RegexReplace::getJpcre2Option()
-        virtual Uint getJpcre2Option() const  { 
-            return jpcre2_match_opts; 
-        } 
-        
+        virtual Uint getJpcre2Option() const  {
+            return jpcre2_match_opts;
+        }
+
         /// Get offset from where match will start in the subject.
         /// @return Start offset
         virtual PCRE2_SIZE getStartOffset() const  {
             return _start_offset;
         }
-        
+
         ///Get pre-set match start offset vector pointer.
         ///The pointer must be set with RegexMatch::setMatchStartOffsetVector() beforehand
         ///for this to work i.e it is just a convenience method to get the pre-set vector pointer.
@@ -1648,7 +1657,7 @@ struct select{
         virtual VecOff const* getMatchStartOffsetVector() const {
             return vec_soff;
         }
-        
+
         ///Get pre-set match end offset vector pointer.
         ///The pointer must be set with RegexMatch::setMatchEndOffsetVector() beforehand
         ///for this to work i.e it is just a convenience method to get the pre-set vector pointer.
@@ -1656,32 +1665,32 @@ struct select{
         virtual VecOff const* getMatchEndOffsetVector() const {
             return vec_eoff;
         }
-        
+
         ///Get a pointer to the associated Regex object.
         ///If no actual Regex object is associated, null is returned.
         ///@return A pointer to the associated constant Regex object or null.
         virtual Regex const * getRegexObject() const {
             return re;
         }
-        
+
         ///Get pointer to numbered substring vector.
         ///@return Pointer to const numbered substring vector.
         virtual VecNum const* getNumberedSubstringVector() const {
             return vec_num;
         }
-        
+
         ///Get pointer to named substring vector.
         ///@return Pointer to const named substring vector.
         virtual VecNas const* getNamedSubstringVector() const {
             return vec_nas;
         }
-        
+
         ///Get pointer to name to number map vector.
         ///@return Pointer to const name to number map vector.
         virtual VecNtN const* getNameToNumberMapVector() const {
             return vec_ntn;
         }
-        
+
         ///Set the associated regex object.
         ///Null pointer unsets it.
         ///Underlying data is not modified.
@@ -1698,10 +1707,10 @@ struct select{
         /// This vector will be filled with numbered (indexed) captured groups.
         /// @param v pointer to the numbered substring vector
         /// @return Reference to the calling RegexMatch object
-        virtual RegexMatch& setNumberedSubstringVector(VecNum* v) { 
-            vec_num = v; 
-            return *this; 
-        } 
+        virtual RegexMatch& setNumberedSubstringVector(VecNum* v) {
+            vec_num = v;
+            return *this;
+        }
 
         /// Set a pointer to the named substring vector.
         /// Null pointer unsets it.
@@ -1709,10 +1718,10 @@ struct select{
         /// This vector will be populated with named captured groups.
         /// @param v pointer to the named substring vector
         /// @return Reference to the calling RegexMatch object
-        virtual RegexMatch& setNamedSubstringVector(VecNas* v) { 
-            vec_nas = v; 
-            return *this; 
-        }  
+        virtual RegexMatch& setNamedSubstringVector(VecNas* v) {
+            vec_nas = v;
+            return *this;
+        }
 
         /// Set a pointer to the name to number map vector.
         /// Null pointer unsets it.
@@ -1720,11 +1729,11 @@ struct select{
         /// This vector will be populated with name to number map for captured groups.
         /// @param v pointer to the name to number map vector
         /// @return Reference to the calling RegexMatch object
-        virtual RegexMatch& setNameToNumberMapVector(VecNtN* v) { 
-            vec_ntn = v; 
-            return *this; 
+        virtual RegexMatch& setNameToNumberMapVector(VecNtN* v) {
+            vec_ntn = v;
+            return *this;
         }
-        
+
         /// Set the pointer to a vector to store the offsets where matches
         /// start in the subject.
         /// Null pointer unsets it.
@@ -1734,7 +1743,7 @@ struct select{
             vec_soff = v;
             return *this;
         }
-        
+
         /// Set the pointer to a vector to store the offsets where matches
         /// end in the subject.
         /// Null pointer unsets it.
@@ -1750,11 +1759,11 @@ struct select{
         /// @param s Subject string
         /// @return Reference to the calling RegexMatch object
         /// @see RegexReplace::setSubject()
-        virtual RegexMatch& setSubject(String const &s) { 
+        virtual RegexMatch& setSubject(String const &s) {
             m_subject = s;
             m_subject_ptr = &m_subject; //must overwrite
-            return *this; 
-        } 
+            return *this;
+        }
 
         ///@overload
         ///...
@@ -1768,8 +1777,8 @@ struct select{
                 m_subject.clear();
                 m_subject_ptr = &m_subject;
             }
-            return *this; 
-        } 
+            return *this;
+        }
 
 
         /// Set the modifier (resets all JPCRE2 and PCRE2 options) by calling RegexMatch::changeModifier().
@@ -1778,13 +1787,13 @@ struct select{
         /// @return Reference to the calling RegexMatch object
         /// @see RegexReplace::setModifier()
         /// @see Regex::setModifier()
-        virtual RegexMatch& setModifier(Modifier const& s) { 
-            match_opts = 0; 
-            jpcre2_match_opts = 0; 
-            changeModifier(s, true); 
-            return *this; 
-        } 
-        
+        virtual RegexMatch& setModifier(Modifier const& s) {
+            match_opts = 0;
+            jpcre2_match_opts = 0;
+            changeModifier(s, true);
+            return *this;
+        }
+
         ///Set a custom modifier table to be used.
         ///@param mdt pointer to ModifierTable object.
         ///@return Reference to the calling RegexMatch object.
@@ -1798,10 +1807,10 @@ struct select{
         /// @return Reference to the calling RegexMatch object
         /// @see RegexReplace::setJpcre2Option()
         /// @see Regex::setJpcre2Option()
-        virtual RegexMatch& setJpcre2Option(Uint x) { 
-            jpcre2_match_opts = x; 
-            return *this; 
-        } 
+        virtual RegexMatch& setJpcre2Option(Uint x) {
+            jpcre2_match_opts = x;
+            return *this;
+        }
 
         ///Set PCRE2 option match (overwrite existing option)
         /// @param x Option value
@@ -1809,24 +1818,24 @@ struct select{
         /// @see RegexReplace::setPcre2Option()
         /// @see Regex::setPcre2Option()
         virtual RegexMatch& setPcre2Option(Uint x) {
-            match_opts = x; 
-            return *this; 
-        } 
-        
+            match_opts = x;
+            return *this;
+        }
+
         /// Set whether to perform global match
         /// @param x True or False
         /// @return Reference to the calling RegexMatch object
         virtual RegexMatch& setFindAll(bool x) {
             jpcre2_match_opts = x?jpcre2_match_opts | FIND_ALL:jpcre2_match_opts & ~FIND_ALL;
-            return *this; 
-        } 
+            return *this;
+        }
 
         ///@overload
         ///...
         ///This function just calls RegexMatch::setFindAll(bool x) with `true` as the parameter
         ///@return Reference to the calling RegexMatch object
-        virtual RegexMatch& setFindAll() { 
-            return setFindAll(true); 
+        virtual RegexMatch& setFindAll() {
+            return setFindAll(true);
         }
 
         /// Set offset from where match starts.
@@ -1838,7 +1847,7 @@ struct select{
             _start_offset = offset;
             return *this;
         }
-        
+
         ///Set the match context.
         ///You can create match context using the native PCRE2 API.
         ///The memory is not handled by RegexMatch object and not freed.
@@ -1849,14 +1858,14 @@ struct select{
             mcontext = match_context;
             return *this;
         }
-        
+
         ///Return pointer to the match context that was previously set with setMatchContext().
         ///Handling memory is the callers' responsibility.
         ///@return pointer to the match context (default: null).
         virtual MatchContext* getMatchContext(){
             return mcontext;
         }
-        
+
         ///Set the match data block to be used.
         ///The memory is not handled by RegexMatch object and not freed.
         ///User will be responsible for freeing the memory of the match data block.
@@ -1866,14 +1875,14 @@ struct select{
             mdata = madt;
             return *this;
         }
-        
+
         ///Get the pointer to the match data block that was set previously with setMatchData()
         ///Handling memory is the callers' responsibility.
         ///@return pointer to the match data (default: null).
         virtual MatchData* getMatchDataBlock(){
             return mdata;
         }
-        
+
         /// Parse modifier and add/remove equivalent PCRE2 and JPCRE2 options.
         /// This function does not initialize or re-initialize options.
         /// If you want to set options from scratch, initialize them to 0 before calling this function.
@@ -1890,7 +1899,7 @@ struct select{
             modtab ? modtab->toMatchOption(mod, x, &match_opts, &jpcre2_match_opts, &error_number, &error_offset)
                    : MOD::toMatchOption(mod, x, &match_opts, &jpcre2_match_opts, &error_number, &error_offset);
             return *this;
-        } 
+        }
 
         /// Add or remove a JPCRE2 option
         /// @param opt JPCRE2 option value
@@ -1900,8 +1909,8 @@ struct select{
         /// @see Regex::changeJpcre2Option()
         virtual RegexMatch& changeJpcre2Option(Uint opt, bool x) {
             jpcre2_match_opts = x ? jpcre2_match_opts | opt : jpcre2_match_opts & ~opt;
-            return *this; 
-        } 
+            return *this;
+        }
 
         /// Add or remove a PCRE2 option
         /// @param opt PCRE2 option value
@@ -1911,49 +1920,49 @@ struct select{
         /// @see Regex::changePcre2Option()
         virtual RegexMatch& changePcre2Option(Uint opt, bool x) {
             match_opts = x ? match_opts | opt : match_opts & ~opt;
-            return *this; 
-        } 
-        
+            return *this;
+        }
+
         /// Parse modifier string and add equivalent PCRE2 and JPCRE2 options.
         /// This is just a wrapper of the original function RegexMatch::changeModifier()
         /// @param mod Modifier string.
         /// @return Reference to the calling RegexMatch object
         /// @see RegexReplace::addModifier()
         /// @see Regex::addModifier()
-        virtual RegexMatch& addModifier(Modifier const& mod){ 
-            return changeModifier(mod, true); 
-        } 
+        virtual RegexMatch& addModifier(Modifier const& mod){
+            return changeModifier(mod, true);
+        }
 
         /// Add option to existing JPCRE2 options for match
         /// @param x Option value
         /// @return Reference to the calling RegexMatch object
         /// @see RegexReplace::addJpcre2Option()
         /// @see Regex::addJpcre2Option()
-        virtual RegexMatch& addJpcre2Option(Uint x) { 
-            jpcre2_match_opts |= x; 
-            return *this; 
-        } 
+        virtual RegexMatch& addJpcre2Option(Uint x) {
+            jpcre2_match_opts |= x;
+            return *this;
+        }
 
         /// Add option to existing PCRE2 options for match
         /// @param x Option value
         /// @return Reference to the calling RegexMatch object
         /// @see RegexReplace::addPcre2Option()
         /// @see Regex::addPcre2Option()
-        virtual RegexMatch& addPcre2Option(Uint x) { 
-            match_opts |= x; 
-            return *this; 
+        virtual RegexMatch& addPcre2Option(Uint x) {
+            match_opts |= x;
+            return *this;
         }
-        
+
 
         /// Perform match operation using info from class variables and return the match count and
         /// store the results in specified vectors.
-        /// 
+        ///
         /// Note: This function uses pcre2_match() function to do the match.
         ///@return Match count
         virtual SIZE_T match(void);
-    }; 
+    };
 
-    
+
     ///This class contains a typedef of a function pointer or a templated function wrapper (`std::function`)
     ///to provide callback function to the `MatchEvaluator`.
     ///`std::function` is used when `>=C++11` is being used , otherwise function pointer is used.
@@ -1972,12 +1981,12 @@ struct select{
     /// jp::String myCallback1(jp::NumSub const &m1, void*, void*){
     ///     return "("+m1[0]+")";
     /// }
-    /// 
+    ///
     /// jp::String myCallback2(jp::NumSub const &m1, jp::MapNas const &m2, void*){
     ///     return "("+m1[0]+"/"+m2.at("total")+")";
     /// }
     /// //Now you can pass these functions in MatchEvaluator constructors to create a match evaluator
-    /// jp::MatchEvaluator me1(myCallback1); 
+    /// jp::MatchEvaluator me1(myCallback1);
     ///
     /// //Examples with lambda (>=C++11)
     /// jp::MatchEvaluator me2([](jp::NumSub const &m1, void*, void*)
@@ -1988,7 +1997,7 @@ struct select{
     ///@see MatchEvaluator
     template<typename T1, typename T2, typename T3>
     struct MatchEvaluatorCallback{
-        #if !defined JPCRE2_USE_FUNCTION_POINTER_CALLBACK && __cplusplus >= 201103L
+        #if !defined JPCRE2_USE_FUNCTION_POINTER_CALLBACK && JPCRE2_USE_MINIMUM_CXX_11
         typedef std::function<String (T1,T2,T3)> Callback;
         #else
         typedef String (*Callback)(T1,T2,T3);
@@ -2013,7 +2022,7 @@ struct select{
         static String eraseFill(NumSub const &num, MapNas const &nas, MapNtN const &ntn){
             return String();
         }
-        
+
         ///Callback function that removes the matched part/s in the subject string
         ///and does not take any match vector.
         ///This is a minimum cost pattern deleting callback function.
@@ -2027,7 +2036,7 @@ struct select{
         static String erase(void*, void*, void*){
             return String();
         }
-        
+
         ///Callback function for populating match vectors that does not modify the subject string.
         ///It always returns the total matched part and thus the subject string remains the same.
         ///@param num jp::NumSub vector.
@@ -2037,12 +2046,12 @@ struct select{
         static String fill(NumSub const &num, MapNas const &nas, MapNtn const &ntn){
             return num[0];
         }
-        
+
         private:
         //prevent object instantiation.
         callback();
         callback(callback const &);
-        #if __cplusplus >= 201103L
+        #if JPCRE2_USE_MINIMUM_CXX_11
         callback(callback&&);
         #endif
         ~callback();
@@ -2098,7 +2107,7 @@ struct select{
     /// //In above, nreplace() populates jp::NumSub and jp::MapNtn with match data.
     ///
     /// me.setCallback(callback4).nreplace(false);
-    /// //the above uses previous match result (note the 'false') which is OK, 
+    /// //the above uses previous match result (note the 'false') which is OK,
     /// //because, callback4 requires jp::MapNtn which was made available in the previous operation.
     ///
     /// //but the following is not OK: (assertion failure)
@@ -2112,7 +2121,7 @@ struct select{
     /// # Replace options
     /// MatchEvaluator can not take replace options.
     /// Replace options are taken directly by the replace functions: `nreplace()` and `replace()`.
-    /// 
+    ///
     /// # Using as a match object
     /// As it's just a subclass of RegexMatch, it can do all the things that RegexMatch can do, with some restrictions:
     /// * matching options are modified to strip off bad options according to replacement (PCRE2_PARTIAL_HARD|PCRE2_PARTIAL_SOFT).
@@ -2126,7 +2135,7 @@ struct select{
     class MatchEvaluator: virtual public RegexMatch{
         private:
         friend class RegexReplace;
-        
+
         VecNum vec_num;
         VecNas vec_nas;
         VecNtN vec_ntn;
@@ -2154,10 +2163,10 @@ struct select{
         //Q: Why the history changed?
         //A: We had some compatibility issues with the single templated callback.
         //   Also, this approach proved to be more readable and robust.
-        
+
         PCRE2_SIZE buffer_size;
-        
-        
+
+
         void init(){
             callbackn = 0;
             callback0 = callback::erase;
@@ -2172,7 +2181,7 @@ struct select{
             setMatchEndOffsetVector(&vec_eoff);
             buffer_size = 0;
         }
-        
+
         void setVectorPointersAccordingToCallback(){
             switch(callbackn){
                 case 0: break;
@@ -2185,7 +2194,7 @@ struct select{
                 case 7: setNumberedSubstringVector(&vec_num).setNamedSubstringVector(&vec_nas).setNameToNumberMapVector(&vec_ntn);break;
             }
         }
-        
+
         void onlyCopy(MatchEvaluator const &me){
             callbackn = me.callbackn;
             callback0 = me.callback0;
@@ -2197,10 +2206,10 @@ struct select{
             callback6 = me.callback6;
             callback7 = me.callback7;
             //must update the pointers to point to this class vectors.
-            setVectorPointersAccordingToCallback(); 
+            setVectorPointersAccordingToCallback();
             buffer_size = me.buffer_size;
         }
-        
+
         void deepCopy(MatchEvaluator const &me) {
             vec_num = me.vec_num;
             vec_nas = me.vec_nas;
@@ -2210,7 +2219,7 @@ struct select{
             onlyCopy(me);
         }
 
-        #if __cplusplus >= 201103L
+        #if JPCRE2_USE_MINIMUM_CXX_11
         void deepMove(MatchEvaluator& me){
             vec_num = std::move_if_noexcept(me.vec_num);
             vec_nas = std::move_if_noexcept(me.vec_nas);
@@ -2220,7 +2229,7 @@ struct select{
             onlyCopy(me);
         }
         #endif
-        
+
         //prevent public access to some funcitons
         MatchEvaluator& setNumberedSubstringVector(VecNum* v){
             RegexMatch::setNumberedSubstringVector(v);
@@ -2242,9 +2251,9 @@ struct select{
             RegexMatch::setMatchEndOffsetVector(v);
             return *this;
         }
-        
+
         public:
-        
+
         ///Default constructor.
         ///Sets callback::erase as the callback function.
         ///Removes matched part/s from the subject string if the callback is not
@@ -2263,7 +2272,7 @@ struct select{
         MatchEvaluator():RegexMatch(){
             init();
         }
-        
+
         ///@overload
         ///...
         ///Constructor taking a Regex object pointer.
@@ -2276,7 +2285,7 @@ struct select{
         MatchEvaluator(Regex const *r):RegexMatch(r){
             init();
         }
-        
+
         ///@overload
         ///...
         ///Constructor taking a callback function.
@@ -2287,7 +2296,7 @@ struct select{
             init();
             setCallback(mef);
         }
-        
+
         ///@overload
         /// ...
         ///It calls a corresponding MatchEvaluator::setCallback() function to set the callback function.
@@ -2297,7 +2306,7 @@ struct select{
             init();
             setCallback(mef);
         }
-        
+
         ///@overload
         /// ...
         ///It calls a corresponding MatchEvaluator::setCallback() function to set the callback function.
@@ -2307,7 +2316,7 @@ struct select{
             init();
             setCallback(mef);
         }
-        
+
         ///@overload
         /// ...
         ///It calls a corresponding MatchEvaluator::setCallback() function to set the callback function.
@@ -2317,7 +2326,7 @@ struct select{
             init();
             setCallback(mef);
         }
-        
+
         ///@overload
         /// ...
         ///It calls a corresponding MatchEvaluator::setCallback() function to set the callback function.
@@ -2327,7 +2336,7 @@ struct select{
             init();
             setCallback(mef);
         }
-        
+
         ///@overload
         /// ...
         ///It calls a corresponding MatchEvaluator::setCallback() function to set the callback function.
@@ -2337,8 +2346,8 @@ struct select{
             init();
             setCallback(mef);
         }
-        
-        
+
+
         ///@overload
         /// ...
         ///It calls a corresponding MatchEvaluator::setCallback() function to set the callback function.
@@ -2348,9 +2357,9 @@ struct select{
             init();
             setCallback(mef);
         }
-        
-        
-        
+
+
+
         ///@overload
         /// ...
         ///It calls a corresponding MatchEvaluator::setCallback() function to set the callback function.
@@ -2360,9 +2369,9 @@ struct select{
             init();
             setCallback(mef);
         }
-        
-        
-        
+
+
+
         ///@overload
         /// ...
         ///Copy constructor.
@@ -2371,7 +2380,7 @@ struct select{
             init();
             deepCopy(me);
         }
-        
+
         ///Overloaded copy-assignment operator
         ///@param me MatchEvaluator object
         ///@return A reference to the calling MatchEvaluator object.
@@ -2381,9 +2390,9 @@ struct select{
             deepCopy(me);
             return *this;
         }
-        
-        #if __cplusplus >= 201103L
-        
+
+        #if JPCRE2_USE_MINIMUM_CXX_11
+
         ///@overload
         /// ...
         ///Move constructor.
@@ -2395,7 +2404,7 @@ struct select{
             init();
             deepMove(me);
         }
-        
+
         ///@overload
         ///...
         ///Overloaded move-assignment operator.
@@ -2411,11 +2420,11 @@ struct select{
             deepMove(me);
             return *this;
         }
-        
+
         #endif
-        
+
         virtual ~MatchEvaluator(){}
-        
+
         ///Member function to set a callback function with no vector reference.
         ///Callback function is always overwritten. The implemented vectors are set to be filled with match data.
         ///Other vectors that were set previously, are not unset and thus they will be filled with match data too
@@ -2427,7 +2436,7 @@ struct select{
             callbackn = 0;
             return *this;
         }
-        
+
         ///@overload
         /// ...
         ///Sets a callback function with a jp::NumSub vector.
@@ -2440,7 +2449,7 @@ struct select{
             setNumberedSubstringVector(&vec_num);
             return *this;
         }
-        
+
         ///@overload
         /// ...
         ///Sets a callback function with a jp::NumSub and jp::MapNas.
@@ -2448,7 +2457,7 @@ struct select{
         ///For maps, you won't be able to use `[]` operator with reference to constant map, use at() instead:
         ///```cpp
         ///map_nas["word"]; //wrong
-        ///map_nas.at("word"); //ok 
+        ///map_nas.at("word"); //ok
         ///```
         ///If you want to use `[]` operator with maps, make a copy:
         ///```cpp
@@ -2464,7 +2473,7 @@ struct select{
             setNamedSubstringVector(&vec_nas);
             return *this;
         }
-        
+
         ///@overload
         /// ...
         ///Sets a callback function with a jp::NumSub and jp::MapNtN.
@@ -2472,7 +2481,7 @@ struct select{
         ///For maps, you won't be able to use `[]` operator with reference to constant map, use at() instead:
         ///```cpp
         ///map_ntn["word"]; //wrong
-        ///map_ntn.at("word"); //ok 
+        ///map_ntn.at("word"); //ok
         ///```
         ///If you want to use `[]` operator with maps, make a copy:
         ///```cpp
@@ -2488,8 +2497,8 @@ struct select{
             setNameToNumberMapVector(&vec_ntn);
             return *this;
         }
-        
-        
+
+
         ///@overload
         /// ...
         ///Sets a callback function with a jp::NumSub, jp::MapNas, jp::MapNtN.
@@ -2497,7 +2506,7 @@ struct select{
         ///For maps, you won't be able to use `[]` operator with reference to constant map, use at() instead:
         ///```cpp
         ///map_nas["word"]; //wrong
-        ///map_nas.at("word"); //ok 
+        ///map_nas.at("word"); //ok
         ///```
         ///If you want to use `[]` operator with maps, make a copy:
         ///```cpp
@@ -2514,7 +2523,7 @@ struct select{
             setNameToNumberMapVector(&vec_ntn);
             return *this;
         }
-        
+
         ///@overload
         /// ...
         ///Sets a callback function with a jp::MapNas.
@@ -2522,7 +2531,7 @@ struct select{
         ///For maps, you won't be able to use `[]` operator with reference to constant map, use at() instead:
         ///```cpp
         ///map_nas["word"]; //wrong
-        ///map_nas.at("word"); //ok 
+        ///map_nas.at("word"); //ok
         ///```
         ///If you want to use `[]` operator with maps, make a copy:
         ///```cpp
@@ -2537,7 +2546,7 @@ struct select{
             setNamedSubstringVector(&vec_nas);
             return *this;
         }
-        
+
         ///@overload
         /// ...
         ///Sets a callback function with a jp::MapNas, jp::MapNtN.
@@ -2545,7 +2554,7 @@ struct select{
         ///For maps, you won't be able to use `[]` operator with reference to constant map, use at() instead:
         ///```cpp
         ///map_nas["word"]; //wrong
-        ///map_nas.at("word"); //ok 
+        ///map_nas.at("word"); //ok
         ///```
         ///If you want to use `[]` operator with maps, make a copy:
         ///```cpp
@@ -2561,7 +2570,7 @@ struct select{
             setNameToNumberMapVector(&vec_ntn);
             return *this;
         }
-        
+
         ///@overload
         /// ...
         ///Sets a callback function with a jp::MapNtN.
@@ -2569,7 +2578,7 @@ struct select{
         ///For maps, you won't be able to use `[]` operator with reference to constant map, use at() instead:
         ///```cpp
         ///map_ntn["word"]; //wrong
-        ///map_ntn.at("word"); //ok 
+        ///map_ntn.at("word"); //ok
         ///```
         ///If you want to use `[]` operator with maps, make a copy:
         ///```cpp
@@ -2584,7 +2593,7 @@ struct select{
             setNameToNumberMapVector(&vec_ntn);
             return *this;
         }
-        
+
         ///Clear match data.
         ///It clears all match data from all vectors (without shrinking).
         ///For shrinking the vectors, use `resetMatchData()`
@@ -2598,7 +2607,7 @@ struct select{
             vec_eoff.clear();
             return *this;
         }
-        
+
         ///Reset match data to initial state.
         ///It deletes all match data from all vectors shrinking their capacity.
         ///A call to `match()`  or nreplace() will be required to produce match data again.
@@ -2611,8 +2620,8 @@ struct select{
             VecOff().swap(vec_eoff);
             return *this;
         }
-        
-        
+
+
         ///Reset MatchEvaluator to initial state including memory.
         ///@return A reference to the calling MatchEvaluator object.
         MatchEvaluator& reset(){
@@ -2621,7 +2630,7 @@ struct select{
             init();
             return *this;
         }
-        
+
         ///Clears MatchEvaluator.
         ///Returns everything to initial state (some memory may retain for further and faster use).
         ///@return A reference to the calling MatchEvaluator object.
@@ -2631,14 +2640,14 @@ struct select{
             init();
             return *this;
         }
-        
+
         ///Call RegexMatch::resetErrors().
         ///@return A reference to the calling MatchEvaluator object.
         MatchEvaluator& resetErrors(){
             RegexMatch::resetErrors();
             return *this;
         }
-        
+
         ///Call RegexMatch::setRegexObject(r).
         ///@param r constant Regex object pointer
         ///@return A reference to the calling MatchEvaluator object.
@@ -2646,7 +2655,7 @@ struct select{
             RegexMatch::setRegexObject(r);
             return *this;
         }
-        
+
         ///Call RegexMatch::setSubject(String const &s).
         ///@param s subject string.
         ///@return A reference to the calling MatchEvaluator object.
@@ -2654,7 +2663,7 @@ struct select{
             RegexMatch::setSubject(s);
             return *this;
         }
-        
+
         ///@overload
         ///@param s constant subject string by pointer
         ///@return A reference to the calling MatchEvaluator object.
@@ -2662,7 +2671,7 @@ struct select{
             RegexMatch::setSubject(s);
             return *this;
         }
-        
+
         ///Call RegexMatch::setModifier(Modifier const& s).
         ///@param s modifier string.
         ///@return A reference to the calling MatchEvaluator object.
@@ -2670,7 +2679,7 @@ struct select{
             RegexMatch::setModifier(s);
             return *this;
         }
-        
+
         ///Call RegexMatch::setModifierTable(ModifierTable const * s).
         ///@param mdt pointer to ModifierTable object.
         ///@return A reference to the calling MatchEvaluator object.
@@ -2678,7 +2687,7 @@ struct select{
             RegexMatch::setModifierTable(mdt);
             return *this;
         }
-        
+
         ///Call RegexMatch::setJpcre2Option(Uint x).
         ///@param x JPCRE2 option value.
         ///@return A reference to the calling MatchEvaluator object.
@@ -2686,7 +2695,7 @@ struct select{
             RegexMatch::setJpcre2Option(x);
             return *this;
         }
-        
+
         ///Call RegexMatch::setPcre2Option (Uint x).
         ///@param x PCRE2 option value.
         ///@return A reference to the calling MatchEvaluator object.
@@ -2694,7 +2703,7 @@ struct select{
             RegexMatch::setPcre2Option(x);
             return *this;
         }
-        
+
         ///Call RegexMatch::setFindAll(bool x).
         ///@param x true if global match, false otherwise.
         ///@return A reference to the calling MatchEvaluator object.
@@ -2702,14 +2711,14 @@ struct select{
             RegexMatch::setFindAll(x);
             return *this;
         }
-        
+
         ///Call RegexMatch::setFindAll().
         ///@return A reference to the calling MatchEvaluator object.
         MatchEvaluator& setFindAll(){
             RegexMatch::setFindAll();
             return *this;
         }
-        
+
         ///Call RegexMatch::setStartOffset (PCRE2_SIZE offset).
         ///@param offset match start offset in the subject.
         ///@return A reference to the calling MatchEvaluator object.
@@ -2717,7 +2726,7 @@ struct select{
             RegexMatch::setStartOffset(offset);
             return *this;
         }
-        
+
         ///Call RegexMatch::setMatchContext(MatchContext *match_context).
         ///@param match_context pointer to match context.
         ///@return A reference to the calling MatchEvaluator object.
@@ -2725,7 +2734,7 @@ struct select{
             RegexMatch::setMatchContext(match_context);
             return *this;
         }
-        
+
         ///Call RegexMatch::setMatchDataBlock(MatchContext * mdt);
         ///@param mdt pointer to match data block
         ///@return A reference to the calling MatchEvaluator object.
@@ -2733,7 +2742,7 @@ struct select{
             RegexMatch::setMatchDataBlock(mdt);
             return *this;
         }
-        
+
         ///Set the buffer size that will be used by pcre2_substitute (replace()).
         ///If buffer size proves to be enough to fit the resultant string
         ///from each match (not the total resultant string), it will yield one less call
@@ -2744,13 +2753,13 @@ struct select{
             buffer_size = x;
             return *this;
         }
-        
+
         ///Get the initial buffer size that is being used by internal function pcre2_substitute
         ///@return buffer_size
         PCRE2_SIZE getBufferSize(){
             return buffer_size;
         }
-        
+
         ///Call RegexMatch::changeModifier(Modifier const& mod, bool x).
         ///@param mod modifier string.
         ///@param x true (add) or false (remove).
@@ -2759,7 +2768,7 @@ struct select{
             RegexMatch::changeModifier(mod, x);
             return *this;
         }
-        
+
         ///Call RegexMatch::changeJpcre2Option(Uint opt, bool x).
         ///@param opt JPCRE2 option
         ///@param x true (add) or false (remove).
@@ -2768,7 +2777,7 @@ struct select{
             RegexMatch::changeJpcre2Option(opt, x);
             return *this;
         }
-        
+
         ///Call RegexMatch::changePcre2Option(Uint opt, bool x).
         ///@param opt PCRE2 option.
         ///@param x true (add) or false (remove).
@@ -2777,7 +2786,7 @@ struct select{
             RegexMatch::changePcre2Option(opt, x);
             return *this;
         }
-        
+
         ///Call RegexMatch::addModifier(Modifier const& mod).
         ///@param mod modifier string.
         ///@return A reference to the calling MatchEvaluator object.
@@ -2785,7 +2794,7 @@ struct select{
             RegexMatch::addModifier(mod);
             return *this;
         }
-        
+
         ///Call RegexMatch::addJpcre2Option(Uint x).
         ///@param x JPCRE2 option.
         ///@return A reference to the calling MatchEvaluator object.
@@ -2793,7 +2802,7 @@ struct select{
             RegexMatch::addJpcre2Option(x);
             return *this;
         }
-        
+
         ///Call RegexMatch::addPcre2Option(Uint x).
         ///@param x PCRE2 option.
         ///@return A reference to the calling MatchEvaluator object.
@@ -2801,7 +2810,7 @@ struct select{
             RegexMatch::addPcre2Option(x);
             return *this;
         }
-        
+
         ///Perform match and return the match count.
         ///This function strips off matching options (PCRE2_PARTIAL_HARD|PCRE2_PARTIAL_SOFT) that are considered
         ///bad options for replacement operation and then calls
@@ -2812,7 +2821,7 @@ struct select{
             RegexMatch::changePcre2Option(PCRE2_PARTIAL_HARD|PCRE2_PARTIAL_SOFT, false);
             return RegexMatch::match();
         }
-        
+
         ///Perform regex replace with this match evaluator.
         ///This is a JPCRE2 native replace function (thus the name nreplace).
         ///It uses the `MatchEvaluatorCallback` function that was set with a constructor or `MatchEvaluator::setCallback()` function
@@ -2838,7 +2847,7 @@ struct select{
         ///@see MatchEvaluator.
         ///@see MatchEvaluatorCallback.
         String nreplace(bool do_match=true, Uint jro=0, SIZE_T* counter=0);
-        
+
         ///PCRE2 compatible replace function that uses this MatchEvaluator.
         ///Performs regex replace with pcre2_substitute function
         ///by generating the replacement strings dynamically with MatchEvaluator callback.
@@ -2860,15 +2869,15 @@ struct select{
         ///@return resultant string after replacement.
         String replace(bool do_match=true, Uint ro=0, SIZE_T* counter=0);
     };
-    
+
     /** Provides public constructors to create RegexReplace objects.
      * Every RegexReplace object should be associated with a Regex object.
      * This class stores a pointer to its' associated Regex object, thus when
      * the content of the associated Regex object is changed, there's no need to
      * set the pointer again.
-     * 
+     *
      * Examples:
-     * 
+     *
      * ```cpp
      * jp::Regex re;
      * jp::RegexReplace rr;
@@ -2878,35 +2887,35 @@ struct select{
      * rr.replace();  // replaces 'subject' with 'me' i.e returns 'me'
      * ```
      */
-    class RegexReplace { 
+    class RegexReplace {
 
-    private: 
+    private:
 
         friend class Regex;
-        
-        Regex const *re;      
+
+        Regex const *re;
 
         String r_subject;
         String *r_subject_ptr; //preplace method modifies it in-place
         String r_replw;
         String const *r_replw_ptr;
-        Uint replace_opts;          
-        Uint jpcre2_replace_opts;  
-        PCRE2_SIZE buffer_size;     
+        Uint replace_opts;
+        Uint jpcre2_replace_opts;
+        PCRE2_SIZE buffer_size;
         PCRE2_SIZE _start_offset;
         MatchData *mdata;
         MatchContext *mcontext;
         ModifierTable const * modtab;
         SIZE_T last_replace_count;
         SIZE_T* last_replace_counter;
-        
+
         void init_vars() {
             re = 0;
             r_subject_ptr = &r_subject;
             r_replw_ptr = &r_replw;
-            replace_opts = PCRE2_SUBSTITUTE_OVERFLOW_LENGTH; 
-            jpcre2_replace_opts = 0; 
-            buffer_size = 0; 
+            replace_opts = PCRE2_SUBSTITUTE_OVERFLOW_LENGTH;
+            jpcre2_replace_opts = 0;
+            buffer_size = 0;
             error_number = 0;
             error_offset = 0;
             _start_offset = 0;
@@ -2916,19 +2925,19 @@ struct select{
             last_replace_count = 0;
             last_replace_counter = &last_replace_count;
         }
-        
+
         void onlyCopy(RegexReplace const &rr){
             re = rr.re; //only pointer should be copied.
-            
+
             //rr.r_subject_ptr may point to rr.r_subject or other user data
             r_subject_ptr = (rr.r_subject_ptr == &rr.r_subject) ? &r_subject //not rr.r_subject
                                                                 : rr.r_subject_ptr; //other user data
-            
+
             r_replw = rr.r_replw;
             //rr.r_replw_ptr may point to rr.r_replw or other user data
             r_replw_ptr = (rr.r_replw_ptr == &rr.r_replw) ? &r_replw //not rr.r_replw
                                                           : rr.r_replw_ptr; //other user data
-            
+
             replace_opts = rr.replace_opts;
             jpcre2_replace_opts = rr.jpcre2_replace_opts;
             buffer_size = rr.buffer_size;
@@ -2947,21 +2956,21 @@ struct select{
             r_subject = rr.r_subject;
             onlyCopy(rr);
         }
-        
-        #if __cplusplus >= 201103L
+
+        #if JPCRE2_USE_MINIMUM_CXX_11
         void deepMove(RegexReplace& rr){
             r_subject = std::move_if_noexcept(rr.r_subject);
             onlyCopy(rr);
         }
         #endif
-        
-        
+
+
         protected:
-        
+
         int error_number;
         PCRE2_SIZE error_offset;
 
-    public: 
+    public:
 
         ///Default constructor
         RegexReplace(){
@@ -2973,11 +2982,11 @@ struct select{
         ///Creates a RegexReplace object associating a Regex object.
         ///Regex object is not modified.
         ///@param r pointer to a Regex object
-        RegexReplace(Regex const *r) { 
+        RegexReplace(Regex const *r) {
             init_vars();
             re = r;
         }
-        
+
         ///@overload
         ///...
         ///Copy constructor.
@@ -2986,7 +2995,7 @@ struct select{
             init_vars();
             deepCopy(rr);
         }
-        
+
         ///Overloaded Copy assignment operator.
         ///@param rr RegexReplace object reference
         ///@return A reference to the calling RegexReplace object
@@ -2995,9 +3004,9 @@ struct select{
             deepCopy(rr);
             return *this;
         }
-        
-        #if __cplusplus >= 201103L
-        
+
+        #if JPCRE2_USE_MINIMUM_CXX_11
+
         ///@overload
         ///...
         ///Move constructor.
@@ -3009,7 +3018,7 @@ struct select{
             init_vars();
             deepMove(rr);
         }
-        
+
         ///@overload
         ///...
         ///Overloaded move assignment operator.
@@ -3023,29 +3032,29 @@ struct select{
             deepMove(rr);
             return *this;
         }
-        
+
         #endif
-        
-        virtual ~RegexReplace() {} 
-    
+
+        virtual ~RegexReplace() {}
+
         ///Reset all class variables to its default (initial) state including memory.
         ///@return Reference to the calling RegexReplace object.
-        RegexReplace& reset() { 
+        RegexReplace& reset() {
             String().swap(r_subject);
             String().swap(r_replw);
-            init_vars(); 
-            return *this; 
-        } 
-        
+            init_vars();
+            return *this;
+        }
+
         ///Clear all class variables to its default (initial) state (some memory may retain for further use).
         ///@return Reference to the calling RegexReplace object.
-        RegexReplace& clear() { 
+        RegexReplace& clear() {
             r_subject.clear();
             r_replw.clear();
-            init_vars(); 
-            return *this; 
-        } 
-        
+            init_vars();
+            return *this;
+        }
+
         ///Reset replace related errors to zero.
         ///@return Reference to the calling RegexReplace object
         ///@see Regex::resetErrors()
@@ -3058,53 +3067,53 @@ struct select{
 
         /// Returns the last error number
         ///@return Last error number
-        int getErrorNumber() const { 
-            return error_number; 
-        } 
+        int getErrorNumber() const {
+            return error_number;
+        }
 
         /// Returns the last error offset
         ///@return Last error offset
-        int getErrorOffset() const  { 
-            return (int)error_offset; 
-        } 
-        
+        int getErrorOffset() const  {
+            return (int)error_offset;
+        }
+
         /// Returns the last error message
         ///@return Last error message
         String getErrorMessage() const  {
-            #if __cplusplus >= 201103L
-            return select<Char, Map>::getErrorMessage(error_number, error_offset); 
+            #if JPCRE2_USE_MINIMUM_CXX_11
+            return select<Char, Map>::getErrorMessage(error_number, error_offset);
             #else
-            return select<Char>::getErrorMessage(error_number, error_offset); 
+            return select<Char>::getErrorMessage(error_number, error_offset);
             #endif
-        } 
-        
+        }
+
         /// Get replacement string
         ///@return replacement string
         String getReplaceWith() const  {
-            return *r_replw_ptr; 
-        } 
-        
+            return *r_replw_ptr;
+        }
+
         /// Get pointer to replacement string
         ///@return pointer to replacement string
-        String const * getReplaceWithPointer() const  { 
-            return r_replw_ptr; 
-        } 
+        String const * getReplaceWithPointer() const  {
+            return r_replw_ptr;
+        }
 
         /// Get subject string
         ///@return subject string
         ///@see RegexMatch::getSubject()
-        String getSubject() const  { 
-            return *r_subject_ptr; 
-        } 
+        String getSubject() const  {
+            return *r_subject_ptr;
+        }
 
         /// Get pointer to subject string
         ///@return Pointer to constant subject string
         ///@see RegexMatch::getSubjectPointer()
-        String const *  getSubjectPointer() const  { 
-            return r_subject_ptr; 
-        } 
+        String const *  getSubjectPointer() const  {
+            return r_subject_ptr;
+        }
 
- 
+
         /// Calculate modifier string from PCRE2 and JPCRE2 options and return it.
         ///
         /// Do remember that modifiers (or PCRE2 and JPCRE2 options) do not change or get initialized
@@ -3123,62 +3132,62 @@ struct select{
             return modtab ? modtab->fromReplaceOption(replace_opts, jpcre2_replace_opts)
                           : MOD::fromReplaceOption(replace_opts, jpcre2_replace_opts);
         }
-        
+
         ///Get the modifier table that is set,
         ///@return constant ModifierTable pointer.
         ModifierTable const* getModifierTable(){
             return modtab;
         }
-        
+
         ///Get start offset.
         ///@return the start offset where matching starts for replace operation
         PCRE2_SIZE getStartOffset() const {
             return _start_offset;
         }
-        
+
         /// Get PCRE2 option
         ///@return PCRE2 option for replace
         ///@see Regex::getPcre2Option()
         ///@see RegexMatch::getPcre2Option()
-        Uint getPcre2Option() const  { 
-            return replace_opts; 
-        } 
+        Uint getPcre2Option() const  {
+            return replace_opts;
+        }
 
         /// Get JPCRE2 option
         ///@return JPCRE2 option  for replace
         ///@see Regex::getJpcre2Option()
         ///@see RegexMatch::getJpcre2Option()
-        Uint getJpcre2Option() const  { 
-            return jpcre2_replace_opts; 
+        Uint getJpcre2Option() const  {
+            return jpcre2_replace_opts;
         }
-        
+
         ///Get a pointer to the associated Regex object.
         ///If no actual Regex object is associated, null is returned
         ///@return A pointer to the associated constant Regex object or null
         Regex const * getRegexObject() const {
             return re;
         }
-        
+
         ///Return pointer to the match context that was previously set with setMatchContext().
         ///Handling memory is the callers' responsibility.
         ///@return pointer to the match context (default: null).
         MatchContext* getMatchContext(){
             return mcontext;
         }
-        
+
         ///Get the pointer to the match data block that was set previously with setMatchData()
         ///Handling memory is the callers' responsibility.
         ///@return pointer to the match data (default: null).
         virtual MatchData* getMatchDataBlock(){
             return mdata;
         }
-        
+
         ///Get the initial buffer size that is being used by internal function pcre2_substitute
         ///@return buffer_size
         PCRE2_SIZE getBufferSize(){
             return buffer_size;
         }
-        
+
         ///Get the number of replacement in last replace operation.
         ///If you set an external counter with RegexReplace::setReplaceCounter(),
         ///a call to this getter method will dereference the pointer to the external counter
@@ -3187,7 +3196,7 @@ struct select{
         SIZE_T getLastReplaceCount(){
             return *last_replace_counter;
         }
-        
+
         ///Set an external counter variable to store the replacement count.
         ///This counter will be updated after each replacement operation on this object.
         ///A call to this method will reset the internal counter to 0, thus when you reset the counter
@@ -3199,7 +3208,7 @@ struct select{
             last_replace_counter = counter ? counter : &last_replace_count;
             return *this;
         }
-        
+
         ///Set the associated Regex object.
         ///Regex object is not modified.
         ///@param r Pointer to a Regex object.
@@ -3208,19 +3217,19 @@ struct select{
             re = r;
             return *this;
         }
-    
+
         /// Set the subject string for replace.
         ///This makes a copy of the string. If no copy is desired or you are working
         ///with big text, consider passing by pointer.
-        ///@param s Subject string 
+        ///@param s Subject string
         ///@return Reference to the calling RegexReplace object
         ///@see RegexMatch::setSubject()
-        RegexReplace& setSubject(String const &s) { 
-            r_subject = s; 
+        RegexReplace& setSubject(String const &s) {
+            r_subject = s;
             r_subject_ptr = &r_subject; //must overwrite
-            return *this; 
+            return *this;
         }
-    
+
         ///@overload
         ///...
         /// Set pointer to the subject string for replace, null pointer unsets it.
@@ -3234,9 +3243,9 @@ struct select{
                 r_subject.clear();
                 r_subject_ptr = &r_subject;
             }
-            return *this; 
+            return *this;
         }
-         
+
         /// Set the replacement string.
         ///`$` is a special character which implies captured group.
         ///
@@ -3247,14 +3256,14 @@ struct select{
         ///**Note:** This function makes a copy of the string. If no copy is desired or
         ///you are working with big text, consider passing the string with pointer.
         ///
-        ///@param s String to replace with 
+        ///@param s String to replace with
         ///@return Reference to the calling RegexReplace object
-        RegexReplace& setReplaceWith(String const &s) { 
+        RegexReplace& setReplaceWith(String const &s) {
             r_replw = s;
             r_replw_ptr = &r_replw; //must overwrite
-            return *this; 
+            return *this;
         }
-        
+
         ///@overload
         ///...
         ///@param s Pointer to the string to replace with, null pointer unsets it.
@@ -3265,20 +3274,20 @@ struct select{
                 r_replw.clear();
                 r_replw_ptr = &r_replw;
             }
-            return *this; 
-        }    
-        
+            return *this;
+        }
+
         /// Set the modifier string (resets all JPCRE2 and PCRE2 options) by calling RegexReplace::changeModifier().
         ///@param s Modifier string.
         ///@return Reference to the calling RegexReplace object
         ///@see RegexMatch::setModifier()
         ///@see Regex::setModifier()
-        RegexReplace& setModifier(Modifier const& s) { 
-            replace_opts = PCRE2_SUBSTITUTE_OVERFLOW_LENGTH; /* must not be initialized to 0 */ 
-            jpcre2_replace_opts = 0; 
-            return changeModifier(s, true); 
-        } 
-        
+        RegexReplace& setModifier(Modifier const& s) {
+            replace_opts = PCRE2_SUBSTITUTE_OVERFLOW_LENGTH; /* must not be initialized to 0 */
+            jpcre2_replace_opts = 0;
+            return changeModifier(s, true);
+        }
+
         ///Set a custom modifier table to be used.
         ///@param mdt pointer to ModifierTable object.
         /// @return Reference to the calling RegexReplace object.
@@ -3290,11 +3299,11 @@ struct select{
         /// Set the initial buffer size to be allocated for replaced string (used by PCRE2)
         ///@param x Buffer size
         ///@return Reference to the calling RegexReplace object
-        RegexReplace& setBufferSize(PCRE2_SIZE x) { 
-            buffer_size = x; 
-            return *this; 
+        RegexReplace& setBufferSize(PCRE2_SIZE x) {
+            buffer_size = x;
+            return *this;
         }
-        
+
         ///Set start offset.
         ///Set the offset where matching starts for replace operation
         ///@param start_offset The offset where matching starts for replace operation
@@ -3310,10 +3319,10 @@ struct select{
         ///@see RegexMatch::setJpcre2Option()
         ///@see Regex::setJpcre2Option()
 
-        RegexReplace& setJpcre2Option(Uint x) { 
-            jpcre2_replace_opts = x; 
-            return *this; 
-        } 
+        RegexReplace& setJpcre2Option(Uint x) {
+            jpcre2_replace_opts = x;
+            return *this;
+        }
 
         /// Set PCRE2 option replace (overwrite existing option)
         ///@param x Option value
@@ -3321,11 +3330,11 @@ struct select{
         ///@see RegexMatch::setPcre2Option()
         ///@see Regex::setPcre2Option()
 
-        RegexReplace& setPcre2Option(Uint x) { 
-            replace_opts = PCRE2_SUBSTITUTE_OVERFLOW_LENGTH | x; 
-            return *this; 
+        RegexReplace& setPcre2Option(Uint x) {
+            replace_opts = PCRE2_SUBSTITUTE_OVERFLOW_LENGTH | x;
+            return *this;
         }
-        
+
         ///Set the match context to be used.
         ///Native PCRE2 API may be used to create match context.
         ///The memory of the match context is not handled by RegexReplace object and not freed.
@@ -3336,7 +3345,7 @@ struct select{
             mcontext = match_context;
             return *this;
         }
-        
+
         ///Set the match data block to be used.
         ///Native PCRE2 API may be used to create match data block.
         ///The memory of the match data is not handled by RegexReplace object and not freed.
@@ -3365,7 +3374,7 @@ struct select{
                    : MOD::toReplaceOption(mod, x, &replace_opts, &jpcre2_replace_opts, &error_number, &error_offset);
             return *this;
         }
-         
+
         /// Parse modifier and add/remove equivalent PCRE2 and JPCRE2 options.
         /// Add or remove a JPCRE2 option
         /// @param opt JPCRE2 option value
@@ -3375,8 +3384,8 @@ struct select{
         /// @see Regex::changeJpcre2Option()
         RegexReplace& changeJpcre2Option(Uint opt, bool x) {
             jpcre2_replace_opts = x ? jpcre2_replace_opts | opt : jpcre2_replace_opts & ~opt;
-            return *this; 
-        } 
+            return *this;
+        }
 
         /// Add or remove a PCRE2 option
         /// @param opt PCRE2 option value
@@ -3386,10 +3395,10 @@ struct select{
         /// @see Regex::changePcre2Option()
         RegexReplace& changePcre2Option(Uint opt, bool x) {
             replace_opts = x ? replace_opts | opt : replace_opts & ~opt;
-            //replace_opts |= PCRE2_SUBSTITUTE_OVERFLOW_LENGTH; /* It's important, but let user override it. */ 
-            return *this; 
-        } 
-        
+            //replace_opts |= PCRE2_SUBSTITUTE_OVERFLOW_LENGTH; /* It's important, but let user override it. */
+            return *this;
+        }
+
         /// Parse modifier string and add equivalent PCRE2 and JPCRE2 options.
         /// This is just a wrapper of the original function RegexReplace::changeModifier()
         /// provided for convenience.
@@ -3397,30 +3406,30 @@ struct select{
         /// @return Reference to the calling RegexReplace object
         /// @see RegexMatch::addModifier()
         /// @see Regex::addModifier()
-        RegexReplace& addModifier(Modifier const& mod){ 
-            return changeModifier(mod, true); 
-        } 
+        RegexReplace& addModifier(Modifier const& mod){
+            return changeModifier(mod, true);
+        }
 
         /// Add specified JPCRE2 option to existing options for replace.
         ///@param x Option value
         ///@return Reference to the calling RegexReplace object
         ///@see RegexMatch::addJpcre2Option()
         ///@see Regex::addJpcre2Option()
-        RegexReplace& addJpcre2Option(Uint x) { 
-            jpcre2_replace_opts |= x; 
-            return *this; 
-        } 
-        
+        RegexReplace& addJpcre2Option(Uint x) {
+            jpcre2_replace_opts |= x;
+            return *this;
+        }
+
         /// Add specified PCRE2 option to existing options for replace
         ///@param x Option value
         ///@return Reference to the calling RegexReplace object
         ///@see RegexMatch::addPcre2Option()
         ///@see Regex::addPcre2Option()
-        RegexReplace& addPcre2Option(Uint x) { 
-            replace_opts |= x; 
-            return *this; 
-        } 
-        
+        RegexReplace& addPcre2Option(Uint x) {
+            replace_opts |= x;
+            return *this;
+        }
+
         /// Perform regex replace by retrieving subject string, replacement string, modifier and other options from class variables.
         /// In the replacement string (see RegexReplace::setReplaceWith()) `$` is a special character which implies captured group.
         /// 1. A numbered substring can be referenced with `$n` or `${n}` where n is the group number.
@@ -3430,10 +3439,10 @@ struct select{
         ///
         ///All options supported by pcre2_substitute is available.
         ///
-        /// Note: This function calls pcre2_substitute() to do the replacement. 
+        /// Note: This function calls pcre2_substitute() to do the replacement.
         ///@return Replaced string
         String replace(void);
-        
+
         /// Perl compatible replace method.
         /// Modifies subject string in-place and returns replace count.
         ///
@@ -3443,7 +3452,7 @@ struct select{
             *r_subject_ptr = replace();
             return *last_replace_counter;
         }
-        
+
         /// Perl compatible replace method with match evaluator.
         /// Modifies subject string in-place and returns replace count.
         /// MatchEvaluator class does not have a implementation of this replace method, thus it is not possible
@@ -3465,7 +3474,7 @@ struct select{
                                .replace(true, getPcre2Option(), last_replace_counter);
             return *last_replace_counter;
         }
-        
+
         ///JPCRE2 native replace function.
         ///A different name is adopted to
         ///distinguish itself from the regular replace() function which
@@ -3502,7 +3511,7 @@ struct select{
                      .setStartOffset(getStartOffset())
                      .nreplace(true, getJpcre2Option(), last_replace_counter);
         }
-        
+
         ///PCRE2 compatible replace function that takes a MatchEvaluator.
         ///String returned by callback function is processed by pcre2_substitute,
         ///thus all PCRE2 substitute options are supported by this replace function.
@@ -3521,16 +3530,16 @@ struct select{
                      .setStartOffset(getStartOffset())
                      .replace(true, getPcre2Option(), last_replace_counter);
         }
-    }; 
- 
- 
+    };
+
+
     /** Provides public constructors to create Regex object.
      * Each regex pattern needs an object of this class and each pattern needs to be compiled.
      * Pattern compilation can be done using one of its' overloaded constructors or the `Regex::compile()`
      * member function.
-     * 
+     *
      * Examples:
-     * 
+     *
      * ```cpp
      * jp::Regex re; //does not perform a compile
      * re.compile("pattern", "modifier");
@@ -3538,41 +3547,41 @@ struct select{
      * ```
      *
      */
-    class Regex { 
+    class Regex {
 
-    private: 
+    private:
 
-        friend class RegexMatch;    
+        friend class RegexMatch;
         friend class RegexReplace;
         friend class MatchEvaluator;
-        
+
         String pat_str;
         String const *pat_str_ptr;
-        Pcre2Code *code;            
-        Uint compile_opts;         
+        Pcre2Code *code;
+        Uint compile_opts;
         Uint jpcre2_compile_opts;
         ModifierTable const * modtab;
 
         CompileContext *ccontext;
         std::vector<unsigned char> tabv;
-        
-        
-        void init_vars() { 
-            jpcre2_compile_opts = 0; 
-            compile_opts = 0; 
-            error_number = 0; 
-            error_offset = 0; 
+
+
+        void init_vars() {
+            jpcre2_compile_opts = 0;
+            compile_opts = 0;
+            error_number = 0;
+            error_offset = 0;
             code = 0;
             pat_str_ptr = &pat_str;
             ccontext = 0;
             modtab = 0;
-        } 
+        }
 
         void freeRegexMemory(void) {
             Pcre2Func<sizeof( Char_T ) * CHAR_BIT>::code_free(code);
             code = 0; //we may use it again
         }
-        
+
         void freeCompileContext(){
             Pcre2Func<sizeof( Char_T ) * CHAR_BIT>::compile_context_free(ccontext);
             ccontext = 0;
@@ -3582,19 +3591,19 @@ struct select{
             //r.pat_str_ptr may point to other user data
             pat_str_ptr = (r.pat_str_ptr == &r.pat_str) ? &pat_str //not r.pat_str
                                                         : r.pat_str_ptr; //other user data
-            
-            compile_opts = r.compile_opts; 
-            jpcre2_compile_opts = r.jpcre2_compile_opts; 
-            error_number = r.error_number; 
-            error_offset = r.error_offset; 
+
+            compile_opts = r.compile_opts;
+            jpcre2_compile_opts = r.jpcre2_compile_opts;
+            error_number = r.error_number;
+            error_offset = r.error_offset;
             modtab = r.modtab;
         }
 
         void deepCopy(Regex const &r) {
             pat_str = r.pat_str; //must not use setPattern() here
-            
+
             onlyCopy(r);
-            
+
             //copy tables
             tabv = r.tabv;
             //copy ccontext if it's not null
@@ -3602,78 +3611,78 @@ struct select{
             ccontext = (r.ccontext) ? Pcre2Func<sizeof( Char_T ) * CHAR_BIT>::compile_context_copy(r.ccontext) : 0;
             //if tabv is not empty and ccontext is ok (not null) set the table pointer to ccontext
             if(ccontext  && !tabv.empty()) Pcre2Func<sizeof( Char_T ) * CHAR_BIT>::set_character_tables(ccontext, &tabv[0]);
-            
+
             //table pointer must be updated in the compiled code itself, jit memory copy is not available.
             //copy is not going to work, we need a recompile.
             //as all vars are already copied, we can just call compile()
             r.code ? compile() //compile frees previous memory.
                    : freeRegexMemory();
         }
-        
-        #if __cplusplus >= 201103L
-        
+
+        #if JPCRE2_USE_MINIMUM_CXX_11
+
         void deepMove(Regex& r) {
             pat_str = std::move_if_noexcept(r.pat_str);
-            
+
             onlyCopy(r);
-            
+
             //steal tables
             tabv = std::move_if_noexcept(r.tabv);
-            
+
             //steal ccontext
             freeCompileContext();
             ccontext = r.ccontext; r.ccontext = 0; //must set this to 0
             if(ccontext && !tabv.empty()) Pcre2Func<sizeof( Char_T ) * CHAR_BIT>::set_character_tables(ccontext, &tabv[0]);
-            
+
             //steal the code
             freeRegexMemory();
             code = r.code; r.code = 0; //must set this to 0
         }
-        
+
         #endif
-        
+
         protected:
-        
+
         int error_number;
         PCRE2_SIZE error_offset;
 
-    public: 
+    public:
 
         /// Default Constructor.
         /// Initializes all class variables to defaults.
         /// Does not perform any pattern compilation.
-        Regex() { 
+        Regex() {
             init_vars();
-        } 
+        }
 
         ///Compile pattern with initialization.
-        /// @param re Pattern string 
+        /// @param re Pattern string
         Regex(String const &re) {
             init_vars();
-            compile(re); 
-        } 
+            compile(re);
+        }
 
         ///  @overload
         /// @param re Pointer to pattern string. A null pointer will unset the pattern and perform a compile with empty pattern.
         Regex(String const *re) {
             init_vars();
-            compile(re); 
-        } 
-        
+            compile(re);
+        }
+
         ///@overload
         /// @param re Pattern string .
         /// @param mod Modifier string.
         Regex(String const &re, Modifier const& mod) {
             init_vars();
-            compile(re, mod); 
-        } 
-        
+            compile(re, mod);
+        }
+
         ///@overload
         /// @param re Pointer to pattern string. A null pointer will unset the pattern and perform a compile with empty pattern.
         /// @param mod Modifier string.
         Regex(String const *re, Modifier const& mod) {
             init_vars();
-            compile(re, mod); 
+            compile(re, mod);
         }
 
         ///@overload
@@ -3681,16 +3690,16 @@ struct select{
         /// @param po PCRE2 option value
         Regex(String const &re, Uint po) {
             init_vars();
-            compile(re, po); 
-        } 
+            compile(re, po);
+        }
 
         ///@overload
         /// @param re Pointer to pattern string. A null pointer will unset the pattern and perform a compile with empty pattern.
         /// @param po PCRE2 option value
         Regex(String const *re, Uint po) {
             init_vars();
-            compile(re, po); 
-        } 
+            compile(re, po);
+        }
 
         ///@overload
         /// @param re Pattern string .
@@ -3698,7 +3707,7 @@ struct select{
         /// @param jo    JPCRE2 option value
         Regex(String const &re, Uint po, Uint jo) {
             init_vars();
-            compile(re, po, jo); 
+            compile(re, po, jo);
         }
 
         ///@overload
@@ -3707,8 +3716,8 @@ struct select{
         /// @param jo    JPCRE2 option value
         Regex(String const *re, Uint po, Uint jo) {
             init_vars();
-            compile(re, po, jo); 
-        } 
+            compile(re, po, jo);
+        }
 
         /// @overload
         ///...
@@ -3719,21 +3728,21 @@ struct select{
         Regex(Regex const &r) {
             init_vars();
             deepCopy(r);
-        } 
-        
+        }
+
         /// Overloaded assignment operator.
         /// @param r Regex const &
         /// @return *this
-        Regex& operator=(Regex const &r) { 
+        Regex& operator=(Regex const &r) {
             if (this == &r) return *this;
-            deepCopy(r); 
-            return *this; 
+            deepCopy(r);
+            return *this;
         }
-        
-        
-        #if __cplusplus >= 201103L
-        
-        
+
+
+        #if JPCRE2_USE_MINIMUM_CXX_11
+
+
         /// @overload
         ///...
         /// Move constructor.
@@ -3744,8 +3753,8 @@ struct select{
         Regex(Regex&& r) {
             init_vars();
             deepMove(r);
-        } 
-        
+        }
+
         ///@overload
         ///...
         /// Overloaded move-assignment operator.
@@ -3754,12 +3763,12 @@ struct select{
         ///The indeterminate state can be returned to normal by calling reset() on that object.
         /// @param r Regex&&
         /// @return *this
-        Regex& operator=(Regex&& r) { 
+        Regex& operator=(Regex&& r) {
             if (this == &r) return *this;
-            deepMove(r); 
-            return *this; 
+            deepMove(r);
+            return *this;
         }
-        
+
         /// Provides boolean check for the status of the object.
         /// This overloaded boolean operator needs to be declared
         /// explicit to prevent implicit conversion and overloading issues.
@@ -3782,11 +3791,11 @@ struct select{
         /// ```
         ///@return true if regex compiled successfully, false otherwise.
         ///
-        explicit operator bool() const { 
-            return (code != 0); 
+        explicit operator bool() const {
+            return (code != 0);
         }
         #endif
-            
+
         /// Provides boolean check for the status of the object.
         /// This is a safe boolean approach (no implicit conversion  or overloading).
         /// We don't need the explicit keyword here and thus it's the preferable method
@@ -3812,44 +3821,44 @@ struct select{
         /// }
         /// ```
         /// @return true if regex compile failed, false otherwise.
-        bool operator!() const { 
-            return (code == 0); 
-        } 
+        bool operator!() const {
+            return (code == 0);
+        }
 
         virtual ~Regex() {
             freeRegexMemory();
             freeCompileContext();
-        } 
+        }
 
         ///Reset all class variables to its default (initial) state including memory.
         ///@return Reference to the calling Regex object.
-        Regex& reset() { 
+        Regex& reset() {
             freeRegexMemory();
             freeCompileContext();
             String().swap(pat_str);
             init_vars();
-            return *this; 
-        } 
+            return *this;
+        }
 
         ///Clear all class variables to its default (initial) state (some memory may retain for further use).
         ///@return Reference to the calling Regex object.
-        Regex& clear() { 
+        Regex& clear() {
             freeRegexMemory();
             freeCompileContext();
             pat_str.clear();
             init_vars();
-            return *this; 
-        } 
+            return *this;
+        }
 
         ///Reset regex compile related errors to zero.
         ///@return A reference to the Regex object
         ///@see  RegexReplace::resetErrors()
         ///@see  RegexMatch::resetErrors()
-        Regex& resetErrors() { 
-            error_number = 0; 
-            error_offset = 0; 
-            return *this; 
-        } 
+        Regex& resetErrors() {
+            error_number = 0;
+            error_offset = 0;
+            return *this;
+        }
 
         /// Recreate character tables used by PCRE2.
         /// You should call this function after changing the locale to remake the
@@ -3865,9 +3874,9 @@ struct select{
             if(!ccontext)
                 ccontext = Pcre2Func<sizeof( Char_T ) * CHAR_BIT>::compile_context_create(0);
             Pcre2Func<sizeof( Char_T ) * CHAR_BIT>::set_character_tables(ccontext, &tabv[0]);
-            return *this; 
+            return *this;
         }
-        
+
         ///Get Pcre2 raw compiled code pointer.
         ///@return pointer to constant pcre2_code or null.
         Pcre2Code const* getPcre2Code() const{
@@ -3876,14 +3885,14 @@ struct select{
 
         /// Get pattern string
         ///@return pattern string of type jpcre2::select::String
-        String getPattern() const  { 
-            return *pat_str_ptr; 
+        String getPattern() const  {
+            return *pat_str_ptr;
         }
-        
+
         /// Get pointer to pattern string
         ///@return Pointer to constant pattern string
-        String const * getPatternPointer() const  { 
-            return pat_str_ptr; 
+        String const * getPatternPointer() const  {
+            return pat_str_ptr;
         }
 
 
@@ -3908,40 +3917,40 @@ struct select{
         /// @return Compile time PCRE2 option value
         ///@see RegexReplace::getPcre2Option()
         ///@see RegexMatch::getPcre2Option()
-        Uint getPcre2Option() const  { 
-            return compile_opts; 
-        } 
+        Uint getPcre2Option() const  {
+            return compile_opts;
+        }
 
         /// Get JPCRE2 option
         /// @return Compile time JPCRE2 option value
         ///@see RegexReplace::getJpcre2Option()
         ///@see RegexMatch::getJpcre2Option()
-        Uint getJpcre2Option() const  { 
-            return jpcre2_compile_opts; 
-        } 
+        Uint getJpcre2Option() const  {
+            return jpcre2_compile_opts;
+        }
 
         /// Returns the last error number
         ///@return Last error number
-        int getErrorNumber() const { 
-            return error_number; 
-        } 
+        int getErrorNumber() const {
+            return error_number;
+        }
 
         /// Returns the last error offset
         ///@return Last error offset
-        int getErrorOffset() const  { 
-            return (int)error_offset; 
-        } 
-        
+        int getErrorOffset() const  {
+            return (int)error_offset;
+        }
+
         /// Returns the last error message
         ///@return Last error message
         String getErrorMessage() const  {
-            #if __cplusplus >= 201103L
+            #if JPCRE2_USE_MINIMUM_CXX_11
             return select<Char, Map>::getErrorMessage(error_number, error_offset);
             #else
             return select<Char>::getErrorMessage(error_number, error_offset);
             #endif
-        } 
-        
+        }
+
         ///Get new line convention from compiled code.
         ///@return New line option value or 0.
         ///```
@@ -3958,14 +3967,14 @@ struct select{
             if(ret < 0) error_number = ret;
             return newline;
         }
-        
+
         ///Get the modifier table that is set,
         ///@return constant ModifierTable pointer.
         ModifierTable const* getModifierTable(){
             return modtab;
         }
-        
-        
+
+
         ///Set new line convention.
         ///@param value New line option value.
         ///```
@@ -3983,16 +3992,16 @@ struct select{
             if(ret < 0) error_number = ret;
             return *this;
         }
-        
+
         /// Set the pattern string to compile
-        /// @param re Pattern string 
+        /// @param re Pattern string
         /// @return Reference to the calling Regex object.
-        Regex& setPattern(String const &re) { 
+        Regex& setPattern(String const &re) {
             pat_str = re;
             pat_str_ptr = &pat_str; //must overwrite
-            return *this; 
-        } 
-        
+            return *this;
+        }
+
         /// @overload
         /// @param re Pattern string pointer, null pointer will unset it.
         /// @return Reference to the calling Regex object.
@@ -4012,12 +4021,12 @@ struct select{
         /// @return Reference to the calling Regex object.
         /// @see RegexMatch::setModifier()
         /// @see RegexReplace::setModifier()
-        Regex& setModifier(Modifier const& x) { 
-            compile_opts = 0; 
-            jpcre2_compile_opts = 0; 
-            return changeModifier(x, true); 
+        Regex& setModifier(Modifier const& x) {
+            compile_opts = 0;
+            jpcre2_compile_opts = 0;
+            return changeModifier(x, true);
         }
-        
+
         ///Set a custom modifier table to be used.
         ///@param mdt pointer to ModifierTable object.
         /// @return Reference to the calling Regex object.
@@ -4025,25 +4034,25 @@ struct select{
             modtab = mdt;
             return *this;
         }
-        
+
         /// Set JPCRE2 option for compile (overwrites existing option)
         /// @param x Option value
         /// @return Reference to the calling Regex object.
         /// @see RegexMatch::setJpcre2Option()
         /// @see RegexReplace::setJpcre2Option()
-        Regex& setJpcre2Option(Uint x) { 
-            jpcre2_compile_opts = x; 
-            return *this; 
-        } 
+        Regex& setJpcre2Option(Uint x) {
+            jpcre2_compile_opts = x;
+            return *this;
+        }
 
         ///  Set PCRE2 option for compile (overwrites existing option)
         /// @param x Option value
         /// @return Reference to the calling Regex object.
         /// @see RegexMatch::setPcre2Option()
         /// @see RegexReplace::setPcre2Option()
-        Regex& setPcre2Option(Uint x) { 
-            compile_opts = x; 
-            return *this; 
+        Regex& setPcre2Option(Uint x) {
+            compile_opts = x;
+            return *this;
         }
 
         /// Parse modifier and add/remove equivalent PCRE2 and JPCRE2 options.
@@ -4072,9 +4081,9 @@ struct select{
         /// @see RegexReplace::changeJpcre2Option()
         Regex& changeJpcre2Option(Uint opt, bool x) {
             jpcre2_compile_opts = x ? jpcre2_compile_opts | opt : jpcre2_compile_opts & ~opt;
-            return *this; 
-        } 
-     
+            return *this;
+        }
+
         /// Add or remove a PCRE2 option
         /// @param opt PCRE2 option value
         /// @param x Add the option if it's true, remove otherwise.
@@ -4082,10 +4091,10 @@ struct select{
         /// @see RegexMatch::changePcre2Option()
         /// @see RegexReplace::changePcre2Option()
         Regex& changePcre2Option(Uint opt, bool x) {
-            compile_opts = x ? compile_opts | opt : compile_opts & ~opt; 
-            return *this; 
-        } 
-        
+            compile_opts = x ? compile_opts | opt : compile_opts & ~opt;
+            return *this;
+        }
+
         /// Parse modifier string and add equivalent PCRE2 and JPCRE2 options.
         /// This is just a wrapper of the original function Regex::changeModifier()
         /// provided for convenience.
@@ -4093,104 +4102,104 @@ struct select{
         /// @return Reference to the calling Regex object
         /// @see RegexMatch::addModifier()
         /// @see RegexReplace::addModifier()
-        Regex& addModifier(Modifier const& mod){ 
-            return changeModifier(mod, true); 
-        } 
+        Regex& addModifier(Modifier const& mod){
+            return changeModifier(mod, true);
+        }
 
         /// Add option to existing JPCRE2 options for compile
         /// @param x Option value
         /// @return Reference to the calling Regex object
         /// @see RegexMatch::addJpcre2Option()
         /// @see RegexReplace::addJpcre2Option()
-        Regex& addJpcre2Option(Uint x) { 
-            jpcre2_compile_opts |= x; 
-            return *this; 
-        } 
+        Regex& addJpcre2Option(Uint x) {
+            jpcre2_compile_opts |= x;
+            return *this;
+        }
 
         ///  Add option to existing PCRE2 options for compile
         /// @param x Option value
         /// @return Reference to the calling Regex object
         /// @see RegexMatch::addPcre2Option()
         /// @see RegexReplace::addPcre2Option()
-        Regex& addPcre2Option(Uint x) { 
-            compile_opts |= x; 
-            return *this; 
-        } 
+        Regex& addPcre2Option(Uint x) {
+            compile_opts |= x;
+            return *this;
+        }
 
         ///Compile pattern using info from class variables.
         ///@see Regex::compile(String const &re, Uint po, Uint jo)
         ///@see Regex::compile(String const &re, Uint po)
         ///@see Regex::compile(String const &re, Modifier mod)
         ///@see Regex::compile(String const &re)
-        void compile(void); 
+        void compile(void);
 
         ///@overload
         ///...
         /// Set the specified parameters, then compile the pattern using information from class variables.
-        /// @param re Pattern string 
+        /// @param re Pattern string
         /// @param po PCRE2 option
         /// @param jo JPCRE2 option
-        void compile(String const &re, Uint po, Uint jo) { 
+        void compile(String const &re, Uint po, Uint jo) {
             setPattern(re).setPcre2Option(po).setJpcre2Option(jo);
-            compile(); 
-        } 
+            compile();
+        }
 
 
         ///@overload
         /// @param re Pointer to pattern string. A null pointer will unset the pattern and perform a compile with empty pattern.
         /// @param po PCRE2 option
         /// @param jo JPCRE2 option
-        void compile(String const *re, Uint po, Uint jo) { 
+        void compile(String const *re, Uint po, Uint jo) {
             setPattern(re).setPcre2Option(po).setJpcre2Option(jo);
-            compile(); 
-        } 
-        
+            compile();
+        }
+
         ///@overload
-        /// @param re Pattern string 
+        /// @param re Pattern string
         /// @param po PCRE2 option
-        void compile(String const &re, Uint po) { 
+        void compile(String const &re, Uint po) {
             setPattern(re).setPcre2Option(po);
-            compile(); 
-        } 
-        
+            compile();
+        }
+
         ///@overload
         /// @param re  Pointer to pattern string. A null pointer will unset the pattern and perform a compile with empty pattern.
         /// @param po PCRE2 option
-        void compile(String const *re, Uint po) { 
+        void compile(String const *re, Uint po) {
             setPattern(re).setPcre2Option(po);
-            compile(); 
-        } 
+            compile();
+        }
 
         /// @overload
-        /// @param re Pattern string 
+        /// @param re Pattern string
         /// @param mod Modifier string.
-        void compile(String const &re, Modifier const& mod) { 
+        void compile(String const &re, Modifier const& mod) {
             setPattern(re).setModifier(mod);
-            compile(); 
-        } 
+            compile();
+        }
 
         ///@overload
         /// @param re Pointer to pattern string. A null pointer will unset the pattern and perform a compile with empty pattern.
         /// @param mod Modifier string.
         void compile(String const *re, Modifier const& mod) {
             setPattern(re).setModifier(mod);
-            compile(); 
-        } 
+            compile();
+        }
 
         ///@overload
         /// @param re Pattern string .
-        void compile(String const &re) { 
+        void compile(String const &re) {
             setPattern(re);
-            compile(); 
-        } 
+            compile();
+        }
 
         ///@overload
         /// @param re Pointer to pattern string. A null pointer will unset the pattern and perform a compile with empty pattern.
         void compile(String const *re) {
             setPattern(re);
-            compile(); 
+            compile();
         }
-        
+
         ///Returns a default constructed RegexMatch object by value.
         ///This object is initialized with the same modifier table
         ///as this Regex object.
@@ -4200,13 +4209,13 @@ struct select{
             rm.setModifierTable(modtab);
             return rm;
         }
-        
+
         ///Synonym for initMatch()
         ///@return RegexMatch object by value.
         RegexMatch getMatchObject(){
             return initMatch();
         }
-        
+
         /// Perform regex match and return match count using a temporary match object.
         /// This temporary match object will get available options from this Regex object,
         /// that includes modifier table.
@@ -4216,9 +4225,9 @@ struct select{
         /// @return Match count
         /// @see RegexMatch::match()
         SIZE_T match(String const &s, Modifier const& mod, PCRE2_SIZE start_offset=0) {
-            return initMatch().setStartOffset(start_offset).setSubject(s).setModifier(mod).match(); 
-        } 
-        
+            return initMatch().setStartOffset(start_offset).setSubject(s).setModifier(mod).match();
+        }
+
         ///@overload
         ///...
         ///@param s Pointer to subject string. A null pointer will unset the subject and perform a match with empty subject.
@@ -4226,17 +4235,17 @@ struct select{
         ///@param start_offset Offset from where matching will start in the subject string.
         ///@return Match count
         SIZE_T match(String const *s, Modifier const& mod, PCRE2_SIZE start_offset=0) {
-            return initMatch().setStartOffset(start_offset).setSubject(s).setModifier(mod).match(); 
+            return initMatch().setStartOffset(start_offset).setSubject(s).setModifier(mod).match();
         }
-        
+
         ///@overload
         ///...
         /// @param s Subject string .
         /// @param start_offset Offset from where matching will start in the subject string.
         /// @return Match count
         /// @see RegexMatch::match()
-        SIZE_T match(String const &s,  PCRE2_SIZE start_offset=0) { 
-            return initMatch().setStartOffset(start_offset).setSubject(s).match(); 
+        SIZE_T match(String const &s,  PCRE2_SIZE start_offset=0) {
+            return initMatch().setStartOffset(start_offset).setSubject(s).match();
         }
 
         ///@overload
@@ -4245,10 +4254,10 @@ struct select{
         /// @param start_offset Offset from where matching will start in the subject string.
         /// @return Match count
         /// @see RegexMatch::match()
-        SIZE_T match(String const *s,  PCRE2_SIZE start_offset=0) { 
-            return initMatch().setStartOffset(start_offset).setSubject(s).match(); 
+        SIZE_T match(String const *s,  PCRE2_SIZE start_offset=0) {
+            return initMatch().setStartOffset(start_offset).setSubject(s).match();
         }
-        
+
         ///Returns a default constructed RegexReplace object by value.
         ///This object is initialized with the same modifier table as this Regex object.
         ///@return RegexReplace object.
@@ -4257,13 +4266,13 @@ struct select{
             rr.setModifierTable(modtab);
             return rr;
         }
-        
+
         ///Synonym for initReplace()
         ///@return RegexReplace object.
         RegexReplace getReplaceObject(){
             return initReplace();
         }
-        
+
         /// Perform regex replace and return the replaced string using a temporary replace object.
         /// This temporary replace object will get available options from this Regex object,
         /// that includes modifier table.
@@ -4273,10 +4282,10 @@ struct select{
         ///@param counter Pointer to a counter to store the number of replacement done.
         /// @return Resultant string after regex replace
         /// @see RegexReplace::replace()
-        String replace(String const &mains, String const &repl, Modifier const& mod="", SIZE_T* counter=0) { 
-            return initReplace().setSubject(mains).setReplaceWith(repl).setModifier(mod).setReplaceCounter(counter).replace(); 
-        } 
-        
+        String replace(String const &mains, String const &repl, Modifier const& mod="", SIZE_T* counter=0) {
+            return initReplace().setSubject(mains).setReplaceWith(repl).setModifier(mod).setReplaceCounter(counter).replace();
+        }
+
         ///@overload
         /// @param mains Pointer to subject string
         /// @param repl String to replace with
@@ -4284,10 +4293,10 @@ struct select{
         ///@param counter Pointer to a counter to store the number of replacement done.
         /// @return Resultant string after regex replace
         /// @see RegexReplace::replace()
-        String replace(String *mains, String const &repl, Modifier const& mod="", SIZE_T* counter=0) { 
-            return initReplace().setSubject(mains).setReplaceWith(repl).setModifier(mod).setReplaceCounter(counter).replace(); 
-        } 
-        
+        String replace(String *mains, String const &repl, Modifier const& mod="", SIZE_T* counter=0) {
+            return initReplace().setSubject(mains).setReplaceWith(repl).setModifier(mod).setReplaceCounter(counter).replace();
+        }
+
         ///@overload
         ///...
         /// @param mains Subject string
@@ -4296,10 +4305,10 @@ struct select{
         ///@param counter Pointer to a counter to store the number of replacement done.
         /// @return Resultant string after regex replace
         /// @see RegexReplace::replace()
-        String replace(String const &mains, String const *repl, Modifier const& mod="", SIZE_T* counter=0) { 
-            return initReplace().setSubject(mains).setReplaceWith(repl).setModifier(mod).setReplaceCounter(counter).replace(); 
-        } 
-        
+        String replace(String const &mains, String const *repl, Modifier const& mod="", SIZE_T* counter=0) {
+            return initReplace().setSubject(mains).setReplaceWith(repl).setModifier(mod).setReplaceCounter(counter).replace();
+        }
+
         ///@overload
         ///...
         /// @param mains Pointer to subject string
@@ -4308,10 +4317,10 @@ struct select{
         ///@param counter Pointer to a counter to store the number of replacement done.
         /// @return Resultant string after regex replace
         /// @see RegexReplace::replace()
-        String replace(String *mains, String const *repl, Modifier const& mod="", SIZE_T* counter=0) { 
+        String replace(String *mains, String const *repl, Modifier const& mod="", SIZE_T* counter=0) {
             return initReplace().setSubject(mains).setReplaceWith(repl).setModifier(mod).setReplaceCounter(counter).replace();
         }
-        
+
         /// Perl compatible replace method.
         /// Modifies subject string in-place and returns replace count.
         ///
@@ -4325,7 +4334,7 @@ struct select{
             if(mains) *mains = initReplace().setSubject(mains).setReplaceWith(repl).setModifier(mod).setReplaceCounter(&counter).replace();
             return counter;
         }
-        
+
         /// @overload
         ///
         /// Perl compatible replace method.
@@ -4341,7 +4350,7 @@ struct select{
             if(mains) *mains = initReplace().setSubject(mains).setReplaceWith(repl).setModifier(mod).setReplaceCounter(&counter).replace();
             return counter;
         }
-        
+
         /// @overload
         ///
         /// Perl compatible replace method.
@@ -4357,7 +4366,7 @@ struct select{
             initReplace().setSubject(mains).setReplaceWith(repl).setModifier(mod).setReplaceCounter(&counter).replace();
             return counter;
         }
-        
+
         /// @overload
         ///
         /// Perl compatible replace method.
@@ -4374,12 +4383,12 @@ struct select{
             return counter;
         }
     };
-    
+
     private:
     //prevent object instantiation of select class
     select();
     select(select const &);
-    #if __cplusplus >= 201103L
+    #if JPCRE2_USE_MINIMUM_CXX_11
     select(select&&);
     #endif
     ~select();
@@ -4399,7 +4408,7 @@ inline void jpcre2::ModifierTable::parseModifierTable(std::string& tabjs, VecOpt
     tab_v.clear(); tab_v.reserve(n);
     for(SIZE_T i=0;i<n;++i){
         switch(tabv[i]){
-            case JIT_COMPILE: 
+            case JIT_COMPILE:
             case FIND_ALL: //JPCRE2 options are unique, so it's not necessary to check if it's compile or replace or match.
                 tabjs.push_back(tabs[i]); tabjv.push_back(tabv[i]);break;
             default: tab_s.push_back(tabs[i]); tab_v.push_back(tabv[i]); break;
@@ -4408,7 +4417,7 @@ inline void jpcre2::ModifierTable::parseModifierTable(std::string& tabjs, VecOpt
 }
 
 
-#if __cplusplus >= 201103L
+#if JPCRE2_USE_MINIMUM_CXX_11
 template<typename Char_T, template<typename...> class Map>
 void jpcre2::select<Char_T, Map>::Regex::compile() {
 #else
@@ -4421,8 +4430,8 @@ void jpcre2::select<Char_T>::Regex::compile() {
     PCRE2_SIZE err_offset = 0;
 
     /**************************************************************************
-     * Compile the regular expression pattern, and handle 
-     * any errors that are detected.                                          
+     * Compile the regular expression pattern, and handle
+     * any errors that are detected.
      *************************************************************************/
 
     //first release any previous memory
@@ -4433,7 +4442,7 @@ void jpcre2::select<Char_T>::Regex::compile() {
                                     &err_number,            /* for error number */
                                     &err_offset,            /* for error offset */
                                     ccontext);              /* use compile context */
-    
+
     if (code == 0) {
         /* Compilation failed */
         //must not free regex memory, the only function has that right is the destructor
@@ -4449,7 +4458,7 @@ void jpcre2::select<Char_T>::Regex::compile() {
 }
 
 
-#if __cplusplus >= 201103L
+#if JPCRE2_USE_MINIMUM_CXX_11
 template<typename Char_T, template<typename...> class Map>
 typename jpcre2::select<Char_T, Map>::String jpcre2::select<Char_T, Map>::MatchEvaluator::replace(bool do_match, Uint replace_opts, SIZE_T * counter) {
 #else
@@ -4457,14 +4466,14 @@ template<typename Char_T>
 typename jpcre2::select<Char_T>::String jpcre2::select<Char_T>::MatchEvaluator::replace(bool do_match, Uint replace_opts, SIZE_T * counter) {
 #endif
     if(counter) *counter = 0;
-    
+
     replace_opts |= PCRE2_SUBSTITUTE_OVERFLOW_LENGTH;
     replace_opts &= ~PCRE2_SUBSTITUTE_GLOBAL;
     Regex const * re = RegexMatch::getRegexObject();
     // If re or re->code is null, return the subject string unmodified.
     if (!re || re->code == 0)
         return RegexMatch::getSubject();
-    
+
     Pcre2Sptr r_subject_ptr = (Pcre2Sptr) RegexMatch::getSubjectPointer()->c_str();
     //~ SIZE_T totlen = RegexMatch::getSubjectPointer()->length();
 
@@ -4474,13 +4483,13 @@ typename jpcre2::select<Char_T>::String jpcre2::select<Char_T>::MatchEvaluator::
     if(!mcount) return RegexMatch::getSubject();
     SIZE_T current_offset = 0; //needs to be zero, not start_offset, because it's from where unmatched parts will be copied.
     String res, tmp;
-    
+
     //A check, this check is not fullproof.
     SIZE_T last = vec_eoff.size();
     last = (last>0)?last-1:0;
     JPCRE2_ASSERT(vec_eoff[last] <= RegexMatch::getSubject().size(), "ValueError: subject string is not of the required size, may be it's changed!!!\
     If you are using esisting match data, try a new match.");
-    
+
     //loop through the matches
     for(SIZE_T i=0;i<mcount;++i){
         //first copy the unmatched part.
@@ -4513,7 +4522,7 @@ typename jpcre2::select<Char_T>::String jpcre2::select<Char_T>::MatchEvaluator::
         }
         //reset the current offset
         current_offset = vec_eoff[i];
-        
+
         //second part
         ///the matched part is the subject
         //~ Pcre2Sptr subject = (Pcre2Sptr) RegexMatch::getSubjectPointer()->c_str();
@@ -4528,7 +4537,7 @@ typename jpcre2::select<Char_T>::String jpcre2::select<Char_T>::MatchEvaluator::
         int ret = 0;
         PCRE2_SIZE outlengthptr = 0;
         Pcre2Uchar* output_buffer = new Pcre2Uchar[outlengthptr + 1]();
-        
+
         while (true) {
             ret = Pcre2Func<sizeof( Char_T ) * CHAR_BIT>::substitute(
                         re->code,               /*Points to the compiled pattern*/
@@ -4549,7 +4558,7 @@ typename jpcre2::select<Char_T>::String jpcre2::select<Char_T>::MatchEvaluator::
                 if ((replace_opts & PCRE2_SUBSTITUTE_OVERFLOW_LENGTH) != 0
                         && ret == (int) PCRE2_ERROR_NOMEMORY && retry) {
                     retry = false;
-                    /// If initial #buffer_size wasn't big enough for resultant string, 
+                    /// If initial #buffer_size wasn't big enough for resultant string,
                     /// we will try once more with a new buffer size adjusted to the length of the resultant string.
                     delete[] output_buffer;
                     output_buffer = new Pcre2Uchar[outlengthptr + 1]();
@@ -4577,7 +4586,7 @@ typename jpcre2::select<Char_T>::String jpcre2::select<Char_T>::MatchEvaluator::
 }
 
 
-#if __cplusplus >= 201103L
+#if JPCRE2_USE_MINIMUM_CXX_11
 template<typename Char_T, template<typename...> class Map>
 typename jpcre2::select<Char_T, Map>::String jpcre2::select<Char_T, Map>::MatchEvaluator::nreplace(bool do_match, Uint jo, SIZE_T* counter){
 #else
@@ -4591,13 +4600,13 @@ typename jpcre2::select<Char_T>::String jpcre2::select<Char_T>::MatchEvaluator::
     if(!mcount) return RegexMatch::getSubject();
     SIZE_T current_offset = 0; //no need for worrying about start offset, it's handled by match and we get valid offsets out of it.
     String res;
-    
+
     //A check, this check is not fullproof
     SIZE_T last = vec_eoff.size();
     last = (last>0)?last-1:0;
     JPCRE2_ASSERT(vec_eoff[last] <= RegexMatch::getSubject().size(), "ValueError: subject string is not of the required size, may be it's changed!!!\
     If you are using esisting match data, try a new match.");
-    
+
     //loop through the matches
     for(SIZE_T i=0;i<mcount;++i){
         //first copy the unmatched part.
@@ -4640,7 +4649,7 @@ typename jpcre2::select<Char_T>::String jpcre2::select<Char_T>::MatchEvaluator::
 }
 
 
-#if __cplusplus >= 201103L
+#if JPCRE2_USE_MINIMUM_CXX_11
 template<typename Char_T, template<typename...> class Map>
 typename jpcre2::select<Char_T, Map>::String jpcre2::select<Char_T, Map>::RegexReplace::replace() {
 #else
@@ -4682,7 +4691,7 @@ typename jpcre2::select<Char_T>::String jpcre2::select<Char_T>::RegexReplace::re
             if ((replace_opts & PCRE2_SUBSTITUTE_OVERFLOW_LENGTH) != 0
                     && ret == (int) PCRE2_ERROR_NOMEMORY && retry) {
                 retry = false;
-                /// If initial #buffer_size wasn't big enough for resultant string, 
+                /// If initial #buffer_size wasn't big enough for resultant string,
                 /// we will try once more with a new buffer size adjusted to the length of the resultant string.
                 delete[] output_buffer;
                 output_buffer = new Pcre2Uchar[outlengthptr + 1]();
@@ -4704,23 +4713,27 @@ typename jpcre2::select<Char_T>::String jpcre2::select<Char_T>::RegexReplace::re
 }
 
 
-#if __cplusplus >= 201103L
+#if JPCRE2_USE_MINIMUM_CXX_11
 template<typename Char_T, template<typename...> class Map>
-bool jpcre2::select<Char_T, Map>::RegexMatch::getNumberedSubstrings(int rc, Pcre2Sptr subject, PCRE2_SIZE* ovector) {
+bool jpcre2::select<Char_T, Map>::RegexMatch::getNumberedSubstrings(int rc, Pcre2Sptr subject, PCRE2_SIZE* ovector, uint32_t ovector_count) {
 #else
 template<typename Char_T>
-bool jpcre2::select<Char_T>::RegexMatch::getNumberedSubstrings(int rc, Pcre2Sptr subject, PCRE2_SIZE* ovector) {
+bool jpcre2::select<Char_T>::RegexMatch::getNumberedSubstrings(int rc, Pcre2Sptr subject, PCRE2_SIZE* ovector, uint32_t ovector_count) {
 #endif
     NumSub num_sub;
-    num_sub.reserve(rc); //we know exactly how many elements it will have.
-    for (int i = 0; i < rc; i++)
-        num_sub.push_back(String((Char*)(subject + ovector[2*i]), ovector[2*i+1] - ovector[2*i])); 
+    uint32_t rcu = rc;
+    num_sub.reserve(rcu); //we know exactly how many elements it will have.
+    uint32_t i;
+    for (i = 0u; i < rcu; i++)
+        num_sub.push_back(String((Char*)(subject + ovector[2*i]), ovector[2*i+1] - ovector[2*i]));
+    for (uint32_t j = i; j < ovector_count; j++)
+        num_sub.push_back(String());
     vec_num->push_back(num_sub); //this function shouldn't be called if this vector is null
     return true;
 }
 
 
-#if __cplusplus >= 201103L
+#if JPCRE2_USE_MINIMUM_CXX_11
 template<typename Char_T, template<typename...> class Map>
 bool jpcre2::select<Char_T, Map>::RegexMatch::getNamedSubstrings(int namecount, int name_entry_size,
                                                             Pcre2Sptr name_table,
@@ -4748,7 +4761,7 @@ bool jpcre2::select<Char_T>::RegexMatch::getNamedSubstrings(int namecount, int n
         //Use of tabptr is finished for this iteration, let's increment it now.
         tabptr += name_entry_size;
         String value((Char*)(subject + ovector[2*n]), ovector[2*n+1] - ovector[2*n]); //n, not i.
-        if(vec_nas) map_nas[key] = value;  
+        if(vec_nas) map_nas[key] = value;
         if(vec_ntn) map_ntn[key] = n;
     }
     //push the maps into vectors:
@@ -4758,7 +4771,7 @@ bool jpcre2::select<Char_T>::RegexMatch::getNamedSubstrings(int namecount, int n
 }
 
 
-#if __cplusplus >= 201103L
+#if JPCRE2_USE_MINIMUM_CXX_11
 template<typename Char_T, template<typename...> class Map>
 jpcre2::SIZE_T jpcre2::select<Char_T, Map>::RegexMatch::match() {
 #else
@@ -4776,6 +4789,7 @@ jpcre2::SIZE_T jpcre2::select<Char_T>::RegexMatch::match() {
     int namecount = 0;
     int name_entry_size = 0;
     int rc = 0;
+    uint32_t ovector_count = 0;
     int utf = 0;
     SIZE_T count = 0;
     Uint option_bits;
@@ -4785,7 +4799,7 @@ jpcre2::SIZE_T jpcre2::select<Char_T>::RegexMatch::match() {
     MatchData *match_data = 0;
     subject_length = m_subject_ptr->length();
     bool mdc = false; //mdata created.
-    
+
 
     if (vec_num) vec_num->clear();
     if (vec_nas) vec_nas->clear();
@@ -4832,6 +4846,7 @@ jpcre2::SIZE_T jpcre2::select<Char_T>::RegexMatch::match() {
     /* Match succeded. Get a pointer to the output vector, where string offsets are
      stored. */
     ovector = Pcre2Func<sizeof( Char_T ) * CHAR_BIT>::get_ovector_pointer(match_data);
+    ovector_count = Pcre2Func<sizeof( Char_T ) * CHAR_BIT>::get_ovector_count(match_data);
 
     /************************************************************************//*
      * We have found the first match within the subject string. If the output *
@@ -4845,7 +4860,8 @@ jpcre2::SIZE_T jpcre2::select<Char_T>::RegexMatch::match() {
     if (rc == 0) {
         //ovector was not big enough for all the captured substrings;
         error_number = (int)ERROR::INSUFFICIENT_OVECTOR;
-        rc = Pcre2Func<sizeof( Char_T ) * CHAR_BIT>::get_ovector_count(match_data);
+        rc = ovector_count;
+        // TODO: We may throw exception at this point.
     }
     //match succeeded at offset ovector[0]
     if(vec_soff) vec_soff->push_back(ovector[0]);
@@ -4853,10 +4869,10 @@ jpcre2::SIZE_T jpcre2::select<Char_T>::RegexMatch::match() {
 
     // Get numbered substrings if vec_num isn't null
     if (vec_num) { //must do null check
-        if(!getNumberedSubstrings(rc, subject, ovector))
+        if(!getNumberedSubstrings(rc, subject, ovector, ovector_count))
             return count;
     }
-    
+
     //get named substrings if either vec_nas or vec_ntn is given.
     if (vec_nas || vec_ntn) {
         /* See if there are any named substrings, and if so, show them by name. First
@@ -4935,7 +4951,7 @@ jpcre2::SIZE_T jpcre2::select<Char_T>::RegexMatch::match() {
 
     (void) Pcre2Func<sizeof( Char_T ) * CHAR_BIT>::pattern_info(re->code, PCRE2_INFO_ALLOPTIONS, &option_bits);
     utf = ((option_bits & PCRE2_UTF) != 0);
-    
+
     /* Now find the newline convention and see whether CRLF is a valid newline
      sequence. */
 
@@ -5020,19 +5036,20 @@ jpcre2::SIZE_T jpcre2::select<Char_T>::RegexMatch::match() {
             /* The match succeeded, but the output vector wasn't big enough. This
              should not happen. */
             error_number = (int)ERROR::INSUFFICIENT_OVECTOR;
-            rc = Pcre2Func<sizeof( Char_T ) * CHAR_BIT>::get_ovector_count(match_data);
+            rc = ovector_count;
+            // TODO: We may throw exception at this point.
         }
-        
+
         //match succeded at ovector[0]
         if(vec_soff) vec_soff->push_back(ovector[0]);
         if(vec_eoff) vec_eoff->push_back(ovector[1]);
-        
+
         /* As before, get substrings stored in the output vector by number, and then
          also any named substrings. */
 
         // Get numbered substrings if vec_num isn't null
         if (vec_num) { //must do null check
-            if(!getNumberedSubstrings(rc, subject, ovector))
+            if(!getNumberedSubstrings(rc, subject, ovector, ovector_count))
                 return count;
         }
 
@@ -5042,7 +5059,7 @@ jpcre2::SIZE_T jpcre2::select<Char_T>::RegexMatch::match() {
                 return count;
         }
     } /* End of loop to find second and subsequent matches */
-    
+
     if(mdc)
         Pcre2Func<sizeof( Char_T ) * CHAR_BIT>::match_data_free(match_data);
     // Must not free code. This function has no right to modify regex.
@@ -5051,6 +5068,7 @@ jpcre2::SIZE_T jpcre2::select<Char_T>::RegexMatch::match() {
 
 #undef JPCRE2_VECTOR_DATA_ASSERT
 #undef JPCRE2_UNUSED
+#undef JPCRE2_USE_MINIMUM_CXX_11
 
 //some macro documentation for doxygen
 
