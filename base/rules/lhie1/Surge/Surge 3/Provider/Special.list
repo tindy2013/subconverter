@@ -87,7 +87,5 @@ DOMAIN-SUFFIX,springsunday.net
 DOMAIN-SUFFIX,tjupt.org
 DOMAIN-SUFFIX,totheglory.im
 
-DOMAIN-KEYWORD,announce
-DOMAIN-KEYWORD,torrent
 DOMAIN-SUFFIX,smtp
 URL-REGEX,(Subject|HELO|SMTP)

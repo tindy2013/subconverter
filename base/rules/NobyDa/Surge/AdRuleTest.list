@@ -1,4 +1,4 @@
-#Update 2020.7.21 Self-use for testing only, there may be a lot of manslaughter.
+#Update 2020.8.23 Self-use for testing only, there may be a lot of manslaughter.
 DOMAIN-SUFFIX,admaster.com
 DOMAIN-SUFFIX,0z5jn.cn
 DOMAIN-SUFFIX,114so.cn
@@ -1018,7 +1018,6 @@ DOMAIN-SUFFIX,app.adjust.com
 DOMAIN-SUFFIX,dfp.suning.com
 DOMAIN-SUFFIX,huodonghezi.com
 DOMAIN-SUFFIX,miniapp.bilibili.com
-DOMAIN-SUFFIX,mtalk.google.com
 DOMAIN-SUFFIX,pv.sohu.com
 DOMAIN-SUFFIX,e.xroun.com
 DOMAIN-SUFFIX,dflooring.com
@@ -1031,7 +1030,6 @@ DOMAIN-SUFFIX,api.24kidea.com
 DOMAIN-SUFFIX,gss0.bdstatic.com
 DOMAIN-SUFFIX,sss.bxmns.com
 DOMAIN-SUFFIX,extlog.snssdk.com
-DOMAIN-SUFFIX,play.googleapis.com
 DOMAIN-SUFFIX,dcps.nuomi.com
 DOMAIN-SUFFIX,focusbaiduafp.allyes.com
 DOMAIN-SUFFIX,m.simaba.taobao.com

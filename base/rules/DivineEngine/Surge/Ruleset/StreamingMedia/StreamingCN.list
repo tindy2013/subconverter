@@ -3,10 +3,13 @@
 DOMAIN-SUFFIX,acfun.cn
 DOMAIN-SUFFIX,aixifan.com
 # > bilibili
+DOMAIN-SUFFIX,biliapi.net
+DOMAIN-SUFFIX,bilibili.com
 DOMAIN-SUFFIX,bilivideo.com
-DOMAIN,api.bilibili.com
+DOMAIN-SUFFIX,hdslb.com
 # > Tencent Video
 DOMAIN-SUFFIX,video.qq.com
+DOMAIN-SUFFIX,i.qq.com
 DOMAIN-SUFFIX,v.qq.com
 # > iQiyi
 DOMAIN-SUFFIX,iqiyi.com

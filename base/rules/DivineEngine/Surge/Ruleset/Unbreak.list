@@ -5,6 +5,7 @@ USER-AGENT,coffeecorp*
 USER-AGENT,Coffee%20Corp*
 USER-AGENT,restaurant-mobile*
 DOMAIN,app.adjust.com
+DOMAIN,bdtj.tagtic.cn
 # > Alibaba
 DOMAIN,log.mmstat.com
 DOMAIN,sycm.mmstat.com

@@ -1,18 +1,27 @@
 # Privacy
 DOMAIN,track.tiara.daum.net
 DOMAIN,track.tiara.kakao.com
-DOMAIN,trackapp.guahao.cn
 DOMAIN,zgsdk.zhugeio.com
 
+# > 51.LA
+DOMAIN,js.users.51.la
+DOMAIN,mc.51.la
+DOMAIN,wc.51.la
 # > 58
 DOMAIN,track.58.com
 DOMAIN,tracklog.58.com
-# > Facebook
-# DOMAIN,graph.facebook.com
+# > Baidu
+DOMAIN,hm.baidu.com
+DOMAIN,hmma.baidu.com
+# > ByteDance
+DOMAIN,log-va.tiktokv.com
+DOMAIN,log-lq.snssdk.com
+DOMAIN,xlog.snssdk.com
+DOMAIN,log-hl-ipv6.snssdk.com
 # > Google
 DOMAIN-SUFFIX,googletagmanager.com
-DOMAIN,ssl.google-analytics.com
-DOMAIN,www.google-analytics.com
+DOMAIN-SUFFIX,google-analytics.com
+DOMAIN,safebrowsing.googleapis.com
 # > MI
 DOMAIN-SUFFIX,tracking.miui.com
 DOMAIN,data.mistat.xiaomi.com
@@ -22,3 +31,6 @@ DOMAIN,pingma.qq.com
 DOMAIN,btrace.qq.com
 DOMAIN,mtrace.qq.com
 DOMAIN,safebrowsing.urlsec.qq.com
+# > Umeng
+DOMAIN-KEYWORD,logs.umeng.com
+DOMAIN-KEYWORD,logs.umengcloud.com

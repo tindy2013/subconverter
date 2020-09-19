@@ -1,5 +1,5 @@
 # 内容：中国媒体列表
-# 更新：2020-07-04 22:13:12
+# 更新：2020-09-16 22:31:30
 # 数量：31条
 
 # Bilibili 哔哩哔哩
@@ -27,9 +27,9 @@ USER-AGENT,QIYI*
 USER-AGENT,iQiYi*
 DOMAIN-KEYWORD,qiyi
 DOMAIN-SUFFIX,qy.net
-IP-CIDR,101.224.0.0/13,no-resolve
-IP-CIDR,101.227.0.0/16,no-resolve
-IP-CIDR,119.176.0.0/12,no-resolve
+IP-CIDR,101.224.0.0/13
+IP-CIDR,101.227.0.0/16
+IP-CIDR,119.176.0.0/12
 
 # Letv 乐视
 DOMAIN-SUFFIX,api.mob.app.letv.com

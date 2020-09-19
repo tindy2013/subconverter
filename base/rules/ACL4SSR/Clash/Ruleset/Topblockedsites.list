@@ -1,5 +1,5 @@
 # 内容：Top Blocked Sites
-# 数量：111条
+# 数量：109条
 DOMAIN-SUFFIX,4sqi.net
 DOMAIN-SUFFIX,a248.e.akamai.net
 DOMAIN-SUFFIX,adobedtm.com
@@ -109,5 +109,3 @@ DOMAIN-SUFFIX,v2ex.com
 DOMAIN-SUFFIX,vimeo.com
 DOMAIN-SUFFIX,vine.co
 DOMAIN-SUFFIX,vox-cdn.com
-DOMAIN-SUFFIX,wikileaks.org
-DOMAIN-SUFFIX,wikipedia.org
