@@ -36,5 +36,5 @@ cd ..
 cmake -DCMAKE_BUILD_TYPE=Release -G "Unix Makefiles" .
 make -j4
 rm subconverter.exe
-g++ $(find CMakeFiles/subconverter.dir/src -name "*.obj") curl/lib/libcurl.a -o base/subconverter.exe -static -levent -lpcre2-8 -lduktape -lduktape_module -lyaml-cpp -lidn2 -liconv -lunistring -liphlpapi -lcrypt32 -lws2_32 -lwsock32 -lz -s
+g++ $(find CMakeFiles/subconverter.dir/src -name "*.obj") curl/lib/libcurl.a -o base/subconverter.exe -static -levent -lpcre2-8 -lduktape -lduktape_module -lyaml-cpp -lidn2 -lunistring -liconv -liphlpapi -lcrypt32 -lws2_32 -lwsock32 -lz -s
 mv base subconverter
