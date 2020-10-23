@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <sys/types.h>
 #include <dirent.h>
+#include <string.h>
 
 #include <yaml-cpp/yaml.h>
 

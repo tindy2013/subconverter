@@ -182,6 +182,8 @@ int main(int argc, char *argv[])
             }
         }
         readConf();
+        if(!gUpdateRulesetOnRequest)
+            refreshRulesets(gCustomRulesets, gRulesetContent);
         return "done\n";
     });
 

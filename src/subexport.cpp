@@ -5,6 +5,7 @@
 #include <climits>
 #include <rapidjson/writer.h>
 #include <rapidjson/document.h>
+#include <rapidjson/error/en.h>
 #include <yaml-cpp/yaml.h>
 #include <duktape.h>
 
@@ -681,29 +682,12 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset
             if(gMaxAllowedRules && total_rules > gMaxAllowedRules)
                 break;
             lineSize = strLine.size();
-            /*
-            if(lineSize && strLine[lineSize - 1] == '\r') //remove line break
-            {
-                strLine.erase(lineSize - 1);
-                lineSize--;
-            }
-            */
             if(lineSize && strLine[lineSize - 1] == '\r') //remove line break
                 strLine.erase(--lineSize);
             if(!lineSize || strLine[0] == ';' || strLine[0] == '#' || (lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')) //empty lines and comments are ignored
                 continue;
-            /*
-            if(strLine.find("USER-AGENT") == 0 || strLine.find("URL-REGEX") == 0 || strLine.find("PROCESS-NAME") == 0 || strLine.find("AND") == 0 || strLine.find("OR") == 0) //remove unsupported types
-                continue;
-            */
             if(!std::any_of(ClashRuleTypes.begin(), ClashRuleTypes.end(), [strLine](std::string type){return startsWith(strLine, type);}))
                 continue;
-            /*
-            if(strLine.find("IP-CIDR") == 0)
-                strLine = replace_all_distinct(strLine, ",no-resolve", "");
-            else if(strLine.find("DOMAIN-SUFFIX") == 0)
-                strLine = replace_all_distinct(strLine, ",force-remote-dns", "");
-            */
             strLine += "," + rule_group;
             if(count_least(strLine, ',', 3))
                 strLine = regReplace(strLine, "^(.*?,.*?)(,.*)(,.*)$", "$1$3$2");
@@ -1473,6 +1457,7 @@ std::string netchToClash(std::vector<nodeInfo> &nodes, const std::string &base_c
     }
     catch (std::exception &e)
     {
+        writeLog(0, std::string("Clash base loader failed with error: ") + e.what(), LOG_LEVEL_ERROR);
         return std::string();
     }
 
@@ -1493,7 +1478,13 @@ std::string netchToClash(std::vector<nodeInfo> &nodes, const std::string &base_c
     if(ext.managed_config_prefix.size() || ext.clash_script)
     {
         if(yamlnode["mode"].IsDefined())
-            yamlnode["mode"] = ext.clash_script ? "Script" : "Rule";
+        {
+            if(ext.clash_new_field_name)
+                yamlnode["mode"] = ext.clash_script ? "script" : "rule";
+            else
+                yamlnode["mode"] = ext.clash_script ? "Script" : "Rule";
+        }
+
         renderClashScript(yamlnode, ruleset_content_array, ext.managed_config_prefix, ext.clash_script, ext.overwrite_original_rules, ext.clash_classical_ruleset);
         return YAML::Dump(yamlnode);
     }
@@ -1532,7 +1523,10 @@ std::string netchToSurge(std::vector<nodeInfo> &nodes, const std::string &base_c
     ini.AddDirectSaveSection("URL Rewrite");
     ini.AddDirectSaveSection("Header Rewrite");
     if(ini.Parse(base_conf) != 0 && !ext.nodelist)
+    {
+        writeLog(0, "Surge base loader failed with error: " + ini.GetLastError(), LOG_LEVEL_ERROR);
         return std::string();
+    }
 
     ini.SetCurrentSection("Proxy");
     ini.EraseSection();
@@ -1909,12 +1903,14 @@ std::string netchToSSSub(std::string &base_conf, std::vector<nodeInfo> &nodes, c
     json.AddMember("plugin", "", alloc);
     json.AddMember("plugin_opts", "", alloc);
 
-    base.Parse(base_conf.data());
-    if(!base.HasParseError())
+    rapidjson::ParseResult result = base.Parse(base_conf.data());
+    if(result)
     {
         for(auto iter = base.MemberBegin(); iter != base.MemberEnd(); iter++)
             json.AddMember(iter->name, iter->value, alloc);
     }
+    else
+        writeLog(0, std::string("SIP008 base loader failed with error: ") + rapidjson::GetParseError_En(result.Code()) + " (" + std::to_string(result.Offset()) + ")", LOG_LEVEL_ERROR);
 
     rapidjson::Value jsondata;
     jsondata = json.Move();
@@ -1967,7 +1963,10 @@ std::string netchToQuan(std::vector<nodeInfo> &nodes, const std::string &base_co
     INIReader ini;
     ini.store_any_line = true;
     if(!ext.nodelist && ini.Parse(base_conf) != 0)
+    {
+        writeLog(0, "Quantumult base loader failed with error: " + ini.GetLastError(), LOG_LEVEL_ERROR);
         return std::string();
+    }
 
     netchToQuan(nodes, ini, ruleset_content_array, extra_proxy_group, ext);
 
@@ -2257,7 +2256,10 @@ std::string netchToQuanX(std::vector<nodeInfo> &nodes, const std::string &base_c
     ini.AddDirectSaveSection("mitm");
     ini.AddDirectSaveSection("server_remote");
     if(!ext.nodelist && ini.Parse(base_conf) != 0)
+    {
+        writeLog(0, "QuantumultX base loader failed with error: " + ini.GetLastError(), LOG_LEVEL_ERROR);
         return std::string();
+    }
 
     netchToQuanX(nodes, ini, ruleset_content_array, extra_proxy_group, ext);
 
@@ -2703,7 +2705,10 @@ std::string netchToMellow(std::vector<nodeInfo> &nodes, const std::string &base_
     INIReader ini;
     ini.store_any_line = true;
     if(ini.Parse(base_conf) != 0)
+    {
+        writeLog(0, "Mellow base loader failed with error: " + ini.GetLastError(), LOG_LEVEL_ERROR);
         return std::string();
+    }
 
     netchToMellow(nodes, ini, ruleset_content_array, extra_proxy_group, ext);
 
@@ -2901,7 +2906,10 @@ std::string netchToLoon(std::vector<nodeInfo> &nodes, const std::string &base_co
 
     ini.store_any_line = true;
     if(ini.Parse(base_conf) != INIREADER_EXCEPTION_NONE && !ext.nodelist)
+    {
+        writeLog(0, "Loon base loader failed with error: " + ini.GetLastError(), LOG_LEVEL_ERROR);
         return std::string();
+    }
 
     ini.SetCurrentSection("Proxy");
     ini.EraseSection();
