@@ -3,7 +3,7 @@ set -xe
 
 git clone https://github.com/curl/curl --depth=1
 cd curl
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_USE_LIBSSH2=OFF -DHTTP_ONLY=ON -DCMAKE_USE_SCHANNEL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_CURL_EXE=OFF -DCMAKE_INSTALL_PREFIX="$MINGW_PREFIX" -G "Unix Makefiles" .
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_USE_LIBSSH2=OFF -DHTTP_ONLY=ON -DCMAKE_USE_SCHANNEL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_CURL_EXE=OFF -DCMAKE_INSTALL_PREFIX="$MINGW_PREFIX" -G "Unix Makefiles" -DHAVE_LIBIDN2=OFF .
 make install -j4
 cd ..
 
@@ -36,5 +36,5 @@ cd ..
 cmake -DCMAKE_BUILD_TYPE=Release -G "Unix Makefiles" .
 make -j4
 rm subconverter.exe
-g++ $(find CMakeFiles/subconverter.dir/src -name "*.obj") curl/lib/libcurl.a -o base/subconverter.exe -static -levent -lpcre2-8 -lduktape -lduktape_module -lyaml-cpp -lidn2 -lunistring -liconv -liphlpapi -lcrypt32 -lws2_32 -lwsock32 -lz -s
+g++ $(find CMakeFiles/subconverter.dir/src -name "*.obj") curl/lib/libcurl.a -o base/subconverter.exe -static -levent -lpcre2-8 -lduktape -lduktape_module -lyaml-cpp -liphlpapi -lcrypt32 -lws2_32 -lwsock32 -lz -s
 mv base subconverter
