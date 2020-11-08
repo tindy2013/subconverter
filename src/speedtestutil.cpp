@@ -1068,7 +1068,7 @@ void explodeClash(Node yamlnode, const std::string &custom_port, std::vector<nod
             node.linkType = SPEEDTEST_MESSAGE_FOUNDSS;
             node.proxyStr = ssConstruct(group, ps, server, port, password, cipher, plugin, pluginopts, ss_libev, udp, tfo, scv);
             break;
-        case "socks"_hash:
+        case "socks5"_hash:
             group = SOCKS_DEFAULT_GROUP;
 
             singleproxy["username"] >>= user;
@@ -1912,22 +1912,38 @@ void explodeNetchConf(std::string netch, bool ss_libev, bool ssr_libev, const st
     }
 }
 
+bool applyMatcher(const std::string &rule, std::string &real_rule, const nodeInfo &node);
+
 bool chkIgnore(const nodeInfo &node, string_array &exclude_remarks, string_array &include_remarks)
 {
     bool excluded = false, included = false;
     //std::string remarks = UTF8ToACP(node.remarks);
-    std::string remarks = node.remarks;
+    //std::string remarks = node.remarks;
     //writeLog(LOG_TYPE_INFO, "Comparing exclude remarks...");
-    excluded = std::any_of(exclude_remarks.cbegin(), exclude_remarks.cend(), [&remarks](const auto &x)
+    excluded = std::any_of(exclude_remarks.cbegin(), exclude_remarks.cend(), [&node](const auto &x)
     {
-        return regFind(remarks, x);
+        std::string real_rule;
+        if(applyMatcher(x, real_rule, node))
+        {
+            if(real_rule.empty()) return true;
+            return regFind(node.remarks, real_rule);
+        }
+        else
+            return false;
     });
     if(include_remarks.size() != 0)
     {
         //writeLog(LOG_TYPE_INFO, "Comparing include remarks...");
-        included = std::any_of(include_remarks.cbegin(), include_remarks.cend(), [&remarks](const auto &x)
+        included = std::any_of(include_remarks.cbegin(), include_remarks.cend(), [&node](const auto &x)
         {
-            return regFind(remarks, x);
+            std::string real_rule;
+            if(applyMatcher(x, real_rule, node))
+            {
+                if(real_rule.empty()) return true;
+                return regFind(node.remarks, real_rule);
+            }
+            else
+                return false;
         });
     }
     else
@@ -2051,6 +2067,7 @@ void explodeSub(std::string sub, bool sslibev, bool ssrlibev, const std::string 
     }
     catch (std::exception &e)
     {
+        writeLog(0, e.what(), LOG_LEVEL_DEBUG);
         //ignore
     }
 
@@ -2091,7 +2108,6 @@ void filterNodes(std::vector<nodeInfo> &nodes, string_array &exclude_remarks, st
 {
     int node_index = 0;
     std::vector<nodeInfo>::iterator iter = nodes.begin();
-    /*
     while(iter != nodes.end())
     {
         if(chkIgnore(*iter, exclude_remarks, include_remarks))
@@ -2108,8 +2124,7 @@ void filterNodes(std::vector<nodeInfo> &nodes, string_array &exclude_remarks, st
             ++iter;
         }
     }
-    */
-
+    /*
     std::vector<std::unique_ptr<pcre2_code, decltype(&pcre2_code_free)>> exclude_patterns, include_patterns;
     std::vector<std::unique_ptr<pcre2_match_data, decltype(&pcre2_match_data_free)>> exclude_match_data, include_match_data;
     unsigned int i = 0;
@@ -2185,6 +2200,7 @@ void filterNodes(std::vector<nodeInfo> &nodes, string_array &exclude_remarks, st
             ++iter;
         }
     }
+    */
     writeLog(LOG_TYPE_INFO, "Filter done.");
 }
 

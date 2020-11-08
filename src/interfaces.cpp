@@ -1362,7 +1362,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     std::string argIncludeRemark = UrlDecode(getUrlArg(argument, "include")), argExcludeRemark = UrlDecode(getUrlArg(argument, "exclude"));
     std::string argCustomGroups = urlsafe_base64_decode(getUrlArg(argument, "groups")), argCustomRulesets = urlsafe_base64_decode(getUrlArg(argument, "ruleset")), argExternalConfig = UrlDecode(getUrlArg(argument, "config"));
     std::string argDeviceID = getUrlArg(argument, "dev_id"), argFilename = getUrlArg(argument, "filename"), argUpdateInterval = getUrlArg(argument, "interval"), argUpdateStrict = getUrlArg(argument, "strict");
-    std::string argRenames = UrlDecode(getUrlArg(argument, "rename"));
+    std::string argRenames = UrlDecode(getUrlArg(argument, "rename")), argFilterScript = UrlDecode(getUrlArg(argument, "filter_script"));
 
     /// switches with default value
     tribool argUpload = getUrlArg(argument, "upload"), argEmoji = getUrlArg(argument, "emoji"), argAddEmoji = getUrlArg(argument, "add_emoji"), argRemoveEmoji = getUrlArg(argument, "remove_emoji");
@@ -1611,15 +1611,18 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         std::move(insert_nodes.begin(), insert_nodes.end(), std::back_inserter(nodes));
     }
     //run filter script
-    if(gFilterScript.size())
+    std::string filterScript = gFilterScript;
+    if(authorized && !argFilterScript.empty())
+        filterScript = argFilterScript;
+    if(filterScript.size())
     {
-        if(startsWith(gFilterScript, "path:"))
-            gFilterScript = fileGet(gFilterScript.substr(5), false);
+        if(startsWith(filterScript, "path:"))
+            filterScript = fileGet(filterScript.substr(5), false);
         duk_context *ctx = duktape_init();
         if(ctx)
         {
             defer(duk_destroy_heap(ctx);)
-            if(duktape_peval(ctx, gFilterScript) == 0)
+            if(duktape_peval(ctx, filterScript) == 0)
             {
                 auto filter = [&](const nodeInfo &x)
                 {

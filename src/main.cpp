@@ -105,6 +105,16 @@ int main(int argc, char *argv[])
 #endif // _DEBUG
     if(fileExist("pref.yml"))
         gPrefPath = "pref.yml";
+    else if(!fileExist("pref.ini"))
+    {
+        if(fileExist("pref.example.yml"))
+        {
+            fileCopy("pref.example.yml", "pref.yml");
+            gPrefPath = "pref.yml";
+        }
+        else if(fileExist("pref.example.ini"))
+            fileCopy("pref.example.ini", "pref.ini");
+    }
     chkArg(argc, argv);
     setcd(gPrefPath); //then switch to pref directory
     writeLog(0, "SubConverter " VERSION " starting up..", LOG_LEVEL_INFO);
