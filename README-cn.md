@@ -11,6 +11,17 @@
 
 ## 新增内容
 
+2020/11/20
+
+- 新增 [支持类型](#支持类型) 中 `mixed` & `auto` 参数
+- 新增 [进阶链接](#进阶链接) 中多个调用参数的说明
+- 新增 [配置文件](#配置文件) 中 `[userinfo]` 部分的描述
+- 新增 [配置文件](#配置文件) 中 `[common]`&`[node_pref]`&`[server]` 中多个参数的描述
+- 修改 [进阶链接](#进阶链接) 中 `url` 参数的说明
+
+<details>
+<summary><b>更新历史</b></summary>
+
 2020/04/29
 
 - 新增 [配置文件](#配置文件) 指定默认外部配置文件
@@ -18,9 +29,6 @@
 - 新增 [模板功能](#模板功能) 用于直接渲染的 `/render` 接口的描述
 - 修改 [支持类型](#支持类型) 中类 TG 类型节点的描述
 - 调整 模板介绍 为 [模板功能](#模板功能)
-
-<details>
-<summary><b>更新历史</b></summary>
 
 2020/04/04
 
@@ -43,53 +51,68 @@
 
 ## 说明目录
 
-- [支持类型](#支持类型)
-- [简易用法](#简易用法)
-  - [调用地址](#调用地址)
-  - [调用说明](#调用说明)
-  - [简易转换](#简易转换)
-- [进阶用法](#进阶用法)
-  - [阅前提示](#阅前提示)
-  - [进阶链接](#进阶链接)
-  - [配置档案](#配置档案)
-  - [配置文件](#配置文件)
-  - [外部配置](#外部配置)
-  - [模板功能](#模板功能)
-- [特别用法](#特别用法)
-  - [本地生成](#本地生成)
-  - [自动上传](#自动上传)
+- [subconverter](#subconverter)
+  - [新增内容](#新增内容)
+  - [说明目录](#说明目录)
+  - [支持类型](#支持类型)
+  - [简易用法](#简易用法)
+    - [调用地址](#调用地址)
+    - [调用说明](#调用说明)
+    - [简易转换](#简易转换)
+  - [进阶用法](#进阶用法)
+    - [阅前提示](#阅前提示)
+    - [进阶链接](#进阶链接)
+      - [调用地址 (进阶)](#调用地址-进阶)
+      - [调用说明 (进阶)](#调用说明-进阶)
+    - [配置档案](#配置档案)
+      - [调用地址 (档案)](#调用地址-档案)
+      - [调用说明 (档案)](#调用说明-档案)
+    - [配置文件](#配置文件)
+    - [外部配置](#外部配置)
+    - [模板功能](#模板功能)
+      - [模板调用](#模板调用)
+      - [直接渲染](#直接渲染)
+  - [特别用法](#特别用法)
+    - [本地生成](#本地生成)
+    - [自动上传](#自动上传)
 
 ## 支持类型
 
-| 类型         | 作为源类型 | 作为目标类型 | 参数        |
-| ------------ | :--------: | :----------: | ----------- |
-| Clash        |     ✓      |      ✓       | clash       |
-| ClashR       |     ✓      |      ✓       | clashr      |
-| Quantumult (完整配置)   |     ✓      |      ✓       | quan        |
-| Quantumult X (完整配置) |     ✓      |      ✓       | quanx       |
-| Loon         |     ✓      |      ✓       | loon        |
-| Mellow       |     ✓      |      ✓       | mellow      |
-| SS (SIP002)  |     ✓      |      ✓       | ss          |
-| SS (软件订阅) |     ✓      |      ✓       | sssub       |
-| SSD          |     ✓      |      ✓       | ssd         |
-| SSR          |     ✓      |      ✓       | ssr         |
-| Surfboard    |     ✓      |      ✓       | surfboard   |
-| Surge 2      |     ✓      |      ✓       | surge&ver=2 |
-| Surge 3      |     ✓      |      ✓       | surge&ver=3 |
-| Surge 4      |     ✓      |      ✓       | surge&ver=4 |
-| Trojan       |     ✓      |      ✓       | trojan      |
-| V2Ray        |     ✓      |      ✓       | v2ray       |
-| 类 TG 代理的 HTTP/Socks 链接 |     ✓      |      ×       | 仅支持 `&url=` 调用    |
+| 类型                         | 作为源类型 | 作为目标类型 | 参数                |
+| ---------------------------- | :--------: | :----------: | ------------------- |
+| Clash                        |     ✓      |      ✓       | clash               |
+| ClashR                       |     ✓      |      ✓       | clashr              |
+| Quantumult (完整配置)        |     ✓      |      ✓       | quan                |
+| Quantumult X (完整配置)      |     ✓      |      ✓       | quanx               |
+| Loon                         |     ✓      |      ✓       | loon                |
+| Mellow                       |     ✓      |      ✓       | mellow              |
+| SS (SIP002)                  |     ✓      |      ✓       | ss                  |
+| SS (软件订阅)                |     ✓      |      ✓       | sssub               |
+| SSD                          |     ✓      |      ✓       | ssd                 |
+| SSR                          |     ✓      |      ✓       | ssr                 |
+| Surfboard                    |     ✓      |      ✓       | surfboard           |
+| Surge 2                      |     ✓      |      ✓       | surge&ver=2         |
+| Surge 3                      |     ✓      |      ✓       | surge&ver=3         |
+| Surge 4                      |     ✓      |      ✓       | surge&ver=4         |
+| Trojan                       |     ✓      |      ✓       | trojan              |
+| V2Ray                        |     ✓      |      ✓       | v2ray               |
+| 类 TG 代理的 HTTP/Socks 链接 |     ✓      |      ×       | 仅支持 `&url=` 调用 |
+| Mixed                        |     ×      |      ✓       | mixed               |
+| Auto                         |     ×      |      ✓       | auto                |
 
 注意：
 
-1. Shadowrocket 用户可以使用 `ss`、`ssr` 以及 `v2ray` 参数
+1. Shadowrocket 用户可以使用 `ss`、`ssr` 、 `v2ray` 以及 `mixed` 参数
 
 2. 类 TG 代理的 HTTP/Socks 链接由于没有命名设定，所以可以在后方插入`&remarks=`进行命名，同时也可以插入 `&group=` 设置组别名称，以上两个参数需要经过 [URLEncode](https://www.urlencoder.org/) 处理，例如
 
    - tg://http?server=1.2.3.4&port=233&user=user&pass=pass&remarks=Example&group=xxx
 
    - https://t.me/http?server=1.2.3.4&port=233&user=user&pass=pass&remarks=Example&group=xxx
+
+3. 目标类型为 `mixed` 时，会输出所有支持的节点的单链接组成的普通订阅（Base64编码）
+
+4. 目标类型为 `auto` 时，会根据请求的 `User-Agent` 自动判断输出的目标类型，匹配规则可参见 [此处](https://github.com/tindy2013/subconverter/blob/master/src/interfaces.cpp#L105)
 
 ---
 
@@ -105,11 +128,11 @@ http://127.0.0.1:25500/sub?target=%TARGET%&url=%URL%&config=%CONFIG%
 
 ### 调用说明
 
-| 调用参数 | 必要性 | 示例      | 解释         |
-| ------- | :----: | :------------------- | ---------------- |
-| target |  必要  | surge&ver=4   | 指想要生成的配置类型，详见上方 [支持类型](#支持类型) 中的参数 |
-| url  |  必要  | https%3A%2F%2Fwww.xxx.com | 指机场所提供的订阅链接，需要经过 [URLEncode](https://www.urlencoder.org/) 处理 |
-| config |  可选  | https%3A%2F%2Fwww.xxx.com | 指远程 `pref.ini` (包含分组和规则部分)，需要经过 [URLEncode](https://www.urlencoder.org/) 处理，可查看 [示例仓库](https://github.com/lzdnico/subconverteriniexample) 寻找灵感，默认加载本地设置文件 |
+| 调用参数 | 必要性 | 示例                      | 解释                                                                                                                                                                                                |
+| -------- | :----: | :------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| target   |  必要  | surge&ver=4               | 指想要生成的配置类型，详见上方 [支持类型](#支持类型) 中的参数                                                                                                                                       |
+| url      |  必要  | https%3A%2F%2Fwww.xxx.com | 指机场所提供的订阅链接，需要经过 [URLEncode](https://www.urlencoder.org/) 处理                                                                                                                      |
+| config   |  可选  | https%3A%2F%2Fwww.xxx.com | 指远程 `pref.ini` (包含分组和规则部分)，需要经过 [URLEncode](https://www.urlencoder.org/) 处理，可查看 [示例仓库](https://github.com/lzdnico/subconverteriniexample) 寻找灵感，默认加载本地设置文件 |
 
 运行 subconverter 主程序后，按照 [调用说明](#调用说明) 的对应内容替换即可得到一份使用**神机规则**的配置文件。
 
@@ -243,30 +266,41 @@ http://127.0.0.1:25500/sub?target=%TARGET%&url=%URL%&emoji=%EMOJI%····
 
 #### 调用说明 (进阶)
 
-| 调用参数 | 必要性 | 示例  | 解释   |
-| -------- | :----: | :--------------- | :------------------------ |
-| target |  必要  | surge&ver=4   | 指想要生成的配置类型，详见上方 [支持类型](#支持类型) 中的参数   |
-| url   |  可选  | https%3A%2F%2Fwww.xxx.com | 指机场所提供的订阅链接，需要经过 [URLEncode](https://www.urlencoder.org/) 处理，**可选的前提是在 `default_url` 中进行指定**。也可以使用 data URI    |
-| config |  可选  | https%3A%2F%2Fwww.xxx.com | 指远程 `pref.ini` (包含分组和规则部分)，需要经过 [URLEncode](https://www.urlencoder.org/) 处理，可查看 [示例仓库](https://github.com/lzdnico/subconverteriniexample) 寻找灵感，默认加载本地设置文件 |
-| upload |  可选  | true / false  | 用于将生成的订阅文件上传至 `Gist`，需要填写`gistconf.ini`，默认为 false (即不上传)    |
-| upload_path |  可选  | MySS.yaml  | 用于将生成的订阅文件上传至 `Gist` 后的名称，需要经过 [URLEncode](https://www.urlencoder.org/) 处理    |
-| emoji |  可选  | true / false  | 用于在节点名称前加入 Emoji，默认为 true  |
-| group |  可选  | MySS  | 用于设置该订阅的组名，多用于 SSD/SSR  |
-| tfo |  可选  | true / false  | 用于开启该订阅链接的 TCP Fast Open，默认为 false  |
-| udp |  可选  | true / false  | 用于开启该订阅链接的 UDP，默认为 false  |
-| scv |  可选  | true / false  | 用于关闭 TLS 节点的证书检查，默认为 false  |
-| list |  可选  | true / false  | 用于输出 Surge Node List 或者 Clash Proxy Provider 或者 Quantumult (X) 的节点订阅 或者 解码后的 SIP002 |
-| sort |  可选  | true / false  | 用于对输出的节点或策略组进行再次排序，默认为 false  |
-| include |  可选  | 详见下文中 `include_remarks`  | 指仅保留匹配到的节点，支持正则匹配，需要经过 [URLEncode](https://www.urlencoder.org/) 处理，会覆盖配置文件里的设置  |
-| exclude |  可选  | 详见下文中 `exclude_remarks`  | 指排除匹配到的节点，支持正则匹配，需要经过 [URLEncode](https://www.urlencoder.org/) 处理，会覆盖配置文件里的设置  |
-| filename |  可选  | MySS  | 指定该链接生成的配置文件的文件名，可以在 Clash For Windows 等支持文件名的软件中显示出来  |
-| append_type |  可选  | true / false  | 用于在节点名称前插入节点类型，如 [SS],[SSR] 等  |
-| append_info |  可选  | true / false  | 用于输出包含流量或到期信息的节点, 默认为 true，设置为 false 则取消输出 |
-| expand  |  可选  | true / false  | 用于在 API 端处理或转换 Surge, QuantumultX 的规则列表，即不将规则全文置入配置文件中，默认为 false，设置为 true 则将规则全文写进配置文件  |
-| dev_id  |  可选  | 92DSAFA  | 用于设置 QuantumultX 的远程设备 ID, 以在某些版本上开启远程脚本  |
-| interval  |  可选  | 43200  | 用于设置托管配置更新间隔，确定配置将更新多长时间，单位为秒  |
-| strict |  可选  | true / false   | 如果设置为 true，则 Surge 将在上述间隔后要求强制更新  |
-| new_name |  可选  | true / false   | 如果设置为 true，则将启用 Clash 的新组名称 (proxies, proxy-groups, rules)  |
+| 调用参数      | 必要性 | 示例                         | 解释                                                                                                                                                                                                                                                                   |
+| ------------- | :----: | :--------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| target        |  必要  | surge&ver=4                  | 指想要生成的配置类型，详见上方 [支持类型](#支持类型) 中的参数                                                                                                                                                                                                          |
+| url           |  可选  | https%3A%2F%2Fwww.xxx.com    | 指机场所提供的订阅链接，需要经过 [URLEncode](https://www.urlencoder.org/) 处理，**可选的前提是在 `default_url` 中进行指定**。也可以使用 data URI。可使用 `tag：xxx，https%3A%2F%2Fwww.xxx.com` 指定该订阅的所有节点归属于`xxx`分组，用于配置文件中的`!!GROUP=XXX` 匹配 |
+| group         |  可选  | MySS                         | 用于设置该订阅的组名，多用于 SSD/SSR                                                                                                                                                                                                                                   |
+| upload_path   |  可选  | MySS.yaml                    | 用于将生成的订阅文件上传至 `Gist` 后的名称，需要经过 [URLEncode](https://www.urlencoder.org/) 处理                                                                                                                                                                     |
+| include       |  可选  | 详见下文中 `include_remarks` | 指仅保留匹配到的节点，支持正则匹配，需要经过 [URLEncode](https://www.urlencoder.org/) 处理，会覆盖配置文件里的设置                                                                                                                                                     |
+| exclude       |  可选  | 详见下文中 `exclude_remarks` | 指排除匹配到的节点，支持正则匹配，需要经过 [URLEncode](https://www.urlencoder.org/) 处理，会覆盖配置文件里的设置                                                                                                                                                       |
+| config        |  可选  | https%3A%2F%2Fwww.xxx.com    | 指远程 `pref.ini` (包含分组和规则部分)，需要经过 [URLEncode](https://www.urlencoder.org/) 处理，可查看 [示例仓库](https://github.com/lzdnico/subconverteriniexample) 寻找灵感，默认加载本地设置文件                                                                    |
+| dev_id        |  可选  | 92DSAFA                      | 用于设置 QuantumultX 的远程设备 ID, 以在某些版本上开启远程脚本                                                                                                                                                                                                         |
+| filename      |  可选  | MySS                         | 指定该链接生成的配置文件的文件名，可以在 Clash For Windows 等支持文件名的软件中显示出来                                                                                                                                                                                |
+| interval      |  可选  | 43200                        | 用于设置托管配置更新间隔，确定配置将更新多长时间，单位为秒                                                                                                                                                                                                             |
+| rename        |  可选  | 详见下文中 `rename`          | 用于自定义重命名，需要经过 [URLEncode](https://www.urlencoder.org/) 处理，会覆盖配置文件里的设置                                                                                                                                                                       |
+| filter_script |  可选  | 详见下文中 `filter_script`   | 用于自定义筛选节点的js代码，需要经过 [URLEncode](https://www.urlencoder.org/) 处理，会覆盖配置文件里的设置。出于安全考虑，链接需包含正确的 `token` 参数，才会应用该设置                                                                                                |
+| strict        |  可选  | true / false                 | 如果设置为 true，则 Surge 将在上述间隔后要求强制更新                                                                                                                                                                                                                   |
+| upload        |  可选  | true / false                 | 用于将生成的订阅文件上传至 `Gist`，需要填写`gistconf.ini`，默认为 false (即不上传)                                                                                                                                                                                     |
+| emoji         |  可选  | true / false                 | 用于设置节点名称是否包含 Emoji，默认为 true                                                                                                                                                                                                                            |
+| add_emoji     |  可选  | true / false                 | 用于在节点名称前加入 Emoji，默认为 true                                                                                                                                                                                                                                |
+| remove_emoji  |  可选  | true / false                 | 用于设置是否删除节点名称中原有的 Emoji，默认为 true                                                                                                                                                                                                                    |
+| append_type   |  可选  | true / false                 | 用于在节点名称前插入节点类型，如 [SS],[SSR] 等                                                                                                                                                                                                                         |
+| tfo           |  可选  | true / false                 | 用于开启该订阅链接的 TCP Fast Open，默认为 false                                                                                                                                                                                                                       |
+| udp           |  可选  | true / false                 | 用于开启该订阅链接的 UDP，默认为 false                                                                                                                                                                                                                                 |
+| list          |  可选  | true / false                 | 用于输出 Surge Node List 或者 Clash Proxy Provider 或者 Quantumult (X) 的节点订阅 或者 解码后的 SIP002                                                                                                                                                                 |
+| sort          |  可选  | true / false                 | 用于对输出的节点或策略组按节点名进行再次排序，默认为 false                                                                                                                                                                                                             |
+| sort_script   |  可选  | 详见下文 `sort_script`       | 用于自定义排序的js代码，需要经过 [URLEncode](https://www.urlencoder.org/) 处理，会覆盖配置文件里的设置。出于安全考虑，链接需包含正确的 `token` 参数，才会应用该设置                                                                                                    |
+| script        |  可选  | true / false                 | 用于生成Clash Script，默认为 false                                                                                                                                                                                                                                     |
+| insert        |  可选  | true / false                 | 用于设置是否将配置文件中的 `insert_url` 插入，默认为 true                                                                                                                                                                                                              |
+| scv           |  可选  | true / false                 | 用于关闭 TLS 节点的证书检查，默认为 false                                                                                                                                                                                                                              |
+| fdn           |  可选  | true / false                 | 用于过滤目标类型不支持的节点，默认为 true                                                                                                                                                                                                                              |
+| expand        |  可选  | true / false                 | 用于在 API 端处理或转换 Surge, QuantumultX 的规则列表，即不将规则全文置入配置文件中，默认为 false，设置为 true 则将规则全文写进配置文件                                                                                                                                |
+| append_info   |  可选  | true / false                 | 用于输出包含流量或到期信息的节点, 默认为 true，设置为 false 则取消输出                                                                                                                                                                                                 |
+| prepend       |  可选  | true / false                 | 用于设置插入 `insert_url` 时是否插入到所有节点前面，默认为 true                                                                                                                                                                                                        |
+| classic       |  可选  | true / false                 | 用于设置是否生成 Clash classical rule-provider                                                                                                                                                                                                                         |
+| tls13         |  可选  | true / false                 | 用于设置是否为节点增加tls1.3开启参数                                                                                                                                                                                                                                   |
+| new_name      |  可选  | true / false                 | 如果设置为 true，则将启用 Clash 的新组名称 (proxies, proxy-groups, rules)                                                                                                                                                                                              |
 
 举个例子：
 
@@ -302,10 +336,10 @@ http://127.0.0.1:25500/getprofile?name=%NAME%&token=%TOKEN%
 
 #### 调用说明 (档案)
 
-| 调用参数 | 必要性 | 示例  | 解释   |
-| -------- | :----: | :--------------- | :------------------------ |
-| name |  必要  | profiles/formyairport.ini  | 指配置档案的存储位置(可使用基于**pref 配置文件**的相对位置)   |
-| token |  必要  | passwd | 为了安全考虑**必须设置token**（详见 [配置文件](#配置文件) 中 `[common] 部分` 对 `api_access_token` 的描述）   |
+| 调用参数 | 必要性 | 示例                      | 解释                                                                                                        |
+| -------- | :----: | :------------------------ | :---------------------------------------------------------------------------------------------------------- |
+| name     |  必要  | profiles/formyairport.ini | 指配置档案的存储位置(可使用基于**pref 配置文件**的相对位置)                                                 |
+| token    |  必要  | passwd                    | 为了安全考虑**必须设置token**（详见 [配置文件](#配置文件) 中 `[common] 部分` 对 `api_access_token` 的描述） |
 
 应当注意的是，此处文件内的参数**无需进行 URLEncode**，且此处的 `token` 与 `api_mode` 的状态无关。
 
@@ -380,9 +414,15 @@ exclude=(流量|官网)
      http://127.0.0.1:25500/sub?target=clash&url=https%3A%2F%2Fdler.cloud%2Fsubscribe%2FABCDE%3Fclash%3Dvmess
      ```
 
+1. **enable_insert**
+
+    > 设置是否为输出的订阅添加 `insert_url` 中所有的节点
+
+    - 当值为 `true` 时, 会在输出的订阅中添加 `insert_url` 中所有的节点, 为 `false` 时不添加。
+
 1. **insert_url**
 
-    > 无论是否具有 %URL% 参数时，都会在添加订阅前加入的节点， **不需要 URLEncode**。
+    > 当 `enable_insert` 的值为 `true` 时，无论是否具有 %URL% 参数时，都会在添加订阅前加入的节点， **不需要 URLEncode**。
     >
     > 如果有多个节点，仍然需要使用 "|" 分隔，支持 `单个节点`/`订阅链接`
     >
@@ -394,6 +434,12 @@ exclude=(流量|官网)
      insert_url=ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpwYXNzd29yZA@www.example.com:1080#Example
      insert_url=ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpwYXNzd29yZA@www.example.com:1080#Example
      ```
+
+1. **prepend_insert_url**
+
+    > 设置为输出的订阅添加 `insert_url` 中的节点时是否添加至所有节点前方
+
+    - 当值为 `true` 时, 会在输出的订阅中所有节点的前方添加 `insert_url` 中所有的节点, 为 `false` 时在后方添加。
 
 1. **exclude_remarks**
 
@@ -415,9 +461,54 @@ exclude=(流量|官网)
      include_remarks=(?<=美).*(BGP|GIA|IPLC)
      ```
 
+1. **enable_filter**
+
+    > 设置为所有节点使用自定义的js代码进行筛选
+
+    - 当值为 `true` 时, 为所有节点使用自定义的js代码进行筛选, 为 `false` 时不使用。
+
+1. **filter_script**
+
+    > 为所有节点使用自定义的js函数进行筛选
+    >
+    > 可设置为js代码内容，也可为本地js文件的路径
+    >
+    > js函数包括一个参数，即一个节点，函数返回为true时保留该节点，返回为false时丢弃该节点
+
+    - 例如:
+
+     ```ini
+     #仅保留加密方式为chacha20的节点
+     filter_script=function filter(node) {\n    const info = JSON.parse(node.ProxyInfo);\n    if(info.EncryptMethod.includes('chacha20'))\n        return true;\n    return false;\n}
+     # 或者
+     filter_script="path:/path/to/script.js"
+     ```
+
+    - node对象的结构如下
+
+     ```json
+     {
+     "Group": "xx",
+     "GroupID": 0,
+    "Index": 0,
+    "Remark": "xx",
+    "ProxyInfo": ""
+    }
+     ```
+
+    Group 类型string，节点所属组(订阅)的名称
+
+    GroupID 类型int，节点所属组(订阅)的id，该id从0起顺序排列，即第一个订阅的id为0
+
+    Index 类型int，节点的id
+
+    Remark 类型string，节点备注(名称)，之后的rename/添加emoji都是对该值进行修改，但不会改变ProxyInfo中的相应值
+
+    ProxyInfo 类型是JSON字符串，使用前需要通过JSON.parse(node.ProxyInfo)转化为json对象，节点的全部信息，结构参见[此处](https://github.com/NetchX/Netch/blob/master/GSF.md)
+
 1. **default_external_config**
 
-   > 如果未指定外部配置文件，则将其设置为默认值。支持 `本地文件` 和 `在线URL`
+    > 如果未指定外部配置文件，则将其设置为默认值。支持 `本地文件` 和 `在线URL`
 
     - 例如:
 
@@ -425,71 +516,129 @@ exclude=(流量|官网)
      default_external_config=config/example_external_config.ini
      ```
 
-1. **clash_rule_base**
+1. **base_path**
 
-   > 生成的 Clash 配置文件基础。支持 `本地文件` 和 `在线URL`
+    > 限制外部配置可以使用的本地配置文件基础路径。
 
     - 例如:
 
      ```ini
-     clash_rule_base=clash.yaml # 加载本地的 clash.yaml 文件作为基础
+     base_path=base
+     #外部配置只可以使用base文件夹下的本地配置文件基础
+     ```
+
+1. **clash_rule_base**
+
+    > 生成的 Clash 配置文件基础。支持 `本地文件` 和 `在线URL`
+
+    - 例如:
+
+     ```ini
+     clash_rule_base=base/GeneralClashConfig.yml # 加载本地文件作为基础
      # 或者
-     clash_rule_base=https://raw.githubusercontent.com/ConnersHua/Profiles/master/Clash/Pro.yaml
-     # 加载神机的 Github 中相关文件作为基础
+     clash_rule_base=https://github.com/ACL4SSR/ACL4SSR/raw/master/Clash/GeneralClashConfig.yml
+     # 加载ACL4SSR的 Github 中相关文件作为基础
      ```
 
 1. **surge_rule_base**
 
-   > 生成的 Surge 配置文件基础，用法同上
+    > 生成的 Surge 配置文件基础，用法同上
 
 1. **surfboard_rule_base**
 
-   > 生成的 Surfboard 配置文件基础，用法同上
+    > 生成的 Surfboard 配置文件基础，用法同上
 
 1. **mellow_rule_base**
 
-   > 生成的 Mellow 配置文件基础，用法同上
+    > 生成的 Mellow 配置文件基础，用法同上
 
 1. **loon_rule_base**
 
-   > 生成的 Loon 配置文件基础，用法同上
+    > 生成的 Loon 配置文件基础，用法同上
 
-1. **proxy_ruleset**
+1. **sssub_rule_base**
 
-   > 更新 RuleSet 时是否使用代理
-   >
-   > 填写 `NONE` 或者空白禁用，或者填写 `SYSTEM` 使用系统代理
-   >
-   > 也可填写如同 `socks5://127.0.0.1:1080` 的 HTTP 或 SOCKS 代理
+    > 生成的 sssub 配置文件基础，用法同上
+
+1. **proxy_config**
+
+    > 更新 外部配置文件 时是否使用代理
+    >
+    > 填写 `NONE` 或者空白禁用，或者填写 `SYSTEM` 使用系统代理
+    >
+    > 支持HTTP 或 SOCKS 代理(http:// https:// socks4a:// socks5://)
+    >
+    > 支持CORS代理(cors：)，详细参见[cors-anywhere](https://github.com/Rob--W/cors-anywhere)、[cloudflare-cors-anywhere](https://github.com/Zibri/cloudflare-cors-anywhere)等
 
     - 例如:
 
      ```ini
-     proxy_ruleset=SYSTEM # 使用系统代理
+     proxy_config=SYSTEM # 使用系统代理
      # 或者
-     proxy_ruleset=socks5://127.0.0.1:1080 # 使用本地的 1080 端口进行 SOCKS5 代理
+     proxy_config=socks5://127.0.0.1:1080 # 使用本地的 1080 端口进行 SOCKS5 代理
+     # 或者
+     proxy_config=cors:https://cors-anywhere.herokuapp.com/ # 使用CORS代理
      ```
+
+1. **proxy_ruleset**
+
+    > 更新 规则 时是否使用代理，用法同上
 
 1. **proxy_subscription**
 
-   > 更新 原始订阅 时是否使用代理，用法同上
-
-1. **proxy_config**
-
-   > 更新 外部配置文件 时是否使用代理，用法同上
+    > 更新 原始订阅 时是否使用代理，用法同上
 
 1. **append_proxy_type**
 
-   > 节点名称是否需要加入属性，设置为 true 时在节点名称前加入 \[SS\] \[SSR\] \[VMess\] 以作区别，
-   >
-   > 默认为 false
+    > 节点名称是否需要加入属性，设置为 true 时在节点名称前加入 \[SS\] \[SSR\] \[VMess\] 以作区别，
+    >
+    > 默认为 false
 
     - 例如（设置为 true时）：
 
-     ```txt
-     [SS] 香港中转
-     [VMess] 美国 GIA
-     ```
+    ```txt
+    [SS] 香港中转
+    [VMess] 美国 GIA
+    ```
+
+</details>
+<details>
+<summary><b>[userinfo] 部分</b></summary>
+
+> 该部分主要涉及到的内容为 **从节点名中提取用户信息的规则**
+>
+> 相关设置项目建议保持默认或者在知晓作用的前提下进行修改
+
+1. **stream_rule**
+
+    >从节点名中提取流量信息及显示的规则
+    >
+    >使用方式：从节点提取信息的正则表达式|显示信息的正则表达式
+
+    - 例如:
+
+      ```ini
+      stream_rule=^剩余流量：(.*?)\|总流量：(.*)$|total=$2&left=$1
+      stream_rule=^剩余流量：(.*?) (.*)$|total=$1&left=$2
+      stream_rule=^Bandwidth: (.*?)/(.*)$|used=$1&total=$2
+      stream_rule=^\[.*?\]剩余(.*?)@(?:.*)$|total=$1
+      stream_rule=^.*?流量:(.*?) 剩:(?:.*)$|total=$1
+      ```
+
+2. **time_rule**
+
+    >从节点名中提取时间信息的规则
+    >
+    >使用方式：从节点提取信息的正则表达式|显示信息的正则表达式
+
+    - 例如:
+
+      ```ini
+      time_rule=^过期时间：(\d+)-(\d+)-(\d+) (\d+):(\d+):(\d+)$|$1:$2:$3:$4:$5:$6
+      time_rule=^到期时间(:|：)(\d+)-(\d+)-(\d+)$|$1:$2:$3:0:0:0
+      time_rule=^Smart Access expire: (\d+)/(\d+)/(\d+)$|$1:$2:$3:0:0:0
+      time_rule=^.*?流量:(?:.*?) 剩:(.*)$|left=$1d
+      ```
 
 </details>
 <details>
@@ -501,35 +650,57 @@ exclude=(流量|官网)
 
 1. **udp_flag**
 
-   > 为节点打开 UDP 模式，设置为 true 时打开，默认为 false
+    > 为节点打开 UDP 模式，设置为 true 时打开，默认为 false
 
     - 当不清楚机场的设置时**请勿调整此项**。
 
 1. **tcp_fast_open_flag**
 
-   > 为节点打开 TFO (TCP Fast Open) 模式，设置为 true 时打开，默认为 false
+    > 为节点打开 TFO (TCP Fast Open) 模式，设置为 true 时打开，默认为 false
 
     - 当不清楚机场的设置时**请勿调整此项**。
 
-1. **sort_flag**
-
-   > 对生成的订阅中的节点进行 A-Z 的排序，设置为 true 时打开，默认为 false
-
 1. **skip_cert_verify_flag**
 
-   > 关闭 TLS 节点的证书检查，设置为 true 时打开，默认为 false
+    > 关闭 TLS 节点的证书检查，设置为 true 时打开，默认为 false
 
     - **请勿随意将此设置修改为 true**
 
+1. **tls13_flag**
+
+    > 为节点增加tls1.3开启参数，设置为 true 时打开，默认为 false
+
+    - **请勿随意将此设置修改为 true**
+
+1. **sort_flag**
+
+    > 对生成的订阅中的节点按节点名进行 A-Z 的排序，设置为 true 时打开，默认为 false
+
+1. **sort_script**
+
+    > 对生成的订阅中的节点按自定义js函数进行排序
+    >
+    > 可设置为js代码内容，也可为本地js文件的路径
+    >
+    > js函数包括2个参数，即2个节点，函数返回为true时，节点a排在节点b的前方
+
+    - 例如:
+
+     ```ini
+     sort_script=function compare(node_a, node_b) {\n    const info_a = JSON.parse(node_a.ProxyInfo);\n    const info_b = JSON.parse(node_b.ProxyInfo);\n    return info_a.Remark > info_b.Remark;\n}
+     # 或者
+     sort_script="path:/path/to/script.js"
+     ```
+
 1. **filter_deprecated_nodes**
 
-   > 排除当前 **`target=`** 不支持的节点类型，设置为 true 时打开，默认为 false
+    > 排除当前 **`target=`** 不支持的节点类型，设置为 true 时打开，默认为 false
 
     - 可以考虑设置为 true，从而在**一定程度上避免出现兼容问题**
 
 1. **append_sub_userinfo**
 
-   > 在 header 里的加入流量信息 (Quanx, Surge 等读取后可以显示流量信息通知)，设置为 true 时打开，默认为 true
+    > 在 header 里的加入流量信息 (Quanx, Surge 等读取后可以显示流量信息通知)，设置为 true 时打开，默认为 true
 
 1. **clash_use_new_field_name**
   
@@ -537,17 +708,42 @@ exclude=(流量|官网)
 
    - 使用前**务必确认当前使用 Clash core 已经支持**新的区块名称
 
+1. **clash_proxies_style**
+
+    > 在Clash配置文件中proxies的生成风格
+    >
+    > 可选的值为`block`、 `flow`、 `compact`，默认为`flow`
+
+      - 风格示例：
+
+      ```yaml
+      Block:
+        - name: name1
+          key: value
+        - name: name2
+          key: value
+      Flow:
+        - {name: name1, key: value}
+        - {name: name2, key: value}
+      Compact:
+       [{name: name1, key: value},{name: name2, key: value}]
+      ```
+
 1. **rename_node**
 
-   > 重命名节点，支持正则匹配
-   >
-   > 使用方式：原始命名@重命名
+    > 重命名节点，支持正则匹配
+    >
+    > 使用方式：原始命名@重命名
+    >
+    > 可以使用自定义的js函数进行重命名
 
     - 例如:
 
      ```ini
      rename_node=中国@中
      rename_node=\(?((x|X)?(\d+)(\.?\d+)?)((\s?倍率?:?)|(x|X))\)?@(倍率:$1)
+     rename_node=!!script:function rename(node) {\n  const info = JSON.parse(node.ProxyInfo);\n  const geoinfo = JSON.parse(geoip(info.Hostname));\n  if(geoinfo.country_code == "CN")\n    return "CN " + node.Remark;\n}
+     rename_node=!!script:path:/path/to/script.js
      ```
 
    - 特殊用法:
@@ -565,15 +761,15 @@ exclude=(流量|官网)
 
 1. **write_managed_config**
 
-   > 是否将 '#!MANAGED-CONFIG' 信息附加到 Surge 或 Surfboard 配置，设置为 true 时打开，默认为 true
+    > 是否将 '#!MANAGED-CONFIG' 信息附加到 Surge 或 Surfboard 配置，设置为 true 时打开，默认为 true
 
 1. **managed_config_prefix**
 
-   > 具体的 '#!MANAGED-CONFIG' 信息，地址前缀不用添加 "/"。
-   >
-   > Surge 或 Surfboard 会向此地址发出更新请求，同时本地 ruleset 转 url 会用此生成/getruleset链接。
-   >
-   > 局域网用户需要将此处改为本程序运行设备的局域网 IP
+    > 具体的 '#!MANAGED-CONFIG' 信息，地址前缀不用添加 "/"。
+    >
+    > Surge 或 Surfboard 会向此地址发出更新请求，同时本地 ruleset 转 url 会用此生成/getruleset链接。
+    >
+    > 局域网用户需要将此处改为本程序运行设备的局域网 IP
 
     - 例如:
 
@@ -583,7 +779,7 @@ exclude=(流量|官网)
 
 1. **config_update_interval**
 
-   > 托管配置更新间隔，确定配置将更新多长时间，单位为秒
+    > 托管配置更新间隔，确定配置将更新多长时间，单位为秒
 
     - 例如:
 
@@ -592,9 +788,9 @@ exclude=(流量|官网)
     # 每 86400 秒更新一次（即一天）
     ```
 
-1. **config_update_struct**
+1. **config_update_strict**
 
-   > 如果 config_update_struct 为 true，则 Surge 将在上述间隔后要求强制更新。
+   > 如果 config_update_strict 为 true，则 Surge 将在上述间隔后要求强制更新。
 
 1. **quanx_device_id**
 
@@ -650,21 +846,21 @@ exclude=(流量|官网)
 
 1. **enabled**
 
-   > 启用自定义规则集的**总开关**，设置为 true 时打开，默认为 true
+    > 启用自定义规则集的**总开关**，设置为 true 时打开，默认为 true
 
 1. **overwrite_original_rules**
 
-   > 覆盖原有规则，即 [common] 中 xxx_rule_base 中的内容，设置为 true 时打开，默认为 false
+    > 覆盖原有规则，即 [common] 中 xxx_rule_base 中的内容，设置为 true 时打开，默认为 false
 
 1. **update_ruleset_on_request**
 
-   > 根据请求执行规则集更新，设置为 true 时打开，默认为 false
+    > 根据请求执行规则集更新，设置为 true 时打开，默认为 false
 
 1. **surge_ruleset**
 
-   > 从本地或 url 获取规则片段
-   >
-   > [] 前缀后的文字将被当作规则，而不是链接或路径，主要包含 `[]GEOIP` 和 `[]MATCH`(等同于 `[]FINAL`)。
+    > 从本地或 url 获取规则片段
+    >
+    > [] 前缀后的文字将被当作规则，而不是链接或路径，主要包含 `[]GEOIP` 和 `[]MATCH`(等同于 `[]FINAL`)。
 
     - 例如：
 
@@ -754,16 +950,19 @@ custom_proxy_group=🇯🇵 JP`select`沪日`日本`[]🇯🇵 日本延迟最�
 
 1. **listen**
 
-   > 绑定到 Web 服务器的地址，将地址设为 0.0.0.0，则局域网内设备均可使用
+    > 绑定到 Web 服务器的地址，将地址设为 0.0.0.0，则局域网内设备均可使用
 
 1. **port**
 
-   > 绑定到 Web 服务器地址的端口，默认为 25500
+    > 绑定到 Web 服务器地址的端口，默认为 25500
+
+1. **serve_file_root**
+
+    > Web服务器的根目录，可以为包含静态页面的文件夹，留空则为关闭
 
 </details>
 
 <details>
-
 <summary><b>[template] 部分</b></summary>
 
 > 此部分用于指定 模板 中的部分值
