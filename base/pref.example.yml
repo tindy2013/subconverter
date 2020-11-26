@@ -5,7 +5,7 @@ common:
   enable_insert: true
   insert_url: []
   prepend_insert_url: true
-  exclude_remarks: ["(到期|剩余流量|时间|官网|产品)"]
+  exclude_remarks: ["(到期|剩余流量|时间|官网|产品|平台)"]
   include_remarks: []
   enable_filter: false
   filter_script: ""
