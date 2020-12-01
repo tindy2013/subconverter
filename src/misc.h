@@ -185,7 +185,7 @@ public:
 
     template <typename T> tribool(const T &value) { set(value); }
 
-    tribool(const tribool &value) { *this = value; }
+    tribool(const tribool &value) { _M_VALUE = value._M_VALUE; }
 
     ~tribool() = default;
 
@@ -205,17 +205,16 @@ public:
 
     bool is_undef() const { return _M_VALUE <= 1; }
 
-    template <typename T> tribool define(const T &value)
+    template <typename T> tribool& define(const T &value)
     {
         if(_M_VALUE <= 1)
             *this = value;
         return *this;
     }
 
-    template <typename T> tribool parse(const T &value)
+    template <typename T> tribool& parse(const T &value)
     {
-        define(value);
-        return *this;
+        return define(value);
     }
 
     tribool reverse()
