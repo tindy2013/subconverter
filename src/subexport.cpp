@@ -1099,7 +1099,7 @@ void preprocessNodes(std::vector<nodeInfo> &nodes, const extra_settings &ext)
                             duk_pcall(ctx, 2);
                             return duktape_get_res_int(ctx);
                         };
-                        std::sort(nodes.begin(), nodes.end(), comparer);
+                        std::stable_sort(nodes.begin(), nodes.end(), comparer);
                         failed = false;
                     }
                     else
@@ -1114,7 +1114,7 @@ void preprocessNodes(std::vector<nodeInfo> &nodes, const extra_settings &ext)
                 //failed
             }
         }
-        if(failed) std::sort(nodes.begin(), nodes.end(), [](const nodeInfo &a, const nodeInfo &b)
+        if(failed) std::stable_sort(nodes.begin(), nodes.end(), [](const nodeInfo &a, const nodeInfo &b)
         {
             return a.remarks < b.remarks;
         });
