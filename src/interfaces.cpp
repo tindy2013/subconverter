@@ -1362,12 +1362,12 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     std::string argIncludeRemark = UrlDecode(getUrlArg(argument, "include")), argExcludeRemark = UrlDecode(getUrlArg(argument, "exclude"));
     std::string argCustomGroups = urlsafe_base64_decode(getUrlArg(argument, "groups")), argCustomRulesets = urlsafe_base64_decode(getUrlArg(argument, "ruleset")), argExternalConfig = UrlDecode(getUrlArg(argument, "config"));
     std::string argDeviceID = getUrlArg(argument, "dev_id"), argFilename = getUrlArg(argument, "filename"), argUpdateInterval = getUrlArg(argument, "interval"), argUpdateStrict = getUrlArg(argument, "strict");
-    std::string argRenames = UrlDecode(getUrlArg(argument, "rename")), argFilterScript = UrlDecode(getUrlArg(argument, "filter_script"));
+    std::string argRenames = UrlDecode(getUrlArg(argument, "rename")), argFilterScript = UrlDecode(getUrlArg(argument, "filter_script")), argSortScript = UrlDecode(getUrlArg(argument, "sort_script"));
 
     /// switches with default value
     tribool argUpload = getUrlArg(argument, "upload"), argEmoji = getUrlArg(argument, "emoji"), argAddEmoji = getUrlArg(argument, "add_emoji"), argRemoveEmoji = getUrlArg(argument, "remove_emoji");
     tribool argAppendType = getUrlArg(argument, "append_type"), argTFO = getUrlArg(argument, "tfo"), argUDP = getUrlArg(argument, "udp"), argGenNodeList = getUrlArg(argument, "list");
-    tribool argSort = getUrlArg(argument, "sort"), argUseSortScript = getUrlArg(argument, "sort_script");
+    tribool argSort = getUrlArg(argument, "sort");
     tribool argGenClashScript = getUrlArg(argument, "script"), argEnableInsert = getUrlArg(argument, "insert");
     tribool argSkipCertVerify = getUrlArg(argument, "scv"), argFilterDeprecated = getUrlArg(argument, "fdn"), argExpandRulesets = getUrlArg(argument, "expand"), argAppendUserinfo = getUrlArg(argument, "append_info");
     tribool argPrependInsert = getUrlArg(argument, "prepend"), argGenClassicalRuleProvider = getUrlArg(argument, "classic"), argTLS13 = getUrlArg(argument, "tls13");
@@ -1435,8 +1435,9 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     ext.tls13.parse(argTLS13).parse(gTLS13);
 
     ext.sort_flag = argSort.get(gEnableSort);
-    argUseSortScript.define(gSortScript.size() != 0);
-    if(ext.sort_flag && argUseSortScript)
+    if(authorized && !argSortScript.empty())
+        gSortScript = argSortScript;
+    if(ext.sort_flag)
         ext.sort_script = gSortScript;
     ext.filter_deprecated = argFilterDeprecated.get(gFilterDeprecated);
     ext.clash_new_field_name = argClashNewField.get(gClashUseNewField);
