@@ -11,6 +11,19 @@
 
 ## 新增内容
 
+2020/12/9
+
+- 新增 [特别用法](#特别用法) 中 [规则转换](#规则转换) 的说明
+- 修改 [配置文件](#配置文件) 中的 `clash_proxy_group` 为 `proxy_group` ，并增加修改描述与示例
+- 修改 [配置文件](#配置文件) 中 `[ruleset]` 部分的 `surge_ruleset` 为 `ruleset ` ，并增加修改示例
+- 修改 [外部配置](#外部配置) 中 `surge_ruleset` 为 `ruleset ` 
+- 新增 [外部配置](#外部配置) 中 `add_emoji` 和 `remove_old_emoji` 
+- 修改 [外部配置](#外部配置) 中 `proxy_group` 和  `ruleset ` 的描述与示例
+- 调整 [简易用法](#简易用法) 与 [进阶用法](#进阶用法) 中的部分描述
+- 更换文档中失效的外部链接
+
+<details>
+<summary><b>更新历史</b></summary>
 2020/11/20
 
 - 新增 [支持类型](#支持类型) 中 `mixed` & `auto` 参数
@@ -18,9 +31,6 @@
 - 新增 [配置文件](#配置文件) 中 `[userinfo]` 部分的描述
 - 新增 [配置文件](#配置文件) 中 `[common]`&`[node_pref]`&`[server]` 中多个参数的描述
 - 修改 [进阶链接](#进阶链接) 中 `url` 参数的说明
-
-<details>
-<summary><b>更新历史</b></summary>
 
 2020/04/29
 
@@ -75,6 +85,7 @@
   - [特别用法](#特别用法)
     - [本地生成](#本地生成)
     - [自动上传](#自动上传)
+    - [规则转换](#规则转换)
 
 ## 支持类型
 
@@ -118,7 +129,7 @@
 
 ## 简易用法
 
-> 即生成的配置文件默认套用 **神机规则**
+> 即生成的配置文件套用 **默认规则**
 
 ### 调用地址
 
@@ -134,7 +145,7 @@ http://127.0.0.1:25500/sub?target=%TARGET%&url=%URL%&config=%CONFIG%
 | url      |  必要  | https%3A%2F%2Fwww.xxx.com | 指机场所提供的订阅链接，需要经过 [URLEncode](https://www.urlencoder.org/) 处理                                                                                                                      |
 | config   |  可选  | https%3A%2F%2Fwww.xxx.com | 指远程 `pref.ini` (包含分组和规则部分)，需要经过 [URLEncode](https://www.urlencoder.org/) 处理，可查看 [示例仓库](https://github.com/lzdnico/subconverteriniexample) 寻找灵感，默认加载本地设置文件 |
 
-运行 subconverter 主程序后，按照 [调用说明](#调用说明) 的对应内容替换即可得到一份使用**神机规则**的配置文件。
+运行 subconverter 主程序后，按照 [调用说明](#调用说明) 的对应内容替换即可得到一份使用**默认规则**的配置文件。
 
 由于此部分篇幅较长，点击下方条目即可展开详解：
 
@@ -240,7 +251,7 @@ http://127.0.0.1:25500/surge2clash?link=Surge的订阅链接
 
 ## 进阶用法
 
-> 在不满足于本程序所提供的神机规则或者对应的分组时，可以考虑尝试进阶用法
+> 在不满足于本程序所提供的默认规则或者对应的分组时，可以考虑尝试进阶用法
 >
 > 即 对 `调用地址` 甚至程序目录下的 `pref.ini` 进行个性化的编辑以满足不同的需求
 
@@ -249,7 +260,7 @@ http://127.0.0.1:25500/surge2clash?link=Surge的订阅链接
 在进行下一步操作前，十分推荐您阅读以下内容：
 
 1. 与 `pref.ini` 相关的：[INI 语法介绍](https://zh.wikipedia.org/wiki/INI%E6%96%87%E4%BB%B6)
-1. 与 `Clash` 配置相关的：[YAML 语法介绍](https://zh.wikipedia.org/wiki/YAML#%E8%AA%9E%E6%B3%95)
+1. 与 `Clash` 配置相关的：[YAML 语法介绍](https://zh.wikipedia.org/wiki/YAML#%E8%AA%9E%E6%B3%95) 以及 [官方文档](https://lancellc.gitbook.io/clash/)
 1. 与 `模板` 配置相关的：[INJA 语法介绍](https://github.com/pantor/inja)
 1. 会经常涉及到的： [正则表达式入门](https://github.com/ziishaned/learn-regex/blob/master/translations/README-cn.md)
 1. 当遇到问题需要提交 ISSUE 时的：[提问的智慧](https://github.com/ryanhanwu/How-To-Ask-Questions-The-Smart-Way/blob/master/README-zh_CN.md)
@@ -347,7 +358,7 @@ http://127.0.0.1:25500/getprofile?name=%NAME%&token=%TOKEN%
 
 <details>
 <summary>举个例子：</summary>
-  
+
 以上述 [进阶链接](#进阶链接) 的例子而言，`formyairport.ini` 内的内容应当是：
 
  ```txt
@@ -367,6 +378,8 @@ exclude=(流量|官网)
 ### 配置文件
 
 > 关于 subconverter 主程序目录中 `pref.ini` 文件的解释
+
+注：本部分内容以本程序中的 [`pref.example.ini`](https://github.com/tindy2013/subconverter/blob/master/base/pref.example.ini) 或 [`pref.example.yml`](https://github.com/tindy2013/subconverter/blob/master/base/pref.example.yml) 为准，本文档可能由于更新不及时，内容不适用与新版本。
 
 由于此部分篇幅较长，点击下方条目即可展开详解：
 
@@ -480,19 +493,19 @@ exclude=(流量|官网)
      ```ini
      #仅保留加密方式为chacha20的节点
      filter_script=function filter(node) {\n    const info = JSON.parse(node.ProxyInfo);\n    if(info.EncryptMethod.includes('chacha20'))\n        return true;\n    return false;\n}
-     # 或者
+     # 或者使用本地文件
      filter_script="path:/path/to/script.js"
      ```
 
     - node对象的结构如下
 
      ```json
-     {
+    {
      "Group": "xx",
      "GroupID": 0,
-    "Index": 0,
-    "Remark": "xx",
-    "ProxyInfo": ""
+     "Index": 0,
+     "Remark": "xx",
+     "ProxyInfo": ""
     }
      ```
 
@@ -856,39 +869,58 @@ exclude=(流量|官网)
 
     > 根据请求执行规则集更新，设置为 true 时打开，默认为 false
 
-1. **surge_ruleset**
+1. **ruleset**
 
     > 从本地或 url 获取规则片段
+    >
+    > 格式为 `Group name,[type:]URL[,interval]` 或 `Group name,[]Rule `
+    >
+    > 支持的type（类型）包括：surge, quanx, clash-domain, clash-ipcidr, clash-classic
+    >
+    > type留空时默认为surge类型的规则
     >
     > [] 前缀后的文字将被当作规则，而不是链接或路径，主要包含 `[]GEOIP` 和 `[]MATCH`(等同于 `[]FINAL`)。
 
     - 例如：
-
+    
     ```ini
-    surge_ruleset=🍎 苹果服务,https://raw.githubusercontent.com/ConnersHua/Profiles/master/Surge/Ruleset/Apple.list
-    # 表示引用 https://raw.githubusercontent.com/ConnersHua/Profiles/master/Surge/Ruleset/Apple.list 规则
-    # 且将此规则指向 [clash_proxy_group] 所设置 🍎 苹果服务 策略组
-    surge_ruleset=🎯 全球直连,rules/NobyDa/Surge/Download.list
+    ruleset=🍎 苹果服务,https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Apple.list
+    # 表示引用 https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Apple.list 规则
+    # 且将此规则指向 [proxy_group] 所设置 🍎 苹果服务 策略组
+    ruleset=Domestic Services,clash-domain:https://ruleset.dev/clash_domestic_services_domains,86400
+    # 表示引用clash-domain类型的 https://ruleset.dev/clash_domestic_services_domains 规则
+    # 规则更新间隔为86400秒
+    # 且将此规则指向 [proxy_group] 所设置 Domestic Services 策略组
+    ruleset=🎯 全球直连,rules/NobyDa/Surge/Download.list
     # 表示引用本地 rules/NobyDa/Surge/Download.list 规则
-    # 且将此规则指向 [clash_proxy_group] 所设置 🎯 全球直连 策略组
-    surge_ruleset=🎯 全球直连,[]GEOIP,CN
+    # 且将此规则指向 [proxy_group] 所设置 🎯 全球直连 策略组
+    ruleset=🎯 全球直连,[]GEOIP,CN
     # 表示引用 GEOIP 中关于中国的所有 IP
-    # 且将此规则指向 [clash_proxy_group] 所设置 🎯 全球直连 策略组
+    # 且将此规则指向 [proxy_group] 所设置 🎯 全球直连 策略组
+    ruleset=!!import:snippets/rulesets.txt
+    # 表示引用本地的snippets/rulesets.txt规则
     ```
 
 </details>
+
 <details>
-<summary><b>[clash_proxy_group] 部分</b></summary>
+<summary><b>[proxy_group] 部分</b></summary>
+
 
 > 为 Clash 、Mellow 、Surge 以及 Surfboard 等程序创建策略组, 可用正则来筛选节点
 >
 > [] 前缀后的文字将被当作引用策略组
 
 ```ini
-custom_proxy_group=🍎 苹果服务`url-test`(美国|US)`http://www.gstatic.com/generate_204`300
-# 表示创建一个叫 🍎 苹果服务 的 url-test 策略组,并向其中添加名字含'美国','US'的节点，每隔300秒测试一次
-custom_proxy_group=🇯🇵 日本延迟最低`url-test`(日|JP)`http://www.gstatic.com/generate_204`300
-# 表示创建一个叫 🇯🇵 日本延迟最低 的 url-test 策略组,并向其中添加名字含'日','JP'的节点，每隔300秒测试一次
+custom_proxy_group=Group_Name`url-test|fallback|load-balance`Rule_1`Rule_2`...`test_url`interval[,timeout][,tolerance]
+custom_proxy_group=Group_Name`select`Rule_1`Rule_2`...
+# 格式示例
+custom_proxy_group=🍎 苹果服务`url-test`(美国|US)`http://www.gstatic.com/generate_204`300,5,100
+# 表示创建一个叫 🍎 苹果服务 的 url-test 策略组,并向其中添加名字含'美国','US'的节点，每隔300秒测试一次，测速超时为5s，切换节点的延迟容差为100s
+custom_proxy_group=🇯🇵 日本延迟最低`url-test`(日|JP)`http://www.gstatic.com/generate_204`300,5
+# 表示创建一个叫 🇯🇵 日本延迟最低 的 url-test 策略组,并向其中添加名字含'日','JP'的节点，每隔300秒测试一次，测速超时为5s
+custom_proxy_group=负载均衡`load-balance`.*`http://www.gstatic.com/generate_204`300,,100
+# 表示创建一个叫 负载均衡 的 load-balance 策略组,并向其中添加所有的节点，每隔300秒测试一次，切换节点的延迟容差为100s
 custom_proxy_group=🇯🇵 JP`select`沪日`日本`[]🇯🇵 日本延迟最低
 # 表示创建一个叫 🇯🇵 JP 的 select 策略组,并向其中**依次**添加名字含'沪日','日本'的节点，以及引用上述所创建的 🇯🇵 日本延迟最低 策略组
 ```
@@ -905,7 +937,7 @@ custom_proxy_group=🇯🇵 JP`select`沪日`日本`[]🇯🇵 日本延迟最�
   custom_proxy_group=g2`select`!!GROUPID=3-5
   # 指订阅链接中的第四条到第六条订阅
   custom_proxy_group=v2ray`select`!!GROUP=V2RayProvider
-  # 指订阅链接中组名为 V2RayProvider 的节点
+  # 指订阅链接中组名（tag）为 V2RayProvider 的节点
   ```
   注意：此处的订阅链接指 `default_url` 和 `&url=` 中的订阅以及单链接节点（区别于配置文件中 insert_url）
   
@@ -915,6 +947,22 @@ custom_proxy_group=🇯🇵 JP`select`沪日`日本`[]🇯🇵 日本延迟最�
   custom_proxy_group=g1hk`select`!!GROUPID=0!!(HGC|HKBN|PCCW|HKT|hk|港)
   # 订阅链接中的第一条订阅内名字含 HGC、HKBN、PCCW、HKT、hk、港 的节点
   ```
+
+- 也可以使用js脚本筛选加入策略组的节点。A "filter" function with one argument which is an array of all available nodes should be defined in the script.
+
+  ```ini
+  custom_proxy_group=script`select`script:/path/to/script.js
+  # 表示创建一个叫 script 的 select 策略组，其中的节点使用本地的/path/to/script.js脚本中的函数进行筛选
+  ```
+
+- 也可以使用本地文件
+
+  ```ini
+  custom_proxy_group=!!import:snippets/groups.txt
+  # 使用本地的snippets/groups.txt文件
+  ```
+
+  
 
 </details>
 
@@ -989,6 +1037,8 @@ custom_proxy_group=🇯🇵 JP`select`沪日`日本`[]🇯🇵 日本延迟最�
 
 > 本部分用于 链接参数 **`&config=`**
 
+注：本部分内容以本程序中的 [`/config/example_external_config.ini`](https://github.com/tindy2013/subconverter/blob/master/base/config/example_external_config.ini) 或 [`/config/example_external_config.yml`](https://github.com/tindy2013/subconverter/blob/master/base/config/example_external_config.yml) 为准，本文档可能由于更新不及时，内容不适用与新版本。
+
 将文件按照以下格式写好，上传至 Github Gist 或者 其他**可访问**网络位置
 经过 [URLEncode](https://www.urlencoder.org/) 处理后，添加至 `&config=` 即可调用
 需要注意的是，由外部配置中所定义的值会**覆盖** `pref.ini` 里的内容
@@ -1012,13 +1062,14 @@ emoji=阿根廷,🇦🇷
 ;用于自定义组的选项 会覆盖 pref.ini 里的内容
 ;使用以下模式生成 Clash 代理组，带有 "[]" 前缀将直接添加
 ;Format: Group_Name`select`Rule_1`Rule_2`...
-;        Group_Name`url-test|fallback|load-balance`Rule_1`Rule_2`...`test_url`interval
+;        Group_Name`url-test|fallback|load-balance`Rule_1`Rule_2`...`test_url`interval[,timeout][,tolerance]
 ;Rule with "[]" prefix will be added directly.
 
 custom_proxy_group=Proxy`select`.*`[]AUTO`[]DIRECT`.*
-custom_proxy_group=UrlTest`url-test`.*`http://www.gstatic.com/generate_204`300
-custom_proxy_group=FallBack`fallback`.*`http://www.gstatic.com/generate_204`300
-custom_proxy_group=LoadBalance`load-balance`.*`http://www.gstatic.com/generate_204`300
+custom_proxy_group=UrlTest`url-test`.*`http://www.gstatic.com/generate_204`300,5,100
+custom_proxy_group=FallBack`fallback`.*`http://www.gstatic.com/generate_204`300,5
+custom_proxy_group=LoadBalance`load-balance`.*`http://www.gstatic.com/generate_204`300,,100
+custom_proxy_group=SSID`ssid`default_group`celluar=group0,ssid1=group1,ssid2=group2
 
 ;custom_proxy_group=g1`select`!!GROUPID=0
 ;custom_proxy_group=g2`select`!!GROUPID=1
@@ -1026,18 +1077,26 @@ custom_proxy_group=LoadBalance`load-balance`.*`http://www.gstatic.com/generate_2
 
 ;custom_proxy_group=g1hk`select`!!GROUPID=0!!(HGC|HKBN|PCCW|HKT|hk|港)
 ;custom_proxy_group=sstw`select`!!GROUP=V2RayProvider!!(深台|彰化|新北|台|tw)
+;custom_proxy_group=provider`select`!!PROVIDER=prov1,prov2,prov3`fallback_nodes
 
 
 ;用于自定义规则的选项 会覆盖 pref.ini 里的内容
 ;Ruleset addresses, supports local files/URL
-;Format: Group name,URL
+;Format: Group name,[type:]URL[,interval]
 ;        Group name,[]Rule
+;where "type" supports the following value: surge, quanx, clash-domain, clash-ipcidr, clash-classic
+;type defaults to surge if omitted
 enable_rule_generator=false
 overwrite_original_rules=false
-;surge_ruleset=DIRECT,https://raw.githubusercontent.com/ConnersHua/Profiles/master/Surge/Ruleset/Unbreak.list
-;surge_ruleset=🎯 全球直连,rules/LocalAreaNetwork.list
-;surge_ruleset=🎯 全球直连,[]GEOIP,CN
-;surge_ruleset=🐟 漏网之鱼,[]FINAL
+;ruleset=DIRECT,https://raw.githubusercontent.com/DivineEngine/Profiles/master/Surge/Ruleset/Guard/Unbreak.list,86400
+;ruleset=🎯 全球直连,rules/LocalAreaNetwork.list
+;ruleset=DIRECT,surge:rules/LocalAreaNetwork.list
+;ruleset=Advertising,quanx:https://raw.githubusercontent.com/DivineEngine/Profiles/master/Quantumult/Filter/Guard/Advertising.list,86400
+;ruleset=Domestic Services,clash-domain:https://ruleset.dev/clash_domestic_services_domains,86400
+;ruleset=Domestic Services,clash-ipcidr:https://ruleset.dev/clash_domestic_services_ips,86400
+;ruleset=DIRECT,clash-classic:https://raw.githubusercontent.com/DivineEngine/Profiles/master/Clash/RuleSet/China.yaml,86400
+;ruleset=🎯 全球直连,[]GEOIP,CN
+;ruleset=🐟 漏网之鱼,[]FINAL
 
 ;用于自定义基础配置的选项 会覆盖 pref.ini 里的内容
 clash_rule_base=base/forcerule.yml
@@ -1052,6 +1111,8 @@ clash_rule_base=base/forcerule.yml
 ;rename=\(?((x|X)?(\d+)(\.?\d+)?)((\s?倍率?)|(x|X))\)?@$1x
 
 ;用于自定义 Emoji 的选项 会覆盖 pref.ini 里的内容
+;add_emoji=true
+;remove_old_emoji=true
 ;emoji=(流量|时间|应急),🏳️‍🌈
 ;emoji=阿根廷,🇦🇷
 
@@ -1246,3 +1307,24 @@ Gist owner: xxxx
 > 但是，如果您不认识的人发现该 URL，也能看到您的 gist。
 
 所以请务必保管好所生成的 `Raw URL` 链接。
+
+### 规则转换
+
+> 将规则转换为指定的规则类型，用于将不同类型的规则互相转换
+
+### 调用地址
+
+````txt
+http://127.0.0.1:25500/getruleset?type=%TYPE%&url=%URL%&group=%GROUP%
+````
+
+#### 调用说明
+
+| 调用参数 |    必要性    | 示例    | 解释                                                         |
+| -------- | :----------: | :------ | ------------------------------------------------------------ |
+| type     |     必要     | 6       | 指想要生成的规则类型，用数字表示：1为Surge，2 为 Quantumult X，3 为 Clash domain rule-provider，4 为 Clash ipcidr rule-provider，5 为 Surge DOMAIN-SET，6 为 Clash classical ruleset |
+| url      |     必要     |         | 指待转换的规则链接，需要经过 [Base64](https://base64.us/) 处理 |
+| group    | type=2时必选 | mygroup | 规则对应的策略组名，生成Quantumult X类型（type=2）时必须提供 |
+
+运行 subconverter 主程序后，按照 [调用说明](#调用说明-1) 的对应内容替换即可得到指定类型的规则。
+
