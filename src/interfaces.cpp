@@ -693,8 +693,6 @@ void readYAMLConf(YAML::Node &node)
     if(section["include_remarks"].IsSequence())
         section["include_remarks"] >> gIncludeRemarks;
     gFilterScript = safe_as<bool>(section["enable_filter"]) ? safe_as<std::string>(section["filter_script"]) : "";
-    if(startsWith(gFilterScript, "path:"))
-        gFilterScript = fileGet(gFilterScript.substr(5), false);
     section["base_path"] >> gBasePath;
     section["clash_rule_base"] >> gClashBase;
     section["surge_rule_base"] >> gSurgeBase;
@@ -1437,6 +1435,8 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     ext.sort_flag = argSort.get(gEnableSort);
     if(authorized && !argSortScript.empty())
         gSortScript = argSortScript;
+    if(startsWith(gSortScript, "path:"))
+        gSortScript = fileGet(gSortScript.substr(5), false);
     if(ext.sort_flag)
         ext.sort_script = gSortScript;
     ext.filter_deprecated = argFilterDeprecated.get(gFilterDeprecated);
@@ -1615,6 +1615,8 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     std::string filterScript = gFilterScript;
     if(authorized && !argFilterScript.empty())
         filterScript = argFilterScript;
+    if(startsWith(filterScript, "path:"))
+        filterScript = fileGet(filterScript.substr(5), false);
     if(filterScript.size())
     {
         if(startsWith(filterScript, "path:"))
