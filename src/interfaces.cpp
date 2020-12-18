@@ -1433,12 +1433,13 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     ext.tls13.parse(argTLS13).parse(gTLS13);
 
     ext.sort_flag = argSort.get(gEnableSort);
+    std::string sortScript = gSortScript;
     if(authorized && !argSortScript.empty())
-        gSortScript = argSortScript;
-    if(startsWith(gSortScript, "path:"))
-        gSortScript = fileGet(gSortScript.substr(5), false);
+        sortScript = argSortScript;
+    if(startsWith(sortScript, "path:"))
+        sortScript = fileGet(sortScript.substr(5), false);
     if(ext.sort_flag)
-        ext.sort_script = gSortScript;
+        ext.sort_script = sortScript;
     ext.filter_deprecated = argFilterDeprecated.get(gFilterDeprecated);
     ext.clash_new_field_name = argClashNewField.get(gClashUseNewField);
     ext.clash_script = argGenClashScript.get();
