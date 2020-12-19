@@ -171,7 +171,7 @@ void OnReq(evhttp_request *req, void *args)
     //std::cerr<<"Accept connection from client "<<client_ip<<":"<<client_port<<"\n";
     writeLog(0, "Accept connection from client " + std::string(client_ip) + ":" + std::to_string(client_port), LOG_LEVEL_DEBUG);
 
-    if(internal_flag != NULL && strcmp(internal_flag, "1") == 0)
+    if(internal_flag != NULL) //check for flag existence
     {
         evhttp_send_error(req, 500, "Loop request detected!");
         return;
