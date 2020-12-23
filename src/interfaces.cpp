@@ -1616,8 +1616,6 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     std::string filterScript = gFilterScript;
     if(authorized && !argFilterScript.empty())
         filterScript = argFilterScript;
-    if(startsWith(filterScript, "path:"))
-        filterScript = fileGet(filterScript.substr(5), false);
     if(filterScript.size())
     {
         if(startsWith(filterScript, "path:"))
