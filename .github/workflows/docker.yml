@@ -1,5 +1,7 @@
 name: Publish Docker Image
-on: [push]
+on:
+  watch:
+    types: [started]
 
 jobs:
   build:

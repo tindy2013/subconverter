@@ -1,5 +1,7 @@
 name: GitHub CI
-on: [push]
+on:
+  watch:
+    types: [started]
 
 jobs:
   linux32_build:
