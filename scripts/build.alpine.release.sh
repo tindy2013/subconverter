@@ -18,11 +18,13 @@ cd ..
 
 git clone https://github.com/svaarala/duktape --depth=1
 cd duktape
+cd src-tools
+make
+cd ..
 python2 -m ensurepip
 pip2 install PyYAML
-mkdir dist
-python2 util/dist.py
-cd dist/source/src
+python2 util/dist.py --output-directory ./dist
+cd dist/src
 cc -c -O3 -o duktape.o duktape.c
 cc -c -O3 -o duk_module_node.o -I. ../extras/module-node/duk_module_node.c
 ar cr libduktape.a duktape.o
@@ -30,7 +32,7 @@ ar cr libduktape_module.a duk_module_node.o
 install -m0644 ./*.a /usr/lib
 install -m0644 ./duk*.h /usr/include
 install -m0644 ../extras/module-node/duk_module_node.h /usr/include
-cd ../../../..
+cd ../../..
 
 export PKG_CONFIG_PATH=/usr/lib64/pkgconfig
 cmake -DCMAKE_BUILD_TYPE=Release .
