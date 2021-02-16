@@ -18,12 +18,10 @@ cd ..
 
 git clone https://github.com/svaarala/duktape --depth=1
 cd duktape
-cd src-tools
-make
-cd ..
+make -C src-tools
 python2 -m ensurepip
 pip2 install PyYAML
-python2 util/dist.py --output-directory ./dist
+python2 util/dist.py --output-directory dist
 cd dist/src
 cc -c -O3 -o duktape.o duktape.c
 cc -c -O3 -o duk_module_node.o -I. ../extras/module-node/duk_module_node.c
