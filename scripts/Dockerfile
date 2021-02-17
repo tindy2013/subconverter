@@ -3,7 +3,7 @@ LABEL maintainer "tindy.it@gmail.com"
 
 # build minimized
 WORKDIR /
-RUN apk add --no-cache --virtual .build-tools git g++ build-base linux-headers cmake python2 && \
+RUN apk add --no-cache --virtual .build-tools git g++ build-base linux-headers cmake python2 nodejs npm && \
     apk add --no-cache --virtual .build-deps curl-dev rapidjson-dev libevent-dev pcre2-dev yaml-cpp-dev && \
     git clone https://github.com/svaarala/duktape --depth=1 && \
     cd duktape && \
