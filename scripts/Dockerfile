@@ -10,7 +10,6 @@ RUN apk add --no-cache --virtual .build-tools git g++ build-base linux-headers c
 	make -C src-tools && \
     python2 -m ensurepip && \
     pip2 install PyYAML --no-cache-dir && \
-    mkdir dist && \
     python2 util/dist.py --output-directory dist && \
     cd dist/src && \
     cc -c -O3 -o duktape.o duktape.c && \
