@@ -1,4 +1,0 @@
-# This rule set has been abandoned due to serious performance issues. Please use the related module.
-# https://raw.githubusercontent.com/NobyDa/Script/master/Surge/Module/RewriteRules.sgmodule
-
-DOMAIN-KEYWORD,cnzz

@@ -2,7 +2,7 @@
 # 参考：https://en.wikipedia.org/wiki/Reserved_IP_addresses
 
 # ACL4SSR标志 如没有，代表不是用ACL4SSR规则
-DOMAIN-SUFFIX,acl4ssr
+DOMAIN-SUFFIX,acl4.ssr
 
 # 本地/局域网地址
 DOMAIN-SUFFIX,ip6-localhost
@@ -14,6 +14,7 @@ IP-CIDR,100.64.0.0/10,no-resolve
 IP-CIDR,127.0.0.0/8,no-resolve
 IP-CIDR,172.16.0.0/12,no-resolve
 IP-CIDR,192.168.0.0/16,no-resolve
+IP-CIDR,198.18.0.0/16,no-resolve
 IP-CIDR6,::1/128,no-resolve
 IP-CIDR6,fc00::/7,no-resolve
 IP-CIDR6,fe80::/10,no-resolve

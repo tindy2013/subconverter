@@ -5,10 +5,14 @@ DOMAIN-SUFFIX,aiv-cdn.net
 DOMAIN-SUFFIX,aiv-delivery.net
 DOMAIN-SUFFIX,amazonvideo.com
 DOMAIN-SUFFIX,primevideo.com
+DOMAIN-SUFFIX,media-amazon.com
+DOMAIN,atv-ps.amazon.com
+DOMAIN,fls-na.amazon.com
 DOMAIN,avodmp4s3ww-a.akamaihd.net
 DOMAIN,d25xi40x97liuc.cloudfront.net
 DOMAIN,dmqdd6hw24ucf.cloudfront.net
 DOMAIN,dmqdd6hw24ucf.cloudfront.net
 DOMAIN,d22qjgkvxw22r6.cloudfront.net
 DOMAIN,d1v5ir2lpwr8os.cloudfront.net
+DOMAIN,d27xxe7juh1us6.cloudfront.net
 DOMAIN-KEYWORD,avoddashs

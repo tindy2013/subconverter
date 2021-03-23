@@ -1,0 +1,6 @@
+# 相比代理，更建议先尝试使用 hosts：https://www.dogfight360.com/blog/475/
+DOMAIN-SUFFIX,origin.com
+DOMAIN,cloudsync-prod.s3.amazonaws.com
+DOMAIN,origin-a.akamaihd.net // Akamai
+DOMAIN,ssl-lvlt.cdn.ea.com // Level3-CDN
+DOMAIN,rtm.tnt-ea.com

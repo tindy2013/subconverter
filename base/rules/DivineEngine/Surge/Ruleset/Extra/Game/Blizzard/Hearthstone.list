@@ -1,0 +1,9 @@
+# The Americas
+IP-CIDR,24.105.30.129/32
+
+# Europe
+IP-CIDR,185.60.112.157/32
+IP-CIDR,185.60.112.158/32
+
+# Korea and Taiwan
+IP-CIDR,182.162.132.1/32

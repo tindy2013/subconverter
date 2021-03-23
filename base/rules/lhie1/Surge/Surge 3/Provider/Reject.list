@@ -38,10 +38,10 @@ DOMAIN-SUFFIX,tracker.sns.iqiyi.com
 DOMAIN-SUFFIX,yuedu.iqiyi.com
 URL-REGEX,https?://.+/videos/other/.+
 URL-REGEX,https?://paopao\w?.qiyipic.com
-IP-CIDR,101.227.97.240/32
-IP-CIDR,101.227.200.11/32
-IP-CIDR,101.227.200.28/32
-IP-CIDR,124.192.153.42/32
+IP-CIDR,101.227.97.240/32,no-resolve
+IP-CIDR,101.227.200.11/32,no-resolve
+IP-CIDR,101.227.200.28/32,no-resolve
+IP-CIDR,124.192.153.42/32,no-resolve
 
 # > Youku & Tudou
 DOMAIN-SUFFIX,actives.youku.com
@@ -88,20 +88,20 @@ DOMAIN-SUFFIX,val.api.youku.com
 DOMAIN-SUFFIX,wan.youku.com
 DOMAIN-SUFFIX,ykatr.youku.com
 DOMAIN-SUFFIX,ykrec.youku.com
-IP-CIDR,117.177.248.17/32
-IP-CIDR,117.177.248.41/32
-IP-CIDR,223.87.176.139/32
-IP-CIDR,223.87.176.176/32
-IP-CIDR,223.87.177.180/32
-IP-CIDR,223.87.177.182/32
-IP-CIDR,223.87.177.184/32
-IP-CIDR,223.87.177.43/32
-IP-CIDR,223.87.177.47/32
-IP-CIDR,223.87.177.80/32
-IP-CIDR,223.87.182.101/32
-IP-CIDR,223.87.182.102/32
-IP-CIDR,223.87.182.11/32
-IP-CIDR,223.87.182.52/32
+IP-CIDR,117.177.248.17/32,no-resolve
+IP-CIDR,117.177.248.41/32,no-resolve
+IP-CIDR,223.87.176.139/32,no-resolve
+IP-CIDR,223.87.176.176/32,no-resolve
+IP-CIDR,223.87.177.180/32,no-resolve
+IP-CIDR,223.87.177.182/32,no-resolve
+IP-CIDR,223.87.177.184/32,no-resolve
+IP-CIDR,223.87.177.43/32,no-resolve
+IP-CIDR,223.87.177.47/32,no-resolve
+IP-CIDR,223.87.177.80/32,no-resolve
+IP-CIDR,223.87.182.101/32,no-resolve
+IP-CIDR,223.87.182.102/32,no-resolve
+IP-CIDR,223.87.182.11/32,no-resolve
+IP-CIDR,223.87.182.52/32,no-resolve
 URL-REGEX,https?:\/\/.+.atm.youku.com
 
 # > MGTV
@@ -259,49 +259,6 @@ DOMAIN-SUFFIX,bfshan.cn
 
 
 
-# REJECT
-
-# > Client
-DOMAIN-KEYWORD,admaster
-DOMAIN-KEYWORD,admdfs
-DOMAIN-KEYWORD,adnewnc
-DOMAIN-KEYWORD,adsage
-DOMAIN-KEYWORD,adsame
-DOMAIN-KEYWORD,adsensor
-DOMAIN-KEYWORD,adserver
-DOMAIN-KEYWORD,adservice
-DOMAIN-KEYWORD,adsmogo
-DOMAIN-KEYWORD,adsrvmedia
-DOMAIN-KEYWORD,adsserving
-DOMAIN-KEYWORD,adsystem
-DOMAIN-KEYWORD,advert
-DOMAIN-KEYWORD,adwords
-DOMAIN-KEYWORD,allyes
-DOMAIN-KEYWORD,analysis
-DOMAIN-KEYWORD,analysys
-DOMAIN-KEYWORD,applovin
-DOMAIN-KEYWORD,appsflyer
-DOMAIN-KEYWORD,dnserror
-DOMAIN-KEYWORD,domob
-DOMAIN-KEYWORD,duomeng
-DOMAIN-KEYWORD,dwtrack
-DOMAIN-KEYWORD,fenxi
-DOMAIN-KEYWORD,guanggao
-DOMAIN-KEYWORD,inmobi
-DOMAIN-KEYWORD,lianmeng
-DOMAIN-KEYWORD,mobaders
-DOMAIN-KEYWORD,omgmta
-DOMAIN-KEYWORD,openx
-DOMAIN-KEYWORD,partnerad
-DOMAIN-KEYWORD,securepubads
-DOMAIN-KEYWORD,socdm
-DOMAIN-KEYWORD,supersonicads
-DOMAIN-KEYWORD,taboola
-DOMAIN-KEYWORD,uedas
-DOMAIN-KEYWORD,umtrack
-DOMAIN-KEYWORD,uploadMobileData
-DOMAIN-KEYWORD,wlmonitor
-DOMAIN-KEYWORD,zjtoolbar
 
 DOMAIN-SUFFIX,0.r.msn.com
 DOMAIN-SUFFIX,000dn.com
@@ -1308,6 +1265,7 @@ DOMAIN-SUFFIX,adstat.cp11.ott.cibntv.net
 DOMAIN-SUFFIX,adstextview.qq.com
 DOMAIN-SUFFIX,adstil.indiatimes.com
 DOMAIN-SUFFIX,ad-stir.com
+DOMAIN-SUFFIX,adsmind.ugdtimg.com
 DOMAIN-SUFFIX,adstream.123.sogoucdn.com
 DOMAIN-SUFFIX,ads-twitter.com
 DOMAIN-SUFFIX,ads-v-darwin.hulustream.com
@@ -1321,6 +1279,7 @@ DOMAIN-SUFFIX,adsyndication.msn.com
 DOMAIN-SUFFIX,adsys.chinacloudapp.cn
 DOMAIN-SUFFIX,adsys.sinovision.net
 DOMAIN-SUFFIX,adtaily.com
+DOMAIN-SUFFIX,ad-tech.nbcuni.com
 DOMAIN-SUFFIX,adtechjp.com
 DOMAIN-SUFFIX,adtechus.com
 DOMAIN-SUFFIX,adtest.theonion.com
@@ -2295,7 +2254,6 @@ DOMAIN-SUFFIX,chmae.com
 DOMAIN-SUFFIX,chnhty.com
 DOMAIN-SUFFIX,chuantu.biz
 DOMAIN-SUFFIX,chushoushijian.cn
-DOMAIN-SUFFIX,c-hzgt2.getui.com
 DOMAIN-SUFFIX,ci.csefaazc.net
 DOMAIN-SUFFIX,ciajingman.com
 DOMAIN-SUFFIX,cilidaquan.pw
@@ -2920,10 +2878,6 @@ DOMAIN-SUFFIX,dot.eporner.com
 DOMAIN-SUFFIX,dot2.eporner.com
 DOMAIN-SUFFIX,dotmore.com.tw
 DOMAIN-SUFFIX,dou777.com
-DOMAIN-SUFFIX,doubleclick.com
-DOMAIN-SUFFIX,doubleclick.ctfile.com
-DOMAIN-SUFFIX,doubleclick.net
-DOMAIN-SUFFIX,doubleclick.tv002.com
 DOMAIN-SUFFIX,doubleplay-conf-yql.media.yahoo.com
 DOMAIN-SUFFIX,doubleverify.com
 DOMAIN-SUFFIX,doudao.cn
@@ -2957,7 +2911,6 @@ DOMAIN-SUFFIX,downloada.dewmobile.net
 DOMAIN-SUFFIX,downloadb.dewmobile.net
 DOMAIN-SUFFIX,downmobile.kugou.com
 DOMAIN-SUFFIX,dp.559.cc
-DOMAIN-SUFFIX,dp3.qq.com
 DOMAIN-SUFFIX,dpm.demdex.net
 DOMAIN-SUFFIX,dps.499.cn
 DOMAIN-SUFFIX,dps.shouji56.com
@@ -3594,7 +3547,6 @@ DOMAIN-SUFFIX,g.zx-jsp.com
 DOMAIN-SUFFIX,g1.0573ren.com
 DOMAIN-SUFFIX,g1.08160.cn
 DOMAIN-SUFFIX,g1.163.com
-DOMAIN-SUFFIX,g1.tagtic.cn
 DOMAIN-SUFFIX,g1.taijuba.com
 DOMAIN-SUFFIX,g1c5.com
 DOMAIN-SUFFIX,g1f5.com
@@ -3739,8 +3691,6 @@ DOMAIN-SUFFIX,go-mpulse.net
 DOMAIN-SUFFIX,good.ta80.com
 DOMAIN-SUFFIX,googlecommerce.com
 DOMAIN-SUFFIX,googlesyndication.com
-DOMAIN-SUFFIX,googletagmanager.com
-DOMAIN-SUFFIX,googletagservices.com
 DOMAIN-SUFFIX,goolpter.com
 DOMAIN-SUFFIX,gopig.io
 DOMAIN-SUFFIX,gorgon.youdao.com
@@ -7768,7 +7718,6 @@ DOMAIN-SUFFIX,wxb.wxbdfm.com
 DOMAIN-SUFFIX,wxmmh.net
 DOMAIN-SUFFIX,wxsnsdy.tc.qq.com
 DOMAIN-SUFFIX,wxsnsdy.video.qq.com
-DOMAIN-SUFFIX,wxsnsdy.wxs.qq.com
 DOMAIN-SUFFIX,wxsnsdythumb.wxs.qq.com
 DOMAIN-SUFFIX,wxtz.houmags.com
 DOMAIN-SUFFIX,wxwm1.ikuailian.com
@@ -8323,54 +8272,55 @@ URL-REGEX,https?://(a?d|sax)\d.sina.com
 URL-REGEX,https?://d\d.sinaimg.cn
 URL-REGEX,https?://dl.app.gtja.com/.+\d+.jpg$
 URL-REGEX,https?://impservice.+?youdao.com
+URL-REGEX,https?://mi.gdt.qq.com/gdt_mview.fcg
 URL-REGEX,https?://notice.send-anywhere.com/banner
 URL-REGEX,https?://sax\w?.sina.cn
 URL-REGEX,https?://sax\w?.sina.com.cn
 URL-REGEX,https?://server-\w+.imrworldwide.com
 URL-REGEX,https?://www.bldimg.com/(background|splash)/.+.png$
 
-IP-CIDR,39.107.15.115/32
-IP-CIDR,47.89.59.182/32
-IP-CIDR,103.49.209.27/32
-IP-CIDR,123.56.152.96/32
+IP-CIDR,39.107.15.115/32,no-resolve
+IP-CIDR,47.89.59.182/32,no-resolve
+IP-CIDR,103.49.209.27/32,no-resolve
+IP-CIDR,123.56.152.96/32,no-resolve
 
 # > China Net
-IP-CIDR,61.160.200.223/32
-IP-CIDR,61.160.200.242/32
-IP-CIDR,61.160.200.252/32
-IP-CIDR,61.174.50.214/32
-IP-CIDR,111.175.220.163/32
-IP-CIDR,111.175.220.164/32
-IP-CIDR,124.232.160.178/32
-IP-CIDR,175.6.223.15/32
-IP-CIDR,183.59.53.237/32
-IP-CIDR,218.93.127.37/32
-IP-CIDR,221.228.17.152/32
-IP-CIDR,221.231.6.79/32
-IP-CIDR,222.186.61.91/32
-IP-CIDR,222.186.61.95/32
-IP-CIDR,222.186.61.96/32
-IP-CIDR,222.186.61.97/32
+IP-CIDR,61.160.200.223/32,no-resolve
+IP-CIDR,61.160.200.242/32,no-resolve
+IP-CIDR,61.160.200.252/32,no-resolve
+IP-CIDR,61.174.50.214/32,no-resolve
+IP-CIDR,111.175.220.163/32,no-resolve
+IP-CIDR,111.175.220.164/32,no-resolve
+IP-CIDR,124.232.160.178/32,no-resolve
+IP-CIDR,175.6.223.15/32,no-resolve
+IP-CIDR,183.59.53.237/32,no-resolve
+IP-CIDR,218.93.127.37/32,no-resolve
+IP-CIDR,221.228.17.152/32,no-resolve
+IP-CIDR,221.231.6.79/32,no-resolve
+IP-CIDR,222.186.61.91/32,no-resolve
+IP-CIDR,222.186.61.95/32,no-resolve
+IP-CIDR,222.186.61.96/32,no-resolve
+IP-CIDR,222.186.61.97/32,no-resolve
 
 # > China Unicom
-IP-CIDR,106.75.231.48/32
-IP-CIDR,119.4.249.166/32
-IP-CIDR,220.196.52.141/32
-IP-CIDR,221.6.4.148/32
+IP-CIDR,106.75.231.48/32,no-resolve
+IP-CIDR,119.4.249.166/32,no-resolve
+IP-CIDR,220.196.52.141/32,no-resolve
+IP-CIDR,221.6.4.148/32,no-resolve
 
 # > China Mobile
-IP-CIDR,114.247.28.96/32
-IP-CIDR,221.179.131.72/32
-IP-CIDR,221.179.140.145/32
+IP-CIDR,114.247.28.96/32,no-resolve
+IP-CIDR,221.179.131.72/32,no-resolve
+IP-CIDR,221.179.140.145/32,no-resolve
 
 # > Dr.Peng
 IP-CIDR,10.72.25.0/24
-IP-CIDR,115.182.16.79/32
-IP-CIDR,118.144.88.126/32
-IP-CIDR,118.144.88.215/32
-IP-CIDR,120.76.189.132/32
-IP-CIDR,124.14.21.147/32
-IP-CIDR,124.14.21.151/32
-IP-CIDR,180.166.52.24/32
-IP-CIDR,220.115.251.25/32
-IP-CIDR,222.73.156.235/32
+IP-CIDR,115.182.16.79/32,no-resolve
+IP-CIDR,118.144.88.126/32,no-resolve
+IP-CIDR,118.144.88.215/32,no-resolve
+IP-CIDR,120.76.189.132/32,no-resolve
+IP-CIDR,124.14.21.147/32,no-resolve
+IP-CIDR,124.14.21.151/32,no-resolve
+IP-CIDR,180.166.52.24/32,no-resolve
+IP-CIDR,220.115.251.25/32,no-resolve
+IP-CIDR,222.73.156.235/32,no-resolve

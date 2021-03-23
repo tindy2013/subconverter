@@ -3,13 +3,18 @@
 # Epicgames
 DOMAIN-SUFFIX,ol.epicgames.com
 
+# Getui
+DOMAIN-SUFFIX,dizhensubao.getui.com
+
 # Google
 DOMAIN,dl.google.com
-DOMAIN,mtalk.google.com
 DOMAIN-SUFFIX,googletraveladservices.com
 
 # Mozilla
 DOMAIN-SUFFIX,tracking-protection.cdn.mozilla.net
+
+# Origin
+DOMAIN,origin-a.akamaihd.net
 
 # Tencent
 DOMAIN,livew.l.qq.com
@@ -21,6 +26,9 @@ DOMAIN,analytics.strava.com
 # Umeng
 DOMAIN,msg.umeng.com
 DOMAIN,msg.umengcloud.com
+
+# Miui 小米
+DOMAIN,tracking.miui.com
 
 # General
 DOMAIN,app.adjust.com

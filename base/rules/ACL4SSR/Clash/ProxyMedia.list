@@ -1,6 +1,6 @@
 # 内容：国外媒体列表
-# 更新：2020-09-16 22:31:32
-# 数量：283条
+# 更新：2021-02-27 19:10:51
+# 数量：321条
 
 # ABC
 DOMAIN-SUFFIX,edgedatg.com
@@ -22,6 +22,9 @@ DOMAIN-SUFFIX,channel4.com
 # Amazon
 USER-AGENT,InstantVideo.US*
 USER-AGENT,Prime%20Video*
+DOMAIN, atv-ps.amazon.com
+DOMAIN, fls-na.amazon.com
+DOMAIN-SUFFIX, media-amazon.com
 DOMAIN-SUFFIX,aiv-cdn.net
 DOMAIN-SUFFIX,amazonaws.co.uk
 DOMAIN-SUFFIX,amazonaws.com
@@ -64,14 +67,18 @@ DOMAIN-SUFFIX,hinet.net
 
 # DAZN
 USER-AGENT,DAZN*
+DOMAIN-KEYWORD,livedazn
 DOMAIN-KEYWORD,voddazn
 DOMAIN,d151l6v8er5bdm.cloudfront.net
 DOMAIN-SUFFIX,d151l6v8er5bdm.cloudfront.net
+DOMAIN-SUFFIX,d1sgwhnao7452x.cloudfront.net
 DOMAIN-SUFFIX,dazn-api.com
 DOMAIN-SUFFIX,dazn.com
 DOMAIN-SUFFIX,dazndn.com
+DOMAIN-SUFFIX,dcblivedazn.akamaized.net
 DOMAIN-SUFFIX,indazn.com
-DOMAIN-SUFFIX,intercom.io
+DOMAIN-SUFFIX,indaznlab.com
+DOMAIN-SUFFIX,sentry.io
 
 # Deezer
 USER-AGENT,Deezer*
@@ -81,17 +88,26 @@ DOMAIN-SUFFIX,dzcdn.net
 # DisneyPlus
 USER-AGENT,Disney*
 USER-AGENT,Disney+*
-DOMAIN,cdn.cdn.unid.go.com
 DOMAIN,cdn.registerdisney.go.com
-DOMAIN,global.edge.bamgrid.com
+DOMAIN-SUFFIX,adobedtm.com
+DOMAIN-SUFFIX,bam.nr-data.net
 DOMAIN-SUFFIX,bamgrid.com
 DOMAIN-SUFFIX,braze.com
-DOMAIN-SUFFIX,conviva.com
+DOMAIN-SUFFIX,cdn.optimizely.com
+DOMAIN-SUFFIX,cdn.registerdisney.go.com
+DOMAIN-SUFFIX,cws.conviva.com
+DOMAIN-SUFFIX,d9.flashtalking.com
 DOMAIN-SUFFIX,disney-plus.net
+DOMAIN-SUFFIX,disney-portal.my.onetrust.com
 DOMAIN-SUFFIX,disney.demdex.net
+DOMAIN-SUFFIX,disney.my.sentry.io
+DOMAIN-SUFFIX,disneyplus.bn5x.net
 DOMAIN-SUFFIX,disneyplus.com
+DOMAIN-SUFFIX,disneyplus.com.ssl.sc.omtrdc.net
+DOMAIN-SUFFIX,disneystreaming.com
 DOMAIN-SUFFIX,dssott.com
 DOMAIN-SUFFIX,execute-api.us-east-1.amazonaws.com
+DOMAIN-SUFFIX,js-agent.newrelic.com
 
 # EncoreTVB
 USER-AGENT,encoreTVB*
@@ -121,11 +137,21 @@ DOMAIN-SUFFIX,foxplus.com
 DOMAIN-SUFFIX,theplatform.com
 
 # HBO
+USER-AGENT,HBO%20GO%20PROD%20HKG*
 USER-AGENT,HBO%20NOW*
 USER-AGENT,HBOMAX*
-DOMAIN-SUFFIX,execute-api.ap-southeast-1.amazonaws.com
+DOMAIN,44wilhpljf.execute-api.ap-southeast-1.amazonaws.com
+DOMAIN,bcbolthboa-a.akamaihd.net
+DOMAIN,cf-images.ap-southeast-1.prod.boltdns.net
+DOMAIN,dai3fd1oh325y.cloudfront.net
+DOMAIN,hboasia1-i.akamaihd.net
+DOMAIN,hboasia2-i.akamaihd.net
+DOMAIN,hboasia3-i.akamaihd.net
+DOMAIN,hboasia4-i.akamaihd.net
+DOMAIN,hboasia5-i.akamaihd.net
+DOMAIN,players.brightcove.net
+DOMAIN,s3-ap-southeast-1.amazonaws.com
 DOMAIN-SUFFIX,hbo.com
-DOMAIN-SUFFIX,hboasia.com
 DOMAIN-SUFFIX,hbogo.com
 DOMAIN-SUFFIX,hbogoasia.com
 DOMAIN-SUFFIX,hbogoasia.hk
@@ -154,13 +180,21 @@ DOMAIN-SUFFIX,5itv.tv
 DOMAIN-SUFFIX,ocnttv.com
 
 # Hulu
+DOMAIN-SUFFIX,cws-hulu.conviva.com
 DOMAIN-SUFFIX,hulu.com
+DOMAIN-SUFFIX,hulu.hb.omtrdc.net
+DOMAIN-SUFFIX,hulu.sc.omtrdc.net
+DOMAIN-SUFFIX,huluad.com
 DOMAIN-SUFFIX,huluim.com
 DOMAIN-SUFFIX,hulustream.com
 
 # HuluJapan
 DOMAIN-SUFFIX,happyon.jp
+DOMAIN-SUFFIX,hjholdings.jp
 DOMAIN-SUFFIX,hulu.jp
+DOMAIN-SUFFIX,prod.hjholdings.tv
+DOMAIN-SUFFIX,streaks.jp
+DOMAIN-SUFFIX,yb.uncn.jp
 
 # ITV
 USER-AGENT,ITV_Player*
@@ -208,6 +242,7 @@ USER-AGENT,LINE*
 DOMAIN,d3c7rimkq79yfu.cloudfront.net
 DOMAIN-SUFFIX,d3c7rimkq79yfu.cloudfront.net
 DOMAIN-SUFFIX,linetv.tw
+DOMAIN-SUFFIX,profile.line-scdn.net
 
 # My5
 USER-AGENT,My5*
@@ -217,11 +252,15 @@ DOMAIN-SUFFIX,my5.tv
 
 # MyTVSuper
 USER-AGENT,mytv*
+DOMAIN,mytvsuperlimited.hb.omtrdc.net
+DOMAIN,mytvsuperlimited.sc.omtrdc.net
 DOMAIN-SUFFIX,mytvsuper.com
 DOMAIN-SUFFIX,tvb.com
 
 # Netflix
 USER-AGENT,Argo*
+DOMAIN-KEYWORD,dualstack.apiproxy-device-prod-nlb-
+DOMAIN-KEYWORD,dualstack.ichnaea-web-
 DOMAIN,netflix.com.edgesuite.net
 DOMAIN-SUFFIX,fast.com
 DOMAIN-SUFFIX,netflix.com
@@ -267,7 +306,6 @@ USER-AGENT,Niconico*
 DOMAIN-SUFFIX,dmc.nico
 DOMAIN-SUFFIX,nicovideo.jp
 DOMAIN-SUFFIX,nimg.jp
-DOMAIN-SUFFIX,socdm.com
 
 # PBS
 USER-AGENT,PBS*
@@ -321,6 +359,7 @@ DOMAIN-SUFFIX,ibytedtos.com
 DOMAIN-SUFFIX,ipstatp.com
 DOMAIN-SUFFIX,muscdn.com
 DOMAIN-SUFFIX,musical.ly
+DOMAIN-SUFFIX,tik-tokapi.com
 DOMAIN-SUFFIX,tiktok.com
 DOMAIN-SUFFIX,tiktokcdn.com
 DOMAIN-SUFFIX,tiktokv.com
@@ -358,7 +397,6 @@ USER-AGENT,com.google.ios.youtube*
 DOMAIN-KEYWORD,youtube
 DOMAIN,youtubei.googleapis.com
 DOMAIN,yt3.ggpht.com
-DOMAIN-SUFFIX,app-measurement.com
 DOMAIN-SUFFIX,googlevideo.com
 DOMAIN-SUFFIX,gvt2.com
 DOMAIN-SUFFIX,youtu.be
