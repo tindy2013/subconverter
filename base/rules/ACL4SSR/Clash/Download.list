@@ -1,13 +1,13 @@
 # Mac Download
-PROCESS-NAME,aria2c
-PROCESS-NAME,fdm
-PROCESS-NAME,Folx
-PROCESS-NAME,NetTransport
-PROCESS-NAME,Thunder
-PROCESS-NAME,Transmission
-PROCESS-NAME,uTorrent
-PROCESS-NAME,WebTorrent
-PROCESS-NAME,WebTorrent Helper
+PROCESS-NAME,aria2c.exe
+PROCESS-NAME,fdm.exe
+PROCESS-NAME,Folx.exe
+PROCESS-NAME,NetTransport.exe
+PROCESS-NAME,Thunder.exe
+PROCESS-NAME,Transmission.exe
+PROCESS-NAME,uTorrent.exe
+PROCESS-NAME,WebTorrent.exe
+PROCESS-NAME,WebTorrent Helper.exe
 # bt
 DOMAIN-SUFFIX,smtp
 DOMAIN-KEYWORD,aria2
@@ -17,10 +17,10 @@ URL-REGEX,(.+.|^)(360|so|qihoo|360safe|qhimg|360totalsecurity|yunpan).(cn|com)
 URL-REGEX,(.+.)?(torrent|announce.php?passkey=|tracker|BitTorrent|bt_key|ed2k|find_node|get_peers|info_hash|magnet:|peer_id=|xunlei)(..+)?
 # XunLei
 URL-REGEX,(.?)(xunlei|sandai|Thunder|XLLiveUD)(.)
-PROCESS-NAME,DownloadService
+PROCESS-NAME,DownloadService.exe
 # 360
 URL-REGEX,(.+\.|^)(360|so)\.(cn|com)
 # Tencent Weiyun
-PROCESS-NAME,Weiyun
+PROCESS-NAME,Weiyun.exe
 #Baidu disk
-PROCESS-NAME,baidunetdisk
+PROCESS-NAME,baidunetdisk.exe

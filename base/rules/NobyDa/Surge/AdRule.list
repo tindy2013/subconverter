@@ -1,4 +1,5 @@
-# Update > 2020.7.27 Go advertising rule Integration lhie1 and ConnersHua
+# Update > 2021.2.27 Go advertising rule Integration lhie1 and ConnersHua
+DOMAIN-SUFFIX,api-access.pangolin-sdk-toutiao-b.com
 DOMAIN-SUFFIX,mcupdate.gstarcad.com
 DOMAIN-SUFFIX,adx.open-adx.com
 DOMAIN-SUFFIX,adservice.sigmob.cn
@@ -6379,7 +6380,6 @@ DOMAIN-SUFFIX,searchignited.com
 DOMAIN-SUFFIX,searchswapper.com
 DOMAIN-SUFFIX,seavideo-ak.espn.go.com
 DOMAIN-SUFFIX,sebar.thand.info
-DOMAIN-SUFFIX,sec.resource.xiaomi.net
 DOMAIN-SUFFIX,secpay.wostore.cn
 DOMAIN-SUFFIX,secretmedia.s3.amazonaws.com
 DOMAIN-SUFFIX,secure.dsp.com

@@ -58,17 +58,19 @@ DOMAIN-SUFFIX,aiv-cdn.net
 DOMAIN-SUFFIX,aiv-delivery.net
 DOMAIN-SUFFIX,amazonvideo.com
 DOMAIN-SUFFIX,primevideo.com
+DOMAIN-SUFFIX,media-amazon.com
+DOMAIN,atv-ps.amazon.com
+DOMAIN,fls-na.amazon.com
 DOMAIN,avodmp4s3ww-a.akamaihd.net
 DOMAIN,d25xi40x97liuc.cloudfront.net
 DOMAIN,dmqdd6hw24ucf.cloudfront.net
 DOMAIN,dmqdd6hw24ucf.cloudfront.net
 DOMAIN,d22qjgkvxw22r6.cloudfront.net
 DOMAIN,d1v5ir2lpwr8os.cloudfront.net
+DOMAIN,d27xxe7juh1us6.cloudfront.net
 DOMAIN-KEYWORD,avoddashs
 # > Apple TV
-DOMAIN-SUFFIX,tv.apple.com
-DOMAIN,hls.itunes.apple.com
-DOMAIN,hls-amt.itunes.apple.com
+DOMAIN,linear.tv.apple.com
 DOMAIN,play-edge.itunes.apple.com
 # > Bahamut
 USER-AGENT,Anime*
@@ -90,11 +92,12 @@ DOMAIN,d151l6v8er5bdm.cloudfront.net
 DOMAIN-KEYWORD,voddazn
 # > Disney+
 USER-AGENT,Disney+*
-DOMAIN-SUFFIX,disney-plus.net
+DOMAIN-SUFFIX,bamgrid.com
 DOMAIN-SUFFIX,disneyplus.com
+DOMAIN-SUFFIX,disney-plus.net
+DOMAIN-SUFFIX,disneystreaming.com
 DOMAIN-SUFFIX,dssott.com
 DOMAIN,cdn.registerdisney.go.com
-DOMAIN,global.edge.bamgrid.com
 # > DMM
 DOMAIN-SUFFIX,dmm.co.jp
 DOMAIN-SUFFIX,dmm.com
@@ -126,6 +129,7 @@ DOMAIN-SUFFIX,hbogo.com
 DOMAIN-SUFFIX,hbonow.com
 USER-AGENT,HBOMAX*
 DOMAIN-SUFFIX,hbomax.com
+DOMAIN-SUFFIX,hbomaxcdn.com
 # > HBO GO HKG
 USER-AGENT,HBO%20GO%20PROD%20HKG*
 DOMAIN-SUFFIX,hbogoasia.com
@@ -180,6 +184,10 @@ DOMAIN,d349g9zuie06uo.cloudfront.net
 USER-AGENT,mytv*
 DOMAIN-SUFFIX,mytvsuper.com
 DOMAIN-SUFFIX,tvb.com
+# > Naver TV
+USER-AGENT,Naver%20TV*
+DOMAIN-SUFFIX,naver.com
+DOMAIN-SUFFIX,smartmediarep.com
 # > Netflix
 USER-AGENT,Argo*
 DOMAIN-SUFFIX,netflix.com
@@ -199,6 +207,8 @@ DOMAIN-SUFFIX,netflixdnstest6.com
 DOMAIN-SUFFIX,netflixdnstest7.com
 DOMAIN-SUFFIX,netflixdnstest8.com
 DOMAIN-SUFFIX,netflixdnstest9.com
+DOMAIN-KEYWORD,dualstack.apiproxy-
+DOMAIN-KEYWORD,dualstack.ichnaea-web-
 IP-CIDR,23.246.0.0/18,no-resolve
 IP-CIDR,37.77.184.0/21,no-resolve
 IP-CIDR,45.57.0.0/17,no-resolve
@@ -216,10 +226,19 @@ USER-AGENT,Niconico*
 DOMAIN-SUFFIX,dmc.nico
 DOMAIN-SUFFIX,nicovideo.jp
 DOMAIN-SUFFIX,nimg.jp
-DOMAIN-SUFFIX,socdm.com
 # > Now E
 DOMAIN-SUFFIX,nowe.com
 DOMAIN-SUFFIX,nowestatic.com
+# > Paramount+
+USER-AGENT,PPlus*
+DOMAIN-SUFFIX,cbsi.com
+DOMAIN-SUFFIX,cbsaavideo.com
+DOMAIN-SUFFIX,cbsivideo.com
+DOMAIN-SUFFIX,paramountplus.com
+DOMAIN-SUFFIX,pplusstatic.com
+DOMAIN,cbsi.live.ott.irdeto.com
+DOMAIN,cbsplaylistserver.aws.syncbak.com
+DOMAIN,cbsservice.aws.syncbak.com
 # > PBS
 USER-AGENT,PBS*
 DOMAIN-SUFFIX,pbs.org
@@ -236,13 +255,17 @@ DOMAIN,hamifans.emome.net
 USER-AGENT,TikTok*
 DOMAIN-SUFFIX,byteoversea.com
 DOMAIN-SUFFIX,ibytedtos.com
-DOMAIN-SUFFIX,ipstatp.com
 DOMAIN-SUFFIX,muscdn.com
 DOMAIN-SUFFIX,musical.ly
 DOMAIN-SUFFIX,tiktok.com
+DOMAIN-SUFFIX,tik-tokapi.com
 DOMAIN-SUFFIX,tiktokcdn.com
 DOMAIN-SUFFIX,tiktokv.com
 DOMAIN-KEYWORD,-tiktokcdn-com
+# > TVer
+USER-AGENT,TVer-Release*
+DOMAIN-SUFFIX,tver.jp
+DOMAIN,edge.api.brightcove.com
 # > Twitch
 DOMAIN-SUFFIX,jtvnw.net
 DOMAIN-SUFFIX,ttvnw.net
@@ -261,4 +284,6 @@ USER-AGENT,com.google.ios.youtube*
 USER-AGENT,YouTube*
 DOMAIN-SUFFIX,googlevideo.com
 DOMAIN-SUFFIX,youtube.com
+DOMAIN-SUFFIX,ytimg.com
 DOMAIN,youtubei.googleapis.com
+DOMAIN,yt3.ggpht.com

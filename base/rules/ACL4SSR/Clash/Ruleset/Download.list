@@ -2,18 +2,18 @@
 # 数量：20条
 DOMAIN-KEYWORD,aria2
 DOMAIN-SUFFIX,smtp
-PROCESS-NAME,DownloadService
-PROCESS-NAME,Folx
-PROCESS-NAME,NetTransport
-PROCESS-NAME,Thunder
-PROCESS-NAME,Transmission
-PROCESS-NAME,WebTorrent
-PROCESS-NAME,WebTorrent Helper
-PROCESS-NAME,Weiyun
-PROCESS-NAME,aria2c
-PROCESS-NAME,baidunetdisk
-PROCESS-NAME,fdm
-PROCESS-NAME,uTorrent
+PROCESS-NAME,DownloadService.exe
+PROCESS-NAME,Folx.exe
+PROCESS-NAME,NetTransport.exe
+PROCESS-NAME,Thunder.exe
+PROCESS-NAME,Transmission.exe
+PROCESS-NAME,WebTorrent Helper.exe
+PROCESS-NAME,WebTorrent.exe
+PROCESS-NAME,Weiyun.exe
+PROCESS-NAME,aria2c.exe
+PROCESS-NAME,baidunetdisk.exe
+PROCESS-NAME,fdm.exe
+PROCESS-NAME,uTorrent.exe
 URL-REGEX,(.+.)?(torrent|announce.php?passkey=|tracker|BitTorrent|bt_key|ed2k|find_node|get_peers|info_hash|magnet:|peer_id=|xunlei)(..+)?
 URL-REGEX,(.+.|^)(360|so|qihoo|360safe|qhimg|360totalsecurity|yunpan).(cn|com)
 URL-REGEX,(.+\.|^)(360|so)\.(cn|com)

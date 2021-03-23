@@ -19,6 +19,9 @@ DOMAIN,updates-http.cdn-apple.com
 DOMAIN-SUFFIX,ls.apple.com
 DOMAIN-SUFFIX,mzstatic.com
 
+# > Epic
+DOMAIN-KEYWORD,epicgames
+
 # > Google
 DOMAIN-KEYWORD,mtalk.google.com
 DOMAIN,safebrowsing.googleapis.com
@@ -26,6 +29,11 @@ DOMAIN-SUFFIX,dl.google.com
 
 # > Microsoft
 DOMAIN-SUFFIX,msftconnecttest.com
+DOMAIN-SUFFIX,windows.com
+DOMAIN-SUFFIX,windows.net
+DOMAIN-SUFFIX,windowsupdate.com
+DOMAIN-SUFFIX,xbox.com
+DOMAIN-SUFFIX,xboxlive.com
 
 # > Mugglepay
 DOMAIN-SUFFIX,invoice.mugglepay.com
@@ -38,6 +46,10 @@ PROCESS-NAME,ss-local
 USER-AGENT,Steam*
 DOMAIN-SUFFIX,pinyuncloud.com
 DOMAIN-SUFFIX,steamcontent.com
+
+# > Tesla
+DOMAIN-SUFFIX,tesla.cn
+DOMAIN-SUFFIX,tesla-cdn.thron.cn
 
 # > UUBooster
 PROCESS-NAME,UUBooster
@@ -56,6 +68,7 @@ PROCESS-NAME,aria2c
 PROCESS-NAME,fdm
 PROCESS-NAME,Folx
 PROCESS-NAME,NetTransport
+PROCESS-NAME,qbittorrent
 PROCESS-NAME,Thunder
 PROCESS-NAME,Transmission
 PROCESS-NAME,uTorrent

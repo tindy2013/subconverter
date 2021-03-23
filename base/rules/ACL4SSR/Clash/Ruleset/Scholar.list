@@ -1,6 +1,5 @@
 # 内容：Scholar 国内外学术网站
 # 数量：76条
-DOMAIN,scholar.google.com
 DOMAIN-SUFFIX,acm.org
 DOMAIN-SUFFIX,acs.org
 DOMAIN-SUFFIX,aip.org
@@ -61,6 +60,7 @@ DOMAIN-SUFFIX,sagepub.com
 DOMAIN-SUFFIX,sci-hub.tw
 DOMAIN-SUFFIX,sciencedirect.com
 DOMAIN-SUFFIX,sciencemag.org
+DOMAIN-SUFFIX,scitation.org
 DOMAIN-SUFFIX,scopus.com
 DOMAIN-SUFFIX,siam.org
 DOMAIN-SUFFIX,spiedigitallibrary.org

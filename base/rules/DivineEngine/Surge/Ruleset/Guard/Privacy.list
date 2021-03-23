@@ -1,4 +1,33 @@
 # Privacy
+DOMAIN-SUFFIX,adjust.com
+DOMAIN-SUFFIX,cpatrk.net
+DOMAIN-SUFFIX,kochava.com
+DOMAIN-SUFFIX,marketo.com
+DOMAIN-SUFFIX,mobileapptracking.com
+DOMAIN-SUFFIX,rtbasia.com
+DOMAIN-SUFFIX,scorecardresearch.com
+DOMAIN-SUFFIX,sumologic.com
+DOMAIN-SUFFIX,survicate.com
+DOMAIN-SUFFIX,tagcommander.com
+DOMAIN-SUFFIX,tailtarget.com
+DOMAIN-SUFFIX,talkingdata.net
+DOMAIN-SUFFIX,tapad.com
+DOMAIN-SUFFIX,tapfiliate.com
+DOMAIN-SUFFIX,tapinfluence.com
+DOMAIN-SUFFIX,tapstream.com
+DOMAIN-SUFFIX,tealiumiq.com
+DOMAIN-SUFFIX,tend.io
+DOMAIN-SUFFIX,tpctrust.com
+DOMAIN-SUFFIX,trackingio.com
+DOMAIN-SUFFIX,tremormedia.com
+DOMAIN-SUFFIX,woopra.com
+DOMAIN-SUFFIX,wootric.com
+DOMAIN-SUFFIX,wowanalytics.co.uk
+DOMAIN-SUFFIX,zoomanalytics.co
+
+DOMAIN,track.tenjin.com
+DOMAIN,track.tenjin.io
+DOMAIN,api.talkingdata.com
 DOMAIN,track.tiara.daum.net
 DOMAIN,track.tiara.kakao.com
 DOMAIN,zgsdk.zhugeio.com
@@ -14,10 +43,12 @@ DOMAIN,tracklog.58.com
 DOMAIN,hm.baidu.com
 DOMAIN,hmma.baidu.com
 # > ByteDance
-DOMAIN,log-va.tiktokv.com
-DOMAIN,log-lq.snssdk.com
-DOMAIN,xlog.snssdk.com
+DOMAIN,log.byteoversea.com
+DOMAIN,log.tiktokv.com
 DOMAIN,log-hl-ipv6.snssdk.com
+DOMAIN,log-lq.snssdk.com
+DOMAIN,log-va.tiktokv.com
+DOMAIN,xlog.snssdk.com
 # > Google
 DOMAIN-SUFFIX,googletagmanager.com
 DOMAIN-SUFFIX,google-analytics.com
@@ -27,10 +58,8 @@ DOMAIN-SUFFIX,tracking.miui.com
 DOMAIN,data.mistat.xiaomi.com
 DOMAIN,tracking.intl.miui.com
 # > Tencent
-DOMAIN,pingma.qq.com
+DOMAIN-SUFFIX,trace.qq.com
 DOMAIN,btrace.qq.com
+DOMAIN,btrace.video.qq.com
 DOMAIN,mtrace.qq.com
 DOMAIN,safebrowsing.urlsec.qq.com
-# > Umeng
-DOMAIN-KEYWORD,logs.umeng.com
-DOMAIN-KEYWORD,logs.umengcloud.com

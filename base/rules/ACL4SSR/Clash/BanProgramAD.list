@@ -29,7 +29,6 @@ DOMAIN-SUFFIX,nex.corp.163.com
 DOMAIN-SUFFIX,oimagea2.ydstatic.com
 DOMAIN-SUFFIX,pagechoice.net
 DOMAIN-SUFFIX,prom.gome.com.cn
-DOMAIN-SUFFIX,push.126.net
 DOMAIN-SUFFIX,qchannel0d.cn
 DOMAIN-SUFFIX,qt002x.corp.youdao.com
 DOMAIN-SUFFIX,rlogs.youdao.com
@@ -185,7 +184,6 @@ DOMAIN-SUFFIX,appc.baidu.cn
 DOMAIN-SUFFIX,appc.baidu.com
 DOMAIN-SUFFIX,as.baidu.cn
 DOMAIN-SUFFIX,as.baidu.com
-DOMAIN-SUFFIX,ashifen.com
 DOMAIN-SUFFIX,baichuan.baidu.com
 DOMAIN-SUFFIX,baidu9635.com
 DOMAIN-SUFFIX,baidustatic.com
@@ -287,7 +285,6 @@ DOMAIN-SUFFIX,mobads-logs.baidu.com
 DOMAIN-SUFFIX,mobads.baidu.cn
 DOMAIN-SUFFIX,mobads.baidu.com
 DOMAIN-SUFFIX,mpro.baidu.com
-DOMAIN-SUFFIX,msite.baidu.com
 DOMAIN-SUFFIX,mtj.baidu.cn
 DOMAIN-SUFFIX,mtj.baidu.com
 DOMAIN-SUFFIX,neirong.baidu.com
@@ -321,7 +318,6 @@ DOMAIN-SUFFIX,sclick.baidu.com
 DOMAIN-SUFFIX,sestat.baidu.com
 DOMAIN-SUFFIX,shadu.baidu.com
 DOMAIN-SUFFIX,share.baidu.com
-DOMAIN-SUFFIX,shifen.com
 DOMAIN-SUFFIX,snippet.pos.baidu.com
 DOMAIN-SUFFIX,sobar.baidu.com
 DOMAIN-SUFFIX,sobartop.baidu.com
@@ -477,8 +473,7 @@ DOMAIN-SUFFIX,stat.m.jd.com
 
 # Kugou
 DOMAIN-SUFFIX,ads.service.kugou.com
-DOMAIN-SUFFIX,bssdl.kugou.com
-DOMAIN-SUFFIX,bssdlbig.kugou.com
+DOMAIN-SUFFIX,adsfile.bssdlbig.kugou.com
 DOMAIN-SUFFIX,d.kugou.com
 DOMAIN-SUFFIX,downmobile.kugou.com
 DOMAIN-SUFFIX,gad.kugou.com
@@ -579,7 +574,6 @@ DOMAIN-SUFFIX,r.browser.miui.com
 DOMAIN-SUFFIX,security.browser.miui.com
 DOMAIN-SUFFIX,shenghuo.xiaomi.com
 DOMAIN-SUFFIX,stat.pandora.xiaomi.com
-DOMAIN-SUFFIX,tracking.miui.com
 DOMAIN-SUFFIX,union.mi.com
 DOMAIN-SUFFIX,wtradv.market.xiaomi.com
 DOMAIN-SUFFIX,xmpush.xiaomi.com
@@ -1119,7 +1113,6 @@ DOMAIN-SUFFIX,dw.xcar.com.cn
 DOMAIN-SUFFIX,e.nexac.com
 DOMAIN-SUFFIX,eq.10jqka.com.cn
 DOMAIN-SUFFIX,exp.17wo.cn
-DOMAIN-SUFFIX,fund.10jqka.com.cn
 DOMAIN-SUFFIX,game.51yund.com
 DOMAIN-SUFFIX,ganjituiguang.ganji.com
 DOMAIN-SUFFIX,grand.ele.me
