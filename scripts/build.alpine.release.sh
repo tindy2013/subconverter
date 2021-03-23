@@ -19,18 +19,19 @@ cd ..
 git clone https://github.com/ftk/quickjspp --depth=1
 cd quickjspp
 cmake -DCMAKE_BUILD_TYPE=Release .
-make -j4
-install -m644 quickjs/libquickjs.a /usr/lib
-install -m644 quickjs/quickjs.h quickjs/quickjs-libc.h /usr/include/quickjs
-install -m644 quickjspp.hpp /usr/include
+make quickjs -j2
+install -m644 quickjs/libquickjs.a /usr/lib/
+install -d /usr/include/quickjs/
+install -m644 quickjs/quickjs.h quickjs/quickjs-libc.h /usr/include/quickjs/
+install -m644 quickjspp.hpp /usr/include/
 cd ..
 
 git clone https://github.com/PerMalmberg/libcron --depth=1
 cd libcron
 git submodule update --init
 cmake -DCMAKE_BUILD_TYPE=Release .
-make -j4
-install -m644 libcron/out/Release/liblibcron.a /usr/lib
+make libcron -j2
+install -m644 libcron/out/Release/liblibcron.a /usr/lib/
 install -d /usr/include/libcron/
 install -m644 libcron/include/libcron/* /usr/include/libcron/
 install -d /usr/include/date/

@@ -1,6 +1,6 @@
 find_path(QUICKJS_INCLUDE_DIRS quickjs/quickjs.h)
 
-find_library(QUICKJS_LIBRARY libquickjs)
+find_library(QUICKJS_LIBRARY quickjs)
 
 set(QUICKJS_LIBRARIES "${QUICKJS_LIBRARY}")
 
