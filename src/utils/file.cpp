@@ -2,6 +2,8 @@
 #include <fstream>
 #include <sys/stat.h>
 
+#include "string.h"
+
 bool isInScope(const std::string &path)
 {
 #ifdef _WIN32
