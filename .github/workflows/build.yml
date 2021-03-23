@@ -55,7 +55,7 @@ jobs:
     - uses: msys2/setup-msys2@v2
       with:
         update: true
-        install: base-devel git mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-libevent mingw-w64-x86_64-pcre2
+        install: base-devel git mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-libevent mingw-w64-x86_64-pcre2 patch
         msystem: MINGW64
         path-type: inherit
     - name: Build
@@ -80,7 +80,7 @@ jobs:
     - uses: msys2/setup-msys2@v2
       with:
         update: true
-        install: base-devel git mingw-w64-i686-gcc mingw-w64-i686-cmake mingw-w64-i686-libevent mingw-w64-i686-pcre2
+        install: base-devel git mingw-w64-i686-gcc mingw-w64-i686-cmake mingw-w64-i686-libevent mingw-w64-i686-pcre2 patch
         msystem: MINGW32
         path-type: inherit
     - name: Build
