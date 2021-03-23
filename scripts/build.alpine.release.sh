@@ -16,21 +16,25 @@ cmake -DCMAKE_BUILD_TYPE=Release -DYAML_CPP_BUILD_TESTS=OFF -DYAML_CPP_BUILD_TOO
 make install -j2 > /dev/null
 cd ..
 
-git clone https://github.com/svaarala/duktape --depth=1
-cd duktape
-make -C src-tools
-python2 -m ensurepip
-pip2 install PyYAML
-python2 util/dist.py --output-directory dist
-cd dist/src
-cc -c -O3 -o duktape.o duktape.c
-cc -c -O3 -o duk_module_node.o -I. ../extras/module-node/duk_module_node.c
-ar cr libduktape.a duktape.o
-ar cr libduktape_module.a duk_module_node.o
-install -m0644 ./*.a /usr/lib
-install -m0644 ./duk*.h /usr/include
-install -m0644 ../extras/module-node/duk_module_node.h /usr/include
-cd ../../..
+git clone https://github.com/ftk/quickjspp --depth=1
+cd quickjspp
+cmake -DCMAKE_BUILD_TYPE=Release .
+make -j4
+install -m644 quickjs/libquickjs.a /usr/lib
+install -m644 quickjs/quickjs.h quickjs/quickjs-libc.h /usr/include/quickjs
+install -m644 quickjspp.hpp /usr/include
+cd ..
+
+git clone https://github.com/PerMalmberg/libcron --depth=1
+cd libcron
+cmake -DCMAKE_BUILD_TYPE=Release .
+make -j4
+install -m644 libcron/out/Release/liblibcron.a /usr/lib
+install -d /usr/include/libcron/
+install -m644 libcron/include/libcron/* /usr/include/libcron/
+install -d /usr/include/date/
+install -m644 libcron/externals/date/include/date/* /usr/include/date/
+cd ..
 
 export PKG_CONFIG_PATH=/usr/lib64/pkgconfig
 cmake -DCMAKE_BUILD_TYPE=Release .

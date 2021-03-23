@@ -36,20 +36,30 @@ IF(USING_MALLOC_TRIM)
 ENDIF()
 
 ADD_EXECUTABLE(subconverter 
-    src/interfaces.cpp
-    src/logger.cpp
+    src/generator/config/nodemanip.cpp
+    src/generator/config/ruleconvert.cpp
+    src/generator/config/subexport.cpp
+    src/generator/template/templates.cpp
+    src/handler/interfaces.cpp
+    src/handler/multithread.cpp
+    src/handler/upload.cpp
+    src/handler/webget.cpp
     src/main.cpp
-    src/md5.cpp
-    src/misc.cpp
-    src/multithread.cpp
-    src/nodemanip.cpp
-    src/script.cpp
-    src/speedtestutil.cpp
-    src/subexport.cpp
-    src/templates.cpp
-    src/upload.cpp
-    src/webget.cpp
-    src/webserver_libevent.cpp)
+    src/parser/infoparser.cpp
+    src/parser/subparser.cpp
+    src/script/cron.cpp
+    src/script/script_quickjs.cpp
+    src/server/webserver_libevent.cpp
+    src/utils/base64/base64.cpp
+    src/utils/codepage.cpp
+    src/utils/file.cpp
+    src/utils/logger.cpp
+    src/utils/md5/md5.cpp
+    src/utils/network.cpp
+    src/utils/regexp.cpp
+    src/utils/string.cpp
+    src/utils/system.cpp
+    src/utils/urlencode.cpp)
 INCLUDE_DIRECTORIES(src)
 LINK_DIRECTORIES(${CMAKE_SOURCE_DIR})
 
@@ -90,9 +100,13 @@ TARGET_LINK_LIBRARIES(subconverter ${YAML_CPP_LIBRARY})
     ADD_DEFINITIONS(-DPCRE2_STATIC)
 #ENDIF()
 
-FIND_PACKAGE(Duktape REQUIRED)
-INCLUDE_DIRECTORIES(${DUKTAPE_INCLUDE_DIRS})
-TARGET_LINK_LIBRARIES(subconverter ${DUKTAPE_LIBRARIES})
+FIND_PACKAGE(QuickJS REQUIRED)
+INCLUDE_DIRECTORIES(${QUICKJS_INCLUDE_DIRS})
+TARGET_LINK_LIBRARIES(subconverter ${QUICKJS_LIBRARIES})
+
+FIND_PACKAGE(libcron REQUIRED)
+INCLUDE_DIRECTORIES(${LIBCRON_INCLUDE_DIRS})
+TARGET_LINK_LIBRARIES(subconverter ${LIBCRON_LIBRARIES})
 
 IF(WIN32)
     TARGET_LINK_LIBRARIES(subconverter wsock32 ws2_32)

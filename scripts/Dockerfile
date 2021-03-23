@@ -1,26 +1,28 @@
-FROM alpine:3.12
+FROM alpine:3.13
 LABEL maintainer "tindy.it@gmail.com"
 
 # build minimized
 WORKDIR /
-RUN apk add --no-cache --virtual .build-tools git g++ build-base linux-headers cmake python2 nodejs npm && \
+RUN apk add --no-cache --virtual .build-tools git g++ build-base linux-headers cmake && \
     apk add --no-cache --virtual .build-deps curl-dev rapidjson-dev libevent-dev pcre2-dev yaml-cpp-dev && \
-    git clone https://github.com/svaarala/duktape --depth=1 && \
-    cd duktape && \
-	make -C src-tools && \
-    python2 -m ensurepip && \
-    pip2 install PyYAML --no-cache-dir && \
-    python2 util/dist.py --output-directory dist && \
-    cd dist/src && \
-    cc -c -O3 -o duktape.o duktape.c && \
-    cc -c -O3 -o duk_module_node.o -I. ../extras/module-node/duk_module_node.c && \
-    ar cr libduktape.a duktape.o && \
-    ar cr libduktape_module.a duk_module_node.o && \
-    install -m0644 ./*.a /usr/lib && \
-    install -m0644 duk*.h /usr/include && \
-    install -m0644 ../extras/module-node/duk_module_node.h /usr/include && \
-    cd ../../.. && \
-    rm -rf duktape /usr/lib/python2.7 && \
+    git clone https://github.com/ftk/quickjspp --depth=1 && \
+    cd quickjspp && \
+    cmake -DCMAKE_BUILD_TYPE=Release . && \
+    make -j4 && \
+    install -m644 quickjs/libquickjs.a /usr/lib && \
+    install -m644 quickjs/quickjs.h quickjs/quickjs-libc.h /usr/include/quickjs && \
+    install -m644 quickjspp.hpp /usr/include && \
+    cd .. && \
+    git clone https://github.com/PerMalmberg/libcron --depth=1 && \
+    cd libcron && \
+    cmake -DCMAKE_BUILD_TYPE=Release . && \
+    make -j4 && \
+    install -m644 libcron/out/Release/liblibcron.a /usr/lib && \
+    install -d /usr/include/libcron/ && \
+    install -m644 libcron/include/libcron/* /usr/include/libcron/ && \
+    install -d /usr/include/date/ && \
+    install -m644 libcron/externals/date/include/date/* /usr/include/date/ && \
+    cd .. && \
     git clone https://github.com/tindy2013/subconverter --depth=1 && \
     cd subconverter && \
     cmake -DCMAKE_BUILD_TYPE=Release . && \

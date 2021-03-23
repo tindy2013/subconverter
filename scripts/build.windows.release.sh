@@ -13,19 +13,26 @@ cmake -DCMAKE_BUILD_TYPE=Release -DYAML_CPP_BUILD_TESTS=OFF -DYAML_CPP_BUILD_TOO
 make install -j4
 cd ..
 
-git clone https://github.com/svaarala/duktape --depth=1
-cd duktape
-make -C src-tools
-node src-tools/index.js dist --output-directory dist
-cd dist/src
-gcc -c -O3 -o duktape.o duktape.c
-gcc -c -O3 -o duk_module_node.o -I. ../extras/module-node/duk_module_node.c
-ar cr libduktape.a duktape.o
-ar cr libduktape_module.a duk_module_node.o
-install -m0644 ./*.a "$MINGW_PREFIX/lib"
-install -m0644 ./duk*.h "$MINGW_PREFIX/include"
-install -m0644 ../extras/module-node/duk_module_node.h "$MINGW_PREFIX/include"
-cd ../../..
+git clone https://github.com/ftk/quickjspp --depth=1
+cd quickjspp
+patch quickjs/quickjs-libc.c -i ../scripts/patches/0001-quickjs-libc-add-realpath-for-Windows.patch
+cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release .
+make -j4
+install -m644 quickjs/libquickjs.a "$MINGW_PREFIX/lib"
+install -m644 quickjs/quickjs.h quickjs/quickjs-libc.h "$MINGW_PREFIX/include/quickjs"
+install -m644 quickjspp.hpp "$MINGW_PREFIX/include"
+cd ..
+
+git clone https://github.com/PerMalmberg/libcron --depth=1
+cd libcron
+cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release .
+make -j4
+install -m644 libcron/out/Release/liblibcron.a "$MINGW_PREFIX/lib"
+install -d "$MINGW_PREFIX/include/libcron/"
+install -m644 libcron/include/libcron/* "$MINGW_PREFIX/include/libcron/"
+install -d "$MINGW_PREFIX/include/date/"
+install -m644 libcron/externals/date/include/date/* "$MINGW_PREFIX/include/date/"
+cd ..
 
 git clone https://github.com/Tencent/rapidjson --depth=1
 cd rapidjson
