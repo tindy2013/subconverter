@@ -1081,6 +1081,7 @@ void explodeClash(Node yamlnode, const std::string &custom_port, std::vector<nod
             group = SSR_DEFAULT_GROUP;
 
             singleproxy["cipher"] >>= cipher;
+            if (cipher == "dummy") cipher = "none";
             singleproxy["password"] >>= password;
             singleproxy["protocol"] >>= protocol;
             singleproxy["obfs"] >>= obfs;

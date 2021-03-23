@@ -31,7 +31,7 @@ extern size_t gMaxAllowedRules;
 
 const string_array clashr_protocols = {"origin", "auth_sha1_v4", "auth_aes128_md5", "auth_aes128_sha1", "auth_chain_a", "auth_chain_b"};
 const string_array clashr_obfs = {"plain", "http_simple", "http_post", "random_head", "tls1.2_ticket_auth", "tls1.2_ticket_fastauth"};
-const string_array clash_ssr_ciphers = {"rc4-md5", "aes-128-ctr", "aes-192-ctr", "aes-256-ctr", "aes-128-cfb", "aes-192-cfb", "aes-256-cfb", "chacha20-ietf", "xchacha20"};
+const string_array clash_ssr_ciphers = {"rc4-md5", "aes-128-ctr", "aes-192-ctr", "aes-256-ctr", "aes-128-cfb", "aes-192-cfb", "aes-256-cfb", "chacha20-ietf", "xchacha20", "none"};
 
 /// rule type lists
 #define basic_types "DOMAIN", "DOMAIN-SUFFIX", "DOMAIN-KEYWORD", "IP-CIDR", "SRC-IP-CIDR", "GEOIP", "MATCH", "FINAL"
@@ -1264,7 +1264,7 @@ void netchToClash(std::vector<nodeInfo> &nodes, YAML::Node &yamlnode, const stri
             protoparam = GetMember(json, "ProtocolParam");
             obfsparam = GetMember(json, "OBFSParam");
             singleproxy["type"] = "ssr";
-            singleproxy["cipher"] = method;
+            singleproxy["cipher"] = method == "none" ? "dummy" : method;
             singleproxy["password"] = password;
             if(std::all_of(password.begin(), password.end(), ::isdigit) && !password.empty())
                 singleproxy["password"].SetTag("str");
