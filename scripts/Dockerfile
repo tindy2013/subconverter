@@ -17,6 +17,7 @@ RUN apk add --no-cache --virtual .build-tools git g++ build-base linux-headers c
     cd .. && \
     git clone https://github.com/PerMalmberg/libcron --depth=1 && \
     cd libcron && \
+	git submodule update --init && \
     cmake -DCMAKE_BUILD_TYPE=Release . && \
     make libcron -j4 && \
     install -m644 libcron/out/Release/liblibcron.a /usr/lib/ && \
