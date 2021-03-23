@@ -42,7 +42,7 @@ export PKG_CONFIG_PATH=/usr/lib64/pkgconfig
 cmake -DCMAKE_BUILD_TYPE=Release .
 make -j2
 rm subconverter
-g++ -o base/subconverter $(find CMakeFiles/subconverter.dir/src/ -name "*.o")  -static -lpcre2-8 -levent -lyaml-cpp -L/usr/lib64 -lcurl -lmbedtls -lmbedcrypto -lmbedx509 -lz -lduktape -lduktape_module -O3 -s  
+g++ -o base/subconverter $(find CMakeFiles/subconverter.dir/src/ -name "*.o")  -static -lpcre2-8 -levent -lyaml-cpp -L/usr/lib64 -lcurl -lmbedtls -lmbedcrypto -lmbedx509 -lz -lquickjs -llibcron -O3 -s  
 
 cd base
 chmod +rx subconverter
