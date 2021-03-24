@@ -100,8 +100,8 @@ namespace qjs
             JS_SetPropertyStr(ctx, obj, "ProxyInfo", JS_NewStringLen(ctx, n.proxyStr.c_str(), n.proxyStr.size()));
             */
             JS_SetPropertyStr(ctx, obj, "Type", JS_NewInt32(ctx, n.Type));
-            JS_SetPropertyStr(ctx, obj, "ID", JS_NewInt32(ctx, n.Id));
-            JS_SetPropertyStr(ctx, obj, "GroupID", JS_NewInt32(ctx, n.GroupId));
+            JS_SetPropertyStr(ctx, obj, "Id", JS_NewInt32(ctx, n.Id));
+            JS_SetPropertyStr(ctx, obj, "GroupId", JS_NewInt32(ctx, n.GroupId));
             JS_SetPropertyStr(ctx, obj, "Group", JS_NewStringLen(ctx, n.Group.c_str(), n.Group.size()));
             JS_SetPropertyStr(ctx, obj, "Remark", JS_NewStringLen(ctx, n.Remark.c_str(), n.Remark.size()));
             JS_SetPropertyStr(ctx, obj, "Server", JS_NewStringLen(ctx, n.Hostname.c_str(), n.Hostname.size()));
@@ -150,8 +150,9 @@ namespace qjs
             node.port = JS_GetPropertyToInt32(ctx, v, "Port");
             node.proxyStr = JS_GetPropertyToString(ctx, v, "ProxyInfo");
             */
-            node.Id = JS_GetPropertyToUInt32(ctx, v, "Id");
-            node.GroupId = JS_GetPropertyToUInt32(ctx, v, "GroupId");
+            node.Type = JS_GetPropertyToInt32(ctx, v, "Type");
+            node.Id = JS_GetPropertyToInt32(ctx, v, "Id");
+            node.GroupId = JS_GetPropertyToInt32(ctx, v, "GroupId");
             node.Group = JS_GetPropertyToString(ctx, v, "Group");
             node.Remark = JS_GetPropertyToString(ctx, v, "Remark");
             node.Hostname = JS_GetPropertyToString(ctx, v, "Hostname");
@@ -192,22 +193,18 @@ namespace qjs
 template <typename Fn>
 void script_safe_runner(qjs::Runtime *runtime, qjs::Context *context, Fn runnable, bool clean_context = false)
 {
-    if(runtime != nullptr)
+    qjs::Runtime *internal_runtime = runtime;
+    qjs::Context *internal_context = context;
+    defer(if(clean_context) {delete internal_context; delete internal_runtime;} )
+    if(clean_context)
     {
-        qjs::Context *internal_context = context;
-        bool use_internal = false;
-        defer(if(use_internal && internal_context) delete internal_context;)
-        if(clean_context)
-        {
-            internal_context = new qjs::Context(*runtime);
-            use_internal = true;
-            script_context_init(*internal_context);
-        }
-        if(internal_context != nullptr)
-            runnable(*internal_context);
-        if(clean_context)
-            delete internal_context;
+        internal_runtime = new qjs::Runtime();
+        script_runtime_init(*internal_runtime);
+        internal_context = new qjs::Context(*internal_runtime);
+        script_context_init(*internal_context);
     }
+    if(internal_runtime && internal_context)
+        runnable(*internal_context);
 }
 
 #endif // SCRIPT_QUICKJS_H_INCLUDED

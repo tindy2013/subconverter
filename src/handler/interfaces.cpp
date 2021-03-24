@@ -1526,15 +1526,12 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         lExcludeRemarks = string_array{argExcludeRemark};
 
     /// initialize script runtime
-    if(authorized)
+    if(authorized && !gScriptCleanContext)
     {
         ext.js_runtime = new qjs::Runtime();
         script_runtime_init(*ext.js_runtime);
-        if(!gScriptCleanContext)
-        {
-            ext.js_context = new qjs::Context(*ext.js_runtime);
-            script_context_init(*ext.js_context);
-        }
+        ext.js_context = new qjs::Context(*ext.js_runtime);
+        script_context_init(*ext.js_context);
     }
 
     //start parsing urls

@@ -358,7 +358,7 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const string_
         case ProxyType::VMess:
             singleproxy["type"] = "vmess";
             singleproxy["uuid"] = x.UserId;
-            singleproxy["alterId"] = x.AlterId;
+            singleproxy["alterId"] = static_cast<uint32_t>(x.AlterId);
             singleproxy["cipher"] = x.EncryptMethod;
             singleproxy["tls"] = x.TLSSecure;
             if(!scv.is_undef())

@@ -560,7 +560,7 @@ void explodeSSR(std::string ssr, Proxy &node)
     }
     else
     {
-        ssrConstruct(node, group, remarks, remarks_base64, server, port, protocol, method, obfs, password, obfsparam, protoparam);
+        ssrConstruct(node, group, remarks, server, port, protocol, method, obfs, password, obfsparam, protoparam);
     }
 }
 
