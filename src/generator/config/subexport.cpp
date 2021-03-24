@@ -309,7 +309,7 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const string_
         singleproxy.reset();
 
         std::string type = getProxyTypeName(x.Type);
-        std::string remark;
+        std::string remark, pluginopts = replaceAllDistinct(x.PluginOption, ";", "&");
         if(ext.append_proxy_type)
             x.Remark = "[" + type + "] " + x.Remark;
 
@@ -340,16 +340,16 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const string_
             case "simple-obfs"_hash:
             case "obfs-local"_hash:
                 singleproxy["plugin"] = "obfs";
-                singleproxy["plugin-opts"]["mode"] = urlDecode(getUrlArg(x.PluginOption, "obfs"));
-                singleproxy["plugin-opts"]["host"] = urlDecode(getUrlArg(x.PluginOption, "obfs-host"));
+                singleproxy["plugin-opts"]["mode"] = urlDecode(getUrlArg(pluginopts, "obfs"));
+                singleproxy["plugin-opts"]["host"] = urlDecode(getUrlArg(pluginopts, "obfs-host"));
                 break;
             case "v2ray-plugin"_hash:
                 singleproxy["plugin"] = "v2ray-plugin";
-                singleproxy["plugin-opts"]["mode"] = getUrlArg(x.PluginOption, "mode");
-                singleproxy["plugin-opts"]["host"] = getUrlArg(x.PluginOption, "host");
-                singleproxy["plugin-opts"]["path"] = getUrlArg(x.PluginOption, "path");
-                singleproxy["plugin-opts"]["tls"] = x.PluginOption.find("tls") != std::string::npos;
-                singleproxy["plugin-opts"]["mux"] = x.PluginOption.find("mux") != std::string::npos;
+                singleproxy["plugin-opts"]["mode"] = getUrlArg(pluginopts, "mode");
+                singleproxy["plugin-opts"]["host"] = getUrlArg(pluginopts, "host");
+                singleproxy["plugin-opts"]["path"] = getUrlArg(pluginopts, "path");
+                singleproxy["plugin-opts"]["tls"] = pluginopts.find("tls") != std::string::npos;
+                singleproxy["plugin-opts"]["mux"] = pluginopts.find("mux") != std::string::npos;
                 if(!scv.is_undef())
                     singleproxy["plugin-opts"]["skip-cert-verify"] = scv.get();
                 break;
