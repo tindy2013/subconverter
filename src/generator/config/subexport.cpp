@@ -984,7 +984,7 @@ std::string proxyToSingle(std::vector<Proxy> &nodes, int types, extra_settings &
         return base64Encode(allLinks);
 }
 
-std::string proxyToSSSub(std::string &base_conf, std::vector<Proxy> &nodes, extra_settings &ext)
+std::string proxyToSSSub(std::string base_conf, std::vector<Proxy> &nodes, extra_settings &ext)
 {
     rapidjson::Document json, base;
     std::string remark, hostname, password, method;
@@ -1002,6 +1002,9 @@ std::string proxyToSSSub(std::string &base_conf, std::vector<Proxy> &nodes, extr
     json.AddMember("plugin", "", alloc);
     json.AddMember("plugin_opts", "", alloc);
 
+    base_conf = trimWhitespace(base_conf);
+    if(base_conf.empty())
+        base_conf = "{}";
     rapidjson::ParseResult result = base.Parse(base_conf.data());
     if(result)
     {
@@ -1019,7 +1022,6 @@ std::string proxyToSSSub(std::string &base_conf, std::vector<Proxy> &nodes, extr
     {
         remark = x.Remark;
         hostname = x.Hostname;
-        int port = (unsigned short)to_int(GetMember(json, "Port"));
         std::string &password = x.Password;
         std::string &method = x.EncryptMethod;
         std::string &plugin = x.Plugin;
@@ -1034,7 +1036,7 @@ std::string proxyToSSSub(std::string &base_conf, std::vector<Proxy> &nodes, extr
                 plugin = "obfs-local";
             break;
         case ProxyType::ShadowsocksR:
-            if(std::count(ss_ciphers.begin(), ss_ciphers.end(), method) > 0 && protocol == "origin" && obfs == "plain")
+            if(std::find(ss_ciphers.begin(), ss_ciphers.end(), method) == ss_ciphers.end() || protocol != "origin" || obfs != "plain")
                 continue;
             break;
         default:
@@ -1042,7 +1044,7 @@ std::string proxyToSSSub(std::string &base_conf, std::vector<Proxy> &nodes, extr
         }
         jsondata["remarks"].SetString(rapidjson::StringRef(remark.c_str(), remark.size()));
         jsondata["server"].SetString(rapidjson::StringRef(hostname.c_str(), hostname.size()));
-        jsondata["server_port"] = port;
+        jsondata["server_port"] = x.Port;
         jsondata["password"].SetString(rapidjson::StringRef(password.c_str(), password.size()));
         jsondata["method"].SetString(rapidjson::StringRef(method.c_str(), method.size()));
         jsondata["plugin"].SetString(rapidjson::StringRef(plugin.c_str(), plugin.size()));
@@ -1628,10 +1630,9 @@ void proxyToQuanX(std::vector<Proxy> &nodes, INIReader &ini, std::vector<ruleset
 
 std::string proxyToSSD(std::vector<Proxy> &nodes, std::string &group, std::string &userinfo, extra_settings &ext)
 {
-    rapidjson::Document json;
     rapidjson::StringBuffer sb;
     rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
-    int port, index = 0;
+    size_t index = 0;
 
     if(!group.size())
         group = "SSD";
@@ -1670,7 +1671,6 @@ std::string proxyToSSD(std::vector<Proxy> &nodes, std::string &group, std::strin
     for(Proxy &x : nodes)
     {
         std::string &hostname = x.Hostname, &password = x.Password, &method = x.EncryptMethod, &plugin = x.Plugin, &pluginopts = x.PluginOption, &protocol = x.Protocol, &obfs = x.OBFS;
-        port = (unsigned short)to_int(GetMember(json, "Port"));
 
         switch(x.Type)
         {
@@ -1681,7 +1681,7 @@ std::string proxyToSSD(std::vector<Proxy> &nodes, std::string &group, std::strin
             writer.Key("server");
             writer.String(hostname.data());
             writer.Key("port");
-            writer.Int(port);
+            writer.Int(x.Port);
             writer.Key("encryption");
             writer.String(method.data());
             writer.Key("password");
@@ -1703,7 +1703,7 @@ std::string proxyToSSD(std::vector<Proxy> &nodes, std::string &group, std::strin
                 writer.Key("server");
                 writer.String(hostname.data());
                 writer.Key("port");
-                writer.Int(port);
+                writer.Int(x.Port);
                 writer.Key("encryption");
                 writer.String(method.data());
                 writer.Key("password");

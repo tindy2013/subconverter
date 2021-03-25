@@ -1393,6 +1393,8 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
             continue;
         req_arg_map[x.substr(0, pos)] = x.substr(pos + 1);
     }
+    req_arg_map["target"] = argTarget;
+    req_arg_map["ver"] = std::to_string(intSurgeVer);
 
     /// save template variables
     template_args tpl_args;
