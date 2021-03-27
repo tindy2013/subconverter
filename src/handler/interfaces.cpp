@@ -1652,7 +1652,10 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
             {
                 ctx.eval(filterScript);
                 auto filter = (std::function<bool(const Proxy&)>) ctx.eval("filter");
-                nodes.erase(std::remove_if(nodes.begin(), nodes.end(), filter), nodes.end());
+                nodes.erase(std::remove_if(nodes.begin(), nodes.end(), [&](const Proxy &node)
+                {
+                    return !filter(node);
+                }), nodes.end());
             }
             catch(qjs::exception)
             {
