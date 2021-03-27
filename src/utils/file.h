@@ -2,6 +2,7 @@
 #define FILE_H_INCLUDED
 
 #include <string>
+#include <string.h>
 
 #ifdef _WIN32
 #include <unistd.h>
