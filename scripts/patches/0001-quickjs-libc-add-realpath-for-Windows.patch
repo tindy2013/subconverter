@@ -1,5 +1,5 @@
---- quickjs-libc.c	2021-03-23 15:04:09.604314700 +0800
-+++ patched.c	2021-03-23 15:04:35.109289500 +0800
+--- quickjs-libc.c	2021-06-02 14:00:27.442481498 +0800
++++ patched.c	2021-06-02 13:52:11.000000000 +0800
 @@ -132,6 +132,29 @@
  static uint64_t os_pending_signals;
  static int (*os_poll_func)(JSContext *ctx);
@@ -53,16 +53,7 @@
          {
              pstrcat(buf, sizeof(buf), module_name);
          }
-@@ -2588,8 +2611,6 @@
-     return JS_NewInt32(ctx, ret);
- }
- 
--#if !defined(_WIN32)
--
- /* return [path, errorcode] */
- static JSValue js_os_realpath(JSContext *ctx, JSValueConst this_val,
-                               int argc, JSValueConst *argv)
-@@ -2601,7 +2622,7 @@
+@@ -2661,7 +2684,7 @@
      path = JS_ToCString(ctx, argv[0]);
      if (!path)
          return JS_EXCEPTION;
@@ -71,23 +62,3 @@
      JS_FreeCString(ctx, path);
      if (!res) {
          buf[0] = '\0';
-@@ -2612,6 +2633,8 @@
-     return make_string_error(ctx, buf, err);
- }
- 
-+#if !defined(_WIN32)
-+
- static JSValue js_os_symlink(JSContext *ctx, JSValueConst this_val,
-                               int argc, JSValueConst *argv)
- {
-@@ -3598,9 +3621,9 @@
- #endif
-     JS_CFUNC_MAGIC_DEF("stat", 1, js_os_stat, 0 ),
-     JS_CFUNC_DEF("utimes", 3, js_os_utimes ),
-+	JS_CFUNC_DEF("realpath", 1, js_os_realpath ),
- #if !defined(_WIN32)
-     JS_CFUNC_MAGIC_DEF("lstat", 1, js_os_stat, 1 ),
--    JS_CFUNC_DEF("realpath", 1, js_os_realpath ),
-     JS_CFUNC_DEF("symlink", 2, js_os_symlink ),
-     JS_CFUNC_DEF("readlink", 1, js_os_readlink ),
-     JS_CFUNC_DEF("exec", 1, js_os_exec ),
