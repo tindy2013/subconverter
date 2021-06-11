@@ -273,7 +273,7 @@ void preprocessNodes(std::vector<Proxy> &nodes, extra_settings &ext)
                         return 0;
                     return compare(a, b);
                 };
-                std::sort(nodes.begin(), nodes.end(), comparer);
+                std::stable_sort(nodes.begin(), nodes.end(), comparer);
                 failed = false;
             }, gScriptCleanContext);
         }
