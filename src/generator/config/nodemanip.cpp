@@ -34,7 +34,7 @@ void copyNodes(std::vector<Proxy> &source, std::vector<Proxy> &dest)
 
 int addNodes(std::string link, std::vector<Proxy> &allNodes, int groupID, parse_settings &parse_set)
 {
-    std::string &proxy = *parse_set.proxy, subInfo = *parse_set.sub_info;
+    std::string &proxy = *parse_set.proxy, &subInfo = *parse_set.sub_info;
     string_array &exclude_remarks = *parse_set.exclude_remarks;
     string_array &include_remarks = *parse_set.include_remarks;
     string_array &stream_rules = *parse_set.stream_rules;
