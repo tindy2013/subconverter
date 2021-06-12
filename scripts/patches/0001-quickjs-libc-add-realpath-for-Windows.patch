@@ -1,36 +1,25 @@
---- quickjs-libc.c	2021-03-23 15:04:09.604314700 +0800
-+++ patched.c	2021-03-23 15:04:35.109289500 +0800
-@@ -132,6 +132,29 @@
- static uint64_t os_pending_signals;
- static int (*os_poll_func)(JSContext *ctx);
+--- quickjs-libc.c	2021-06-11 22:42:15.729357600 +0800
++++ patched.c	2021-06-11 22:44:01.426073100 +0800
+@@ -511,6 +511,18 @@
+ }
+ #endif /* !_WIN32 */
  
-+static char *_realpath(const char *path, char *resolved_path)
-+{
 +#if defined(_WIN32)
-+    BOOL allocated = FALSE;
-+    if(resolved_path == NULL)
-+    {
-+        resolved_path = (char*) malloc(PATH_MAX);
-+        allocated = TRUE;
-+    }
-+    DWORD len = GetFullPathNameA(path, PATH_MAX, resolved_path, NULL);
-+    if(!len || len >= PATH_MAX)
-+    {
-+        if(allocated)
-+            free(resolved_path);
++static char *realpath(const char *path, char *buf)
++{
++    if (!_fullpath(buf, path, PATH_MAX)) {
++        errno = ENOENT;
 +        return NULL;
++    } else {
++        return buf;
 +    }
-+    resolved_path[len] = '\0';
-+    return resolved_path;
-+#else
-+    return realpath(path, resolved_path);
-+#endif // _WIN32
 +}
++#endif
 +
- static void js_std_dbuf_init(JSContext *ctx, DynBuf *s)
+ int js_module_set_import_meta(JSContext *ctx, JSValueConst func_val,
+                               JS_BOOL use_realpath, JS_BOOL is_main)
  {
-     dbuf_init2(s, JS_GetRuntime(ctx), (DynBufReallocFunc *)js_realloc_rt);
-@@ -530,19 +553,19 @@
+@@ -530,7 +542,7 @@
          return -1;
      if (!strchr(module_name, ':')) {
          strcpy(buf, "file://");
@@ -39,12 +28,7 @@
          /* realpath() cannot be used with modules compiled with qjsc
             because the corresponding module source code is not
             necessarily present */
-         if (use_realpath) {
--            char *res = realpath(module_name, buf + strlen(buf));
-+            char *res = _realpath(module_name, buf + strlen(buf));
-             if (!res) {
-                 JS_ThrowTypeError(ctx, "realpath failure");
-                 JS_FreeCString(ctx, module_name);
+@@ -542,7 +554,7 @@
                  return -1;
              }
          } else
@@ -53,41 +37,22 @@
          {
              pstrcat(buf, sizeof(buf), module_name);
          }
-@@ -2588,8 +2611,6 @@
+@@ -2638,18 +2650,6 @@
      return JS_NewInt32(ctx, ret);
  }
  
--#if !defined(_WIN32)
+-#if defined(_WIN32)
+-static char *realpath(const char *path, char *buf)
+-{
+-    if (!_fullpath(buf, path, PATH_MAX)) {
+-        errno = ENOENT;
+-        return NULL;
+-    } else {
+-        return buf;
+-    }
+-}
+-#endif
 -
  /* return [path, errorcode] */
  static JSValue js_os_realpath(JSContext *ctx, JSValueConst this_val,
                                int argc, JSValueConst *argv)
-@@ -2601,7 +2622,7 @@
-     path = JS_ToCString(ctx, argv[0]);
-     if (!path)
-         return JS_EXCEPTION;
--    res = realpath(path, buf);
-+    res = _realpath(path, buf);
-     JS_FreeCString(ctx, path);
-     if (!res) {
-         buf[0] = '\0';
-@@ -2612,6 +2633,8 @@
-     return make_string_error(ctx, buf, err);
- }
- 
-+#if !defined(_WIN32)
-+
- static JSValue js_os_symlink(JSContext *ctx, JSValueConst this_val,
-                               int argc, JSValueConst *argv)
- {
-@@ -3598,9 +3621,9 @@
- #endif
-     JS_CFUNC_MAGIC_DEF("stat", 1, js_os_stat, 0 ),
-     JS_CFUNC_DEF("utimes", 3, js_os_utimes ),
-+	JS_CFUNC_DEF("realpath", 1, js_os_realpath ),
- #if !defined(_WIN32)
-     JS_CFUNC_MAGIC_DEF("lstat", 1, js_os_stat, 1 ),
--    JS_CFUNC_DEF("realpath", 1, js_os_realpath ),
-     JS_CFUNC_DEF("symlink", 2, js_os_symlink ),
-     JS_CFUNC_DEF("readlink", 1, js_os_readlink ),
-     JS_CFUNC_DEF("exec", 1, js_os_exec ),
