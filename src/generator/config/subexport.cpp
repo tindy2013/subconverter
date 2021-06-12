@@ -263,18 +263,25 @@ void preprocessNodes(std::vector<Proxy> &nodes, extra_settings &ext)
                 script = fileGet(script.substr(5), false);
             script_safe_runner(ext.js_runtime, ext.js_context, [&](qjs::Context &ctx)
             {
-                ctx.eval(script);
-                auto compare = (std::function<int(const Proxy&, const Proxy&)>) ctx.eval("compare");
-                auto comparer = [&](const Proxy &a, const Proxy &b)
+                try
                 {
-                    if(a.Type == ProxyType::Unknow)
-                        return 1;
-                    if(b.Type == ProxyType::Unknow)
-                        return 0;
-                    return compare(a, b);
-                };
-                std::stable_sort(nodes.begin(), nodes.end(), comparer);
-                failed = false;
+                    ctx.eval(script);
+                    auto compare = (std::function<int(const Proxy&, const Proxy&)>) ctx.eval("compare");
+                    auto comparer = [&](const Proxy &a, const Proxy &b)
+                    {
+                        if(a.Type == ProxyType::Unknow)
+                            return 1;
+                        if(b.Type == ProxyType::Unknow)
+                            return 0;
+                        return compare(a, b);
+                    };
+                    std::stable_sort(nodes.begin(), nodes.end(), comparer);
+                    failed = false;
+                }
+                catch (qjs::exception)
+                {
+                    script_print_stack(ctx);
+                }
             }, gScriptCleanContext);
         }
         if(failed) std::stable_sort(nodes.begin(), nodes.end(), [](const Proxy &a, const Proxy &b)

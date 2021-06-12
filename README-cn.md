@@ -290,7 +290,7 @@ http://127.0.0.1:25500/sub?target=%TARGET%&url=%URL%&emoji=%EMOJI%····
 | filename      |  可选  | MySS                         | 指定该链接生成的配置文件的文件名，可以在 Clash For Windows 等支持文件名的软件中显示出来                                                                                                                                                                                |
 | interval      |  可选  | 43200                        | 用于设置托管配置更新间隔，确定配置将更新多长时间，单位为秒                                                                                                                                                                                                             |
 | rename        |  可选  | 详见下文中 `rename`          | 用于自定义重命名，需要经过 [URLEncode](https://www.urlencoder.org/) 处理，会覆盖配置文件里的设置                                                                                                                                                                       |
-| filter_script |  可选  | 详见下文中 `filter_script`   | 用于自定义筛选节点的js代码，需要经过 [URLEncode](https://www.urlencoder.org/) 处理，会覆盖配置文件里的设置。出于安全考虑，链接需包含正确的 `token` 参数，才会应用该设置                                                                                                |
+| filter_script |  可选  | 详见下文中 `filter_script`   | 用于自定义筛选节点的js代码，需要经过 [URLEncode](https://www.urlencoder.org/) 处理，会覆盖配置文件里的设置。出于安全考虑，在 API 模式下链接需包含正确的 `token` 参数，才会应用该设置                                                                                                |
 | strict        |  可选  | true / false                 | 如果设置为 true，则 Surge 将在上述间隔后要求强制更新                                                                                                                                                                                                                   |
 | upload        |  可选  | true / false                 | 用于将生成的订阅文件上传至 `Gist`，需要填写`gistconf.ini`，默认为 false (即不上传)                                                                                                                                                                                     |
 | emoji         |  可选  | true / false                 | 用于设置节点名称是否包含 Emoji，默认为 true                                                                                                                                                                                                                            |
@@ -300,8 +300,8 @@ http://127.0.0.1:25500/sub?target=%TARGET%&url=%URL%&emoji=%EMOJI%····
 | tfo           |  可选  | true / false                 | 用于开启该订阅链接的 TCP Fast Open，默认为 false                                                                                                                                                                                                                       |
 | udp           |  可选  | true / false                 | 用于开启该订阅链接的 UDP，默认为 false                                                                                                                                                                                                                                 |
 | list          |  可选  | true / false                 | 用于输出 Surge Node List 或者 Clash Proxy Provider 或者 Quantumult (X) 的节点订阅 或者 解码后的 SIP002                                                                                                                                                                 |
-| sort          |  可选  | true / false                 | 用于对输出的节点或策略组按节点名进行再次排序，默认为 false                                                                                                                                                                                                             |
-| sort_script   |  可选  | 详见下文 `sort_script`       | 用于自定义排序的js代码，需要经过 [URLEncode](https://www.urlencoder.org/) 处理，会覆盖配置文件里的设置。出于安全考虑，链接需包含正确的 `token` 参数，才会应用该设置                                                                                                    |
+| sort          |  可选  | true / false                 | 用于对输出的节点或策略组进行再次排序（默认按节点名字母顺序），默认为 false                                                                                                                                                                                                             |
+| sort_script   |  可选  | 详见下文 `sort_script`       | 用于自定义排序的js代码，需要经过 [URLEncode](https://www.urlencoder.org/) 处理，会覆盖配置文件里的设置。出于安全考虑，在 API 模式下链接需包含正确的 `token` 参数，才会应用该设置                                                                                                    |
 | script        |  可选  | true / false                 | 用于生成Clash Script，默认为 false                                                                                                                                                                                                                                     |
 | insert        |  可选  | true / false                 | 用于设置是否将配置文件中的 `insert_url` 插入，默认为 true                                                                                                                                                                                                              |
 | scv           |  可选  | true / false                 | 用于关闭 TLS 节点的证书检查，默认为 false                                                                                                                                                                                                                              |
@@ -687,7 +687,7 @@ exclude=(流量|官网)
 
 1. **sort_flag**
 
-    > 对生成的订阅中的节点按节点名进行 A-Z 的排序，设置为 true 时打开，默认为 false
+    > 对生成的订阅中的节点进行排序（默认按节点名字母顺序），设置为 true 时打开，默认为 false
 
 1. **sort_script**
 

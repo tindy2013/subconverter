@@ -148,7 +148,7 @@ http://127.0.0.1:25500/sub?target=%TARGET%&url=%URL%&emoji=%EMOJI%····
 | udp      |  No     | true / false  | Enable UDP for all nodes. Default is `false`.  |
 | scv      |  No     | true / false  | Enable Skip Cert Verify for all nodes. Default is `false`.  |
 | list     |  No     | true / false  | Generate Surge Node List or Clash Proxy Provider. Default is `false`.  |
-| sort     |  No     | true / false  | Sort nodes in alphabetical order. Default is `false`.  |
+| sort     |  No     | true / false  | Sort nodes in specific order (default by node names in alphabetical order). Default is `false`.  |
 | include  |  No     | See `include_remarks`  | Exclude nodes which remarks match the following patterns. Supports regular expression. Process with [URLEncode](https://www.urlencoder.org/) first. **WILL OVERRIDE THE SAME SETTING IN `pref.ini`**  |
 | exclude  |  No     | See `exclude_remarks`  | Only include nodes which remarks match the following patterns. Supports regular expression. Process with [URLEncode](https://www.urlencoder.org/) first. **WILL OVERRIDE THE SAME SETTING IN `pref.ini`**  |
 | filename |  No     | MySS  | Set the file name while downloading. Can be used as a profile name in Clash for Windows.  |
