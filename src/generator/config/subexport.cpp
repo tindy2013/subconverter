@@ -75,21 +75,21 @@ void nodeRename(Proxy &node, const string_array &rename_array, extra_settings &e
         {
             script_safe_runner(ext.js_runtime, ext.js_context, [&](qjs::Context &ctx)
             {
-                    std::string script = x.substr(9);
-                    if(startsWith(script, "path:"))
-                        script = fileGet(script.substr(5), true);
-                    try
-                    {
-                        ctx.eval(script);
-                        auto rename = (std::function<std::string(const Proxy&)>) ctx.eval("rename");
-                        returned_remark = rename(node);
-                        if(!returned_remark.empty())
-                            remark = returned_remark;
-                    }
-                    catch (qjs::exception)
-                    {
-                        script_print_stack(ctx);
-                    }
+                std::string script = x.substr(9);
+                if(startsWith(script, "path:"))
+                    script = fileGet(script.substr(5), true);
+                try
+                {
+                    ctx.eval(script);
+                    auto rename = (std::function<std::string(const Proxy&)>) ctx.eval("rename");
+                    returned_remark = rename(node);
+                    if(!returned_remark.empty())
+                        remark = returned_remark;
+                }
+                catch (qjs::exception)
+                {
+                    script_print_stack(ctx);
+                }
             }, gScriptCleanContext);
             continue;
         }
@@ -263,18 +263,25 @@ void preprocessNodes(std::vector<Proxy> &nodes, extra_settings &ext)
                 script = fileGet(script.substr(5), false);
             script_safe_runner(ext.js_runtime, ext.js_context, [&](qjs::Context &ctx)
             {
-                ctx.eval(script);
-                auto compare = (std::function<int(const Proxy&, const Proxy&)>) ctx.eval("compare");
-                auto comparer = [&](const Proxy &a, const Proxy &b)
+                try
                 {
-                    if(a.Type == ProxyType::Unknow)
-                        return 1;
-                    if(b.Type == ProxyType::Unknow)
-                        return 0;
-                    return compare(a, b);
-                };
-                std::stable_sort(nodes.begin(), nodes.end(), comparer);
-                failed = false;
+                    ctx.eval(script);
+                    auto compare = (std::function<int(const Proxy&, const Proxy&)>) ctx.eval("compare");
+                    auto comparer = [&](const Proxy &a, const Proxy &b)
+                    {
+                        if(a.Type == ProxyType::Unknow)
+                            return 1;
+                        if(b.Type == ProxyType::Unknow)
+                            return 0;
+                        return compare(a, b);
+                    };
+                    std::stable_sort(nodes.begin(), nodes.end(), comparer);
+                    failed = false;
+                }
+                catch(qjs::exception)
+                {
+                    script_print_stack(ctx);
+                }
             }, gScriptCleanContext);
         }
         if(failed) std::stable_sort(nodes.begin(), nodes.end(), [](const Proxy &a, const Proxy &b)
@@ -1164,7 +1171,7 @@ void proxyToQuan(std::vector<Proxy> &nodes, INIReader &ini, std::vector<ruleset_
             else
             {
                 proxyStr = remark + " = shadowsocks, " + hostname + ", " + port + ", " + method + ", \"" + password + "\", group=" + x.Group;
-                if(plugin == "simple-obfs" && pluginopts.size())
+                if(plugin == "obfs-local" && pluginopts.size())
                 {
                     proxyStr += ", " + replaceAllDistinct(pluginopts, ";", ", ");
                 }

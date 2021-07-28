@@ -1010,7 +1010,7 @@ void explodeClash(Node yamlnode, std::vector<Proxy> &nodes)
             }
             else if(singleproxy["obfs"].IsDefined())
             {
-                plugin = "simple-obfs";
+                plugin = "obfs-local";
                 singleproxy["obfs"] >>= pluginopts_mode;
                 singleproxy["obfs-host"] >>= pluginopts_host;
             }
