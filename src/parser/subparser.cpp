@@ -960,17 +960,28 @@ void explodeClash(Node yamlnode, std::vector<Proxy> &nodes)
             singleproxy["alterId"] >>= aid;
             singleproxy["cipher"] >>= cipher;
             net = singleproxy["network"].IsDefined() ? safe_as<std::string>(singleproxy["network"]) : "tcp";
-            if(net == "http")
+            switch(hash_(net))
             {
+            case "http"_hash:
                 singleproxy["http-opts"]["path"][0] >>= path;
                 singleproxy["http-opts"]["headers"]["Host"][0] >>= host;
                 edge.clear();
-            }
-            else
-            {
+                break;
+            case "ws"_hash:
                 path = singleproxy["ws-path"].IsDefined() ? safe_as<std::string>(singleproxy["ws-path"]) : "/";
                 singleproxy["ws-headers"]["Host"] >>= host;
                 singleproxy["ws-headers"]["Edge"] >>= edge;
+                break;
+            case "h2"_hash:
+                singleproxy["h2-opts"]["path"] >>= path;
+                singleproxy["h2-opts"]["host"][0] >>= host;
+                edge.clear();
+                break;
+            case "grpc"_hash:
+                singleproxy["servername"] >>= host;
+                singleproxy["grpc-opts"]["grpc-service-name"] >>= path;
+                edge.clear();
+                break;
             }
             tls = safe_as<std::string>(singleproxy["tls"]) == "true" ? "tls" : "";
 

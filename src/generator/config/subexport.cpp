@@ -391,6 +391,17 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const string_
                 if(x.Edge.size())
                     singleproxy["http-opts"]["headers"]["Edge"].push_back(x.Edge);
                 break;
+            case "h2"_hash:
+                singleproxy["network"] = x.TransferProtocol;
+                singleproxy["h2-opts"]["path"] = x.Path;
+                if(x.Host.size())
+                    singleproxy["h2-opts"]["host"].push_back(x.Host);
+                break;
+            case "grpc"_hash:
+                singleproxy["network"] = x.TransferProtocol;
+                singleproxy["servername"] = x.Host;
+                singleproxy["grpc-opts"]["grpc-service-name"] = x.Path;
+                break;
             default:
                 continue;
             }
