@@ -488,8 +488,8 @@ void readGroup(YAML::Node node, string_array &dest, bool scope_limit = true)
         std::string url = "http://www.gstatic.com/generate_204", interval = "300", tolerance, timeout;
         object["name"] >>= name;
         object["type"] >>= type;
-        tempArray.emplace_back("name=" + name);
-        tempArray.emplace_back("type=" + type);
+        tempArray.emplace_back(name);
+        tempArray.emplace_back(type);
         object["url"] >>= url;
         object["interval"] >>= interval;
         object["tolerance"] >>= tolerance;
@@ -509,13 +509,13 @@ void readGroup(YAML::Node node, string_array &dest, bool scope_limit = true)
         default:
             if(tempArray.size() < 3)
                 continue;
-            tempArray.emplace_back("url=" + url);
-            tempArray.emplace_back("interval=" + interval + ",timeout=" + timeout + ",tolerance=" + tolerance);
+            tempArray.emplace_back(url);
+            tempArray.emplace_back(interval + "," + timeout + "," + tolerance);
         }
 
         strLine = std::accumulate(std::next(tempArray.begin()), tempArray.end(), tempArray[0], [](std::string a, std::string b) -> std::string
         {
-            return std::move(a) + "," + std::move(b);
+            return std::move(a) + "`" + std::move(b);
         });
         dest.emplace_back(std::move(strLine));
     }
