@@ -184,7 +184,7 @@ void processRemark(std::string &oldremark, std::string &newremark, string_array 
     oldremark = newremark;
 }
 
-void parseGroupTimes(const std::string &src, int *interval, int *tolerance, int *timeout)
+void parseGroupTimes(const std::string &src, int *interval, int *tolerance, int *timeout, std::string *strategy)
 {
     std::vector<int*> ptrs;
     ptrs.push_back(interval);
@@ -203,6 +203,7 @@ void parseGroupTimes(const std::string &src, int *interval, int *tolerance, int 
         else
             return;
     }
+    *strategy=src.substr(bpos, epos - bpos);
     return;
 }
 
@@ -533,6 +534,7 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const string_
         singlegroup["type"] = vArray[1];
 
         int interval = 0, tolerance = 0;
+        std::string strategy="";
         rules_upper_bound = vArray.size();
         switch(hash_(vArray[1]))
         {
@@ -546,11 +548,13 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const string_
                 continue;
             rules_upper_bound -= 2;
             singlegroup["url"] = vArray[rules_upper_bound];
-            parseGroupTimes(vArray[rules_upper_bound + 1], &interval, &tolerance, NULL);
+            parseGroupTimes(vArray[rules_upper_bound + 1], &interval, &tolerance, NULL, &strategy);
             if(interval)
                 singlegroup["interval"] = interval;
             if(tolerance)
                 singlegroup["tolerance"] = tolerance;
+            if(strategy.size())
+                singlegroup["strategy"] = strategy;
             break;
         default:
             continue;
@@ -862,7 +866,7 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
                 continue;
             rules_upper_bound -= 2;
             url = vArray[rules_upper_bound];
-            parseGroupTimes(vArray[rules_upper_bound + 1], &interval, &tolerance, &timeout);
+            parseGroupTimes(vArray[rules_upper_bound + 1], &interval, &tolerance, &timeout, NULL);
             break;
         case "ssid"_hash:
             if(rules_upper_bound < 4)
@@ -2061,7 +2065,7 @@ std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf,
                 continue;
             rules_upper_bound -= 2;
             url = vArray[rules_upper_bound];
-            parseGroupTimes(vArray[rules_upper_bound + 1], &interval, NULL, NULL);
+            parseGroupTimes(vArray[rules_upper_bound + 1], &interval, NULL, NULL, NULL);
             break;
         case "ssid"_hash:
             if(vArray.size() < 4)
