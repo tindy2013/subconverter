@@ -495,7 +495,7 @@ void explodeSSConf(std::string content, std::vector<Proxy> &nodes)
     json.Parse(content.data());
     if(json.HasParseError())
         return;
-    const char *section = json.HasMember("version") && json.HasMember("remarks") && json.HasMember("servers") ? "servers" : "configs";
+    const char *section = json.HasMember("version") && json.HasMember("servers") ? "servers" : "configs";
     if(!json.HasMember(section))
         return;
     GetMember(json, "remarks", group);
