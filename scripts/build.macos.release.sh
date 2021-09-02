@@ -16,6 +16,7 @@ cd yaml-cpp
 cmake -DCMAKE_BUILD_TYPE=Release -DYAML_CPP_BUILD_TESTS=OFF -DYAML_CPP_BUILD_TOOLS=OFF . > /dev/null
 make install -j8 > /dev/null
 cd ..
+rm -R yaml-cpp
 
 git clone https://github.com/ftk/quickjspp --depth=1
 cd quickjspp
@@ -26,6 +27,7 @@ install -d /usr/local/include/quickjs/
 install -m644 quickjs/quickjs.h quickjs/quickjs-libc.h /usr/local/include/quickjs/
 install -m644 quickjspp.hpp /usr/local/include/
 cd ..
+rm -R quickjspp
 
 git clone https://github.com/PerMalmberg/libcron --depth=1
 cd libcron
@@ -38,6 +40,7 @@ install -m644 libcron/include/libcron/* /usr/local/include/libcron/
 install -d /usr/local/include/date/
 install -m644 libcron/externals/date/include/date/* /usr/local/include/date/
 cd ..
+rm -R libcron
 
 cp /usr/local/lib/libevent.a .
 cp /usr/local/opt/zlib/lib/libz.a .
