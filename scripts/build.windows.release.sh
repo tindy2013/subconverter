@@ -6,14 +6,12 @@ cd curl
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_USE_LIBSSH2=OFF -DHTTP_ONLY=ON -DCMAKE_USE_SCHANNEL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_CURL_EXE=OFF -DCMAKE_INSTALL_PREFIX="$MINGW_PREFIX" -G "Unix Makefiles" -DHAVE_LIBIDN2=OFF .
 make install -j4
 cd ..
-rm -rf curl
 
 git clone https://github.com/jbeder/yaml-cpp --depth=1
 cd yaml-cpp
 cmake -DCMAKE_BUILD_TYPE=Release -DYAML_CPP_BUILD_TESTS=OFF -DYAML_CPP_BUILD_TOOLS=OFF -DCMAKE_INSTALL_PREFIX="$MINGW_PREFIX" -G "Unix Makefiles" .
 make install -j4
 cd ..
-rm -rf yaml-cpp
 
 git clone https://github.com/ftk/quickjspp --depth=1
 cd quickjspp
@@ -25,7 +23,6 @@ install -d "$MINGW_PREFIX/include/quickjs"
 install -m644 quickjs/quickjs.h quickjs/quickjs-libc.h "$MINGW_PREFIX/include/quickjs/"
 install -m644 quickjspp.hpp "$MINGW_PREFIX/include/"
 cd ..
-rm -rf quickjspp
 
 git clone https://github.com/PerMalmberg/libcron --depth=1
 cd libcron
@@ -38,14 +35,12 @@ install -m644 libcron/include/libcron/* "$MINGW_PREFIX/include/libcron/"
 install -d "$MINGW_PREFIX/include/date/"
 install -m644 libcron/externals/date/include/date/* "$MINGW_PREFIX/include/date/"
 cd ..
-rm -rf libcron
 
 git clone https://github.com/Tencent/rapidjson --depth=1
 cd rapidjson
 cmake -DRAPIDJSON_BUILD_DOC=OFF -DRAPIDJSON_BUILD_EXAMPLES=OFF -DRAPIDJSON_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX="$MINGW_PREFIX" -G "Unix Makefiles" .
 make install -j4
 cd ..
-rm -rf rapidjson
 
 rm -f C:/Strawberry/perl/bin/pkg-config C:/Strawberry/perl/bin/pkg-config.bat
 cmake -DCMAKE_BUILD_TYPE=Release -G "Unix Makefiles" .
@@ -53,3 +48,9 @@ make -j4
 rm subconverter.exe
 g++ $(find CMakeFiles/subconverter.dir/src -name "*.obj") curl/lib/libcurl.a -o base/subconverter.exe -static -levent -lpcre2-8 -lquickjs -llibcron -lyaml-cpp -liphlpapi -lcrypt32 -lws2_32 -lwsock32 -lz -s
 mv base subconverter
+
+rm -rf curl
+rm -rf yaml-cpp
+rm -rf quickjspp
+rm -rf libcron
+rm -rf rapidjson

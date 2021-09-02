@@ -9,14 +9,12 @@ cd curl
 cmake -DCMAKE_USE_MBEDTLS=ON -DHTTP_ONLY=ON -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_USE_LIBSSH2=OFF -DBUILD_CURL_EXE=OFF . > /dev/null
 make install -j2 > /dev/null
 cd ..
-rm -rf curl
 
 git clone https://github.com/jbeder/yaml-cpp --depth=1
 cd yaml-cpp
 cmake -DCMAKE_BUILD_TYPE=Release -DYAML_CPP_BUILD_TESTS=OFF -DYAML_CPP_BUILD_TOOLS=OFF . > /dev/null
 make install -j2 > /dev/null
 cd ..
-rm -rf yaml-cpp
 
 git clone https://github.com/ftk/quickjspp --depth=1
 cd quickjspp
@@ -27,7 +25,6 @@ install -d /usr/include/quickjs/
 install -m644 quickjs/quickjs.h quickjs/quickjs-libc.h /usr/include/quickjs/
 install -m644 quickjspp.hpp /usr/include/
 cd ..
-rm -rf quickjspp
 
 git clone https://github.com/PerMalmberg/libcron --depth=1
 cd libcron
@@ -40,7 +37,6 @@ install -m644 libcron/include/libcron/* /usr/include/libcron/
 install -d /usr/include/date/
 install -m644 libcron/externals/date/include/date/* /usr/include/date/
 cd ..
-rm -rf libcron
 
 export PKG_CONFIG_PATH=/usr/lib64/pkgconfig
 cmake -DCMAKE_BUILD_TYPE=Release .
@@ -53,3 +49,8 @@ chmod +rx subconverter
 chmod +r ./*
 cd ..
 mv base subconverter
+
+rm -rf curl
+rm -rf yaml-cpp
+rm -rf quickjspp
+rm -rf libcron

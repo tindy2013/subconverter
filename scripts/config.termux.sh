@@ -10,13 +10,11 @@ cd yaml-cpp
 cmake -DCMAKE_INSTALL_PREFIX=$PREFIX -DYAML_CPP_BUILD_TESTS=OFF -DYAML_CPP_BUILD_TOOLS=OFF .
 make install -j3
 cd ..
-rm -rf yaml-cpp
 
 git clone https://github.com/tencent/rapidjson --depth=1
 cd rapidjson
 cp -r include/* $PREFIX/include/
 cd ..
-rm -rf rapidjson
 
 git clone https://github.com/ftk/quickjspp --depth=1
 cd quickjspp
@@ -27,7 +25,6 @@ install -d $PREFIX/include/quickjs/
 install -m644 quickjs/quickjs.h quickjs/quickjs-libc.h $PREFIX/include/quickjs/
 install -m644 quickjspp.hpp $PREFIX/include/
 cd ..
-rm -rf quickjspp
 
 git clone https://github.com/PerMalmberg/libcron --depth=1
 cd libcron
@@ -40,4 +37,8 @@ install -m644 libcron/include/libcron/* $PREFIX/include/libcron/
 install -d $PREFIX/include/date/
 install -m644 libcron/externals/date/include/date/* $PREFIX/include/date/
 cd ..
+
+rm -rf yaml-cpp
+rm -rf rapidjson
+rm -rf quickjspp
 rm -rf libcron
