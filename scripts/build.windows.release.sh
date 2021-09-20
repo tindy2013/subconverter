@@ -42,6 +42,12 @@ cmake -DRAPIDJSON_BUILD_DOC=OFF -DRAPIDJSON_BUILD_EXAMPLES=OFF -DRAPIDJSON_BUILD
 make install -j4
 cd ..
 
+git clone https://github.com/ToruNiina/toml11 --depth=1
+cd toml11
+cmake -DCMAKE_INSTALL_PREFIX="$MINGW_PREFIX" -G "Unix Makefiles" .
+make install -j4
+cd ..
+
 rm -f C:/Strawberry/perl/bin/pkg-config C:/Strawberry/perl/bin/pkg-config.bat
 cmake -DCMAKE_BUILD_TYPE=Release -G "Unix Makefiles" .
 make -j4

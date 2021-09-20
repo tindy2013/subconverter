@@ -98,7 +98,7 @@ RWLock cache_rw_lock;
 long gMaxAllowedDownloadSize = 1048576L;
 
 //std::string user_agent_str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36";
-std::string user_agent_str = "subconverter/" VERSION " cURL/" LIBCURL_VERSION;
+static std::string user_agent_str = "subconverter/" VERSION " cURL/" LIBCURL_VERSION;
 
 struct curl_progress_data
 {

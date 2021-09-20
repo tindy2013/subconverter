@@ -6,6 +6,7 @@
 #include <limits.h>
 #include <quickjspp.hpp>
 
+#include "../../config/regmatch.h"
 #include "../../parser/config/proxy.h"
 #include "../../utils/map_extra.h"
 #include "../../utils/string.h"
@@ -15,8 +16,8 @@ struct parse_settings
     std::string *proxy = nullptr;
     string_array *exclude_remarks = nullptr;
     string_array *include_remarks = nullptr;
-    string_array *stream_rules = nullptr;
-    string_array *time_rules = nullptr;
+    RegexMatchConfigs *stream_rules = nullptr;
+    RegexMatchConfigs *time_rules = nullptr;
     std::string *sub_info = nullptr;
     bool authorized = false;
     string_icase_map *request_header = nullptr;

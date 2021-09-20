@@ -3,6 +3,7 @@
 #include <cmath>
 #include <time.h>
 
+#include "../config/regmatch.h"
 #include "../parser/config/proxy.h"
 #include "../utils/base64/base64.h"
 #include "../utils/rapidjson_extra.h"
@@ -82,9 +83,9 @@ bool getSubInfoFromHeader(const std::string &header, std::string &result)
     return false;
 }
 
-bool getSubInfoFromNodes(const std::vector<Proxy> &nodes, const string_array &stream_rules, const string_array &time_rules, std::string &result)
+bool getSubInfoFromNodes(const std::vector<Proxy> &nodes, const RegexMatchConfigs &stream_rules, const RegexMatchConfigs &time_rules, std::string &result)
 {
-    std::string remarks, pattern, target, stream_info, time_info, retStr;
+    std::string remarks, stream_info, time_info, retStr;
     string_size spos;
 
     for(const Proxy &x : nodes)
@@ -92,16 +93,11 @@ bool getSubInfoFromNodes(const std::vector<Proxy> &nodes, const string_array &st
         remarks = x.Remark;
         if(!stream_info.size())
         {
-            for(const std::string &y : stream_rules)
+            for(const RegexMatchConfig &y : stream_rules)
             {
-                spos = y.rfind("|");
-                if(spos == y.npos)
-                    continue;
-                pattern = y.substr(0, spos);
-                target = y.substr(spos + 1);
-                if(regMatch(remarks, pattern))
+                if(regMatch(remarks, y.Match))
                 {
-                    retStr = regReplace(remarks, pattern, target);
+                    retStr = regReplace(remarks, y.Match, y.Replace);
                     if(retStr != remarks)
                     {
                         stream_info = retStr;
@@ -116,16 +112,11 @@ bool getSubInfoFromNodes(const std::vector<Proxy> &nodes, const string_array &st
         remarks = x.Remark;
         if(!time_info.size())
         {
-            for(const std::string &y : time_rules)
+            for(const RegexMatchConfig &y : time_rules)
             {
-                spos = y.rfind("|");
-                if(spos == y.npos)
-                    continue;
-                pattern = y.substr(0, spos);
-                target = y.substr(spos + 1);
-                if(regMatch(remarks, pattern))
+                if(regMatch(remarks, y.Match))
                 {
-                    retStr = regReplace(remarks, pattern, target);
+                    retStr = regReplace(remarks, y.Match, y.Replace);
                     if(retStr != remarks)
                     {
                         time_info = retStr;

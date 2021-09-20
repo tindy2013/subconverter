@@ -39,6 +39,12 @@ install -d /usr/local/include/date/
 install -m644 libcron/externals/date/include/date/* /usr/local/include/date/
 cd ..
 
+git clone https://github.com/ToruNiina/toml11 --depth=1
+cd toml11
+cmake .
+make install -j4
+cd ..
+
 cp /usr/local/lib/libevent.a .
 cp /usr/local/opt/zlib/lib/libz.a .
 cp /usr/local/lib/libpcre2-8.a .

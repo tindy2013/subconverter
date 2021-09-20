@@ -2,6 +2,7 @@
 #include <iostream>
 #include <libcron/Cron.h>
 
+#include "../config/crontask.h"
 #include "../handler/interfaces.h"
 #include "../handler/multithread.h"
 #include "../server/webserver.h"
@@ -11,7 +12,7 @@
 #include "script_quickjs.h"
 
 extern bool gEnableCron;
-extern string_array gCronTasks;
+extern CronTaskConfigs gCronTasks;
 extern std::string gProxyConfig, gAccessToken;
 extern int gCacheConfig;
 
@@ -48,13 +49,9 @@ int timeout_checker(JSRuntime *rt, void *opaque)
 void refresh_schedule()
 {
     cron.clear_schedules();
-    for(std::string &x : gCronTasks)
+    for(const CronTaskConfig &x : gCronTasks)
     {
-        string_array arguments = split(x, "`");
-        if(arguments.size() < 3)
-            continue;
-        std::string &name = arguments[0], &cronexp = arguments[1], &path = arguments[2];
-        cron.add_schedule(name, cronexp, [=](auto &)
+        cron.add_schedule(x.Name, x.CronExp, [=](auto &)
         {
             qjs::Runtime runtime;
             qjs::Context context(runtime);
@@ -64,18 +61,18 @@ void refresh_schedule()
                 script_context_init(context);
                 defer(script_cleanup(context);)
                 std::string proxy = parseProxy(gProxyConfig);
-                std::string script = fetchFile(path, proxy, gCacheConfig);
+                std::string script = fetchFile(x.Path, proxy, gCacheConfig);
                 if(script.empty())
                 {
-                    writeLog(0, "Script '" + name + "' run failed: file is empty or not exist!", LOG_LEVEL_WARNING);
+                    writeLog(0, "Script '" + x.Name + "' run failed: file is empty or not exist!", LOG_LEVEL_WARNING);
                     return;
                 }
                 script_info info;
-                if(arguments.size() >= 4 && !arguments[3].empty())
+                if(x.Timeout > 0)
                 {
                     info.begin_time = time(NULL);
-                    info.timeout = to_int(arguments[3], 0);
-                    info.name = name;
+                    info.timeout = x.Timeout;
+                    info.name = x.Name;
                     JS_SetInterruptHandler(JS_GetRuntime(context.ctx), timeout_checker, &info);
                 }
                 context.eval(script);
@@ -109,19 +106,15 @@ std::string list_cron_schedule(RESPONSE_CALLBACK_ARGS)
     writer.Int(200);
     writer.Key("tasks");
     writer.StartArray();
-    for(std::string &x : gCronTasks)
+    for(const CronTaskConfig &x : gCronTasks)
     {
-        string_array arguments = split(x, "`");
-        if(arguments.size() < 3)
-            continue;
         writer.StartObject();
-        std::string &name = arguments[0], &cronexp = arguments[1], &path = arguments[2];
         writer.Key("name");
-        writer.String(name.data());
+        writer.String(x.Name.data());
         writer.Key("cronexp");
-        writer.String(cronexp.data());
+        writer.String(x.CronExp.data());
         writer.Key("path");
-        writer.String(path.data());
+        writer.String(x.Path.data());
         writer.EndObject();
     }
     writer.EndArray();

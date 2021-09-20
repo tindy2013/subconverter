@@ -34,6 +34,8 @@ public:
         return *this;
     }
 
+    inline bool operator==(const tribool& rhs){ return _M_VALUE == rhs._M_VALUE; }
+
     operator bool() const { return _M_VALUE == 3; }
 
     bool is_undef() const { return _M_VALUE <= 1; }

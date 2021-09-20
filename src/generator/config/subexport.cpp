@@ -8,6 +8,7 @@
 #include <rapidjson/error/en.h>
 #include <yaml-cpp/yaml.h>
 
+#include "../../config/regmatch.h"
 #include "../../generator/config/subexport.h"
 #include "../../generator/template/templates.h"
 #include "../../parser/config/proxy.h"
@@ -63,19 +64,17 @@ std::string vmessLinkConstruct(const std::string &remarks, const std::string &ad
     return sb.GetString();
 }
 
-void nodeRename(Proxy &node, const string_array &rename_array, extra_settings &ext)
+void nodeRename(Proxy &node, const RegexMatchConfigs &rename_array, extra_settings &ext)
 {
-    string_size pos;
-    std::string match, rep;
     std::string &remark = node.Remark, original_remark = node.Remark, returned_remark, real_rule;
 
-    for(const std::string &x : rename_array)
+    for(const RegexMatchConfig &x : rename_array)
     {
-        if(startsWith(x, "!!script:"))
+        if(!x.Script.empty())
         {
             script_safe_runner(ext.js_runtime, ext.js_context, [&](qjs::Context &ctx)
             {
-                std::string script = x.substr(9);
+                std::string script = x.Script;
                 if(startsWith(script, "path:"))
                     script = fileGet(script.substr(5), true);
                 try
@@ -93,14 +92,8 @@ void nodeRename(Proxy &node, const string_array &rename_array, extra_settings &e
             }, gScriptCleanContext);
             continue;
         }
-        pos = x.rfind("@");
-        match = x.substr(0, pos);
-        if(pos != x.npos && pos < x.size())
-            rep = x.substr(pos + 1);
-        else
-            rep.clear();
-        if(applyMatcher(match, real_rule, node) && real_rule.size())
-            remark = regReplace(remark, real_rule, rep);
+        if(applyMatcher(x.Match, real_rule, node) && real_rule.size())
+            remark = regReplace(remark, real_rule, x.Replace);
     }
     if(remark.empty())
         remark = original_remark;
@@ -123,19 +116,18 @@ std::string removeEmoji(const std::string &orig_remark)
     return remark;
 }
 
-std::string addEmoji(const Proxy &node, const string_array &emoji_array, extra_settings &ext)
+std::string addEmoji(const Proxy &node, const RegexMatchConfigs &emoji_array, extra_settings &ext)
 {
     std::string real_rule, ret;
-    string_size pos;
 
-    for(const std::string &x : emoji_array)
+    for(const RegexMatchConfig &x : emoji_array)
     {
-        if(startsWith(x, "!!script:"))
+        if(!x.Script.empty())
         {
             std::string result;
             script_safe_runner(ext.js_runtime, ext.js_context, [&](qjs::Context &ctx)
             {
-                std::string script = x.substr(9);
+                std::string script = x.Script;
                 if(startsWith(script, "path:"))
                     script = fileGet(script.substr(5), true);
                 try
@@ -155,11 +147,10 @@ std::string addEmoji(const Proxy &node, const string_array &emoji_array, extra_s
                 return result;
             continue;
         }
-        pos = x.rfind(",");
-        if(pos == x.npos)
+        if(x.Replace.empty())
             continue;
-        if(applyMatcher(x.substr(0, pos), real_rule, node) && real_rule.size() && regFind(node.Remark, real_rule))
-            return x.substr(pos + 1) + " " + node.Remark;
+        if(applyMatcher(x.Match, real_rule, node) && real_rule.size() && regFind(node.Remark, real_rule))
+            return x.Replace + " " + node.Remark;
     }
     return node.Remark;
 }
@@ -206,7 +197,7 @@ void parseGroupTimes(const std::string &src, int *interval, int *tolerance, int 
     return;
 }
 
-void groupGenerate(std::string &rule, std::vector<Proxy> &nodelist, string_array &filtered_nodelist, bool add_direct, extra_settings &ext)
+void groupGenerate(const std::string &rule, std::vector<Proxy> &nodelist, string_array &filtered_nodelist, bool add_direct, extra_settings &ext)
 {
     std::string real_rule;
     if(startsWith(rule, "[]") && add_direct)
@@ -291,11 +282,11 @@ void preprocessNodes(std::vector<Proxy> &nodes, extra_settings &ext)
     }
 }
 
-void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const string_array &extra_proxy_group, bool clashR, extra_settings &ext)
+void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGroupConfigs &extra_proxy_group, bool clashR, extra_settings &ext)
 {
     YAML::Node proxies, singleproxy, singlegroup, original_groups;
     std::vector<Proxy> nodelist;
-    string_array vArray, remarks_list, filtered_nodelist;
+    string_array remarks_list, filtered_nodelist;
     /// proxies style
     bool block = false, compact = false;
     switch(hash_(ext.clash_proxies_style))
@@ -376,11 +367,11 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const string_
                 break;
             case "ws"_hash:
                 singleproxy["network"] = x.TransferProtocol;
-                singleproxy["ws-path"] = x.Path;
+                singleproxy["ws-opts"]["path"] = x.Path;
                 if(x.Host.size())
-                    singleproxy["ws-headers"]["Host"] = x.Host;
+                    singleproxy["ws-opts"]["headers"]["Host"] = x.Host;
                 if(x.Edge.size())
-                    singleproxy["ws-headers"]["Edge"] = x.Edge;
+                    singleproxy["ws-opts"]["headers"]["Edge"] = x.Edge;
                 break;
             case "http"_hash:
                 singleproxy["network"] = x.TransferProtocol;
@@ -472,6 +463,16 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const string_
                 singleproxy["password"].SetTag("str");
             if(!scv.is_undef())
                 singleproxy["skip-cert-verify"] = scv.get();
+            switch(hash_(x.TransferProtocol))
+            {
+            case "tcp"_hash:
+                break;
+            case "grpc"_hash:
+                singleproxy["network"] = x.TransferProtocol;
+                if(!x.Path.empty())
+                    singleproxy["grpc-opts"]["grpc-service-name"] = x.Path;
+                break;
+            }
             break;
         case ProxyType::Snell:
             singleproxy["type"] = "snell";
@@ -516,60 +517,45 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const string_
     else
         yamlnode["Proxy"] = proxies;
 
-    string_array providers;
 
-    for(const std::string &x : extra_proxy_group)
+    for(const ProxyGroupConfig &x : extra_proxy_group)
     {
         singlegroup.reset();
         eraseElements(filtered_nodelist);
-        eraseElements(providers);
-        unsigned int rules_upper_bound = 0;
 
-        vArray = split(x, "`");
-        if(vArray.size() < 3)
-            continue;
+        singlegroup["name"] = x.Name;
+        singlegroup["type"] = x.TypeStr();
 
-        singlegroup["name"] = vArray[0];
-        singlegroup["type"] = vArray[1];
-
-        int interval = 0, tolerance = 0;
-        rules_upper_bound = vArray.size();
-        switch(hash_(vArray[1]))
+        switch(x.Type)
         {
-        case "select"_hash:
-        case "relay"_hash:
+        case ProxyGroupType::Select:
+        case ProxyGroupType::Relay:
             break;
-        case "url-test"_hash:
-        case "fallback"_hash:
-        case "load-balance"_hash:
-            if(rules_upper_bound < 5)
-                continue;
-            rules_upper_bound -= 2;
-            singlegroup["url"] = vArray[rules_upper_bound];
-            parseGroupTimes(vArray[rules_upper_bound + 1], &interval, &tolerance, NULL);
-            if(interval)
-                singlegroup["interval"] = interval;
-            if(tolerance)
-                singlegroup["tolerance"] = tolerance;
+        case ProxyGroupType::LoadBalance:
+            singlegroup["strategy"] = x.StrategyStr();
+            [[fallthrough]];
+        case ProxyGroupType::URLTest:
+            if(!x.Lazy.is_undef())
+                singlegroup["lazy"] = x.Lazy.get();
+            [[fallthrough]];
+        case ProxyGroupType::Fallback:
+            singlegroup["url"] = x.Url;
+            if(x.Interval > 0)
+                singlegroup["interval"] = x.Interval;
+            if(x.Tolerance > 0)
+                singlegroup["tolerance"] = x.Tolerance;
             break;
         default:
             continue;
         }
+        if(!x.DisableUdp.is_undef())
+            singlegroup["disable-udp"] = x.DisableUdp.get();
 
-        for(unsigned int i = 2; i < rules_upper_bound; i++)
-        {
-            if(startsWith(vArray[i], "!!PROVIDER="))
-            {
-                string_array list = split(vArray[i].substr(11), ",");
-                providers.reserve(providers.size() + list.size());
-                std::move(list.begin(), list.end(), std::back_inserter(providers));
-            }
-            else
-                groupGenerate(vArray[i], nodelist, filtered_nodelist, true, ext);
-        }
+        for(const auto& y : x.Proxies)
+            groupGenerate(y, nodelist, filtered_nodelist, true, ext);
 
-        if(providers.size())
-            singlegroup["use"] = providers;
+        if(x.UsingProvider.size())
+            singlegroup["use"] = x.UsingProvider;
         else
         {
             if(filtered_nodelist.empty())
@@ -582,7 +568,7 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const string_
         bool replace_flag = false;
         for(unsigned int i = 0; i < original_groups.size(); i++)
         {
-            if(original_groups[i]["name"].as<std::string>() == vArray[0])
+            if(original_groups[i]["name"].as<std::string>() == x.Name)
             {
                 original_groups[i] = singlegroup;
                 replace_flag = true;
@@ -599,7 +585,7 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const string_
         yamlnode["Proxy Group"] = original_groups;
 }
 
-std::string proxyToClash(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, const string_array &extra_proxy_group, bool clashR, extra_settings &ext)
+std::string proxyToClash(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, bool clashR, extra_settings &ext)
 {
     YAML::Node yamlnode;
 
@@ -647,7 +633,7 @@ std::string proxyToClash(std::vector<Proxy> &nodes, const std::string &base_conf
     return output_content;
 }
 
-std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, const string_array &extra_proxy_group, int surge_ver, extra_settings &ext)
+std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, int surge_ver, extra_settings &ext)
 {
     INIReader ini;
     std::string proxy;
@@ -656,7 +642,7 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
     std::vector<Proxy> nodelist;
     unsigned short local_port = 1080;
 
-    string_array vArray, remarks_list, filtered_nodelist, args;
+    string_array remarks_list, filtered_nodelist, args;
 
     ini.store_any_line = true;
     // filter out sections that requires direct-save
@@ -833,53 +819,35 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
 
     ini.SetCurrentSection("Proxy Group");
     ini.EraseSection();
-    for(const std::string &x : extra_proxy_group)
+    for(const ProxyGroupConfig &x : extra_proxy_group)
     {
-        //group pref
-        std::string url;
-        int interval = 0, tolerance = 0, timeout = 0;
         eraseElements(filtered_nodelist);
-        unsigned int rules_upper_bound = 0;
-        url.clear();
         proxy.clear();
 
-        vArray = split(x, "`");
-        if(vArray.size() < 3)
-            continue;
-
-        rules_upper_bound = vArray.size();
-        switch(hash_(vArray[1]))
+        switch(x.Type)
         {
-        case "select"_hash:
+        case ProxyGroupType::Select:
+        case ProxyGroupType::URLTest:
+        case ProxyGroupType::Fallback:
             break;
-        case "load-balance"_hash:
+        case ProxyGroupType::LoadBalance:
             if(surge_ver < 1)
                 continue;
             [[fallthrough]];
-        case "url-test"_hash:
-        case "fallback"_hash:
-            if(rules_upper_bound < 5)
-                continue;
-            rules_upper_bound -= 2;
-            url = vArray[rules_upper_bound];
-            parseGroupTimes(vArray[rules_upper_bound + 1], &interval, &tolerance, &timeout);
-            break;
-        case "ssid"_hash:
-            if(rules_upper_bound < 4)
-                continue;
-            proxy = vArray[1] + ",default=" + vArray[2] + ",";
-            proxy += std::accumulate(vArray.begin() + 4, vArray.end(), vArray[3], [](std::string a, std::string b)
+        case ProxyGroupType::SSID:
+            proxy = x.TypeStr() + ",default=" + x.Proxies[0] + ",";
+            proxy += std::accumulate(x.Proxies.begin() + 2, x.Proxies.end(), x.Proxies[1], [](std::string a, std::string b)
             {
                 return std::move(a) + "," + std::move(b);
             });
-            ini.Set("{NONAME}", vArray[0] + " = " + proxy); //insert order
+            ini.Set("{NONAME}", x.Name + " = " + proxy); //insert order
             continue;
         default:
             continue;
         }
 
-        for(unsigned int i = 2; i < rules_upper_bound; i++)
-            groupGenerate(vArray[i], nodelist, filtered_nodelist, true, ext);
+        for(const auto &y : x.Proxies)
+            groupGenerate(y, nodelist, filtered_nodelist, true, ext);
 
         if(!filtered_nodelist.size())
             filtered_nodelist.emplace_back("DIRECT");
@@ -892,28 +860,28 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
             case "direct"_hash:
             case "reject"_hash:
             case "reject-tinygif"_hash:
-                ini.Set("Proxy", "{NONAME}", vArray[0] + " = " + proxy);
+                ini.Set("Proxy", "{NONAME}", x.Name + " = " + proxy);
                 continue;
             }
         }
 
-        proxy = vArray[1] + ",";
+        proxy = x.TypeStr() + ",";
         proxy += std::accumulate(std::next(filtered_nodelist.cbegin()), filtered_nodelist.cend(), filtered_nodelist[0], [](std::string a, std::string b)
         {
             return std::move(a) + "," + std::move(b);
         });
-        if(vArray[1] == "url-test" || vArray[1] == "fallback")
+        if(x.Type == ProxyGroupType::URLTest || x.Type == ProxyGroupType::Fallback)
         {
-            proxy += ",url=" + url + ",interval=" + std::to_string(interval);
-            if(tolerance > 0)
-                proxy += ",tolerance=" + std::to_string(tolerance);
-            if(timeout > 0)
-                proxy += ",timeout=" + std::to_string(timeout);
+            proxy += ",url=" + x.Url + ",interval=" + std::to_string(x.Interval);
+            if(x.Tolerance > 0)
+                proxy += ",tolerance=" + std::to_string(x.Tolerance);
+            if(x.Timeout > 0)
+                proxy += ",timeout=" + std::to_string(x.Timeout);
         }
-        else if(vArray[1] == "load-balance")
-            proxy += ",url=" + url;
+        else if(x.Type == ProxyGroupType::LoadBalance)
+            proxy += ",url=" + x.Url;
 
-        ini.Set("{NONAME}", vArray[0] + " = " + proxy); //insert order
+        ini.Set("{NONAME}", x.Name + " = " + proxy); //insert order
     }
 
     if(ext.enable_rule_generator)
@@ -1075,7 +1043,7 @@ std::string proxyToSSSub(std::string base_conf, std::vector<Proxy> &nodes, extra
     return output_content;
 }
 
-std::string proxyToQuan(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, const string_array &extra_proxy_group, extra_settings &ext)
+std::string proxyToQuan(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext)
 {
     INIReader ini;
     ini.store_any_line = true;
@@ -1102,7 +1070,7 @@ std::string proxyToQuan(std::vector<Proxy> &nodes, const std::string &base_conf,
     return ini.ToString();
 }
 
-void proxyToQuan(std::vector<Proxy> &nodes, INIReader &ini, std::vector<ruleset_content> &ruleset_content_array, const string_array &extra_proxy_group, extra_settings &ext)
+void proxyToQuan(std::vector<Proxy> &nodes, INIReader &ini, std::vector<ruleset_content> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext)
 {
     std::string type, proxyStr;
     tribool scv;
@@ -1244,47 +1212,27 @@ void proxyToQuan(std::vector<Proxy> &nodes, INIReader &ini, std::vector<ruleset_
 
     std::string singlegroup;
     std::string name, proxies;
-    string_array vArray;
-    for(const std::string &x : extra_proxy_group)
+    for(const ProxyGroupConfig &x : extra_proxy_group)
     {
         eraseElements(filtered_nodelist);
-        unsigned int rules_upper_bound = 0;
 
-        vArray = split(x, "`");
-        if(vArray.size() < 3)
-            continue;
-
-        rules_upper_bound = vArray.size();
-        switch(hash_(vArray[1]))
+        switch(x.Type)
         {
-        case "select"_hash:
+        case ProxyGroupType::Select:
+        case ProxyGroupType::Fallback:
             type = "static";
             break;
-        case "fallback"_hash:
-            type = "static";
-            if(vArray.size() < 5)
-                continue;
-            rules_upper_bound -= 2;
-            break;
-        case "url-test"_hash:
+        case ProxyGroupType::URLTest:
             type = "auto";
-            if(vArray.size() < 5)
-                continue;
-            rules_upper_bound -= 2;
             break;
-        case "load-balance"_hash:
+        case ProxyGroupType::LoadBalance:
             type = "balance, round-robin";
-            if(vArray.size() < 5)
-                continue;
-            rules_upper_bound -= 2;
             break;
-        case "ssid"_hash:
+        case ProxyGroupType::SSID:
             {
-                if(rules_upper_bound < 4)
-                    continue;
-                singlegroup = vArray[0] + " : wifi = " + vArray[2];
+                singlegroup = x.Name + " : wifi = " + x.Proxies[0];
                 std::string content, celluar, celluar_matcher = R"(^(.*?),?celluar\s?=\s?(.*?)(,.*)$)", rem_a, rem_b;
-                for(auto iter = vArray.begin() + 3; iter != vArray.end(); iter++)
+                for(auto iter = x.Proxies.begin() + 1; iter != x.Proxies.end(); iter++)
                 {
                     if(regGetMatch(*iter, celluar_matcher, 4, 0, &rem_a, &celluar, &rem_b))
                     {
@@ -1303,10 +1251,8 @@ void proxyToQuan(std::vector<Proxy> &nodes, INIReader &ini, std::vector<ruleset_
             continue;
         }
 
-        name = vArray[0];
-
-        for(unsigned int i = 2; i < rules_upper_bound; i++)
-            groupGenerate(vArray[i], nodelist, filtered_nodelist, true, ext);
+        for(const auto &y : x.Proxies)
+            groupGenerate(y, nodelist, filtered_nodelist, true, ext);
 
         if(!filtered_nodelist.size())
             filtered_nodelist.emplace_back("direct");
@@ -1319,7 +1265,7 @@ void proxyToQuan(std::vector<Proxy> &nodes, INIReader &ini, std::vector<ruleset_
             return std::move(a) + "\n" + std::move(b);
         });
 
-        singlegroup = name + " : " + type;
+        singlegroup = x.Name + " : " + type;
         if(type == "static")
             singlegroup += ", " + filtered_nodelist[0];
         singlegroup += "\n" + proxies + "\n";
@@ -1330,7 +1276,7 @@ void proxyToQuan(std::vector<Proxy> &nodes, INIReader &ini, std::vector<ruleset_
         rulesetToSurge(ini, ruleset_content_array, -2, ext.overwrite_original_rules, std::string());
 }
 
-std::string proxyToQuanX(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, const string_array &extra_proxy_group, extra_settings &ext)
+std::string proxyToQuanX(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext)
 {
     INIReader ini;
     ini.store_any_line = true;
@@ -1364,7 +1310,7 @@ std::string proxyToQuanX(std::vector<Proxy> &nodes, const std::string &base_conf
     return ini.ToString();
 }
 
-void proxyToQuanX(std::vector<Proxy> &nodes, INIReader &ini, std::vector<ruleset_content> &ruleset_content_array, const string_array &extra_proxy_group, extra_settings &ext)
+void proxyToQuanX(std::vector<Proxy> &nodes, INIReader &ini, std::vector<ruleset_content> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext)
 {
     std::string type;
     std::string remark, hostname, port, method;
@@ -1503,53 +1449,37 @@ void proxyToQuanX(std::vector<Proxy> &nodes, INIReader &ini, std::vector<ruleset
     ini.EraseSection();
 
     std::string singlegroup;
-    std::string name, proxies;
+    std::string proxies;
     string_array vArray;
-    for(const std::string &x : extra_proxy_group)
+    for(const ProxyGroupConfig &x : extra_proxy_group)
     {
         eraseElements(filtered_nodelist);
-        unsigned int rules_upper_bound = 0;
 
-        vArray = split(x, "`");
-        if(vArray.size() < 3)
-            continue;
-
-        rules_upper_bound = vArray.size();
-        switch(hash_(vArray[1]))
+        switch(x.Type)
         {
-        case "select"_hash:
+        case ProxyGroupType::Select:
             type = "static";
             break;
-        case "url-test"_hash:
-        case "fallback"_hash:
+        case ProxyGroupType::URLTest:
+        case ProxyGroupType::Fallback:
             type = "available";
-            if(rules_upper_bound < 5)
-                continue;
-            rules_upper_bound -= 2;
             break;
-        case "load-balance"_hash:
+        case ProxyGroupType::LoadBalance:
             type = "round-robin";
-            if(rules_upper_bound < 5)
-                continue;
-            rules_upper_bound -= 2;
             break;
-        case "ssid"_hash:
-            if(rules_upper_bound < 4)
-                continue;
+        case ProxyGroupType::SSID:
             type = "ssid";
-            for(auto iter = vArray.begin() + 2; iter != vArray.end(); iter++)
+            for(auto iter = x.Proxies.begin(); iter != x.Proxies.end(); iter++)
                 filtered_nodelist.emplace_back(replaceAllDistinct(*iter, "=", ":"));
             break;
         default:
             continue;
         }
 
-        name = vArray[0];
-
-        if(hash_(vArray[1]) != "ssid"_hash)
+        if(x.Type != ProxyGroupType::SSID)
         {
-            for(unsigned int i = 2; i < rules_upper_bound; i++)
-                groupGenerate(vArray[i], nodelist, filtered_nodelist, true, ext);
+            for(const auto &y : x.Proxies)
+                groupGenerate(y, nodelist, filtered_nodelist, true, ext);
 
             if(!filtered_nodelist.size())
                 filtered_nodelist.emplace_back("direct");
@@ -1558,12 +1488,12 @@ void proxyToQuanX(std::vector<Proxy> &nodes, INIReader &ini, std::vector<ruleset
                 type = "static";
         }
 
-        auto iter = std::find_if(original_groups.begin(), original_groups.end(), [name](const string_multimap::value_type &n)
+        auto iter = std::find_if(original_groups.begin(), original_groups.end(), [&](const string_multimap::value_type &n)
         {
             std::string groupdata = n.second;
             std::string::size_type cpos = groupdata.find(",");
             if(cpos != groupdata.npos)
-                return trim(groupdata.substr(0, cpos)) == name;
+                return trim(groupdata.substr(0, cpos)) == x.Name;
             else
                 return false;
         });
@@ -1582,7 +1512,7 @@ void proxyToQuanX(std::vector<Proxy> &nodes, INIReader &ini, std::vector<ruleset
             return std::move(a) + ", " + std::move(b);
         });
 
-        singlegroup = type + "=" + name + ", " + proxies;
+        singlegroup = type + "=" + x.Name + ", " + proxies;
         ini.Set("{NONAME}", singlegroup);
     }
 
@@ -1745,7 +1675,7 @@ std::string proxyToSSD(std::vector<Proxy> &nodes, std::string &group, std::strin
     return "ssd://" + base64Encode(sb.GetString());
 }
 
-std::string proxyToMellow(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, const string_array &extra_proxy_group, extra_settings &ext)
+std::string proxyToMellow(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext)
 {
     INIReader ini;
     ini.store_any_line = true;
@@ -1760,7 +1690,7 @@ std::string proxyToMellow(std::vector<Proxy> &nodes, const std::string &base_con
     return ini.ToString();
 }
 
-void proxyToMellow(std::vector<Proxy> &nodes, INIReader &ini, std::vector<ruleset_content> &ruleset_content_array, const string_array &extra_proxy_group, extra_settings &ext)
+void proxyToMellow(std::vector<Proxy> &nodes, INIReader &ini, std::vector<ruleset_content> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext)
 {
     std::string proxy;
     std::string type, remark, hostname, port, username, password, method;
@@ -1849,36 +1779,25 @@ void proxyToMellow(std::vector<Proxy> &nodes, INIReader &ini, std::vector<rulese
 
     ini.SetCurrentSection("EndpointGroup");
 
-    for(const std::string &x : extra_proxy_group)
+    for(const ProxyGroupConfig &x : extra_proxy_group)
     {
         eraseElements(filtered_nodelist);
-        unsigned int rules_upper_bound = 0;
         url.clear();
         proxy.clear();
 
-        vArray = split(x, "`");
-        if(vArray.size() < 3)
-            continue;
-
-        rules_upper_bound = vArray.size();
-        switch(hash_(vArray[1]))
+        switch(x.Type)
         {
-        case "select"_hash:
-            break;
-        case "url-test"_hash:
-        case "fallback"_hash:
-        case "load-balance"_hash:
-            if(vArray.size() < 5)
-                continue;
-            rules_upper_bound -= 2;
-            url = vArray[vArray.size() - 2];
+        case ProxyGroupType::Select:
+        case ProxyGroupType::URLTest:
+        case ProxyGroupType::Fallback:
+        case ProxyGroupType::LoadBalance:
             break;
         default:
             continue;
         }
 
-        for(unsigned int i = 2; i < rules_upper_bound; i++)
-            groupGenerate(vArray[i], nodelist, filtered_nodelist, false, ext);
+        for(const auto &y : x.Proxies)
+            groupGenerate(y, nodelist, filtered_nodelist, false, ext);
 
         if(!filtered_nodelist.size())
         {
@@ -1897,7 +1816,7 @@ void proxyToMellow(std::vector<Proxy> &nodes, INIReader &ini, std::vector<rulese
             proxy += ",url=" + url;
         */
 
-        proxy = vArray[0] + ", ";
+        proxy = x.Name + ", ";
         /*
         for(std::string &y : filtered_nodelist)
             proxy += y + ":";
@@ -1916,7 +1835,7 @@ void proxyToMellow(std::vector<Proxy> &nodes, INIReader &ini, std::vector<rulese
         rulesetToSurge(ini, ruleset_content_array, 0, ext.overwrite_original_rules, std::string());
 }
 
-std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, const string_array &extra_proxy_group, extra_settings &ext)
+std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext)
 {
     rapidjson::Document json;
     INIReader ini;
@@ -1924,9 +1843,6 @@ std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf,
     std::string output_nodelist;
     tribool scv;
     std::vector<Proxy> nodelist;
-    //group pref
-    std::string url;
-    int interval = 0;
 
     string_array vArray, remarks_list, filtered_nodelist;
 
@@ -2039,51 +1955,38 @@ std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf,
 
     ini.SetCurrentSection("Proxy Group");
     ini.EraseSection();
-    for(const std::string &x : extra_proxy_group)
+    for(const ProxyGroupConfig &x : extra_proxy_group)
     {
         eraseElements(filtered_nodelist);
-        unsigned int rules_upper_bound = 0;
-        url.clear();
         proxy.clear();
 
-        vArray = split(x, "`");
-        if(vArray.size() < 3)
-            continue;
-
-        rules_upper_bound = vArray.size();
-        switch(hash_(vArray[1]))
+        switch(x.Type)
         {
-        case "select"_hash:
+        case ProxyGroupType::Select:
+        case ProxyGroupType::URLTest:
+        case ProxyGroupType::Fallback:
             break;
-        case "url-test"_hash:
-        case "fallback"_hash:
-            if(vArray.size() < 5)
+        case ProxyGroupType::SSID:
+            if(x.Proxies.size() < 2)
                 continue;
-            rules_upper_bound -= 2;
-            url = vArray[rules_upper_bound];
-            parseGroupTimes(vArray[rules_upper_bound + 1], &interval, NULL, NULL);
-            break;
-        case "ssid"_hash:
-            if(vArray.size() < 4)
-                continue;
-            proxy = vArray[1] + ",default=" + vArray[2] + ",";
-            proxy += std::accumulate(vArray.begin() + 4, vArray.end(), vArray[3], [](std::string a, std::string b)
+            proxy = x.TypeStr() + ",default=" + x.Proxies[0] + ",";
+            proxy += std::accumulate(x.Proxies.begin() + 2, x.Proxies.end(), vArray[1], [](std::string a, std::string b)
             {
                 return std::move(a) + "," + std::move(b);
             });
-            ini.Set("{NONAME}", vArray[0] + " = " + proxy); //insert order
+            ini.Set("{NONAME}", x.Name + " = " + proxy); //insert order
             continue;
         default:
             continue;
         }
 
-        for(unsigned int i = 2; i < rules_upper_bound; i++)
-            groupGenerate(vArray[i], nodelist, filtered_nodelist, true, ext);
+        for(const auto &y : x.Proxies)
+            groupGenerate(y, nodelist, filtered_nodelist, true, ext);
 
         if(!filtered_nodelist.size())
             filtered_nodelist.emplace_back("DIRECT");
 
-        proxy = vArray[1] + ",";
+        proxy = x.TypeStr() + ",";
         /*
         for(std::string &y : filtered_nodelist)
             proxy += "," + y;
@@ -2092,10 +1995,10 @@ std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf,
         {
             return std::move(a) + "," + std::move(b);
         });
-        if(vArray[1] == "url-test" || vArray[1] == "fallback")
-            proxy += ",url=" + url + ",interval=" + std::to_string(interval);
+        if(x.Type == ProxyGroupType::URLTest || x.Type == ProxyGroupType::Fallback)
+            proxy += ",url=" + x.Url + ",interval=" + std::to_string(x.Interval);
 
-        ini.Set("{NONAME}", vArray[0] + " = " + proxy); //insert order
+        ini.Set("{NONAME}", x.Name + " = " + proxy); //insert order
     }
 
     if(ext.enable_rule_generator)

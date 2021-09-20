@@ -1,0 +1,177 @@
+# short names
+[[rename_node]]
+match = "中国"
+replace = "中"
+
+[[rename_node]]
+match = "徐州"
+replace = "徐"
+
+[[rename_node]]
+match = "深圳"
+replace = "深"
+
+[[rename_node]]
+match = "上海"
+replace = "沪"
+
+[[rename_node]]
+match = "广州"
+replace = "穗"
+
+[[rename_node]]
+match = "宁波"
+replace = "甬"
+
+[[rename_node]]
+match = "贵阳"
+replace = "筑"
+
+[[rename_node]]
+match = "武汉"
+replace = "汉"
+
+[[rename_node]]
+match = "南京"
+replace = "宁"
+
+[[rename_node]]
+match = "天津"
+replace = "津"
+
+[[rename_node]]
+match = "北京"
+replace = "京"
+
+[[rename_node]]
+match = "沈阳"
+replace = "沈"
+
+[[rename_node]]
+match = "江苏"
+replace = "苏"
+
+[[rename_node]]
+match = "浙江"
+replace = "浙"
+
+[[rename_node]]
+match = "安徽"
+replace = "皖"
+
+[[rename_node]]
+match = "福建"
+replace = "闽"
+
+[[rename_node]]
+match = "湖南"
+replace = "湘"
+
+[[rename_node]]
+match = "广东"
+replace = "粤"
+
+[[rename_node]]
+match = "海南"
+replace = "琼"
+
+[[rename_node]]
+match = "四川"
+replace = "川"
+
+[[rename_node]]
+match = "贵州"
+replace = "贵"
+
+[[rename_node]]
+match = "云南"
+replace = "云"
+
+[[rename_node]]
+match = "青海"
+replace = "青"
+
+[[rename_node]]
+match = "台湾"
+replace = "台"
+
+[[rename_node]]
+match = "香港"
+replace = "港"
+
+[[rename_node]]
+match = "澳门"
+replace = "澳"
+
+[[rename_node]]
+match = "美国"
+replace = "美"
+
+[[rename_node]]
+match = "英国"
+replace = "英"
+
+[[rename_node]]
+match = "加拿大"
+replace = "加"
+
+[[rename_node]]
+match = "法国"
+replace = "法"
+
+[[rename_node]]
+match = "德国"
+replace = "德"
+
+[[rename_node]]
+match = "瑞士"
+replace = "瑞"
+
+[[rename_node]]
+match = "日本"
+replace = "日"
+
+[[rename_node]]
+match = "韩国"
+replace = "韩"
+
+[[rename_node]]
+match = "芬兰"
+replace = "芬"
+
+[[rename_node]]
+match = "印度"
+replace = "印"
+
+[[rename_node]]
+match = "泰国"
+replace = "泰"
+
+[[rename_node]]
+match = "越南"
+replace = "越"
+
+[[rename_node]]
+match = "新加坡"
+replace = "新"
+
+[[rename_node]]
+match = "意大利"
+replace = "意"
+
+[[rename_node]]
+match = "菲律宾"
+replace = "菲"
+
+[[rename_node]]
+match = "俄罗斯"
+replace = "俄"
+
+[[rename_node]]
+match = "土耳其"
+replace = "土"
+
+# times RE
+[[rename_node]]
+match = '\(?((x|X)?(\d+)(\.?\d+)?)((\s?倍率?)|(x|X))\)?'
+replace = "$1x"

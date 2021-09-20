@@ -37,8 +37,8 @@ int addNodes(std::string link, std::vector<Proxy> &allNodes, int groupID, parse_
     std::string &proxy = *parse_set.proxy, &subInfo = *parse_set.sub_info;
     string_array &exclude_remarks = *parse_set.exclude_remarks;
     string_array &include_remarks = *parse_set.include_remarks;
-    string_array &stream_rules = *parse_set.stream_rules;
-    string_array &time_rules = *parse_set.time_rules;
+    RegexMatchConfigs &stream_rules = *parse_set.stream_rules;
+    RegexMatchConfigs &time_rules = *parse_set.time_rules;
     string_icase_map &request_headers = *parse_set.request_header;
     bool &authorized = parse_set.authorized;
 
