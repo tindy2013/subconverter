@@ -14,6 +14,15 @@ jobs:
       with:
         name: subconverter_linux32
         path: subconverter/
+    - name: Package Release
+      if: startsWith(github.ref, 'refs/tags/')
+      run: tar czf subconverter_linux32.tar.gz subconverter
+    - name: Draft Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: subconverter_linux32.tar.gz
+        draft: true
 
   linux64_build:
     name: Linux x86_64 Build
@@ -27,6 +36,15 @@ jobs:
       with:
         name: subconverter_linux64
         path: subconverter/
+    - name: Package Release
+      if: startsWith(github.ref, 'refs/tags/')
+      run: tar czf subconverter_linux64.tar.gz subconverter
+    - name: Draft Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: subconverter_linux64.tar.gz
+        draft: true
 
   macos_build:
     name: macOS Build
@@ -40,6 +58,15 @@ jobs:
       with:
         name: subconverter_darwin64
         path: subconverter/
+    - name: Package Release
+      if: startsWith(github.ref, 'refs/tags/')
+      run: tar czf subconverter_darwin64.tar.gz subconverter
+    - name: Draft Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: subconverter_darwin64.tar.gz
+        draft: true
 
   windows64_build:
     name: Windows x86_64 Build
@@ -65,6 +92,15 @@ jobs:
       with:
         name: subconverter_win64
         path: subconverter/
+    - name: Package Release
+      if: startsWith(github.ref, 'refs/tags/')
+      run: 7z a subconverter_win64.7z subconverter/
+    - name: Draft Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: subconverter_win64.7z
+        draft: true
 
   windows32_build:
     name: Windows x86 Build
@@ -90,3 +126,12 @@ jobs:
       with:
         name: subconverter_win32
         path: subconverter/
+    - name: Package Release
+      if: startsWith(github.ref, 'refs/tags/')
+      run: 7z a subconverter_win32.7z subconverter/
+    - name: Draft Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: subconverter_win32.7z
+        draft: true
