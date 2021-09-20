@@ -1525,7 +1525,7 @@ int loadExternalTOML(toml::value &root, ExternalConfig &ext)
                   "enable_rule_generator", ext.enable_rule_generator,
                   "overwrite_original_rules", ext.overwrite_original_rules,
                   "clash_rule_base", ext.clash_rule_base,
-                  "surge_rule_base", ext.surge_ruleset,
+                  "surge_rule_base", ext.surge_rule_base,
                   "surfboard_rule_base", ext.surfboard_rule_base,
                   "mellow_rule_base", ext.mellow_rule_base,
                   "quan_rule_base", ext.quan_rule_base,

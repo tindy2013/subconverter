@@ -27,4 +27,4 @@ import = "snippets/groups_forcerule.toml"
 
 [[template_args]]
 key = "clash.dns.port"
-value = 5353
+value = "5353"
