@@ -38,7 +38,7 @@ RUN apk add --no-cache --virtual .build-tools git g++ build-base linux-headers c
     mv subconverter /usr/bin && \
     mv base ../ && \
     cd .. && \
-    rm -rf subconverter quickjspp libcron toml11 && \
+    rm -rf subconverter quickjspp libcron toml11 /usr/lib/lib*.a /usr/include/* /usr/local/include/lib*.a /usr/local/include/* && \
     apk add --no-cache --virtual subconverter-deps pcre2 libcurl yaml-cpp libevent && \
     apk del .build-tools .build-deps
 

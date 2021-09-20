@@ -86,7 +86,6 @@ bool getSubInfoFromHeader(const std::string &header, std::string &result)
 bool getSubInfoFromNodes(const std::vector<Proxy> &nodes, const RegexMatchConfigs &stream_rules, const RegexMatchConfigs &time_rules, std::string &result)
 {
     std::string remarks, stream_info, time_info, retStr;
-    string_size spos;
 
     for(const Proxy &x : nodes)
     {
