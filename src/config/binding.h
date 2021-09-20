@@ -112,7 +112,7 @@ namespace toml
             case "clash-domain"_hash:
             case "clash-ipcidr"_hash:
             case "clash-classic"_hash:
-                conf.Url = type;
+                conf.Url = type + ":";
                 break;
             default:
                 throw toml::syntax_error("Ruleset has incorrect type, should be one of following:\n  surge-ruleset, quantumultx, clash-domain, clash-ipcidr, clash-classic", v.at("type").location());
