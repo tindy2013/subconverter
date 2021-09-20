@@ -921,7 +921,7 @@ template <class T, class... U>
 void find_if_exist(const toml::value &v, const toml::key &k, T& target, U&&... args)
 {
     if(v.contains(k)) target = toml::find<T>(v, k);
-    if constexpr (sizeof...(args)) find_if_exist(v, std::forward<U>(args)...);
+    if constexpr (sizeof...(args) > 0) find_if_exist(v, std::forward<U>(args)...);
 }
 
 std::string join(const string_array &arr, const std::string &delimiter = "|")

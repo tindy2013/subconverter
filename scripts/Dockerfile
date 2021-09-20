@@ -7,17 +7,17 @@ RUN apk add --no-cache --virtual .build-tools git g++ build-base linux-headers c
     apk add --no-cache --virtual .build-deps curl-dev rapidjson-dev libevent-dev pcre2-dev yaml-cpp-dev && \
     git clone https://github.com/ftk/quickjspp --depth=1 && \
     cd quickjspp && \
-	git submodule update --init && \
+    git submodule update --init && \
     cmake -DCMAKE_BUILD_TYPE=Release . && \
     make quickjs -j2 && \
     install -m644 quickjs/libquickjs.a /usr/lib && \
-	install -d /usr/include/quickjs/ && \
+    install -d /usr/include/quickjs/ && \
     install -m644 quickjs/quickjs.h quickjs/quickjs-libc.h /usr/include/quickjs/ && \
     install -m644 quickjspp.hpp /usr/include && \
     cd .. && \
     git clone https://github.com/PerMalmberg/libcron --depth=1 && \
     cd libcron && \
-	git submodule update --init && \
+    git submodule update --init && \
     cmake -DCMAKE_BUILD_TYPE=Release . && \
     make libcron -j4 && \
     install -m644 libcron/out/Release/liblibcron.a /usr/lib/ && \
@@ -25,6 +25,11 @@ RUN apk add --no-cache --virtual .build-tools git g++ build-base linux-headers c
     install -m644 libcron/include/libcron/* /usr/include/libcron/ && \
     install -d /usr/include/date/ && \
     install -m644 libcron/externals/date/include/date/* /usr/include/date/ && \
+    cd .. && \
+    git clone https://github.com/ToruNiina/toml11 --depth=1 && \
+    cd toml11 && \
+    cmake . && \
+    make install -j4 && \
     cd .. && \
     git clone https://github.com/tindy2013/subconverter --depth=1 && \
     cd subconverter && \
