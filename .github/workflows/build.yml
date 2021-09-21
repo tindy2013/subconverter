@@ -1,6 +1,10 @@
 name: GitHub CI
 on: [push]
 
+concurrency: 
+  group: ${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: true
+
 jobs:
   linux32_build:
     name: Linux x86 Build

@@ -1,5 +1,6 @@
 FROM alpine:3.13
 LABEL maintainer "tindy.it@gmail.com"
+ARG THREADS="4"
 ARG SHA=""
 
 # build minimized
@@ -10,7 +11,7 @@ RUN apk add --no-cache --virtual .build-tools git g++ build-base linux-headers c
     cd quickjspp && \
     git submodule update --init && \
     cmake -DCMAKE_BUILD_TYPE=Release . && \
-    make quickjs -j2 && \
+    make quickjs -j $THREADS && \
     install -m644 quickjs/libquickjs.a /usr/lib && \
     install -d /usr/include/quickjs/ && \
     install -m644 quickjs/quickjs.h quickjs/quickjs-libc.h /usr/include/quickjs/ && \
@@ -20,7 +21,7 @@ RUN apk add --no-cache --virtual .build-tools git g++ build-base linux-headers c
     cd libcron && \
     git submodule update --init && \
     cmake -DCMAKE_BUILD_TYPE=Release . && \
-    make libcron -j4 && \
+    make libcron -j $THREADS && \
     install -m644 libcron/out/Release/liblibcron.a /usr/lib/ && \
     install -d /usr/include/libcron/ && \
     install -m644 libcron/include/libcron/* /usr/include/libcron/ && \
@@ -30,13 +31,13 @@ RUN apk add --no-cache --virtual .build-tools git g++ build-base linux-headers c
     git clone https://github.com/ToruNiina/toml11 --depth=1 && \
     cd toml11 && \
     cmake . && \
-    make install -j4 && \
+    make install -j $THREADS && \
     cd .. && \
     git clone https://github.com/tindy2013/subconverter --depth=1 && \
     cd subconverter && \
     [ -n "$SHA" ] && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h;\
     cmake -DCMAKE_BUILD_TYPE=Release . && \
-    make -j4 && \
+    make -j $THREADS && \
     mv subconverter /usr/bin && \
     mv base ../ && \
     cd .. && \
