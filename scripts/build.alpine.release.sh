@@ -45,6 +45,7 @@ make install -j4
 cd ..
 
 export PKG_CONFIG_PATH=/usr/lib64/pkgconfig
+git describe --exact-match HEAD || sha=$(git rev-parse --short HEAD) && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$sha"'/' src/version.h
 cmake -DCMAKE_BUILD_TYPE=Release .
 make -j2
 rm subconverter

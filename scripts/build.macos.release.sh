@@ -49,6 +49,7 @@ cp /usr/local/lib/libevent.a .
 cp /usr/local/opt/zlib/lib/libz.a .
 cp /usr/local/lib/libpcre2-8.a .
 
+git describe --exact-match HEAD || sha=$(git rev-parse --short HEAD) && sed -i -e 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$sha"'/' src/version.h
 cmake -DCMAKE_BUILD_TYPE=Release .
 make -j8
 rm subconverter

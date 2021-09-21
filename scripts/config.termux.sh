@@ -29,6 +29,7 @@ cd ..
 git clone https://github.com/PerMalmberg/libcron --depth=1
 cd libcron
 git submodule update --init
+git describe --exact-match HEAD || sha=$(git rev-parse --short HEAD) && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$sha"'/' src/version.h
 cmake -DCMAKE_BUILD_TYPE=Release .
 make libcron -j3
 install -m644 libcron/out/Release/liblibcron.a $PREFIX/lib/
