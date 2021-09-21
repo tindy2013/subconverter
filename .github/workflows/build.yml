@@ -7,6 +7,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - name: Add commit id into version
+      if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+      run: SHA=$(git rev-parse --short HEAD) && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h
     - name: Build
       run: docker run --rm -v $GITHUB_WORKSPACE:/root/workdir multiarch/alpine:x86-latest-stable /bin/sh -c "apk add bash git nodejs npm && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
     - name: Upload
@@ -29,6 +32,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - name: Add commit id into version
+      if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+      run: SHA=$(git rev-parse --short HEAD) && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h
     - name: Build
       run: docker run -v $GITHUB_WORKSPACE:/root/workdir multiarch/alpine:amd64-latest-stable /bin/sh -c "apk add bash git nodejs npm && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
     - name: Upload
@@ -51,6 +57,9 @@ jobs:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v2
+    - name: Add commit id into version
+      if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+      run: SHA=$(git rev-parse --short HEAD) && sed -i -e 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h
     - name: Build
       run: bash scripts/build.macos.release.sh
     - name: Upload
@@ -85,6 +94,9 @@ jobs:
         install: base-devel git mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-libevent mingw-w64-x86_64-pcre2 patch
         msystem: MINGW64
         path-type: inherit
+    - name: Add commit id into version
+      if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+      run: SHA=$(git rev-parse --short HEAD) && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h
     - name: Build
       run: bash scripts/build.windows.release.sh
     - name: Upload
@@ -119,6 +131,9 @@ jobs:
         install: base-devel git mingw-w64-i686-gcc mingw-w64-i686-cmake mingw-w64-i686-libevent mingw-w64-i686-pcre2 patch
         msystem: MINGW32
         path-type: inherit
+    - name: Add commit id into version
+      if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+      run: SHA=$(git rev-parse --short HEAD) && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h
     - name: Build
       run: bash scripts/build.windows.release.sh
     - name: Upload

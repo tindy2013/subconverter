@@ -1,5 +1,6 @@
 FROM alpine:3.13
 LABEL maintainer "tindy.it@gmail.com"
+ARG SHA=""
 
 # build minimized
 WORKDIR /
@@ -33,6 +34,7 @@ RUN apk add --no-cache --virtual .build-tools git g++ build-base linux-headers c
     cd .. && \
     git clone https://github.com/tindy2013/subconverter --depth=1 && \
     cd subconverter && \
+    [ -n "$SHA" ] && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h;\
     cmake -DCMAKE_BUILD_TYPE=Release . && \
     make -j4 && \
     mv subconverter /usr/bin && \
