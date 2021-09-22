@@ -380,6 +380,7 @@ exclude=(流量|官网)
 > 关于 subconverter 主程序目录中 `pref.ini` 文件的解释
 
 注：本部分内容以本程序中的 [`pref.example.ini`](https://github.com/tindy2013/subconverter/blob/master/base/pref.example.ini) 或 [`pref.example.yml`](https://github.com/tindy2013/subconverter/blob/master/base/pref.example.yml) 或 [`pref.example.toml`](https://github.com/tindy2013/subconverter/blob/master/base/pref.example.toml) 为准，本文档可能由于更新不及时，内容不适用于新版本。
+
 加载配置文件时会按照`pref.toml`、`pref.yml`、`pref.ini`的优先级顺序加载优先级高的配置文件
 
 由于此部分篇幅较长，点击下方条目即可展开详解：
@@ -493,32 +494,12 @@ exclude=(流量|官网)
 
      ```ini
      #仅保留加密方式为chacha20的节点
-     filter_script=function filter(node) {\n    const info = JSON.parse(node.ProxyInfo);\n    if(info.EncryptMethod.includes('chacha20'))\n        return true;\n    return false;\n}
+     filter_script=function filter(node) {\n    if(node.EncryptMethod.includes('chacha20'))\n        return true;\n    return false;\n}
      # 或者使用本地文件
      filter_script="path:/path/to/script.js"
      ```
 
-    - node对象的结构如下
-
-     ```json
-    {
-     "Group": "xx",
-     "GroupID": 0,
-     "Index": 0,
-     "Remark": "xx",
-     "ProxyInfo": ""
-    }
-     ```
-
-    Group 类型string，节点所属组(订阅)的名称
-
-    GroupID 类型int，节点所属组(订阅)的id，该id从0起顺序排列，即第一个订阅的id为0
-
-    Index 类型int，节点的id
-
-    Remark 类型string，节点备注(名称)，之后的rename/添加emoji都是对该值进行修改，但不会改变ProxyInfo中的相应值
-
-    ProxyInfo 类型是JSON字符串，使用前需要通过JSON.parse(node.ProxyInfo)转化为json对象，节点的全部信息，结构参见[此处](https://github.com/netchx/netch/blob/268bdb7730999daf9f27b4a81cfed5c36366d1ce/GSF.md)
+    - node对象包含节点的全部信息，具体结构参见[此处](https://github.com/netchx/netch/blob/268bdb7730999daf9f27b4a81cfed5c36366d1ce/GSF.md)
 
 1. **default_external_config**
 
@@ -697,12 +678,13 @@ exclude=(流量|官网)
     > 可设置为js代码内容，也可为本地js文件的路径
     >
     > js函数包括2个参数，即2个节点，函数返回为true时，节点a排在节点b的前方
+    >
     > 具体细节参照[common] 部分**filter_script**中的介绍
 
     - 例如:
 
      ```ini
-     sort_script=function compare(node_a, node_b) {\n    const info_a = JSON.parse(node_a.ProxyInfo);\n    const info_b = JSON.parse(node_b.ProxyInfo);\n    return info_a.Remark > info_b.Remark;\n}
+     sort_script=function compare(node_a, node_b) {\n    return node_a.Remark > node_b.Remark;\n}
      # 或者
      sort_script="path:/path/to/script.js"
      ```
@@ -751,6 +733,7 @@ exclude=(流量|官网)
     > 使用方式：原始命名@重命名
     >
     > 可以使用自定义的js函数进行重命名
+    > 
     > 具体细节参照[common] 部分**filter_script**中的介绍
 
     - 例如:
@@ -758,7 +741,7 @@ exclude=(流量|官网)
      ```ini
      rename_node=中国@中
      rename_node=\(?((x|X)?(\d+)(\.?\d+)?)((\s?倍率?:?)|(x|X))\)?@(倍率:$1)
-     rename_node=!!script:function rename(node) {\n  const info = JSON.parse(node.ProxyInfo);\n  const geoinfo = JSON.parse(geoip(info.Hostname));\n  if(geoinfo.country_code == "CN")\n    return "CN " + node.Remark;\n}
+     rename_node=!!script:function rename(node) {\n  const geoinfo = JSON.parse(geoip(node.Hostname));\n  if(geoinfo.country_code == "CN")\n    return "CN " + node.Remark;\n}
      rename_node=!!script:path:/path/to/script.js
      ```
 
