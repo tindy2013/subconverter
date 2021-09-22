@@ -462,7 +462,7 @@ exclude=(流量|官网)
     - 例如:
 
      ```ini
-     exclude_remarks=(流量|时间|官网|产品)
+     exclude_remarks=(到期|剩余流量|时间|官网|产品|平台)
      ```
 
 1. **include_remarks**
@@ -999,8 +999,28 @@ custom_proxy_group=节点选择`select`(^(?!.*(美国|日本)).*)
   ```
 
 </details>
-<details>
 
+<details>
+<summary><b>[tasks] 部分</b></summary>
+
+> 该部分主要涉及到的内容为 **定时执行js文件中的代码**
+
+
+1. **task**
+
+    >在服务器运行期间定期执行的任务。
+    >
+    >使用方式 任务名称`Cron表达式`JS文件路径`超时时间(s)
+
+    - 例如:
+
+      ```ini
+      task=tick`0/10 * * * * ?`tick.js`3
+      ```
+
+</details>
+
+<details>
 <summary><b>[server] 部分</b></summary>
 
 > 此部分通常**保持默认**即可
