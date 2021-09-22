@@ -30,6 +30,11 @@
 (Sweden|瑞典),🇸🇪
 (Thailand|泰国|曼谷),🇹🇭
 (Turkey|土耳其|伊斯坦布尔),🇹🇷
+(IMAN|马恩岛),🇮🇲
+(Israel|以色列),🇮🇱
+(Norway|挪威),🇳🇴
+瑞典,🇸🇪
+(新西兰|纽西兰),🇳🇿
 (Vietnam|越南),🇻🇳
 (Africa|南非),🇿🇦
 (?i:UK|England|United.*?Kingdom|London|英国|[^-]英|伦敦),🇬🇧

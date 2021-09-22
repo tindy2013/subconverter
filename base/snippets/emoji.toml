@@ -75,8 +75,20 @@ match = "(Ireland|爱尔兰|都柏林)"
 emoji = "🇮🇪"
 
 [[emoji]]
+match = "(Israel|以色列)"
+emoji = "🇮🇱"
+
+[[emoji]]
+match = "(曼岛|马恩岛)"
+emoji = "🇮🇲"
+
+[[emoji]]
 match = "(India|印度|孟买)"
 emoji = "🇮🇳"
+
+[[emoji]]
+match = "(Iceland|冰岛)"
+emoji = "🇮🇸"
 
 [[emoji]]
 match = "(Italy|意大利|米兰)"
@@ -107,6 +119,14 @@ match = "(NL|Netherlands|荷兰|阿姆斯特丹)"
 emoji = "🇳🇱"
 
 [[emoji]]
+match = "(Norway|挪威)"
+emoji = "🇳🇴"
+
+[[emoji]]
+match = "(新西兰|纽西兰)"
+emoji = "🇳🇿"
+
+[[emoji]]
 match = "(PH|Philippines|菲律宾)"
 emoji = "🇵🇭"
 
@@ -123,7 +143,7 @@ match = "(沙特|迪拜)"
 emoji = "🇸🇦"
 
 [[emoji]]
-match = "(SE|Sweden)"
+match = "(SE|Sweden|瑞典)"
 emoji = "🇸🇪"
 
 [[emoji]]
