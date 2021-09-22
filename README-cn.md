@@ -993,7 +993,7 @@ custom_proxy_group=节点选择`select`(^(?!.*(美国|日本)).*)
 
     >在服务器运行期间定期执行的任务。
     >
-    >使用方式 任务名称`Cron表达式`JS文件路径`超时时间(s)
+    >使用方式 任务名称\`Cron表达式\`JS文件路径\`超时时间(s)
 
     - 例如:
 
@@ -1049,11 +1049,12 @@ custom_proxy_group=节点选择`select`(^(?!.*(美国|日本)).*)
 
 > 本部分用于 链接参数 **`&config=`**
 
-注：本部分内容以本程序中的 [`/config/example_external_config.ini`](https://github.com/tindy2013/subconverter/blob/master/base/config/example_external_config.ini) 或 [`/config/example_external_config.yml`](https://github.com/tindy2013/subconverter/blob/master/base/config/example_external_config.yml) 或 为准[`/config/example_external_config.toml`](https://github.com/tindy2013/subconverter/blob/master/base/config/example_external_config.toml)，本文档可能由于更新不及时，内容不适用于新版本。
+注：本部分内容以本程序中的 [`/config/example_external_config.ini`](https://github.com/tindy2013/subconverter/blob/master/base/config/example_external_config.ini) 或 [`/config/example_external_config.yml`](https://github.com/tindy2013/subconverter/blob/master/base/config/example_external_config.yml) 或 [`/config/example_external_config.toml`](https://github.com/tindy2013/subconverter/blob/master/base/config/example_external_config.toml) 为准，本文档可能由于更新不及时，内容不适用于新版本。
 
 将文件按照以下格式写好，上传至 Github Gist 或者 其他**可访问**网络位置
 经过 [URLEncode](https://www.urlencoder.org/) 处理后，添加至 `&config=` 即可调用
 需要注意的是，由外部配置中所定义的值会**覆盖** 主程序目录中配置文件 里的内容
+
 即，如果你在外部配置中定义了
 
 ```txt
