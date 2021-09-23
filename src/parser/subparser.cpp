@@ -44,20 +44,19 @@ void vmessConstruct(Proxy &node, const std::string &group, const std::string &re
     node.AlterId = to_int(aid);
     node.EncryptMethod = cipher;
     node.TransferProtocol = net.empty() ? "tcp" : net;
-    node.Host = host.empty() ? add.data() : trim(host);
     node.Edge = edge;
 
-    if(net == "ws" || net == "http")
-        node.Path = path.empty() ? "/" : trim(path);
+    if(net == "quic")
+    {
+        node.QUICSecure = host;
+        node.QUICSecret = path;
+    }
     else
     {
-        if(net == "quic")
-        {
-            node.QUICSecure = host;
-            node.QUICSecret = path;
-        }
-        node.FakeType = type;
+        node.Host = host.empty() ? add.data() : trim(host);
+        node.Path = path.empty() ? "/" : trim(path);
     }
+    node.FakeType = type;
     node.TLSSecure = tls == "tls";
 }
 
