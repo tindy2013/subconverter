@@ -93,12 +93,12 @@
 | ---------------------------- | :--------: | :----------: | ------------------- |
 | Clash                        |     ✓      |      ✓       | clash               |
 | ClashR                       |     ✓      |      ✓       | clashr              |
-| Quantumult (完整配置)        |     ✓      |      ✓       | quan                |
-| Quantumult X (完整配置)      |     ✓      |      ✓       | quanx               |
+| Quantumult (完整配置)         |     ✓      |      ✓       | quan                |
+| Quantumult X (完整配置)       |     ✓      |      ✓       | quanx               |
 | Loon                         |     ✓      |      ✓       | loon                |
 | Mellow                       |     ✓      |      ✓       | mellow              |
 | SS (SIP002)                  |     ✓      |      ✓       | ss                  |
-| SS (软件订阅)                |     ✓      |      ✓       | sssub               |
+| SS (软件订阅/SIP008)          |     ✓      |      ✓       | sssub               |
 | SSD                          |     ✓      |      ✓       | ssd                 |
 | SSR                          |     ✓      |      ✓       | ssr                 |
 | Surfboard                    |     ✓      |      ✓       | surfboard           |
@@ -107,7 +107,7 @@
 | Surge 4                      |     ✓      |      ✓       | surge&ver=4         |
 | Trojan                       |     ✓      |      ✓       | trojan              |
 | V2Ray                        |     ✓      |      ✓       | v2ray               |
-| 类 TG 代理的 HTTP/Socks 链接 |     ✓      |      ×       | 仅支持 `&url=` 调用 |
+| 类 TG 代理的 HTTP/Socks 链接  |     ✓      |      ×       | 仅支持 `&url=` 调用  |
 | Mixed                        |     ×      |      ✓       | mixed               |
 | Auto                         |     ×      |      ✓       | auto                |
 
@@ -123,7 +123,7 @@
 
 3. 目标类型为 `mixed` 时，会输出所有支持的节点的单链接组成的普通订阅（Base64编码）
 
-4. 目标类型为 `auto` 时，会根据请求的 `User-Agent` 自动判断输出的目标类型，匹配规则可参见 [此处](https://github.com/tindy2013/subconverter/blob/master/src/interfaces.cpp#L105)
+4. 目标类型为 `auto` 时，会根据请求的 `User-Agent` 自动判断输出的目标类型，匹配规则可参见 [此处](https://github.com/tindy2013/subconverter/blob/master/src/handler/interfaces.cpp#L121)
 
 ---
 
@@ -379,7 +379,9 @@ exclude=(流量|官网)
 
 > 关于 subconverter 主程序目录中 `pref.ini` 文件的解释
 
-注：本部分内容以本程序中的 [`pref.example.ini`](https://github.com/tindy2013/subconverter/blob/master/base/pref.example.ini) 或 [`pref.example.yml`](https://github.com/tindy2013/subconverter/blob/master/base/pref.example.yml) 为准，本文档可能由于更新不及时，内容不适用与新版本。
+注：本部分内容以本程序中的 [`pref.example.ini`](https://github.com/tindy2013/subconverter/blob/master/base/pref.example.ini) 或 [`pref.example.yml`](https://github.com/tindy2013/subconverter/blob/master/base/pref.example.yml) 或 [`pref.example.toml`](https://github.com/tindy2013/subconverter/blob/master/base/pref.example.toml) 为准，本文档可能由于更新不及时，内容不适用于新版本。
+
+加载配置文件时会按照`pref.toml`、`pref.yml`、`pref.ini`的优先级顺序加载优先级高的配置文件
 
 由于此部分篇幅较长，点击下方条目即可展开详解：
 
@@ -461,7 +463,7 @@ exclude=(流量|官网)
     - 例如:
 
      ```ini
-     exclude_remarks=(流量|时间|官网|产品)
+     exclude_remarks=(到期|剩余流量|时间|官网|产品|平台)
      ```
 
 1. **include_remarks**
@@ -492,32 +494,12 @@ exclude=(流量|官网)
 
      ```ini
      #仅保留加密方式为chacha20的节点
-     filter_script=function filter(node) {\n    const info = JSON.parse(node.ProxyInfo);\n    if(info.EncryptMethod.includes('chacha20'))\n        return true;\n    return false;\n}
+     filter_script=function filter(node) {\n    if(node.EncryptMethod.includes('chacha20'))\n        return true;\n    return false;\n}
      # 或者使用本地文件
      filter_script="path:/path/to/script.js"
      ```
 
-    - node对象的结构如下
-
-     ```json
-    {
-     "Group": "xx",
-     "GroupID": 0,
-     "Index": 0,
-     "Remark": "xx",
-     "ProxyInfo": ""
-    }
-     ```
-
-    Group 类型string，节点所属组(订阅)的名称
-
-    GroupID 类型int，节点所属组(订阅)的id，该id从0起顺序排列，即第一个订阅的id为0
-
-    Index 类型int，节点的id
-
-    Remark 类型string，节点备注(名称)，之后的rename/添加emoji都是对该值进行修改，但不会改变ProxyInfo中的相应值
-
-    ProxyInfo 类型是JSON字符串，使用前需要通过JSON.parse(node.ProxyInfo)转化为json对象，节点的全部信息，结构参见[此处](https://github.com/NetchX/Netch/blob/master/GSF.md)
+    - node对象包含节点的全部信息，具体结构参见[此处](https://github.com/netchx/netch/blob/268bdb7730999daf9f27b4a81cfed5c36366d1ce/GSF.md)
 
 1. **default_external_config**
 
@@ -696,11 +678,13 @@ exclude=(流量|官网)
     > 可设置为js代码内容，也可为本地js文件的路径
     >
     > js函数包括2个参数，即2个节点，函数返回为true时，节点a排在节点b的前方
+    >
+    > 具体细节参照[common] 部分**filter_script**中的介绍
 
     - 例如:
 
      ```ini
-     sort_script=function compare(node_a, node_b) {\n    const info_a = JSON.parse(node_a.ProxyInfo);\n    const info_b = JSON.parse(node_b.ProxyInfo);\n    return info_a.Remark > info_b.Remark;\n}
+     sort_script=function compare(node_a, node_b) {\n    return node_a.Remark > node_b.Remark;\n}
      # 或者
      sort_script="path:/path/to/script.js"
      ```
@@ -749,13 +733,15 @@ exclude=(流量|官网)
     > 使用方式：原始命名@重命名
     >
     > 可以使用自定义的js函数进行重命名
+    > 
+    > 具体细节参照[common] 部分**filter_script**中的介绍
 
     - 例如:
 
      ```ini
      rename_node=中国@中
      rename_node=\(?((x|X)?(\d+)(\.?\d+)?)((\s?倍率?:?)|(x|X))\)?@(倍率:$1)
-     rename_node=!!script:function rename(node) {\n  const info = JSON.parse(node.ProxyInfo);\n  const geoinfo = JSON.parse(geoip(info.Hostname));\n  if(geoinfo.country_code == "CN")\n    return "CN " + node.Remark;\n}
+     rename_node=!!script:function rename(node) {\n  const geoinfo = JSON.parse(geoip(node.Hostname));\n  if(geoinfo.country_code == "CN")\n    return "CN " + node.Remark;\n}
      rename_node=!!script:path:/path/to/script.js
      ```
 
@@ -923,29 +909,35 @@ custom_proxy_group=负载均衡`load-balance`.*`http://www.gstatic.com/generate_
 # 表示创建一个叫 负载均衡 的 load-balance 策略组,并向其中添加所有的节点，每隔300秒测试一次，切换节点的延迟容差为100ms
 custom_proxy_group=🇯🇵 JP`select`沪日`日本`[]🇯🇵 日本延迟最低
 # 表示创建一个叫 🇯🇵 JP 的 select 策略组,并向其中**依次**添加名字含'沪日','日本'的节点，以及引用上述所创建的 🇯🇵 日本延迟最低 策略组
+custom_proxy_group=节点选择`select`(^(?!.*(美国|日本)).*)
+# 表示创建一个叫 节点选择 的 select 策略组,并向其中**依次**添加名字不包含'美国'或'日本'的节点
 ```
 
-- 还可使用一些特殊筛选条件(GROUPID 和 INSERT 匹配支持range,如 1,!2,3-4,!5-6,7+,8-)
+- 还可使用一些特殊筛选条件：
+  `\`!!GROUPID=%n%` 待转换链接中的第 n+1 条链接中包含的节点
+  `\`!!INSERT=%n%` 配置文件中 `insert_url` 的第 n+1 条链接所包含的节点
+  `\`!!PROVIDER=%proxy-provider-name%` 指定名称的proxy-provider
+  GROUPID 和 INSERT 匹配支持range,如 1,!2,3-4,!5-6,7+,8-
 
   ```ini
   custom_proxy_group=g1`select`!!GROUPID=0`!!INSERT=0
-  # 指订阅链接中的第一条订阅以及配置文件中 insert_url 中的第一条节点
+  # 表示创建一个叫 g1 的 select 策略组,并向其中依次添加订阅链接中第一条订阅链接中的所有节点和配置文件中 insert_url 中的**第一个**节点
   custom_proxy_group=g2`select`!!GROUPID=1
-  # 指订阅链接中的第二条订阅
-  custom_proxy_group=g2`select`!!GROUPID=!2
-  # 指除了订阅链接中的第三条订阅
-  custom_proxy_group=g2`select`!!GROUPID=3-5
-  # 指订阅链接中的第四条到第六条订阅
+  # 表示创建一个叫 g2 的 select 策略组,并向其中依次添加订阅链接中第二条订阅链接中的所有节点
+  custom_proxy_group=g3`select`!!GROUPID=!2
+  # 表示创建一个叫 g3 的 select 策略组,并向其中依次添加订阅链接中除了第三条订阅链接之外的所有节点
+  custom_proxy_group=g4`select`!!GROUPID=3-5
+  # 表示创建一个叫 g4 的 select 策略组,并向其中依次添加订阅链接中第四条到第六条订阅链接中的所有节点
   custom_proxy_group=v2ray`select`!!GROUP=V2RayProvider
-  # 指订阅链接中组名（tag）为 V2RayProvider 的节点
+  # 表示创建一个叫 v2ray 的 select 策略组,并向其中依次添加订阅链接中组名（tag）为 V2RayProvider 的所有节点
   ```
   注意：此处的订阅链接指 `default_url` 和 `&url=` 中的订阅以及单链接节点（区别于配置文件中 insert_url）
   
-- 现在也可以使用双条件进行筛选
+- 现在也可以使用2个条件组合来进行筛选，只有同时满足这2个筛选条件的节点才会被加入组内
 
   ```ini
   custom_proxy_group=g1hk`select`!!GROUPID=0!!(HGC|HKBN|PCCW|HKT|hk|港)
-  # 订阅链接中的第一条订阅内名字含 HGC、HKBN、PCCW、HKT、hk、港 的节点
+  # 属于订阅链接中的第一条订阅**且**名字含 HGC、HKBN、PCCW、HKT、hk、港 的节点
   ```
 
 - 也可以使用js脚本筛选加入策略组的节点。A "filter" function with one argument which is an array of all available nodes should be defined in the script.
@@ -990,8 +982,28 @@ custom_proxy_group=🇯🇵 JP`select`沪日`日本`[]🇯🇵 日本延迟最�
   ```
 
 </details>
-<details>
 
+<details>
+<summary><b>[tasks] 部分</b></summary>
+
+> 该部分主要涉及到的内容为 **定时执行js文件中的代码**
+
+
+1. **task**
+
+    >在服务器运行期间定期执行的任务。
+    >
+    >使用方式 任务名称\`Cron表达式\`JS文件路径\`超时时间(s)
+
+    - 例如:
+
+      ```ini
+      task=tick`0/10 * * * * ?`tick.js`3
+      ```
+
+</details>
+
+<details>
 <summary><b>[server] 部分</b></summary>
 
 > 此部分通常**保持默认**即可
@@ -1037,11 +1049,12 @@ custom_proxy_group=🇯🇵 JP`select`沪日`日本`[]🇯🇵 日本延迟最�
 
 > 本部分用于 链接参数 **`&config=`**
 
-注：本部分内容以本程序中的 [`/config/example_external_config.ini`](https://github.com/tindy2013/subconverter/blob/master/base/config/example_external_config.ini) 或 [`/config/example_external_config.yml`](https://github.com/tindy2013/subconverter/blob/master/base/config/example_external_config.yml) 为准，本文档可能由于更新不及时，内容不适用与新版本。
+注：本部分内容以本程序中的 [`/config/example_external_config.ini`](https://github.com/tindy2013/subconverter/blob/master/base/config/example_external_config.ini) 或 [`/config/example_external_config.yml`](https://github.com/tindy2013/subconverter/blob/master/base/config/example_external_config.yml) 或 [`/config/example_external_config.toml`](https://github.com/tindy2013/subconverter/blob/master/base/config/example_external_config.toml) 为准，本文档可能由于更新不及时，内容不适用于新版本。
 
 将文件按照以下格式写好，上传至 Github Gist 或者 其他**可访问**网络位置
 经过 [URLEncode](https://www.urlencoder.org/) 处理后，添加至 `&config=` 即可调用
-需要注意的是，由外部配置中所定义的值会**覆盖** `pref.ini` 里的内容
+需要注意的是，由外部配置中所定义的值会**覆盖** 主程序目录中配置文件 里的内容
+
 即，如果你在外部配置中定义了
 
 ```txt
@@ -1049,7 +1062,7 @@ emoji=(流量|时间|应急),🏳️‍🌈
 emoji=阿根廷,🇦🇷
 ```
 
-那么本程序只会匹配以上两个 Emoji，不再使用 `pref.ini` 中所定义的 国别 Emoji
+那么本程序只会匹配以上两个 Emoji，不再使用 主程序目录中配置文件 中所定义的 国别 Emoji
 
 <details>
 <summary><b>点击查看文件内容</b></summary>
@@ -1194,6 +1207,24 @@ clash_rule_base=base/forcerule.yml
    # 如果 URL 中存在对 clash.dns 参数的任意指定时，判断成立 (可以和 如果···否则··· 等判断一起使用)
    ```
 
+1. 单判断，且如果参数不存在时使用默认值进行判断(可避免请求中无对应参数时发生的报错)
+
+   ```inja
+   dns:
+     enabled: true
+     listen: 1053
+     nameserver:
+      {% if default(request.doh, "false") == "true" %}
+      - https://doh.pub/dns-query
+      - https://223.5.5.5/dns-query
+      {% else %}
+      - 119.29.29.29
+      - 223.5.5.5
+      {% endif %}
+   # 如果 URL 中 doh 参数为 true 时，判断成立。
+   # 如果 URL 中不存在 doh 参数时，将 clash.doh 参数设为默认值 false 再进行判断。
+   ```
+
 模板内的引用有以下几类：
 
 1. 从 配置文件 中获取，判断前缀为 `global`
@@ -1282,7 +1313,7 @@ token = xxxxxxxxxxxxxxxxxxxxxxxx(所生成的 Personal Access Token)
 ```
 
 在 [调用地址](#调用地址) 或 [调用地址 (进阶)](#调用地址-进阶) 所生成的链接后加上 `&upload=true` 就会在更新好后自动上传 gist
-此时，subconverter 程序窗口内会出现如下所示的**神秘代码**：
+此时，subconverter 程序窗口内会出现如下所示的**提示信息**：
 
 ```cmd
 No gist id is provided. Creating new gist...
