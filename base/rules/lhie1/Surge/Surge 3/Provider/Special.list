@@ -19,6 +19,9 @@ DOMAIN,updates-http.cdn-apple.com
 DOMAIN-SUFFIX,ls.apple.com
 DOMAIN-SUFFIX,mzstatic.com
 
+# > Duet
+USER-AGENT,duet*
+
 # > Epic
 DOMAIN-KEYWORD,epicgames
 
@@ -28,6 +31,7 @@ DOMAIN,safebrowsing.googleapis.com
 DOMAIN-SUFFIX,dl.google.com
 
 # > Microsoft
+USER-AGENT,Microsoft%20Remote%20Desktop*
 DOMAIN-SUFFIX,msftconnecttest.com
 DOMAIN-SUFFIX,windows.com
 DOMAIN-SUFFIX,windows.net
@@ -53,11 +57,6 @@ DOMAIN-SUFFIX,tesla-cdn.thron.cn
 
 # > UUBooster
 PROCESS-NAME,UUBooster
-
-# > Windows
-DOMAIN-SUFFIX,windows.com
-DOMAIN-SUFFIX,windows.net
-DOMAIN-SUFFIX,windowsupdate.com
 
 # > Xunlei
 USER-AGENT,%E8%BF%85%E9%9B%B7

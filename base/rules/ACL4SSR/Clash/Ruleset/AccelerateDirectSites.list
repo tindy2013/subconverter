@@ -1,5 +1,5 @@
 # 内容：AccelerateDirectSites
-# 数量：243条
+# 数量：240条
 DOMAIN-SUFFIX,10010.com
 DOMAIN-SUFFIX,115.com
 DOMAIN-SUFFIX,12306.com
@@ -148,7 +148,6 @@ DOMAIN-SUFFIX,onlinedown.net
 DOMAIN-SUFFIX,oracle.com
 DOMAIN-SUFFIX,oschina.net
 DOMAIN-SUFFIX,ourdvs.com
-DOMAIN-SUFFIX,overcast.fm
 DOMAIN-SUFFIX,paypal.com
 DOMAIN-SUFFIX,polyv.net
 DOMAIN-SUFFIX,qbox.me
@@ -203,7 +202,6 @@ DOMAIN-SUFFIX,umengcloud.com
 DOMAIN-SUFFIX,upyun.com
 DOMAIN-SUFFIX,uxengine.net
 DOMAIN-SUFFIX,videocc.net
-DOMAIN-SUFFIX,vmware.com
 DOMAIN-SUFFIX,wandoujia.com
 DOMAIN-SUFFIX,weather.com
 DOMAIN-SUFFIX,weico.cc

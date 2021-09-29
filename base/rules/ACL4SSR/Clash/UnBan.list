@@ -17,6 +17,7 @@ DOMAIN-SUFFIX,tracking-protection.cdn.mozilla.net
 DOMAIN,origin-a.akamaihd.net
 
 # Tencent
+DOMAIN,fairplay.l.qq.com
 DOMAIN,livew.l.qq.com
 DOMAIN,vd.l.qq.com
 

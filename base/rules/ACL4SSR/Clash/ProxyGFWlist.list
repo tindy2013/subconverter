@@ -7,9 +7,9 @@ DOMAIN-SUFFIX,bit.no.com
 DOMAIN-SUFFIX,btlibrary.me
 DOMAIN-SUFFIX,cccat.io
 DOMAIN-SUFFIX,cloudcone.com
-DOMAIN-SUFFIX,dubox.com
 DOMAIN-SUFFIX,gameloft.com
 DOMAIN-SUFFIX,garena.com
+DOMAIN-SUFFIX,hoyolab.com
 DOMAIN-SUFFIX,inoreader.com
 DOMAIN-SUFFIX,ip138.com
 DOMAIN-SUFFIX,ping.pe
@@ -4334,7 +4334,6 @@ DOMAIN-SUFFIX,staticflickr.com
 DOMAIN-SUFFIX,statueofdemocracy.org
 DOMAIN-SUFFIX,stc.com.sa
 DOMAIN-SUFFIX,steamcommunity.com
-DOMAIN-SUFFIX,steampowered.com
 DOMAIN-SUFFIX,steel-storm.com
 DOMAIN-SUFFIX,steemit.com
 DOMAIN-SUFFIX,steganos.com
@@ -5622,10 +5621,6 @@ DOMAIN-SUFFIX,discord.media
 DOMAIN-SUFFIX,discordapp.com
 DOMAIN-SUFFIX,discordapp.net
 
-# Dubox
-DOMAIN-SUFFIX,dubox.com
-DOMAIN-SUFFIX,duboxcdn.com
-
 # Facebook
 DOMAIN-SUFFIX,facebook.com
 DOMAIN-SUFFIX,fb.com
@@ -5783,10 +5778,7 @@ DOMAIN-SUFFIX,smartmailcloud.com
 # Steam
 DOMAIN-SUFFIX,fanatical.com
 DOMAIN-SUFFIX,humblebundle.com
-DOMAIN-SUFFIX,steam-chat.com
 DOMAIN-SUFFIX,steamcommunity.com
-DOMAIN-SUFFIX,steampowered.com
-DOMAIN-SUFFIX,steamstatic.com
 
 # TapTap
 DOMAIN-SUFFIX,tap.io
@@ -5817,6 +5809,10 @@ IP-CIDR,149.154.160.0/20,no-resolve
 IP-CIDR6,2001:67c:4e8::/48,no-resolve
 IP-CIDR6,2001:b28:f23d::/48,no-resolve
 IP-CIDR6,2001:b28:f23f::/48,no-resolve
+
+# TeraBox
+DOMAIN-SUFFIX,terabox.com
+DOMAIN-SUFFIX,teraboxcdn.com
 
 # Whatsapp
 IP-CIDR,18.194.0.0/15,no-resolve

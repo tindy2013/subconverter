@@ -1,5 +1,5 @@
 # 内容：GoogleCN
-# 数量：39条
+# 数量：38条
 DOMAIN-SUFFIX,265.com
 DOMAIN-SUFFIX,2mdn.net
 DOMAIN-SUFFIX,alt1-mtalk.google.com
@@ -27,7 +27,6 @@ DOMAIN-SUFFIX,imasdk.googleapis.com
 DOMAIN-SUFFIX,mtalk.google.com
 DOMAIN-SUFFIX,ocsp.pki.goog
 DOMAIN-SUFFIX,recaptcha.net
-DOMAIN-SUFFIX,redirector.gvt1.com
 DOMAIN-SUFFIX,safebrowsing-cache.google.com
 DOMAIN-SUFFIX,safebrowsing.googleapis.com
 DOMAIN-SUFFIX,settings.crashlytics.com

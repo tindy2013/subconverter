@@ -1,6 +1,6 @@
 # Software Update
 # > macOS updates
-DOMAIN,gg.apple.com
+DOMAIN,configuration.apple.com // Rosetta 2 updates
 DOMAIN,gnf-mdn.apple.com
 DOMAIN,gnf-mr.apple.com
 DOMAIN,gs.apple.com
@@ -14,11 +14,13 @@ DOMAIN,swscan.apple.com
 # > macOS Recovery
 DOMAIN,oscdn.apple.com
 DOMAIN,osrecovery.apple.com
-# > iOS updates
+# > iOS and iPadOS updates
 DOMAIN,appldnld.apple.com
 DOMAIN,ns.itunes.apple.com
-# > iOS, tvOS, and macOS
-DOMAIN,mesu.apple.com
-DOMAIN,updates.cdn-apple.com
-DOMAIN,updates-http.cdn-apple.com
+# > iOS, iPadOS, tvOS, and macOS updates
+DOMAIN,gg.apple.com
+DOMAIN,gdmf.apple.com // Software update catalog
+DOMAIN,mesu.apple.com // Hosts software update catalogs
+DOMAIN,updates.cdn-apple.com // Software update downloads
+DOMAIN,updates-http.cdn-apple.com // Software update downloads
 DOMAIN,xp.apple.com

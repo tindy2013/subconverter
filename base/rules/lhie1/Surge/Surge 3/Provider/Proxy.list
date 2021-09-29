@@ -306,6 +306,7 @@ DOMAIN-SUFFIX,mega.nz
 DOMAIN-SUFFIX,megaupload.com
 DOMAIN-SUFFIX,microsofttranslator.com
 DOMAIN-SUFFIX,mindnode.com
+DOMAIN-SUFFIX,mixin.one
 DOMAIN-SUFFIX,mlssoccer.com
 DOMAIN-SUFFIX,mobile01.com
 DOMAIN-SUFFIX,modmyi.com
@@ -679,6 +680,10 @@ DOMAIN-SUFFIX,webrtc.org
 DOMAIN-SUFFIX,v2ex.com
 
 DOMAIN-KEYWORD,dlercloud
+
+# > exception
+DOMAIN-SUFFIX,wheel-size.cn
+DOMAIN-SUFFIX,chalungu.cn
 
 # > Amazon
 IP-CIDR,13.32.0.0/16,no-resolve

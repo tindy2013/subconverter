@@ -121,9 +121,10 @@ DOMAIN-SUFFIX,outlook.com
 DOMAIN,outlook.office365.com
 DOMAIN,smtp.office365.com
 # >> Windows Server Update Services
-DOMAIN-SUFFIX,windowsupdate.microsoft.com
+DOMAIN-SUFFIX,dl.delivery.mp.microsoft.com
 DOMAIN-SUFFIX,update.microsoft.com
 DOMAIN-SUFFIX,windowsupdate.com
+DOMAIN-SUFFIX,windowsupdate.microsoft.com
 DOMAIN,download.microsoft.com
 DOMAIN,wustat.windows.com
 DOMAIN,ntservicepack.microsoft.com
@@ -138,6 +139,7 @@ DOMAIN-SUFFIX,163yun.com
 DOMAIN-SUFFIX,lofter.com
 DOMAIN-SUFFIX,netease.com
 DOMAIN-SUFFIX,ydstatic.com
+DOMAIN-SUFFIX,youdao.com
 # > PayPal
 USER-AGENT,PayPal*
 DOMAIN-SUFFIX,paypal.com
@@ -161,7 +163,7 @@ DOMAIN-SUFFIX,steamcontent.com
 DOMAIN-SUFFIX,steampowered.com
 DOMAIN-SUFFIX,steamstatic.com
 # > Tencent
-USER-AGENT,MicroMessenger%20Client
+USER-AGENT,MicroMessenger*
 USER-AGENT,WeChat*
 USER-AGENT,%E4%BC%81%E4%B8%9A%E5%BE%AE%E4%BF%A1*
 DOMAIN-SUFFIX,gtimg.com
@@ -177,6 +179,17 @@ DOMAIN-SUFFIX,tencent-cloud.net
 DOMAIN-SUFFIX,tenpay.com
 DOMAIN-SUFFIX,wechat.com
 DOMAIN,file-igamecj.akamaized.net
+IP-CIDR,101.32.104.4/32,no-resolve
+IP-CIDR,101.32.104.41/32,no-resolve
+IP-CIDR,101.32.104.56/32,no-resolve
+IP-CIDR,101.32.118.25/32,no-resolve
+IP-CIDR,101.32.133.16/32,no-resolve
+IP-CIDR,101.32.133.53/32,no-resolve
+IP-CIDR,101.32.133.209/32,no-resolve
+IP-CIDR,129.226.3.47/32,no-resolve
+IP-CIDR,129.226.107.244/32,no-resolve
+IP-CIDR,182.254.116.0/24,no-resolve
+IP-CIDR,203.205.254.0/23,no-resolve
 # > Content Delivery Network
 DOMAIN-SUFFIX,ccgslb.com
 DOMAIN-SUFFIX,ccgslb.net
@@ -285,6 +298,7 @@ DOMAIN-SUFFIX,geilicdn.com
 DOMAIN-SUFFIX,getpricetag.com
 DOMAIN-SUFFIX,gifshow.com
 DOMAIN-SUFFIX,godic.net
+DOMAIN-SUFFIX,heweather.net
 DOMAIN-SUFFIX,hicloud.com
 DOMAIN-SUFFIX,hongxiu.com
 DOMAIN-SUFFIX,hostbuf.com
@@ -317,10 +331,9 @@ DOMAIN-SUFFIX,nim-lang-cn.org
 DOMAIN-SUFFIX,ntp.org
 DOMAIN-SUFFIX,nvidia.com
 DOMAIN-SUFFIX,oracle.com
-DOMAIN-SUFFIX,pcbeta.com
 DOMAIN-SUFFIX,plex.tv
-DOMAIN-SUFFIX,qdaily.com
 DOMAIN-SUFFIX,qidian.com
+DOMAIN-SUFFIX,qweather.com
 DOMAIN-SUFFIX,qyer.com
 DOMAIN-SUFFIX,qyerstatic.com
 DOMAIN-SUFFIX,raychase.net
@@ -328,7 +341,6 @@ DOMAIN-SUFFIX,ronghub.com
 DOMAIN-SUFFIX,ruguoapp.com
 DOMAIN-SUFFIX,sankuai.com
 DOMAIN-SUFFIX,scomper.me
-DOMAIN-SUFFIX,seafile.com
 DOMAIN-SUFFIX,sm.ms
 DOMAIN-SUFFIX,smzdm.com
 DOMAIN-SUFFIX,snapdrop.net
@@ -340,7 +352,6 @@ DOMAIN-SUFFIX,takungpao.com
 DOMAIN-SUFFIX,teamviewer.com
 DOMAIN-SUFFIX,tianyancha.com
 DOMAIN-SUFFIX,tophub.today
-DOMAIN-SUFFIX,udacity.com
 DOMAIN-SUFFIX,uning.com
 DOMAIN-SUFFIX,weather.com
 DOMAIN-SUFFIX,weico.cc

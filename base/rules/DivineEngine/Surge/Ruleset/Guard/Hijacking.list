@@ -1,6 +1,7 @@
 # Internet Service Providers Hijacking
 DOMAIN-SUFFIX,17gouwuba.com
 DOMAIN-SUFFIX,186078.com
+DOMAIN-SUFFIX,189key.com
 DOMAIN-SUFFIX,189zj.cn
 DOMAIN-SUFFIX,285680.com
 DOMAIN-SUFFIX,3721zh.com
@@ -92,6 +93,7 @@ DOMAIN-SUFFIX,taoggou.com
 DOMAIN-SUFFIX,tcxshop.com
 DOMAIN-SUFFIX,tjqonline.cn
 DOMAIN-SUFFIX,topitme.com
+DOMAIN-SUFFIX,tt114.net
 DOMAIN-SUFFIX,tt3sm4.cn
 DOMAIN-SUFFIX,tuia.cn
 DOMAIN-SUFFIX,tuipenguin.com
@@ -180,6 +182,8 @@ DOMAIN,geo2.adobe.com
 # https://www.zhihu.com/question/46746200
 DOMAIN-SUFFIX,4009997658.com
 DOMAIN-SUFFIX,abbyychina.com
+DOMAIN-SUFFIX,alienskins.cn
+DOMAIN-SUFFIX,anydeskchina.cn
 DOMAIN-SUFFIX,bartender.cc
 DOMAIN-SUFFIX,betterzip.net
 DOMAIN-SUFFIX,betterzipcn.com
@@ -196,9 +200,11 @@ DOMAIN-SUFFIX,earmasterchina.cn
 DOMAIN-SUFFIX,easyrecoverychina.com
 DOMAIN-SUFFIX,ediuschina.com
 DOMAIN-SUFFIX,flstudiochina.com
+DOMAIN-SUFFIX,folxchina.cn
 DOMAIN-SUFFIX,formysql.com
 DOMAIN-SUFFIX,guitarpro.cc
 DOMAIN-SUFFIX,huishenghuiying.com.cn
+DOMAIN-SUFFIX,hypeapp.cn
 DOMAIN-SUFFIX,hypersnap.net
 DOMAIN-SUFFIX,iconworkshop.cn
 DOMAIN-SUFFIX,imindmap.cc

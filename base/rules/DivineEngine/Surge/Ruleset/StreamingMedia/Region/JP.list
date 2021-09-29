@@ -1,0 +1,28 @@
+# > AbemaTV
+USER-AGENT,AbemaTV*
+DOMAIN-SUFFIX,abema.io
+DOMAIN-SUFFIX,abema.tv
+DOMAIN-SUFFIX,ameba.jp
+DOMAIN-SUFFIX,hayabusa.io
+DOMAIN-KEYWORD,abematv.akamaized.net
+
+# > DMM
+DOMAIN-SUFFIX,dmm.co.jp
+DOMAIN-SUFFIX,dmm.com
+DOMAIN-SUFFIX,dmm-extension.com
+
+# > Hulu / フールー
+DOMAIN-SUFFIX,happyon.jp
+DOMAIN-SUFFIX,hjholdings.jp
+DOMAIN-SUFFIX,hulu.jp
+
+# > niconico
+USER-AGENT,Niconico*
+DOMAIN-SUFFIX,dmc.nico
+DOMAIN-SUFFIX,nicovideo.jp
+DOMAIN-SUFFIX,nimg.jp
+
+# > TVer
+USER-AGENT,TVer-Release*
+DOMAIN-SUFFIX,tver.jp
+DOMAIN,edge.api.brightcove.com

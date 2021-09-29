@@ -16,8 +16,8 @@ DOMAIN-SUFFIX,cambridge.org
 DOMAIN-SUFFIX,cas.org
 DOMAIN-SUFFIX,cell.com
 DOMAIN-SUFFIX,clarivate.com
-DOMAIN-SUFFIX,cnki.net
-DOMAIN-SUFFIX,cqvip.com
+# DOMAIN-SUFFIX,cnki.net
+# DOMAIN-SUFFIX,cqvip.com
 DOMAIN-SUFFIX,csiro.au
 DOMAIN-SUFFIX,deepdyve.com
 DOMAIN-SUFFIX,ebscohost.com
@@ -49,7 +49,7 @@ DOMAIN-SUFFIX,ovid.com
 DOMAIN-SUFFIX,oxfordartonline.com
 DOMAIN-SUFFIX,oxfordbibliographies.com
 DOMAIN-SUFFIX,oxfordmusiconline.com
-DOMAIN-SUFFIX,pkulaw.com
+# DOMAIN-SUFFIX,pkulaw.com
 DOMAIN-SUFFIX,pnas.org
 DOMAIN-SUFFIX,proquest.com
 DOMAIN-SUFFIX,readcube.com
@@ -68,10 +68,10 @@ DOMAIN-SUFFIX,springerlink.com
 DOMAIN-SUFFIX,tandfonline.com
 DOMAIN-SUFFIX,un.org
 DOMAIN-SUFFIX,uni-bielefeld.de
-DOMAIN-SUFFIX,wanfangdata.com
+# DOMAIN-SUFFIX,wanfangdata.com
 DOMAIN-SUFFIX,webofknowledge.com
 DOMAIN-SUFFIX,westlaw.com
-DOMAIN-SUFFIX,westlawchina.com
+# DOMAIN-SUFFIX,westlawchina.com
 DOMAIN-SUFFIX,wiley.com
 DOMAIN-SUFFIX,worldbank.org
 DOMAIN-SUFFIX,worldscientific.com

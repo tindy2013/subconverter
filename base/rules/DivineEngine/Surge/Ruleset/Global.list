@@ -10,9 +10,10 @@ DOMAIN,a248.e.akamai.net
 DOMAIN,a771.dscq.akamai.net
 # > Apple
 DOMAIN,testflight.apple.com
-# > Cryptocurrency
+# > Crypto
 DOMAIN-SUFFIX,aex.com
 DOMAIN-SUFFIX,bibox.com
+DOMAIN-SUFFIX,binance.cc
 DOMAIN-SUFFIX,binance.com
 DOMAIN-SUFFIX,bitcointalk.org
 DOMAIN-SUFFIX,bitfinex.com
@@ -20,8 +21,10 @@ DOMAIN-SUFFIX,bitmex.com
 DOMAIN-SUFFIX,gate.io
 DOMAIN-SUFFIX,huobi.com
 DOMAIN-SUFFIX,okex.com
+DOMAIN-SUFFIX,uniswap.org
 DOMAIN-SUFFIX,zb.com
 # > Discord
+DOMAIN-SUFFIX,discord.com
 DOMAIN-SUFFIX,discordapp.com
 DOMAIN-SUFFIX,discordapp.net
 # > Dropbox
@@ -86,6 +89,15 @@ DOMAIN-SUFFIX,nytimes.com
 DOMAIN-SUFFIX,nytimg.com
 DOMAIN-SUFFIX,nytlog.com
 DOMAIN-SUFFIX,nytstyle.com
+# > Pinterest
+DOMAIN-SUFFIX,pinterest.at
+DOMAIN-SUFFIX,pinterest.ca
+DOMAIN-SUFFIX,pinterest.co.uk
+DOMAIN-SUFFIX,pinterest.com
+DOMAIN-SUFFIX,pinterest.de
+DOMAIN-SUFFIX,pinterest.fr
+DOMAIN-SUFFIX,pinterest.jp
+DOMAIN-SUFFIX,pinterest.se
 # > pixiv
 DOMAIN-SUFFIX,pixiv.net
 DOMAIN-SUFFIX,pixiv.org
@@ -103,6 +115,7 @@ IP-CIDR,91.108.12.0/22,no-resolve
 IP-CIDR,91.108.16.0/22,no-resolve
 IP-CIDR,91.108.20.0/22,no-resolve
 IP-CIDR,91.108.56.0/22,no-resolve
+IP-CIDR,95.161.64.0/20,no-resolve
 IP-CIDR,149.154.160.0/20,no-resolve
 IP-CIDR6,2001:b28:f23d::/48,no-resolve
 IP-CIDR6,2001:b28:f23f::/48,no-resolve
@@ -187,8 +200,10 @@ DOMAIN-SUFFIX,crucial.com
 DOMAIN-SUFFIX,cts.com.tw
 DOMAIN-SUFFIX,cw.com.tw
 DOMAIN-SUFFIX,cyberctm.com
+DOMAIN-SUFFIX,cyclingnews.com
 DOMAIN-SUFFIX,dailymotion.com
 DOMAIN-SUFFIX,dailyview.tw
+DOMAIN-SUFFIX,dandanzan.com
 DOMAIN-SUFFIX,daum.net
 DOMAIN-SUFFIX,daumcdn.net
 DOMAIN-SUFFIX,dcard.tw
@@ -301,6 +316,7 @@ DOMAIN-SUFFIX,mega.nz
 DOMAIN-SUFFIX,mergersandinquisitions.com
 DOMAIN-SUFFIX,mingpao.com
 DOMAIN-SUFFIX,mixi.jp
+DOMAIN-SUFFIX,mixlr.com
 DOMAIN-SUFFIX,mobile01.com
 DOMAIN-SUFFIX,mubi.com
 DOMAIN-SUFFIX,myspace.com
@@ -383,6 +399,7 @@ DOMAIN-SUFFIX,steemitwallet.com
 DOMAIN-SUFFIX,straitstimes.com
 DOMAIN-SUFFIX,streamable.com
 DOMAIN-SUFFIX,streema.com
+DOMAIN-SUFFIX,substack.com
 DOMAIN-SUFFIX,t66y.com
 DOMAIN-SUFFIX,tapatalk.com
 DOMAIN-SUFFIX,teco-hk.org
@@ -409,6 +426,7 @@ DOMAIN-SUFFIX,uptodown.com
 DOMAIN-SUFFIX,urbandictionary.com
 DOMAIN-SUFFIX,ustream.tv
 DOMAIN-SUFFIX,uwants.com
+DOMAIN-SUFFIX,v2ex.com
 DOMAIN-SUFFIX,v2fly.org
 DOMAIN-SUFFIX,v2ray.com
 DOMAIN-SUFFIX,viber.com
@@ -435,6 +453,7 @@ DOMAIN-SUFFIX,xn--90wwvt03e.com
 DOMAIN-SUFFIX,xn--i2ru8q2qg.com
 DOMAIN-SUFFIX,xnxx.com
 DOMAIN-SUFFIX,xvideos.com
+DOMAIN-SUFFIX,yadi.sk
 DOMAIN-SUFFIX,yahoo.com
 DOMAIN-SUFFIX,yandex.ru
 DOMAIN-SUFFIX,ycombinator.com
@@ -445,14 +464,12 @@ DOMAIN-SUFFIX,you-get.org
 DOMAIN-SUFFIX,zaobao.com
 DOMAIN-SUFFIX,zello.com
 DOMAIN-SUFFIX,zeronet.io
+DOMAIN-SUFFIX,z-lib.org
 DOMAIN-SUFFIX,zoom.us
 
 DOMAIN,cc.tvbs.com.tw
 DOMAIN,ocsp.int-x3.letsencrypt.org
-DOMAIN,search.avira.com
 DOMAIN,us.weibo.com
-
-DOMAIN-KEYWORD,.pinterest.
 
 DOMAIN-SUFFIX,edu
 DOMAIN-SUFFIX,gov
@@ -482,7 +499,6 @@ DOMAIN-SUFFIX,ggpht.com
 DOMAIN-SUFFIX,gmail.com
 DOMAIN-SUFFIX,gmodules.com
 DOMAIN-SUFFIX,godoc.org
-DOMAIN-SUFFIX,golang.org
 DOMAIN-SUFFIX,gstatic.com
 DOMAIN-SUFFIX,gv.com
 DOMAIN-SUFFIX,gwtproject.org
@@ -524,21 +540,21 @@ DOMAIN-SUFFIX,twitter.jp
 
 # (Region-Restricted Access Denied)
 # ---(Apple)---
-# > Apple URL Shortener
-DOMAIN-SUFFIX,appsto.re
-# > iBooks Store download
-DOMAIN,books.itunes.apple.com
-# > App Store Preview
+DOMAIN-SUFFIX,appsto.re // Apple URL Shortener
+DOMAIN,books.itunes.apple.com // iBooks Store download
+DOMAIN,api-glb-sea.smoot.apple.com // Spotlight
+DOMAIN,beta.music.apple.com // Apple Music Web
+DOMAIN,tv.apple.com // Apple TV Web Preview
+# > App Store Web Preview
 DOMAIN,apps.apple.com
 DOMAIN,itunes.apple.com
-# > Spotlight
-DOMAIN,api-glb-sea.smoot.apple.com
 # > Look Up
 DOMAIN-SUFFIX,smoot.apple.com
 DOMAIN,lookup-api.apple.com
-# > Apple Music Web
-DOMAIN,beta.music.apple.com
 # ------
+# Google
+DOMAIN-SUFFIX,go.dev
+DOMAIN-SUFFIX,golang.org
 # > Others
 DOMAIN-SUFFIX,bing.com
 DOMAIN-SUFFIX,cccat.io
@@ -547,6 +563,7 @@ DOMAIN-SUFFIX,duboxcdn.com
 DOMAIN-SUFFIX,ifixit.com
 DOMAIN-SUFFIX,mangakakalot.com
 DOMAIN-SUFFIX,shopeemobile.com
+DOMAIN-SUFFIX,sushi.com
 URL-REGEX,http:\/\/img\.sina\.com\/usweibo\/
 
 # (Network Jitter)
@@ -568,4 +585,3 @@ DOMAIN-SUFFIX,metapix.net
 DOMAIN-SUFFIX,s3.amazonaws.com
 DOMAIN-SUFFIX,zaobao.com.sg
 DOMAIN,international-gfe.download.nvidia.com
-DOMAIN,store-images.s-microsoft.com

@@ -7147,6 +7147,7 @@ DOMAIN-SUFFIX,tradeadexchange.com
 DOMAIN-SUFFIX,tradeccl.com
 DOMAIN-SUFFIX,trafficfactory.biz
 DOMAIN-SUFFIX,trafficjam.cn
+DOMAIN-SUFFIX,trafficjunky.com
 DOMAIN-SUFFIX,trafficjunky.net
 DOMAIN-SUFFIX,trafficmp.com
 DOMAIN-SUFFIX,tralog.ganji.com
@@ -8251,6 +8252,8 @@ URL-REGEX,^http:\/\/iad.*mat\.[a-z]*\.12[67]\.net/\w+\.(jpg|mp4)$
 # > Zhihu
 DOMAIN,mqtt.zhihu.com
 DOMAIN,sugar.zhihu.com
+DOMAIN,zhihu-analytics.zhihu.com
+DOMAIN,zhihu-web-analytics.zhihu.com
 DOMAIN-SUFFIX,xdrig.com
 URL-REGEX,https://api.zhihu.com/(fringe|zst|real_time|ad-style-service|banners|topstory/hot-lists|market/popover|mqtt|me|.*launch|.*featured-comment-ad|search/(top|tabs|preset))
 URL-REGEX,https://api.zhihu.com.*(launch|recommendations)

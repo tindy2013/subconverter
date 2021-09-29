@@ -27,7 +27,6 @@ DOMAIN-SUFFIX,imasdk.googleapis.com
 DOMAIN-SUFFIX,mtalk.google.com
 DOMAIN-SUFFIX,ocsp.pki.goog
 DOMAIN-SUFFIX,recaptcha.net
-DOMAIN-SUFFIX,redirector.gvt1.com
 DOMAIN-SUFFIX,safebrowsing-cache.google.com
 DOMAIN-SUFFIX,safebrowsing.googleapis.com
 DOMAIN-SUFFIX,settings.crashlytics.com
