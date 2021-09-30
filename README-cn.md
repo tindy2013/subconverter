@@ -280,7 +280,7 @@ http://127.0.0.1:25500/sub?target=%TARGET%&url=%URL%&emoji=%EMOJI%····
 | 调用参数      | 必要性 | 示例                         | 解释                                                                                                                                                                                                                                                                   |
 | ------------- | :----: | :--------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | target        |  必要  | surge&ver=4                  | 指想要生成的配置类型，详见上方 [支持类型](#支持类型) 中的参数                                                                                                                                                                                                          |
-| url           |  可选  | https%3A%2F%2Fwww.xxx.com    | 指机场所提供的订阅链接，需要经过 [URLEncode](https://www.urlencoder.org/) 处理，**可选的前提是在 `default_url` 中进行指定**。也可以使用 data URI。可使用 `tag：xxx，https%3A%2F%2Fwww.xxx.com` 指定该订阅的所有节点归属于`xxx`分组，用于配置文件中的`!!GROUP=XXX` 匹配 |
+| url           |  可选  | https%3A%2F%2Fwww.xxx.com    | 指机场所提供的订阅链接，需要经过 [URLEncode](https://www.urlencoder.org/) 处理，**可选的前提是在 `default_url` 中进行指定**。也可以使用 data URI。可使用 `tag:xxx,https%3A%2F%2Fwww.xxx.com` 指定该订阅的所有节点归属于`xxx`分组，用于配置文件中的`!!GROUP=XXX` 匹配 |
 | group         |  可选  | MySS                         | 用于设置该订阅的组名，多用于 SSD/SSR                                                                                                                                                                                                                                   |
 | upload_path   |  可选  | MySS.yaml                    | 用于将生成的订阅文件上传至 `Gist` 后的名称，需要经过 [URLEncode](https://www.urlencoder.org/) 处理                                                                                                                                                                     |
 | include       |  可选  | 详见下文中 `include_remarks` | 指仅保留匹配到的节点，支持正则匹配，需要经过 [URLEncode](https://www.urlencoder.org/) 处理，会覆盖配置文件里的设置                                                                                                                                                     |
@@ -914,9 +914,13 @@ custom_proxy_group=节点选择`select`(^(?!.*(美国|日本)).*)
 ```
 
 - 还可使用一些特殊筛选条件：
-  `\`!!GROUPID=%n%` 待转换链接中的第 n+1 条链接中包含的节点
-  `\`!!INSERT=%n%` 配置文件中 `insert_url` 的第 n+1 条链接所包含的节点
-  `\`!!PROVIDER=%proxy-provider-name%` 指定名称的proxy-provider
+
+  `` `!!GROUPID=%n%`` 待转换链接中的第 n+1 条链接中包含的节点
+
+  `` `!!INSERT=%n%`` 配置文件中 `insert_url` 的第 n+1 条链接所包含的节点
+
+  `` `!!PROVIDER=%proxy-provider-name%`` 指定名称的proxy-provider
+
   GROUPID 和 INSERT 匹配支持range,如 1,!2,3-4,!5-6,7+,8-
 
   ```ini
