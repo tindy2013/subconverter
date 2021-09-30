@@ -1,6 +1,7 @@
 #include <string>
 #include <map>
 #include <sstream>
+#include <filesystem>
 #include <inja.hpp>
 #include <nlohmann/json.hpp>
 
@@ -38,6 +39,15 @@ static inline void parse_json_pointer(nlohmann::json &json, const std::string &p
 
 int render_template(const std::string &content, const template_args &vars, std::string &output, const std::string &include_scope)
 {
+    std::string absolute_scope;
+    try
+    {
+        absolute_scope = std::filesystem::canonical(include_scope).string();
+    }
+    catch(std::exception &e)
+    {
+        writeLog(0, e.what(), LOG_LEVEL_ERROR);
+    }
     nlohmann::json data;
     for(auto &x : vars.global_vars)
         parse_json_pointer(data["global"], x.first, x.second);
@@ -57,56 +67,52 @@ int render_template(const std::string &content, const template_args &vars, std::
     for(auto &x : vars.local_vars)
         parse_json_pointer(data["local"], x.first, x.second);
 
-    inja::LexerConfig m_lexer_config;
-    inja::FunctionStorage m_callbacks;
-    inja::TemplateStorage m_included_templates;
-    inja::ParserConfig m_parser_config;
-    inja::RenderConfig m_render_config;
+    inja::Environment env;
 
-    m_lexer_config.trim_blocks = true;
-    m_lexer_config.lstrip_blocks = true;
-    m_lexer_config.line_statement = "#~#";
-    m_callbacks.add_callback("UrlEncode", 1, [](inja::Arguments &args)
+    env.set_trim_blocks(true);
+    env.set_lstrip_blocks(true);
+    env.set_line_statement("#~#");
+    env.add_callback("UrlEncode", 1, [](inja::Arguments &args)
     {
         std::string data = args.at(0)->get<std::string>();
         return urlEncode(data);
     });
-    m_callbacks.add_callback("UrlDecode", 1, [](inja::Arguments &args)
+    env.add_callback("UrlDecode", 1, [](inja::Arguments &args)
     {
         std::string data = args.at(0)->get<std::string>();
         return urlDecode(data);
     });
-    m_callbacks.add_callback("trim_of", 2, [](inja::Arguments &args)
+    env.add_callback("trim_of", 2, [](inja::Arguments &args)
     {
         std::string data = args.at(0)->get<std::string>(), target = args.at(1)->get<std::string>();
         if(target.empty())
             return data;
         return trimOf(data, target[0]);
     });
-    m_callbacks.add_callback("trim", 1, [](inja::Arguments &args)
+    env.add_callback("trim", 1, [](inja::Arguments &args)
     {
         std::string data = args.at(0)->get<std::string>();
         return trim(data);
     });
-    m_callbacks.add_callback("find", 2, [](inja::Arguments &args)
+    env.add_callback("find", 2, [](inja::Arguments &args)
     {
         std::string src = args.at(0)->get<std::string>(), target = args.at(1)->get<std::string>();
         return regFind(src, target);
     });
-    m_callbacks.add_callback("replace", 3, [](inja::Arguments &args)
+    env.add_callback("replace", 3, [](inja::Arguments &args)
     {
         std::string src = args.at(0)->get<std::string>(), target = args.at(1)->get<std::string>(), rep = args.at(2)->get<std::string>();
         if(target.empty() || src.empty())
             return src;
         return regReplace(src, target, rep);
     });
-    m_callbacks.add_callback("set", 2, [&data](inja::Arguments &args)
+    env.add_callback("set", 2, [&data](inja::Arguments &args)
     {
         std::string key = args.at(0)->get<std::string>(), value = args.at(1)->get<std::string>();
         parse_json_pointer(data, key, value);
         return std::string();
     });
-    m_callbacks.add_callback("split", 3, [&data](inja::Arguments &args)
+    env.add_callback("split", 3, [&data](inja::Arguments &args)
     {
         std::string content = args.at(0)->get<std::string>(), delim = args.at(1)->get<std::string>(), dest = args.at(2)->get<std::string>();
         string_array vArray = split(content, delim);
@@ -114,14 +120,7 @@ int render_template(const std::string &content, const template_args &vars, std::
             parse_json_pointer(data, dest + "." + std::to_string(index), vArray[index]);
         return std::string();
     });
-    m_callbacks.add_callback("join", -1, [](inja::Arguments &args)
-    {
-        std::string result;
-        for(auto iter = args.begin(); iter != args.end(); iter++)
-            result += (*iter)->get<std::string>();
-        return result;
-    });
-    m_callbacks.add_callback("append", 2, [&data](inja::Arguments &args)
+    env.add_callback("append", 2, [&data](inja::Arguments &args)
     {
         std::string path = args.at(0)->get<std::string>(), value = args.at(1)->get<std::string>(), pointer, output_content;
         inja::convert_dot_to_json_pointer(path, pointer);
@@ -137,33 +136,33 @@ int render_template(const std::string &content, const template_args &vars, std::
         data[nlohmann::json::json_pointer(pointer)] = output_content;
         return std::string();
     });
-    m_callbacks.add_callback("getLink", 1, [](inja::Arguments &args)
+    env.add_callback("getLink", 1, [](inja::Arguments &args)
     {
         return gManagedConfigPrefix + args.at(0)->get<std::string>();
     });
-    m_callbacks.add_callback("startsWith", 2, [](inja::Arguments &args)
+    env.add_callback("startsWith", 2, [](inja::Arguments &args)
     {
         return startsWith(args.at(0)->get<std::string>(), args.at(1)->get<std::string>());
     });
-    m_callbacks.add_callback("endsWith", 2, [](inja::Arguments &args)
+    env.add_callback("endsWith", 2, [](inja::Arguments &args)
     {
         return endsWith(args.at(0)->get<std::string>(), args.at(1)->get<std::string>());
     });
-    m_callbacks.add_callback("or", -1, [](inja::Arguments &args)
+    env.add_callback("or", -1, [](inja::Arguments &args)
     {
         for(auto iter = args.begin(); iter != args.end(); iter++)
             if((*iter)->get<int>())
                 return true;
         return false;
     });
-    m_callbacks.add_callback("and", -1, [](inja::Arguments &args)
+    env.add_callback("and", -1, [](inja::Arguments &args)
     {
         for(auto iter = args.begin(); iter != args.end(); iter++)
             if(!(*iter)->get<int>())
                 return false;
         return true;
     });
-    m_callbacks.add_callback("bool", 1, [](inja::Arguments &args)
+    env.add_callback("bool", 1, [](inja::Arguments &args)
     {
         std::string value = args.at(0)->get<std::string>();
         std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c) { return std::tolower(c); });
@@ -176,22 +175,34 @@ int render_template(const std::string &content, const template_args &vars, std::
             return 0;
         }
     });
-    m_callbacks.add_callback("string", 1, [](inja::Arguments &args)
+    env.add_callback("string", 1, [](inja::Arguments &args)
     {
         return std::to_string(args.at(0)->get<int>());
     });
-    m_callbacks.add_callback("fetch", 1, template_webGet);
-    m_callbacks.add_callback("parseHostname", 1, parseHostname);
-    m_parser_config.include_scope_limit = true;
-    m_parser_config.include_scope = include_scope;
+    env.add_callback("fetch", 1, template_webGet);
+    env.add_callback("parseHostname", 1, parseHostname);
 
-    inja::Parser parser(m_parser_config, m_lexer_config, m_included_templates, m_callbacks);
-    inja::Renderer renderer(m_render_config, m_included_templates, m_callbacks);
+    env.set_include_callback([&](const std::string &name, const std::string &template_name)
+    {
+        std::string absolute_path;
+        try
+        {
+            absolute_path = std::filesystem::canonical(template_name).string();
+        }
+        catch(std::exception &e)
+        {
+            throw inja::FileError(e.what());
+        }
+        if(!include_scope.empty() && !startsWith(absolute_path, absolute_scope))
+            throw inja::FileError("access denied when trying to include '" + template_name + "': out of scope");
+        return env.parse(fileGet(template_name, true));
+    });
+    env.set_search_included_templates_in_files(false);
 
     try
     {
         std::stringstream out;
-        renderer.render_to(out, parser.parse(content), data);
+        env.render_to(out, env.parse(content), data);
         output = out.str();
         return 0;
     }

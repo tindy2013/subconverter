@@ -1,13 +1,55 @@
-// Copyright (c) 2020 Pantor. All rights reserved.
+/*
+  ___        _          Version 3.3
+ |_ _|_ __  (_) __ _    https://github.com/pantor/inja
+  | || '_ \ | |/ _` |   Licensed under the MIT License <http://opensource.org/licenses/MIT>.
+  | || | | || | (_| |
+ |___|_| |_|/ |\__,_|   Copyright (c) 2018-2021 Lars Berscheid
+          |__/       
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
 
 #ifndef INCLUDE_INJA_INJA_HPP_
 #define INCLUDE_INJA_INJA_HPP_
 
 #include <nlohmann/json.hpp>
 
-// #include "environment.hpp"
-// Copyright (c) 2019 Pantor. All rights reserved.
+namespace inja {
+#ifndef INJA_DATA_TYPE
+  using json = nlohmann::json;
+#else
+  using json = INJA_DATA_TYPE;
+#endif
+}
 
+#if (defined(__cpp_exceptions) || defined(__EXCEPTIONS) || defined(_CPPUNWIND)) && !defined(INJA_NOEXCEPTION)
+  #ifndef INJA_THROW
+    #define INJA_THROW(exception) throw exception
+  #endif
+#else
+  #include <cstdlib>
+  #ifndef INJA_THROW
+    #define INJA_THROW(exception) std::abort(); std::ignore = exception
+  #endif
+  #ifndef INJA_NOEXCEPTION
+    #define INJA_NOEXCEPTION
+  #endif
+#endif
+
+// #include "environment.hpp"
 #ifndef INCLUDE_INJA_ENVIRONMENT_HPP_
 #define INCLUDE_INJA_ENVIRONMENT_HPP_
 
@@ -17,11 +59,7 @@
 #include <sstream>
 #include <string>
 
-#include <nlohmann/json.hpp>
-
 // #include "config.hpp"
-// Copyright (c) 2019 Pantor. All rights reserved.
-
 #ifndef INCLUDE_INJA_CONFIG_HPP_
 #define INCLUDE_INJA_CONFIG_HPP_
 
@@ -1446,80 +1484,23 @@ nssv_RESTORE_WARNINGS()
 #endif // nssv_HAVE_STD_STRING_VIEW
 #endif // NONSTD_SV_LITE_H_INCLUDED
 
+// #include "template.hpp"
+#ifndef INCLUDE_INJA_TEMPLATE_HPP_
+#define INCLUDE_INJA_TEMPLATE_HPP_
 
-namespace inja {
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
 
-/*!
- * \brief Class for lexer configuration.
- */
-struct LexerConfig {
-  std::string statement_open {"{%"};
-  std::string statement_open_no_lstrip {"{%+"};
-  std::string statement_open_force_lstrip {"{%-"};
-  std::string statement_close {"%}"};
-  std::string statement_close_force_rstrip {"-%}"};
-  std::string line_statement {"##"};
-  std::string expression_open {"{{"};
-  std::string expression_open_force_lstrip {"{{-"};
-  std::string expression_close {"}}"};
-  std::string expression_close_force_rstrip {"-}}"};
-  std::string comment_open {"{#"};
-  std::string comment_close {"#}"};
-  std::string open_chars {"#{"};
+// #include "node.hpp"
+#ifndef INCLUDE_INJA_NODE_HPP_
+#define INCLUDE_INJA_NODE_HPP_
 
-  bool trim_blocks {false};
-  bool lstrip_blocks {false};
-
-  void update_open_chars() {
-    open_chars = "";
-    if (open_chars.find(line_statement[0]) == std::string::npos) {
-      open_chars += line_statement[0];
-    }
-    if (open_chars.find(statement_open[0]) == std::string::npos) {
-      open_chars += statement_open[0];
-    }
-    if (open_chars.find(statement_open_no_lstrip[0]) == std::string::npos) {
-      open_chars += statement_open_no_lstrip[0];
-    }
-    if (open_chars.find(statement_open_force_lstrip[0]) == std::string::npos) {
-      open_chars += statement_open_force_lstrip[0];
-    }
-    if (open_chars.find(expression_open[0]) == std::string::npos) {
-      open_chars += expression_open[0];
-    }
-    if (open_chars.find(expression_open_force_lstrip[0]) == std::string::npos) {
-      open_chars += expression_open_force_lstrip[0];
-    }
-    if (open_chars.find(comment_open[0]) == std::string::npos) {
-      open_chars += comment_open[0];
-    }
-  }
-};
-
-/*!
- * \brief Class for parser configuration.
- */
-struct ParserConfig {
-  bool search_included_templates_in_files {true};
-  /// Extra options for limiting included files' scope
-  bool include_scope_limit = false;
-  std::string include_scope = "templates";
-};
-
-/*!
- * \brief Class for render configuration.
- */
-struct RenderConfig {
-  bool throw_at_missing_includes {true};
-};
-
-} // namespace inja
-
-#endif // INCLUDE_INJA_CONFIG_HPP_
+#include <string>
+#include <utility>
 
 // #include "function_storage.hpp"
-// Copyright (c) 2020 Pantor. All rights reserved.
-
 #ifndef INCLUDE_INJA_FUNCTION_STORAGE_HPP_
 #define INCLUDE_INJA_FUNCTION_STORAGE_HPP_
 
@@ -1529,8 +1510,6 @@ struct RenderConfig {
 
 
 namespace inja {
-
-using json = nlohmann::json;
 
 using Arguments = std::vector<const json *>;
 using CallbackFunction = std::function<json(Arguments &args)>;
@@ -1585,6 +1564,8 @@ public:
     Round,
     Sort,
     Upper,
+    Super,
+    Join,
     Callback,
     ParenLeft,
     ParenRight,
@@ -1627,6 +1608,9 @@ private:
     {std::make_pair("round", 2), FunctionData { Operation::Round }},
     {std::make_pair("sort", 1), FunctionData { Operation::Sort }},
     {std::make_pair("upper", 1), FunctionData { Operation::Upper }},
+    {std::make_pair("super", 0), FunctionData { Operation::Super }},
+    {std::make_pair("super", 1), FunctionData { Operation::Super }},
+    {std::make_pair("join", 2), FunctionData { Operation::Join }},
   };
 
 public:
@@ -1659,24 +1643,18 @@ public:
 
 #endif // INCLUDE_INJA_FUNCTION_STORAGE_HPP_
 
-// #include "parser.hpp"
-// Copyright (c) 2020 Pantor. All rights reserved.
+// #include "string_view.hpp"
 
-#ifndef INCLUDE_INJA_PARSER_HPP_
-#define INCLUDE_INJA_PARSER_HPP_
+// #include "utils.hpp"
+#ifndef INCLUDE_INJA_UTILS_HPP_
+#define INCLUDE_INJA_UTILS_HPP_
 
-#include <limits>
-#include <stack>
+#include <algorithm>
+#include <fstream>
 #include <string>
 #include <utility>
-#include <queue>
-#include <vector>
-
-// #include "config.hpp"
 
 // #include "exceptions.hpp"
-// Copyright (c) 2020 Pantor. All rights reserved.
-
 #ifndef INCLUDE_INJA_EXCEPTIONS_HPP_
 #define INCLUDE_INJA_EXCEPTIONS_HPP_
 
@@ -1726,11 +1704,635 @@ struct JsonError : public InjaError {
 
 #endif // INCLUDE_INJA_EXCEPTIONS_HPP_
 
+// #include "string_view.hpp"
+
+
+namespace inja {
+
+namespace string_view {
+inline nonstd::string_view slice(nonstd::string_view view, size_t start, size_t end) {
+  start = std::min(start, view.size());
+  end = std::min(std::max(start, end), view.size());
+  return view.substr(start, end - start);
+}
+
+inline std::pair<nonstd::string_view, nonstd::string_view> split(nonstd::string_view view, char Separator) {
+  size_t idx = view.find(Separator);
+  if (idx == nonstd::string_view::npos) {
+    return std::make_pair(view, nonstd::string_view());
+  }
+  return std::make_pair(slice(view, 0, idx), slice(view, idx + 1, nonstd::string_view::npos));
+}
+
+inline bool starts_with(nonstd::string_view view, nonstd::string_view prefix) {
+  return (view.size() >= prefix.size() && view.compare(0, prefix.size(), prefix) == 0);
+}
+} // namespace string_view
+
+inline SourceLocation get_source_location(nonstd::string_view content, size_t pos) {
+  // Get line and offset position (starts at 1:1)
+  auto sliced = string_view::slice(content, 0, pos);
+  std::size_t last_newline = sliced.rfind("\n");
+
+  if (last_newline == nonstd::string_view::npos) {
+    return {1, sliced.length() + 1};
+  }
+
+  // Count newlines
+  size_t count_lines = 0;
+  size_t search_start = 0;
+  while (search_start <= sliced.size()) {
+    search_start = sliced.find("\n", search_start) + 1;
+    if (search_start == 0) {
+      break;
+    }
+    count_lines += 1;
+  }
+
+  return {count_lines + 1, sliced.length() - last_newline};
+}
+
+inline void replace_substring(std::string& s, const std::string& f,
+                              const std::string& t)
+{
+  if (f.empty()) return;
+  for (auto pos = s.find(f);                  // find first occurrence of f
+            pos != std::string::npos;         // make sure f was found
+            s.replace(pos, f.size(), t),      // replace with t, and
+            pos = s.find(f, pos + t.size()))  // find next occurrence of f
+  {}
+}
+
+} // namespace inja
+
+#endif // INCLUDE_INJA_UTILS_HPP_
+
+
+
+namespace inja {
+
+class NodeVisitor;
+class BlockNode;
+class TextNode;
+class ExpressionNode;
+class LiteralNode;
+class JsonNode;
+class FunctionNode;
+class ExpressionListNode;
+class StatementNode;
+class ForStatementNode;
+class ForArrayStatementNode;
+class ForObjectStatementNode;
+class IfStatementNode;
+class IncludeStatementNode;
+class ExtendsStatementNode;
+class BlockStatementNode;
+class SetStatementNode;
+
+
+class NodeVisitor {
+public:
+  virtual ~NodeVisitor() = default;
+
+  virtual void visit(const BlockNode& node) = 0;
+  virtual void visit(const TextNode& node) = 0;
+  virtual void visit(const ExpressionNode& node) = 0;
+  virtual void visit(const LiteralNode& node) = 0;
+  virtual void visit(const JsonNode& node) = 0;
+  virtual void visit(const FunctionNode& node) = 0;
+  virtual void visit(const ExpressionListNode& node) = 0;
+  virtual void visit(const StatementNode& node) = 0;
+  virtual void visit(const ForStatementNode& node) = 0;
+  virtual void visit(const ForArrayStatementNode& node) = 0;
+  virtual void visit(const ForObjectStatementNode& node) = 0;
+  virtual void visit(const IfStatementNode& node) = 0;
+  virtual void visit(const IncludeStatementNode& node) = 0;
+  virtual void visit(const ExtendsStatementNode& node) = 0;
+  virtual void visit(const BlockStatementNode& node) = 0;
+  virtual void visit(const SetStatementNode& node) = 0;
+};
+
+/*!
+ * \brief Base node class for the abstract syntax tree (AST).
+ */
+class AstNode {
+public:
+  virtual void accept(NodeVisitor& v) const = 0;
+
+  size_t pos;
+
+  AstNode(size_t pos) : pos(pos) { }
+  virtual ~AstNode() { }
+};
+
+
+class BlockNode : public AstNode {
+public:
+  std::vector<std::shared_ptr<AstNode>> nodes;
+
+  explicit BlockNode() : AstNode(0) {}
+
+  void accept(NodeVisitor& v) const {
+    v.visit(*this);
+  }
+};
+
+class TextNode : public AstNode {
+public:
+  const size_t length;
+
+  explicit TextNode(size_t pos, size_t length): AstNode(pos), length(length) { }
+
+  void accept(NodeVisitor& v) const {
+    v.visit(*this);
+  }
+};
+
+class ExpressionNode : public AstNode {
+public:
+  explicit ExpressionNode(size_t pos) : AstNode(pos) {}
+
+  void accept(NodeVisitor& v) const {
+    v.visit(*this);
+  }
+};
+
+class LiteralNode : public ExpressionNode {
+public:
+  const json value;
+
+  explicit LiteralNode(const json& value, size_t pos) : ExpressionNode(pos), value(value) { }
+
+  void accept(NodeVisitor& v) const {
+    v.visit(*this);
+  }
+};
+
+class JsonNode : public ExpressionNode {
+public:
+  const std::string name;
+  const json::json_pointer ptr;
+
+  static std::string convert_dot_to_json_ptr(nonstd::string_view ptr_name) {
+    std::string result;
+    do {
+      nonstd::string_view part;
+      std::tie(part, ptr_name) = string_view::split(ptr_name, '.');
+      result.push_back('/');
+      result.append(part.begin(), part.end());
+    } while (!ptr_name.empty());
+    return result;
+  }
+
+  explicit JsonNode(nonstd::string_view ptr_name, size_t pos) : ExpressionNode(pos), name(ptr_name), ptr(json::json_pointer(convert_dot_to_json_ptr(ptr_name))) { }
+
+  void accept(NodeVisitor& v) const {
+    v.visit(*this);
+  }
+};
+
+class FunctionNode : public ExpressionNode {
+  using Op = FunctionStorage::Operation;
+
+public:
+  enum class Associativity {
+    Left,
+    Right,
+  };
+
+  unsigned int precedence;
+  Associativity associativity;
+
+  Op operation;
+
+  std::string name;
+  int number_args; // Should also be negative -> -1 for unknown number
+  std::vector<std::shared_ptr<ExpressionNode>> arguments;
+  CallbackFunction callback;
+
+  explicit FunctionNode(nonstd::string_view name, size_t pos) : ExpressionNode(pos), precedence(8), associativity(Associativity::Left), operation(Op::Callback), name(name), number_args(1) { }
+  explicit FunctionNode(Op operation, size_t pos) : ExpressionNode(pos), operation(operation), number_args(1) {
+    switch (operation) {
+      case Op::Not: {
+        number_args = 1;
+        precedence = 4;
+        associativity = Associativity::Left;
+      } break;
+      case Op::And: {
+        number_args = 2;
+        precedence = 1;
+        associativity = Associativity::Left;
+      } break;
+      case Op::Or: {
+        number_args = 2;
+        precedence = 1;
+        associativity = Associativity::Left;
+      } break;
+      case Op::In: {
+        number_args = 2;
+        precedence = 2;
+        associativity = Associativity::Left;
+      } break;
+      case Op::Equal: {
+        number_args = 2;
+        precedence = 2;
+        associativity = Associativity::Left;
+      } break;
+      case Op::NotEqual: {
+        number_args = 2;
+        precedence = 2;
+        associativity = Associativity::Left;
+      } break;
+      case Op::Greater: {
+        number_args = 2;
+        precedence = 2;
+        associativity = Associativity::Left;
+      } break;
+      case Op::GreaterEqual: {
+        number_args = 2;
+        precedence = 2;
+        associativity = Associativity::Left;
+      } break;
+      case Op::Less: {
+        number_args = 2;
+        precedence = 2;
+        associativity = Associativity::Left;
+      } break;
+      case Op::LessEqual: {
+        number_args = 2;
+        precedence = 2;
+        associativity = Associativity::Left;
+      } break;
+      case Op::Add: {
+        number_args = 2;
+        precedence = 3;
+        associativity = Associativity::Left;
+      } break;
+      case Op::Subtract: {
+        number_args = 2;
+        precedence = 3;
+        associativity = Associativity::Left;
+      } break;
+      case Op::Multiplication: {
+        number_args = 2;
+        precedence = 4;
+        associativity = Associativity::Left;
+      } break;
+      case Op::Division: {
+        number_args = 2;
+        precedence = 4;
+        associativity = Associativity::Left;
+      } break;
+      case Op::Power: {
+        number_args = 2;
+        precedence = 5;
+        associativity = Associativity::Right;
+      } break;
+      case Op::Modulo: {
+        number_args = 2;
+        precedence = 4;
+        associativity = Associativity::Left;
+      } break;
+      case Op::AtId: {
+        number_args = 2;
+        precedence = 8;
+        associativity = Associativity::Left;
+      } break;
+      default: {
+        precedence = 1;
+        associativity = Associativity::Left;
+      }
+    }
+  }
+
+  void accept(NodeVisitor& v) const {
+    v.visit(*this);
+  }
+};
+
+class ExpressionListNode : public AstNode {
+public:
+  std::shared_ptr<ExpressionNode> root;
+
+  explicit ExpressionListNode() : AstNode(0) { }
+  explicit ExpressionListNode(size_t pos) : AstNode(pos) { }
+
+  void accept(NodeVisitor& v) const {
+    v.visit(*this);
+  }
+};
+
+class StatementNode : public AstNode {
+public:
+  StatementNode(size_t pos) : AstNode(pos) { }
+
+  virtual void accept(NodeVisitor& v) const = 0;
+};
+
+class ForStatementNode : public StatementNode {
+public:
+  ExpressionListNode condition;
+  BlockNode body;
+  BlockNode *const parent;
+
+  ForStatementNode(BlockNode *const parent, size_t pos) : StatementNode(pos), parent(parent) { }
+
+  virtual void accept(NodeVisitor& v) const = 0;
+};
+
+class ForArrayStatementNode : public ForStatementNode {
+public:
+  const std::string value;
+
+  explicit ForArrayStatementNode(const std::string& value, BlockNode *const parent, size_t pos) : ForStatementNode(parent, pos), value(value) { }
+
+  void accept(NodeVisitor& v) const {
+    v.visit(*this);
+  }
+};
+
+class ForObjectStatementNode : public ForStatementNode {
+public:
+  const std::string key;
+  const std::string value;
+
+  explicit ForObjectStatementNode(const std::string& key, const std::string& value, BlockNode *const parent, size_t pos) : ForStatementNode(parent, pos), key(key), value(value) { }
+
+  void accept(NodeVisitor& v) const {
+    v.visit(*this);
+  }
+};
+
+class IfStatementNode : public StatementNode {
+public:
+  ExpressionListNode condition;
+  BlockNode true_statement;
+  BlockNode false_statement;
+  BlockNode *const parent;
+
+  const bool is_nested;
+  bool has_false_statement {false};
+
+  explicit IfStatementNode(BlockNode *const parent, size_t pos) : StatementNode(pos), parent(parent), is_nested(false) { }
+  explicit IfStatementNode(bool is_nested, BlockNode *const parent, size_t pos) : StatementNode(pos), parent(parent), is_nested(is_nested) { }
+
+  void accept(NodeVisitor& v) const {
+    v.visit(*this);
+  }
+};
+
+class IncludeStatementNode : public StatementNode {
+public:
+  const std::string file;
+
+  explicit IncludeStatementNode(const std::string& file, size_t pos) : StatementNode(pos), file(file) { }
+
+  void accept(NodeVisitor& v) const {
+    v.visit(*this);
+  }
+};
+
+class ExtendsStatementNode : public StatementNode {
+public:
+  const std::string file;
+
+  explicit ExtendsStatementNode(const std::string& file, size_t pos) : StatementNode(pos), file(file) { }
+
+  void accept(NodeVisitor& v) const {
+    v.visit(*this);
+  };
+};
+
+class BlockStatementNode : public StatementNode {
+public:
+  const std::string name;
+  BlockNode block;
+  BlockNode *const parent;
+
+  explicit BlockStatementNode(BlockNode *const parent, const std::string& name, size_t pos) : StatementNode(pos), name(name), parent(parent) { }
+
+  void accept(NodeVisitor& v) const {
+    v.visit(*this);
+  };
+};
+
+class SetStatementNode : public StatementNode {
+public:
+  const std::string key;
+  ExpressionListNode expression;
+
+  explicit SetStatementNode(const std::string& key, size_t pos) : StatementNode(pos), key(key) { }
+
+  void accept(NodeVisitor& v) const {
+    v.visit(*this);
+  }
+};
+
+} // namespace inja
+
+#endif // INCLUDE_INJA_NODE_HPP_
+
+// #include "statistics.hpp"
+#ifndef INCLUDE_INJA_STATISTICS_HPP_
+#define INCLUDE_INJA_STATISTICS_HPP_
+
+// #include "node.hpp"
+
+
+
+namespace inja {
+
+/*!
+ * \brief A class for counting statistics on a Template.
+ */
+class StatisticsVisitor : public NodeVisitor {
+  void visit(const BlockNode& node) {
+    for (auto& n : node.nodes) {
+      n->accept(*this);
+    }
+  }
+
+  void visit(const TextNode&) { }
+  void visit(const ExpressionNode&) { }
+  void visit(const LiteralNode&) { }
+
+  void visit(const JsonNode&) {
+    variable_counter += 1;
+  }
+
+  void visit(const FunctionNode& node) {
+    for (auto& n : node.arguments) {
+      n->accept(*this);
+    }
+  }
+
+  void visit(const ExpressionListNode& node) {
+    node.root->accept(*this);
+  }
+
+  void visit(const StatementNode&) { }
+  void visit(const ForStatementNode&) { }
+
+  void visit(const ForArrayStatementNode& node) {
+    node.condition.accept(*this);
+    node.body.accept(*this);
+  }
+
+  void visit(const ForObjectStatementNode& node) {
+    node.condition.accept(*this);
+    node.body.accept(*this);
+  }
+
+  void visit(const IfStatementNode& node) {
+    node.condition.accept(*this);
+    node.true_statement.accept(*this);
+    node.false_statement.accept(*this);
+  }
+
+  void visit(const IncludeStatementNode&) { }
+
+  void visit(const ExtendsStatementNode&) { }
+
+  void visit(const BlockStatementNode& node) {
+    node.block.accept(*this);
+  }
+
+  void visit(const SetStatementNode&) { }
+
+public:
+  unsigned int variable_counter;
+
+  explicit StatisticsVisitor() : variable_counter(0) { }
+};
+
+} // namespace inja
+
+#endif // INCLUDE_INJA_STATISTICS_HPP_
+
+
+
+namespace inja {
+
+/*!
+ * \brief The main inja Template.
+ */
+struct Template {
+  BlockNode root;
+  std::string content;
+  std::map<std::string, std::shared_ptr<BlockStatementNode>> block_storage;
+
+  explicit Template() { }
+  explicit Template(const std::string& content): content(content) { }
+
+  /// Return number of variables (total number, not distinct ones) in the template
+  int count_variables() {
+    auto statistic_visitor = StatisticsVisitor();
+    root.accept(statistic_visitor);
+    return statistic_visitor.variable_counter;
+  }
+};
+
+using TemplateStorage = std::map<std::string, Template>;
+
+} // namespace inja
+
+#endif // INCLUDE_INJA_TEMPLATE_HPP_
+
+
+namespace inja {
+
+/*!
+ * \brief Class for lexer configuration.
+ */
+struct LexerConfig {
+  std::string statement_open {"{%"};
+  std::string statement_open_no_lstrip {"{%+"};
+  std::string statement_open_force_lstrip {"{%-"};
+  std::string statement_close {"%}"};
+  std::string statement_close_force_rstrip {"-%}"};
+  std::string line_statement {"##"};
+  std::string expression_open {"{{"};
+  std::string expression_open_force_lstrip {"{{-"};
+  std::string expression_close {"}}"};
+  std::string expression_close_force_rstrip {"-}}"};
+  std::string comment_open {"{#"};
+  std::string comment_open_force_lstrip {"{#-"};
+  std::string comment_close {"#}"};
+  std::string comment_close_force_rstrip {"-#}"};
+  std::string open_chars {"#{"};
+
+  bool trim_blocks {false};
+  bool lstrip_blocks {false};
+
+  void update_open_chars() {
+    open_chars = "";
+    if (open_chars.find(line_statement[0]) == std::string::npos) {
+      open_chars += line_statement[0];
+    }
+    if (open_chars.find(statement_open[0]) == std::string::npos) {
+      open_chars += statement_open[0];
+    }
+    if (open_chars.find(statement_open_no_lstrip[0]) == std::string::npos) {
+      open_chars += statement_open_no_lstrip[0];
+    }
+    if (open_chars.find(statement_open_force_lstrip[0]) == std::string::npos) {
+      open_chars += statement_open_force_lstrip[0];
+    }
+    if (open_chars.find(expression_open[0]) == std::string::npos) {
+      open_chars += expression_open[0];
+    }
+    if (open_chars.find(expression_open_force_lstrip[0]) == std::string::npos) {
+      open_chars += expression_open_force_lstrip[0];
+    }
+    if (open_chars.find(comment_open[0]) == std::string::npos) {
+      open_chars += comment_open[0];
+    }
+    if (open_chars.find(comment_open_force_lstrip[0]) == std::string::npos) {
+      open_chars += comment_open_force_lstrip[0];
+    }
+  }
+};
+
+/*!
+ * \brief Class for parser configuration.
+ */
+struct ParserConfig {
+  bool search_included_templates_in_files {true};
+
+  std::function<Template(const std::string&, const std::string&)> include_callback;
+};
+
+/*!
+ * \brief Class for render configuration.
+ */
+struct RenderConfig {
+  bool throw_at_missing_includes {true};
+};
+
+} // namespace inja
+
+#endif // INCLUDE_INJA_CONFIG_HPP_
+
+// #include "function_storage.hpp"
+
+// #include "parser.hpp"
+#ifndef INCLUDE_INJA_PARSER_HPP_
+#define INCLUDE_INJA_PARSER_HPP_
+
+#include <limits>
+#include <stack>
+#include <string>
+#include <utility>
+#include <queue>
+#include <vector>
+
+// #include "config.hpp"
+
+// #include "exceptions.hpp"
+
 // #include "function_storage.hpp"
 
 // #include "lexer.hpp"
-// Copyright (c) 2020 Pantor. All rights reserved.
-
 #ifndef INCLUDE_INJA_LEXER_HPP_
 #define INCLUDE_INJA_LEXER_HPP_
 
@@ -1740,8 +2342,6 @@ struct JsonError : public InjaError {
 // #include "config.hpp"
 
 // #include "token.hpp"
-// Copyright (c) 2020 Pantor. All rights reserved.
-
 #ifndef INCLUDE_INJA_TOKEN_HPP_
 #define INCLUDE_INJA_TOKEN_HPP_
 
@@ -1793,7 +2393,7 @@ struct Token {
     Unknown,
     Eof,
   };
-
+  
   Kind kind {Kind::Unknown};
   nonstd::string_view text;
 
@@ -1819,78 +2419,6 @@ struct Token {
 #endif // INCLUDE_INJA_TOKEN_HPP_
 
 // #include "utils.hpp"
-// Copyright (c) 2020 Pantor. All rights reserved.
-
-#ifndef INCLUDE_INJA_UTILS_HPP_
-#define INCLUDE_INJA_UTILS_HPP_
-
-#include <algorithm>
-#include <fstream>
-#include <string>
-#include <utility>
-
-// #include "exceptions.hpp"
-
-// #include "string_view.hpp"
-
-
-namespace inja {
-
-inline void open_file_or_throw(const std::string &path, std::ifstream &file) {
-  file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-  try {
-    file.open(path);
-  } catch (const std::ios_base::failure & /*e*/) {
-    throw FileError("failed accessing file at '" + path + "'");
-  }
-}
-
-namespace string_view {
-inline nonstd::string_view slice(nonstd::string_view view, size_t start, size_t end) {
-  start = std::min(start, view.size());
-  end = std::min(std::max(start, end), view.size());
-  return view.substr(start, end - start);
-}
-
-inline std::pair<nonstd::string_view, nonstd::string_view> split(nonstd::string_view view, char Separator) {
-  size_t idx = view.find(Separator);
-  if (idx == nonstd::string_view::npos) {
-    return std::make_pair(view, nonstd::string_view());
-  }
-  return std::make_pair(slice(view, 0, idx), slice(view, idx + 1, nonstd::string_view::npos));
-}
-
-inline bool starts_with(nonstd::string_view view, nonstd::string_view prefix) {
-  return (view.size() >= prefix.size() && view.compare(0, prefix.size(), prefix) == 0);
-}
-} // namespace string_view
-
-inline SourceLocation get_source_location(nonstd::string_view content, size_t pos) {
-  // Get line and offset position (starts at 1:1)
-  auto sliced = string_view::slice(content, 0, pos);
-  std::size_t last_newline = sliced.rfind("\n");
-
-  if (last_newline == nonstd::string_view::npos) {
-    return {1, sliced.length() + 1};
-  }
-
-  // Count newlines
-  size_t count_lines = 0;
-  size_t search_start = 0;
-  while (search_start <= sliced.size()) {
-    search_start = sliced.find("\n", search_start) + 1;
-    if (search_start == 0) {
-      break;
-    }
-    count_lines += 1;
-  }
-
-  return {count_lines + 1, sliced.length() - last_newline};
-}
-
-} // namespace inja
-
-#endif // INCLUDE_INJA_UTILS_HPP_
 
 
 namespace inja {
@@ -1911,6 +2439,7 @@ class Lexer {
     StatementStartForceLstrip,
     StatementBody,
     CommentStart,
+    CommentStartForceLstrip,
     CommentBody,
   };
 
@@ -1927,13 +2456,14 @@ class Lexer {
   size_t tok_start;
   size_t pos;
 
+
   Token scan_body(nonstd::string_view close, Token::Kind closeKind, nonstd::string_view close_trim = nonstd::string_view(), bool trim = false) {
   again:
     // skip whitespace (except for \n as it might be a close)
     if (tok_start >= m_in.size()) {
       return make_token(Token::Kind::Eof);
     }
-    char ch = m_in[tok_start];
+    const char ch = m_in[tok_start];
     if (ch == ' ' || ch == '\t' || ch == '\r') {
       tok_start += 1;
       goto again;
@@ -1943,7 +2473,7 @@ class Lexer {
     if (!close_trim.empty() && inja::string_view::starts_with(m_in.substr(tok_start), close_trim)) {
       state = State::Text;
       pos = tok_start + close_trim.size();
-      Token tok = make_token(closeKind);
+      const Token tok = make_token(closeKind);
       skip_whitespaces_and_newlines();
       return tok;
     }
@@ -1951,7 +2481,7 @@ class Lexer {
     if (inja::string_view::starts_with(m_in.substr(tok_start), close)) {
       state = State::Text;
       pos = tok_start + close.size();
-      Token tok = make_token(closeKind);
+      const Token tok = make_token(closeKind);
       if (trim) {
         skip_whitespaces_and_first_newline();
       }
@@ -1970,7 +2500,7 @@ class Lexer {
       return scan_id();
     }
 
-    MinusState current_minus_state = minus_state;
+    const MinusState current_minus_state = minus_state;
     if (minus_state == MinusState::Operator) {
       minus_state = MinusState::Number;
     }
@@ -2051,6 +2581,8 @@ class Lexer {
       minus_state = MinusState::Operator;
       return scan_number();
     case '_':
+    case '@':
+    case '$':
       minus_state = MinusState::Operator;
       return scan_id();
     default:
@@ -2063,7 +2595,7 @@ class Lexer {
       if (pos >= m_in.size()) {
         break;
       }
-      char ch = m_in[pos];
+      const char ch = m_in[pos];
       if (!std::isalnum(ch) && ch != '.' && ch != '/' && ch != '_' && ch != '-') {
         break;
       }
@@ -2077,7 +2609,7 @@ class Lexer {
       if (pos >= m_in.size()) {
         break;
       }
-      char ch = m_in[pos];
+      const char ch = m_in[pos];
       // be very permissive in lexer (we'll catch errors when conversion happens)
       if (!std::isdigit(ch) && ch != '.' && ch != 'e' && ch != 'E' && ch != '+' && ch != '-') {
         break;
@@ -2093,7 +2625,7 @@ class Lexer {
       if (pos >= m_in.size()) {
         break;
       }
-      char ch = m_in[pos++];
+      const char ch = m_in[pos++];
       if (ch == '\\') {
         escape = true;
       } else if (!escape && ch == m_in[tok_start]) {
@@ -2123,7 +2655,7 @@ class Lexer {
     }
 
     if (pos < m_in.size()) {
-      char ch = m_in[pos];
+      const char ch = m_in[pos];
       if (ch == '\n') {
         pos += 1;
       } else if (ch == '\r') {
@@ -2138,7 +2670,7 @@ class Lexer {
   static nonstd::string_view clear_final_line_if_whitespace(nonstd::string_view text) {
     nonstd::string_view result = text;
     while (!result.empty()) {
-      char ch = result.back();
+      const char ch = result.back();
       if (ch == ' ' || ch == '\t') {
         result.remove_suffix(1);
       } else if (ch == '\n' || ch == '\r') {
@@ -2182,7 +2714,7 @@ public:
     default:
     case State::Text: {
       // fast-scan to first open character
-      size_t open_start = m_in.substr(pos).find_first_of(config.open_chars);
+      const size_t open_start = m_in.substr(pos).find_first_of(config.open_chars);
       if (open_start == nonstd::string_view::npos) {
         // didn't find open, return remaining text as text token
         pos = m_in.size();
@@ -2211,8 +2743,13 @@ public:
           must_lstrip = config.lstrip_blocks;
         }
       } else if (inja::string_view::starts_with(open_str, config.comment_open)) {
-        state = State::CommentStart;
-        must_lstrip = config.lstrip_blocks;
+        if (inja::string_view::starts_with(open_str, config.comment_open_force_lstrip)) {
+          state = State::CommentStartForceLstrip;
+          must_lstrip = true;
+        } else {
+          state = State::CommentStart;
+          must_lstrip = config.lstrip_blocks;
+        }
       } else if ((pos == 0 || m_in[pos - 1] == '\n') && inja::string_view::starts_with(open_str, config.line_statement)) {
         state = State::LineStart;
       } else {
@@ -2265,6 +2802,11 @@ public:
       pos += config.comment_open.size();
       return make_token(Token::Kind::CommentOpen);
     }
+    case State::CommentStartForceLstrip: {
+      state = State::CommentBody;
+      pos += config.comment_open_force_lstrip.size();
+      return make_token(Token::Kind::CommentOpen);
+    }
     case State::ExpressionBody:
       return scan_body(config.expression_close, Token::Kind::ExpressionClose, config.expression_close_force_rstrip);
     case State::LineBody:
@@ -2273,16 +2815,21 @@ public:
       return scan_body(config.statement_close, Token::Kind::StatementClose, config.statement_close_force_rstrip, config.trim_blocks);
     case State::CommentBody: {
       // fast-scan to comment close
-      size_t end = m_in.substr(pos).find(config.comment_close);
+      const size_t end = m_in.substr(pos).find(config.comment_close);
       if (end == nonstd::string_view::npos) {
         pos = m_in.size();
         return make_token(Token::Kind::Eof);
       }
+
+      // Check for trim pattern
+      const bool must_rstrip = inja::string_view::starts_with(m_in.substr(pos + end - 1), config.comment_close_force_rstrip);
+
       // return the entire comment in the close token
       state = State::Text;
       pos += end + config.comment_close.size();
       Token tok = make_token(Token::Kind::CommentClose);
-      if (config.trim_blocks) {
+
+      if (must_rstrip || config.trim_blocks) {
         skip_whitespaces_and_first_newline();
       }
       return tok;
@@ -2300,455 +2847,14 @@ public:
 #endif // INCLUDE_INJA_LEXER_HPP_
 
 // #include "node.hpp"
-// Copyright (c) 2020 Pantor. All rights reserved.
-
-#ifndef INCLUDE_INJA_NODE_HPP_
-#define INCLUDE_INJA_NODE_HPP_
-
-#include <string>
-#include <utility>
-
-#include <nlohmann/json.hpp>
-
-// #include "function_storage.hpp"
-
-// #include "string_view.hpp"
-
-
-
-namespace inja {
-
-class NodeVisitor;
-class BlockNode;
-class TextNode;
-class ExpressionNode;
-class LiteralNode;
-class JsonNode;
-class FunctionNode;
-class ExpressionListNode;
-class StatementNode;
-class ForStatementNode;
-class ForArrayStatementNode;
-class ForObjectStatementNode;
-class IfStatementNode;
-class IncludeStatementNode;
-class SetStatementNode;
-
-
-class NodeVisitor {
-public:
-  virtual void visit(const BlockNode& node) = 0;
-  virtual void visit(const TextNode& node) = 0;
-  virtual void visit(const ExpressionNode& node) = 0;
-  virtual void visit(const LiteralNode& node) = 0;
-  virtual void visit(const JsonNode& node) = 0;
-  virtual void visit(const FunctionNode& node) = 0;
-  virtual void visit(const ExpressionListNode& node) = 0;
-  virtual void visit(const StatementNode& node) = 0;
-  virtual void visit(const ForStatementNode& node) = 0;
-  virtual void visit(const ForArrayStatementNode& node) = 0;
-  virtual void visit(const ForObjectStatementNode& node) = 0;
-  virtual void visit(const IfStatementNode& node) = 0;
-  virtual void visit(const IncludeStatementNode& node) = 0;
-  virtual void visit(const SetStatementNode& node) = 0;
-};
-
-/*!
- * \brief Base node class for the abstract syntax tree (AST).
- */
-class AstNode {
-public:
-  virtual void accept(NodeVisitor& v) const = 0;
-
-  size_t pos;
-
-  AstNode(size_t pos) : pos(pos) { }
-  virtual ~AstNode() { };
-};
-
-
-class BlockNode : public AstNode {
-public:
-  std::vector<std::shared_ptr<AstNode>> nodes;
-
-  explicit BlockNode() : AstNode(0) {}
-
-  void accept(NodeVisitor& v) const {
-    v.visit(*this);
-  }
-};
-
-class TextNode : public AstNode {
-public:
-  const size_t length;
-
-  explicit TextNode(size_t pos, size_t length): AstNode(pos), length(length) { }
-
-  void accept(NodeVisitor& v) const {
-    v.visit(*this);
-  }
-};
-
-class ExpressionNode : public AstNode {
-public:
-  explicit ExpressionNode(size_t pos) : AstNode(pos) {}
-
-  void accept(NodeVisitor& v) const {
-    v.visit(*this);
-  }
-};
-
-class LiteralNode : public ExpressionNode {
-public:
-  const nlohmann::json value;
-
-  explicit LiteralNode(const nlohmann::json& value, size_t pos) : ExpressionNode(pos), value(value) { }
-
-  void accept(NodeVisitor& v) const {
-    v.visit(*this);
-  }
-};
-
-class JsonNode : public ExpressionNode {
-public:
-  const std::string name;
-  const json::json_pointer ptr;
-
-  static std::string convert_dot_to_json_ptr(nonstd::string_view ptr_name) {
-    std::string result;
-    do {
-      nonstd::string_view part;
-      std::tie(part, ptr_name) = string_view::split(ptr_name, '.');
-      result.push_back('/');
-      result.append(part.begin(), part.end());
-    } while (!ptr_name.empty());
-    return result;
-  }
-
-  explicit JsonNode(nonstd::string_view ptr_name, size_t pos) : ExpressionNode(pos), name(ptr_name), ptr(json::json_pointer(convert_dot_to_json_ptr(ptr_name))) { }
-
-  void accept(NodeVisitor& v) const {
-    v.visit(*this);
-  }
-};
-
-class FunctionNode : public ExpressionNode {
-  using Op = FunctionStorage::Operation;
-
-public:
-  enum class Associativity {
-    Left,
-    Right,
-  };
-
-  unsigned int precedence;
-  Associativity associativity;
-
-  Op operation;
-
-  std::string name;
-  int number_args; // Should also be negative -> -1 for unknown number
-  CallbackFunction callback;
-
-  explicit FunctionNode(nonstd::string_view name, size_t pos) : ExpressionNode(pos), precedence(8), associativity(Associativity::Left), operation(Op::Callback), name(name), number_args(1) { }
-  explicit FunctionNode(Op operation, size_t pos) : ExpressionNode(pos), operation(operation), number_args(1) {
-    switch (operation) {
-      case Op::Not: {
-        precedence = 4;
-        associativity = Associativity::Left;
-      } break;
-      case Op::And: {
-        precedence = 1;
-        associativity = Associativity::Left;
-      } break;
-      case Op::Or: {
-        precedence = 1;
-        associativity = Associativity::Left;
-      } break;
-      case Op::In: {
-        precedence = 2;
-        associativity = Associativity::Left;
-      } break;
-      case Op::Equal: {
-        precedence = 2;
-        associativity = Associativity::Left;
-      } break;
-      case Op::NotEqual: {
-        precedence = 2;
-        associativity = Associativity::Left;
-      } break;
-      case Op::Greater: {
-        precedence = 2;
-        associativity = Associativity::Left;
-      } break;
-      case Op::GreaterEqual: {
-        precedence = 2;
-        associativity = Associativity::Left;
-      } break;
-      case Op::Less: {
-        precedence = 2;
-        associativity = Associativity::Left;
-      } break;
-      case Op::LessEqual: {
-        precedence = 2;
-        associativity = Associativity::Left;
-      } break;
-      case Op::Add: {
-        precedence = 3;
-        associativity = Associativity::Left;
-      } break;
-      case Op::Subtract: {
-        precedence = 3;
-        associativity = Associativity::Left;
-      } break;
-      case Op::Multiplication: {
-        precedence = 4;
-        associativity = Associativity::Left;
-      } break;
-      case Op::Division: {
-        precedence = 4;
-        associativity = Associativity::Left;
-      } break;
-      case Op::Power: {
-        precedence = 5;
-        associativity = Associativity::Right;
-      } break;
-      case Op::Modulo: {
-        precedence = 4;
-        associativity = Associativity::Left;
-      } break;
-      case Op::AtId: {
-        precedence = 8;
-        associativity = Associativity::Left;
-      } break;
-      default: {
-        precedence = 1;
-        associativity = Associativity::Left;
-      }
-    }
-  }
-
-  void accept(NodeVisitor& v) const {
-    v.visit(*this);
-  }
-};
-
-class ExpressionListNode : public AstNode {
-public:
-  std::vector<std::shared_ptr<ExpressionNode>> rpn_output;
-
-  explicit ExpressionListNode() : AstNode(0) { }
-  explicit ExpressionListNode(size_t pos) : AstNode(pos) { }
-
-  void accept(NodeVisitor& v) const {
-    v.visit(*this);
-  }
-};
-
-class StatementNode : public AstNode {
-public:
-  StatementNode(size_t pos) : AstNode(pos) { }
-
-  virtual void accept(NodeVisitor& v) const = 0;
-};
-
-class ForStatementNode : public StatementNode {
-public:
-  ExpressionListNode condition;
-  BlockNode body;
-  BlockNode *const parent;
-
-  ForStatementNode(BlockNode *const parent, size_t pos) : StatementNode(pos), parent(parent) { }
-
-  virtual void accept(NodeVisitor& v) const = 0;
-};
-
-class ForArrayStatementNode : public ForStatementNode {
-public:
-  const std::string value;
-
-  explicit ForArrayStatementNode(const std::string& value, BlockNode *const parent, size_t pos) : ForStatementNode(parent, pos), value(value) { }
-
-  void accept(NodeVisitor& v) const {
-    v.visit(*this);
-  }
-};
-
-class ForObjectStatementNode : public ForStatementNode {
-public:
-  const std::string key;
-  const std::string value;
-
-  explicit ForObjectStatementNode(const std::string& key, const std::string& value, BlockNode *const parent, size_t pos) : ForStatementNode(parent, pos), key(key), value(value) { }
-
-  void accept(NodeVisitor& v) const {
-    v.visit(*this);
-  }
-};
-
-class IfStatementNode : public StatementNode {
-public:
-  ExpressionListNode condition;
-  BlockNode true_statement;
-  BlockNode false_statement;
-  BlockNode *const parent;
-
-  const bool is_nested;
-  bool has_false_statement {false};
-
-  explicit IfStatementNode(BlockNode *const parent, size_t pos) : StatementNode(pos), parent(parent), is_nested(false) { }
-  explicit IfStatementNode(bool is_nested, BlockNode *const parent, size_t pos) : StatementNode(pos), parent(parent), is_nested(is_nested) { }
-
-  void accept(NodeVisitor& v) const {
-    v.visit(*this);
-  }
-};
-
-class IncludeStatementNode : public StatementNode {
-public:
-  const std::string file;
-
-  explicit IncludeStatementNode(const std::string& file, size_t pos) : StatementNode(pos), file(file) { }
-
-  void accept(NodeVisitor& v) const {
-    v.visit(*this);
-  };
-};
-
-class SetStatementNode : public StatementNode {
-public:
-  const std::string key;
-  ExpressionListNode expression;
-
-  explicit SetStatementNode(const std::string& key, size_t pos) : StatementNode(pos), key(key) { }
-
-  void accept(NodeVisitor& v) const {
-    v.visit(*this);
-  };
-};
-
-} // namespace inja
-
-#endif // INCLUDE_INJA_NODE_HPP_
 
 // #include "template.hpp"
-// Copyright (c) 2019 Pantor. All rights reserved.
-
-#ifndef INCLUDE_INJA_TEMPLATE_HPP_
-#define INCLUDE_INJA_TEMPLATE_HPP_
-
-#include <map>
-#include <memory>
-#include <string>
-#include <vector>
-
-// #include "node.hpp"
-
-// #include "statistics.hpp"
-// Copyright (c) 2019 Pantor. All rights reserved.
-
-#ifndef INCLUDE_INJA_STATISTICS_HPP_
-#define INCLUDE_INJA_STATISTICS_HPP_
-
-// #include "node.hpp"
-
-
-
-namespace inja {
-
-/*!
- * \brief A class for counting statistics on a Template.
- */
-class StatisticsVisitor : public NodeVisitor {
-  void visit(const BlockNode& node) {
-    for (auto& n : node.nodes) {
-      n->accept(*this);
-    }
-  }
-
-  void visit(const TextNode&) { }
-  void visit(const ExpressionNode&) { }
-  void visit(const LiteralNode&) { }
-
-  void visit(const JsonNode&) {
-    variable_counter += 1;
-  }
-
-  void visit(const FunctionNode&) { }
-
-  void visit(const ExpressionListNode& node) {
-    for (auto& n : node.rpn_output) {
-      n->accept(*this);
-    }
-  }
-
-  void visit(const StatementNode&) { }
-  void visit(const ForStatementNode&) { }
-
-  void visit(const ForArrayStatementNode& node) {
-    node.condition.accept(*this);
-    node.body.accept(*this);
-  }
-
-  void visit(const ForObjectStatementNode& node) {
-    node.condition.accept(*this);
-    node.body.accept(*this);
-  }
-
-  void visit(const IfStatementNode& node) {
-    node.condition.accept(*this);
-    node.true_statement.accept(*this);
-    node.false_statement.accept(*this);
-  }
-
-  void visit(const IncludeStatementNode&) { }
-
-  void visit(const SetStatementNode&) { }
-
-public:
-  unsigned int variable_counter;
-
-  explicit StatisticsVisitor() : variable_counter(0) { }
-};
-
-} // namespace inja
-
-#endif // INCLUDE_INJA_STATISTICS_HPP_
-
-
-
-namespace inja {
-
-/*!
- * \brief The main inja Template.
- */
-struct Template {
-  BlockNode root;
-  std::string content;
-
-  explicit Template() { }
-  explicit Template(const std::string& content): content(content) { }
-
-  /// Return number of variables (total number, not distinct ones) in the template
-  int count_variables() {
-    auto statistic_visitor = StatisticsVisitor();
-    root.accept(statistic_visitor);
-    return statistic_visitor.variable_counter;
-  }
-};
-
-using TemplateStorage = std::map<std::string, Template>;
-
-} // namespace inja
-
-#endif // INCLUDE_INJA_TEMPLATE_HPP_
 
 // #include "token.hpp"
 
 // #include "utils.hpp"
 
 
-#include <nlohmann/json.hpp>
 
 namespace inja {
 
@@ -2774,16 +2880,18 @@ class Parser {
   BlockNode *current_block {nullptr};
   ExpressionListNode *current_expression_list {nullptr};
   std::stack<std::pair<FunctionNode*, size_t>> function_stack;
+  std::vector<std::shared_ptr<ExpressionNode>> arguments;
 
   std::stack<std::shared_ptr<FunctionNode>> operator_stack;
   std::stack<IfStatementNode*> if_statement_stack;
   std::stack<ForStatementNode*> for_statement_stack;
+  std::stack<BlockStatementNode*> block_statement_stack;
 
-  void throw_parser_error(const std::string &message) {
-    throw ParserError(message, lexer.current_position());
+  inline void throw_parser_error(const std::string &message) {
+    INJA_THROW(ParserError(message, lexer.current_position()));
   }
 
-  void get_next_token() {
+  inline void get_next_token() {
     if (have_peek_tok) {
       tok = peek_tok;
       have_peek_tok = false;
@@ -2792,16 +2900,67 @@ class Parser {
     }
   }
 
-  void get_peek_token() {
+  inline void get_peek_token() {
     if (!have_peek_tok) {
       peek_tok = lexer.scan();
       have_peek_tok = true;
     }
   }
 
-  void add_json_literal(const char* content_ptr) {
+  inline void add_json_literal(const char* content_ptr) {
     nonstd::string_view json_text(json_literal_start.data(), tok.text.data() - json_literal_start.data() + tok.text.size());
-    current_expression_list->rpn_output.emplace_back(std::make_shared<LiteralNode>(json::parse(json_text), json_text.data() - content_ptr));
+    arguments.emplace_back(std::make_shared<LiteralNode>(json::parse(json_text), json_text.data() - content_ptr));
+  }
+
+  inline void add_operator() {
+    auto function = operator_stack.top();
+    operator_stack.pop();
+
+    for (int i = 0; i < function->number_args; ++i) {
+      function->arguments.insert(function->arguments.begin(), arguments.back());
+      arguments.pop_back();
+    }
+    arguments.emplace_back(function);
+  }
+
+  void add_to_template_storage(nonstd::string_view path, std::string& template_name) {
+    if (template_storage.find(template_name) != template_storage.end()) {
+      return;
+    }
+
+    std::string original_path = static_cast<std::string>(path);
+    std::string original_name = template_name;
+
+    if (config.search_included_templates_in_files) {
+      // Build the relative path
+      template_name = original_path + original_name;
+      if (template_name.compare(0, 2, "./") == 0) {
+        template_name.erase(0, 2);
+      }
+
+      if (template_storage.find(template_name) == template_storage.end()) {
+        // Load file
+        std::ifstream file;
+        file.open(template_name);
+        if (!file.fail()) {
+          std::string text((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+
+          auto include_template = Template(text);
+          template_storage.emplace(template_name, include_template);
+          parse_into_template(template_storage[template_name], template_name);
+          return;
+
+        } else if (!config.include_callback) {
+          INJA_THROW(FileError("failed accessing file at '" + template_name + "'"));
+        }
+      }
+    }
+
+    // Try include callback
+    if (config.include_callback) {
+      auto include_template = config.include_callback(original_path, original_name);
+      template_storage.emplace(template_name, include_template);
+    }
   }
 
   bool parse_expression(Template &tmpl, Token::Kind closing) {
@@ -2875,11 +3034,11 @@ class Parser {
         // Functions
         } else if (peek_tok.kind == Token::Kind::LeftParen) {
           operator_stack.emplace(std::make_shared<FunctionNode>(static_cast<std::string>(tok.text), tok.text.data() - tmpl.content.c_str()));
-          function_stack.emplace(operator_stack.top().get(), current_paren_level);
+          function_stack.emplace(operator_stack.top().get(), current_paren_level);       
 
         // Variables
         } else {
-          current_expression_list->rpn_output.emplace_back(std::make_shared<JsonNode>(static_cast<std::string>(tok.text), tok.text.data() - tmpl.content.c_str()));
+          arguments.emplace_back(std::make_shared<JsonNode>(static_cast<std::string>(tok.text), tok.text.data() - tmpl.content.c_str()));
         }
 
       // Operators
@@ -2960,8 +3119,7 @@ class Parser {
         auto function_node = std::make_shared<FunctionNode>(operation, tok.text.data() - tmpl.content.c_str());
 
         while (!operator_stack.empty() && ((operator_stack.top()->precedence > function_node->precedence) || (operator_stack.top()->precedence == function_node->precedence && function_node->associativity == FunctionNode::Associativity::Left)) && (operator_stack.top()->operation != FunctionStorage::Operation::ParenLeft)) {
-          current_expression_list->rpn_output.emplace_back(operator_stack.top());
-          operator_stack.pop();
+          add_operator();
         }
 
         operator_stack.emplace(function_node);
@@ -2998,8 +3156,7 @@ class Parser {
       case Token::Kind::RightParen: {
         current_paren_level -= 1;
         while (!operator_stack.empty() && operator_stack.top()->operation != FunctionStorage::Operation::ParenLeft) {
-          current_expression_list->rpn_output.emplace_back(operator_stack.top());
-          operator_stack.pop();
+          add_operator();
         }
 
         if (!operator_stack.empty() && operator_stack.top()->operation == FunctionStorage::Operation::ParenLeft) {
@@ -3021,8 +3178,7 @@ class Parser {
             throw_parser_error("internal error at function " + func->name);
           }
 
-          current_expression_list->rpn_output.emplace_back(operator_stack.top());
-          operator_stack.pop();
+          add_operator();
           function_stack.pop();
         }
       }
@@ -3034,10 +3190,17 @@ class Parser {
     }
 
     while (!operator_stack.empty()) {
-      current_expression_list->rpn_output.emplace_back(operator_stack.top());
-      operator_stack.pop();
+      add_operator();
     }
 
+    if (arguments.size() == 1) {
+      current_expression_list->root = arguments[0];
+      arguments = {};
+
+    } else if (arguments.size() > 1) {
+      throw_parser_error("malformed expression");
+    }
+    
     return true;
   }
 
@@ -3099,6 +3262,37 @@ class Parser {
 
       current_block = if_statement_data->parent;
       if_statement_stack.pop();
+
+    } else if (tok.text == static_cast<decltype(tok.text)>("block")) {
+      get_next_token();
+
+      if (tok.kind != Token::Kind::Id) {
+        throw_parser_error("expected block name, got '" + tok.describe() + "'");
+      }
+
+      const std::string block_name = static_cast<std::string>(tok.text);
+
+      auto block_statement_node = std::make_shared<BlockStatementNode>(current_block, block_name, tok.text.data() - tmpl.content.c_str());
+      current_block->nodes.emplace_back(block_statement_node);
+      block_statement_stack.emplace(block_statement_node.get());
+      current_block = &block_statement_node->block;
+      auto success = tmpl.block_storage.emplace(block_name, block_statement_node);
+      if (!success.second) {
+        throw_parser_error("block with the name '" + block_name + "' does already exist");
+      }
+
+      get_next_token();
+
+    } else if (tok.text == static_cast<decltype(tok.text)>("endblock")) {
+      if (block_statement_stack.empty()) {
+        throw_parser_error("endblock without matching block");
+      }
+
+      auto &block_statement_data = block_statement_stack.top();
+      get_next_token();
+
+      current_block = block_statement_data->parent;
+      block_statement_stack.pop();
 
     } else if (tok.text == static_cast<decltype(tok.text)>("for")) {
       get_next_token();
@@ -3162,35 +3356,24 @@ class Parser {
         throw_parser_error("expected string, got '" + tok.describe() + "'");
       }
 
-      // Build the relative path
-      json json_name = json::parse(tok.text);
-      std::string pathname = static_cast<std::string>(path);
-      pathname += json_name.get_ref<const std::string &>();
-      if (pathname.compare(0, 2, "./") == 0) {
-        pathname.erase(0, 2);
-      }
-      // sys::path::remove_dots(pathname, true, sys::path::Style::posix);
+      std::string template_name = json::parse(tok.text).get_ref<const std::string &>();
+      add_to_template_storage(path, template_name);
 
-      if(config.include_scope_limit)
-      {
-#ifdef _WIN32
-        if(pathname.find(":\\") != pathname.npos || pathname.find("..") != pathname.npos)
-          throw FileError("access denied when trying to include '" + pathname + "': out of scope");
-#else
-        if(pathname.find("/") == 0 || pathname.find("..") != pathname.npos)
-          throw FileError("access denied when trying to include '" + pathname + "': out of scope");
-#endif // _WIN32
-        if(config.include_scope.size() && pathname.find(config.include_scope) != 0)
-          throw FileError("access denied when trying to include '" + pathname + "': out of scope");
+      current_block->nodes.emplace_back(std::make_shared<IncludeStatementNode>(template_name, tok.text.data() - tmpl.content.c_str()));
+
+      get_next_token();
+
+    } else if (tok.text == static_cast<decltype(tok.text)>("extends")) {
+      get_next_token();
+
+      if (tok.kind != Token::Kind::String) {
+        throw_parser_error("expected string, got '" + tok.describe() + "'");
       }
 
-      if (config.search_included_templates_in_files && template_storage.find(pathname) == template_storage.end()) {
-        auto include_template = Template(load_file(pathname));
-        template_storage.emplace(pathname, include_template);
-        parse_into_template(template_storage[pathname], pathname);
-      }
+      std::string template_name = json::parse(tok.text).get_ref<const std::string &>();
+      add_to_template_storage(path, template_name);
 
-      current_block->nodes.emplace_back(std::make_shared<IncludeStatementNode>(pathname, tok.text.data() - tmpl.content.c_str()));
+      current_block->nodes.emplace_back(std::make_shared<ExtendsStatementNode>(template_name, tok.text.data() - tmpl.content.c_str()));
 
       get_next_token();
 
@@ -3311,9 +3494,12 @@ public:
     sub_parser.parse_into(tmpl, path);
   }
 
-  std::string load_file(nonstd::string_view filename) {
+  std::string load_file(const std::string& filename) {
     std::ifstream file;
-    open_file_or_throw(static_cast<std::string>(filename), file);
+    file.open(filename);
+    if (file.fail()) {
+      INJA_THROW(FileError("failed accessing file at '" + filename + "'"));
+    }
     std::string text((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     return text;
   }
@@ -3324,8 +3510,6 @@ public:
 #endif // INCLUDE_INJA_PARSER_HPP_
 
 // #include "renderer.hpp"
-// Copyright (c) 2020 Pantor. All rights reserved.
-
 #ifndef INCLUDE_INJA_RENDERER_HPP_
 #define INCLUDE_INJA_RENDERER_HPP_
 
@@ -3334,8 +3518,6 @@ public:
 #include <string>
 #include <utility>
 #include <vector>
-
-#include <nlohmann/json.hpp>
 
 // #include "config.hpp"
 
@@ -3357,9 +3539,13 @@ class Renderer : public NodeVisitor  {
   using Op = FunctionStorage::Operation;
 
   const RenderConfig config;
-  const Template *current_template;
   const TemplateStorage &template_storage;
   const FunctionStorage &function_storage;
+
+  const Template *current_template;
+  size_t current_level {0};
+  std::vector<const Template*> template_stack;
+  std::vector<const BlockStatementNode*> block_statement_stack;
 
   const json *json_input;
   std::ostream *output_stream;
@@ -3370,6 +3556,8 @@ class Renderer : public NodeVisitor  {
   std::vector<std::shared_ptr<json>> json_tmp_stack;
   std::stack<const json*> json_eval_stack;
   std::stack<const JsonNode*> not_found_stack;
+
+  bool break_rendering {false};
 
   bool truthy(const json* data) const {
     if (data->is_boolean()) {
@@ -3394,9 +3582,11 @@ class Renderer : public NodeVisitor  {
   }
 
   const std::shared_ptr<json> eval_expression_list(const ExpressionListNode& expression_list) {
-    for (auto& expression : expression_list.rpn_output) {
-      expression->accept(*this);
+    if (!expression_list.root) {
+      throw_renderer_error("empty expression", expression_list);
     }
+
+    expression_list.root->accept(*this);
 
     if (json_eval_stack.empty()) {
       throw_renderer_error("empty expression", expression_list);
@@ -3404,7 +3594,7 @@ class Renderer : public NodeVisitor  {
       throw_renderer_error("malformed expression", expression_list);
     }
 
-    auto result = json_eval_stack.top();
+    const auto result = json_eval_stack.top();
     json_eval_stack.pop();
 
     if (!result) {
@@ -3422,11 +3612,19 @@ class Renderer : public NodeVisitor  {
 
   void throw_renderer_error(const std::string &message, const AstNode& node) {
     SourceLocation loc = get_source_location(current_template->content, node.pos);
-    throw RenderError(message, loc);
+    INJA_THROW(RenderError(message, loc));
   }
 
-  template<size_t N, bool throw_not_found=true>
-  std::array<const json*, N> get_arguments(const AstNode& node) {
+  template<size_t N, size_t N_start = 0, bool throw_not_found=true>
+  std::array<const json*, N> get_arguments(const FunctionNode& node) {
+    if (node.arguments.size() < N_start + N) {
+      throw_renderer_error("function needs " + std::to_string(N_start + N) + " variables, but has only found " + std::to_string(node.arguments.size()), node);
+    }
+
+    for (size_t i = N_start; i < N_start + N; i += 1) {
+      node.arguments[i]->accept(*this);
+    }
+
     if (json_eval_stack.size() < N) {
       throw_renderer_error("function needs " + std::to_string(N) + " variables, but has only found " + std::to_string(json_eval_stack.size()), node);
     }
@@ -3437,7 +3635,7 @@ class Renderer : public NodeVisitor  {
       json_eval_stack.pop();
 
       if (!result[N - i - 1]) {
-        auto json_node = not_found_stack.top();
+        const auto json_node = not_found_stack.top();
         not_found_stack.pop();
 
         if (throw_not_found) {
@@ -3449,14 +3647,23 @@ class Renderer : public NodeVisitor  {
   }
 
   template<bool throw_not_found=true>
-  Arguments get_argument_vector(size_t N, const AstNode& node) {
+  Arguments get_argument_vector(const FunctionNode& node) {
+    const size_t N = node.arguments.size();
+    for (auto a: node.arguments) {
+      a->accept(*this);
+    }
+
+    if (json_eval_stack.size() < N) {
+      throw_renderer_error("function needs " + std::to_string(N) + " variables, but has only found " + std::to_string(json_eval_stack.size()), node);
+    }
+
     Arguments result {N};
     for (size_t i = 0; i < N; i += 1) {
       result[N - i - 1] = json_eval_stack.top();
       json_eval_stack.pop();
 
       if (!result[N - i - 1]) {
-        auto json_node = not_found_stack.top();
+        const auto json_node = not_found_stack.top();
         not_found_stack.pop();
 
         if (throw_not_found) {
@@ -3470,6 +3677,10 @@ class Renderer : public NodeVisitor  {
   void visit(const BlockNode& node) {
     for (auto& n : node.nodes) {
       n->accept(*this);
+
+      if (break_rendering) {
+        break;
+      }
     }
   }
 
@@ -3486,16 +3697,16 @@ class Renderer : public NodeVisitor  {
   void visit(const JsonNode& node) {
     if (json_additional_data.contains(node.ptr)) {
       json_eval_stack.push(&(json_additional_data[node.ptr]));
-    
+
     } else if (json_input->contains(node.ptr)) {
       json_eval_stack.push(&(*json_input)[node.ptr]);
-    
+
     } else {
       // Try to evaluate as a no-argument callback
-      auto function_data = function_storage.find_function(node.name, 0);
+      const auto function_data = function_storage.find_function(node.name, 0);
       if (function_data.operation == FunctionStorage::Operation::Callback) {
         Arguments empty_args {};
-        auto value = std::make_shared<json>(function_data.callback(empty_args));
+        const auto value = std::make_shared<json>(function_data.callback(empty_args));
         json_tmp_stack.push_back(value);
         json_eval_stack.push(value.get());
 
@@ -3511,67 +3722,65 @@ class Renderer : public NodeVisitor  {
 
     switch (node.operation) {
     case Op::Not: {
-      auto args = get_arguments<1>(node);
+      const auto args = get_arguments<1>(node);
       result_ptr = std::make_shared<json>(!truthy(args[0]));
       json_tmp_stack.push_back(result_ptr);
       json_eval_stack.push(result_ptr.get());
     } break;
     case Op::And: {
-      auto args = get_arguments<2>(node);
-      result_ptr = std::make_shared<json>(truthy(args[0]) && truthy(args[1]));
+      result_ptr = std::make_shared<json>(truthy(get_arguments<1, 0>(node)[0]) && truthy(get_arguments<1, 1>(node)[0]));
       json_tmp_stack.push_back(result_ptr);
       json_eval_stack.push(result_ptr.get());
     } break;
     case Op::Or: {
-      auto args = get_arguments<2>(node);
-      result_ptr = std::make_shared<json>(truthy(args[0]) || truthy(args[1]));
+      result_ptr = std::make_shared<json>(truthy(get_arguments<1, 0>(node)[0]) || truthy(get_arguments<1, 1>(node)[0]));
       json_tmp_stack.push_back(result_ptr);
       json_eval_stack.push(result_ptr.get());
     } break;
     case Op::In: {
-      auto args = get_arguments<2>(node);
+      const auto args = get_arguments<2>(node);
       result_ptr = std::make_shared<json>(std::find(args[1]->begin(), args[1]->end(), *args[0]) != args[1]->end());
       json_tmp_stack.push_back(result_ptr);
       json_eval_stack.push(result_ptr.get());
     } break;
     case Op::Equal: {
-      auto args = get_arguments<2>(node);
+      const auto args = get_arguments<2>(node);
       result_ptr = std::make_shared<json>(*args[0] == *args[1]);
       json_tmp_stack.push_back(result_ptr);
       json_eval_stack.push(result_ptr.get());
     } break;
     case Op::NotEqual: {
-      auto args = get_arguments<2>(node);
+      const auto args = get_arguments<2>(node);
       result_ptr = std::make_shared<json>(*args[0] != *args[1]);
       json_tmp_stack.push_back(result_ptr);
       json_eval_stack.push(result_ptr.get());
     } break;
     case Op::Greater: {
-      auto args = get_arguments<2>(node);
+      const auto args = get_arguments<2>(node);
       result_ptr = std::make_shared<json>(*args[0] > *args[1]);
       json_tmp_stack.push_back(result_ptr);
       json_eval_stack.push(result_ptr.get());
     } break;
     case Op::GreaterEqual: {
-      auto args = get_arguments<2>(node);
+      const auto args = get_arguments<2>(node);
       result_ptr = std::make_shared<json>(*args[0] >= *args[1]);
       json_tmp_stack.push_back(result_ptr);
       json_eval_stack.push(result_ptr.get());
     } break;
     case Op::Less: {
-      auto args = get_arguments<2>(node);
+      const auto args = get_arguments<2>(node);
       result_ptr = std::make_shared<json>(*args[0] < *args[1]);
       json_tmp_stack.push_back(result_ptr);
       json_eval_stack.push(result_ptr.get());
     } break;
     case Op::LessEqual: {
-      auto args = get_arguments<2>(node);
+      const auto args = get_arguments<2>(node);
       result_ptr = std::make_shared<json>(*args[0] <= *args[1]);
       json_tmp_stack.push_back(result_ptr);
       json_eval_stack.push(result_ptr.get());
     } break;
     case Op::Add: {
-      auto args = get_arguments<2>(node);
+      const auto args = get_arguments<2>(node);
       if (args[0]->is_string() && args[1]->is_string()) {
         result_ptr = std::make_shared<json>(args[0]->get_ref<const std::string&>() + args[1]->get_ref<const std::string&>());
         json_tmp_stack.push_back(result_ptr);
@@ -3585,7 +3794,7 @@ class Renderer : public NodeVisitor  {
       json_eval_stack.push(result_ptr.get());
     } break;
     case Op::Subtract: {
-      auto args = get_arguments<2>(node);
+      const auto args = get_arguments<2>(node);
       if (args[0]->is_number_integer() && args[1]->is_number_integer()) {
         result_ptr = std::make_shared<json>(args[0]->get<int>() - args[1]->get<int>());
         json_tmp_stack.push_back(result_ptr);
@@ -3596,7 +3805,7 @@ class Renderer : public NodeVisitor  {
       json_eval_stack.push(result_ptr.get());
     } break;
     case Op::Multiplication: {
-      auto args = get_arguments<2>(node);
+      const auto args = get_arguments<2>(node);
       if (args[0]->is_number_integer() && args[1]->is_number_integer()) {
         result_ptr = std::make_shared<json>(args[0]->get<int>() * args[1]->get<int>());
         json_tmp_stack.push_back(result_ptr);
@@ -3607,7 +3816,7 @@ class Renderer : public NodeVisitor  {
       json_eval_stack.push(result_ptr.get());
     } break;
     case Op::Division: {
-      auto args = get_arguments<2>(node);
+      const auto args = get_arguments<2>(node);
       if (args[1]->get<double>() == 0) {
         throw_renderer_error("division by zero", node);
       }
@@ -3616,9 +3825,9 @@ class Renderer : public NodeVisitor  {
       json_eval_stack.push(result_ptr.get());
     } break;
     case Op::Power: {
-      auto args = get_arguments<2>(node);
+      const auto args = get_arguments<2>(node);
       if (args[0]->is_number_integer() && args[1]->get<int>() >= 0) {
-        int result = std::pow(args[0]->get<int>(), args[1]->get<int>());
+        int result = static_cast<int>(std::pow(args[0]->get<int>(), args[1]->get<int>()));
         result_ptr = std::make_shared<json>(std::move(result));
         json_tmp_stack.push_back(result_ptr);
       } else {
@@ -3629,33 +3838,37 @@ class Renderer : public NodeVisitor  {
       json_eval_stack.push(result_ptr.get());
     } break;
     case Op::Modulo: {
-      auto args = get_arguments<2>(node);
+      const auto args = get_arguments<2>(node);
       result_ptr = std::make_shared<json>(args[0]->get<int>() % args[1]->get<int>());
       json_tmp_stack.push_back(result_ptr);
       json_eval_stack.push(result_ptr.get());
     } break;
     case Op::AtId: {
-      json_eval_stack.pop(); // Pop id nullptr
-      auto container = get_arguments<1, false>(node)[0];
+      const auto container = get_arguments<1, 0, false>(node)[0];
+      node.arguments[1]->accept(*this);
       if (not_found_stack.empty()) {
         throw_renderer_error("could not find element with given name", node);
       }
-      auto id_node = not_found_stack.top();
+      const auto id_node = not_found_stack.top();
       not_found_stack.pop();
+      json_eval_stack.pop();
       json_eval_stack.push(&container->at(id_node->name));
     } break;
     case Op::At: {
-      auto args = get_arguments<2>(node);
-      json_eval_stack.push(&args[0]->at(args[1]->get<int>()));
+      const auto args = get_arguments<2>(node);
+      if (args[0]->is_object()) {
+        json_eval_stack.push(&args[0]->at(args[1]->get<std::string>()));
+      } else {
+        json_eval_stack.push(&args[0]->at(args[1]->get<int>()));
+      }
     } break;
     case Op::Default: {
-      auto default_arg = get_arguments<1>(node)[0];
-      auto test_arg = get_arguments<1, false>(node)[0];
-      json_eval_stack.push(test_arg ? test_arg : default_arg);
+      const auto test_arg = get_arguments<1, 0, false>(node)[0];
+      json_eval_stack.push(test_arg ? test_arg : get_arguments<1, 1>(node)[0]);
     } break;
     case Op::DivisibleBy: {
-      auto args = get_arguments<2>(node);
-      int divisor = args[1]->get<int>();
+      const auto args = get_arguments<2>(node);
+      const int divisor = args[1]->get<int>();
       result_ptr = std::make_shared<json>((divisor != 0) && (args[0]->get<int>() % divisor == 0));
       json_tmp_stack.push_back(result_ptr);
       json_eval_stack.push(result_ptr.get());
@@ -3672,14 +3885,14 @@ class Renderer : public NodeVisitor  {
       json_eval_stack.push(result_ptr.get());
     } break;
     case Op::ExistsInObject: {
-      auto args = get_arguments<2>(node);
+      const auto args = get_arguments<2>(node);
       auto &&name = args[1]->get_ref<const std::string &>();
       result_ptr = std::make_shared<json>(args[0]->find(name) != args[0]->end());
       json_tmp_stack.push_back(result_ptr);
       json_eval_stack.push(result_ptr.get());
     } break;
     case Op::First: {
-      auto result = &get_arguments<1>(node)[0]->front();
+      const auto result = &get_arguments<1>(node)[0]->front();
       json_eval_stack.push(result);
     } break;
     case Op::Float: {
@@ -3693,11 +3906,11 @@ class Renderer : public NodeVisitor  {
       json_eval_stack.push(result_ptr.get());
     } break;
     case Op::Last: {
-      auto result = &get_arguments<1>(node)[0]->back();
+      const auto result = &get_arguments<1>(node)[0]->back();
       json_eval_stack.push(result);
     } break;
     case Op::Length: {
-      auto val = get_arguments<1>(node)[0];
+      const auto val = get_arguments<1>(node)[0];
       if (val->is_string()) {
         result_ptr = std::make_shared<json>(val->get_ref<const std::string &>().length());
       } else {
@@ -3714,13 +3927,13 @@ class Renderer : public NodeVisitor  {
       json_eval_stack.push(result_ptr.get());
     } break;
     case Op::Max: {
-      auto args = get_arguments<1>(node);
-      auto result = std::max_element(args[0]->begin(), args[0]->end());
+      const auto args = get_arguments<1>(node);
+      const auto result = std::max_element(args[0]->begin(), args[0]->end());
       json_eval_stack.push(&(*result));
     } break;
     case Op::Min: {
-      auto args = get_arguments<1>(node);
-      auto result = std::min_element(args[0]->begin(), args[0]->end());
+      const auto args = get_arguments<1>(node);
+      const auto result = std::min_element(args[0]->begin(), args[0]->end());
       json_eval_stack.push(&(*result));
     } break;
     case Op::Odd: {
@@ -3736,10 +3949,14 @@ class Renderer : public NodeVisitor  {
       json_eval_stack.push(result_ptr.get());
     } break;
     case Op::Round: {
-      auto args = get_arguments<2>(node);
-      int precision = args[1]->get<int>();
-      double result = std::round(args[0]->get<double>() * std::pow(10.0, precision)) / std::pow(10.0, precision);
-      result_ptr = std::make_shared<json>(std::move(result));
+      const auto args = get_arguments<2>(node);
+      const int precision = args[1]->get<int>();
+      const double result = std::round(args[0]->get<double>() * std::pow(10.0, precision)) / std::pow(10.0, precision);
+      if(0==precision){
+        result_ptr = std::make_shared<json>(int(result));
+      }else{
+        result_ptr = std::make_shared<json>(std::move(result));
+      }
       json_tmp_stack.push_back(result_ptr);
       json_eval_stack.push(result_ptr.get());
     } break;
@@ -3792,8 +4009,57 @@ class Renderer : public NodeVisitor  {
       json_eval_stack.push(result_ptr.get());
     } break;
     case Op::Callback: {
-      auto args = get_argument_vector(node.number_args, node);
+      auto args = get_argument_vector(node);
       result_ptr = std::make_shared<json>(node.callback(args));
+      json_tmp_stack.push_back(result_ptr);
+      json_eval_stack.push(result_ptr.get());
+    } break;
+    case Op::Super: {
+      const auto args = get_argument_vector(node);
+      const size_t old_level = current_level;
+      const size_t level_diff = (args.size() == 1) ? args[0]->get<int>() : 1;
+      const size_t level = current_level + level_diff;
+
+      if (block_statement_stack.empty()) {
+        throw_renderer_error("super() call is not within a block", node);
+      }
+
+      if (level < 1 || level > template_stack.size() - 1) {
+        throw_renderer_error("level of super() call does not match parent templates (between 1 and " + std::to_string(template_stack.size() - 1) + ")", node);
+      }
+
+      const auto current_block_statement = block_statement_stack.back();
+      const Template *new_template = template_stack.at(level);
+      const Template *old_template = current_template;
+      const auto block_it = new_template->block_storage.find(current_block_statement->name);
+      if (block_it != new_template->block_storage.end()) {
+        current_template = new_template;
+        current_level = level;
+        block_it->second->block.accept(*this);
+        current_level = old_level;
+        current_template = old_template;
+      } else {
+        throw_renderer_error("could not find block with name '" + current_block_statement->name + "'", node);
+      }
+      result_ptr = std::make_shared<json>(nullptr);
+      json_tmp_stack.push_back(result_ptr);
+      json_eval_stack.push(result_ptr.get());
+    } break;
+    case Op::Join: {
+      const auto args = get_arguments<2>(node);
+      const auto separator = args[1]->get<std::string>();
+      std::ostringstream os;
+      std::string sep;
+      for (const auto& value : *args[0]) {
+        os << sep;
+        if (value.is_string()) {
+          os << value.get<std::string>(); // otherwise the value is surrounded with ""
+        } else {
+          os << value;
+        }
+        sep = separator;
+      }
+      result_ptr = std::make_shared<json>(os.str());
       json_tmp_stack.push_back(result_ptr);
       json_eval_stack.push(result_ptr.get());
     } break;
@@ -3813,7 +4079,7 @@ class Renderer : public NodeVisitor  {
   void visit(const ForStatementNode&) { }
 
   void visit(const ForArrayStatementNode& node) {
-    auto result = eval_expression_list(node.condition);
+    const auto result = eval_expression_list(node.condition);
     if (!result->is_array()) {
       throw_renderer_error("object must be an array", node);
     }
@@ -3844,7 +4110,7 @@ class Renderer : public NodeVisitor  {
 
     json_additional_data[static_cast<std::string>(node.value)].clear();
     if (!(*current_loop_data)["parent"].empty()) {
-      auto tmp = (*current_loop_data)["parent"];
+      const auto tmp = (*current_loop_data)["parent"];
       *current_loop_data = std::move(tmp);
     } else {
       current_loop_data = &json_additional_data["loop"];
@@ -3852,7 +4118,7 @@ class Renderer : public NodeVisitor  {
   }
 
   void visit(const ForObjectStatementNode& node) {
-    auto result = eval_expression_list(node.condition);
+    const auto result = eval_expression_list(node.condition);
     if (!result->is_object()) {
       throw_renderer_error("object must be an object", node);
     }
@@ -3891,7 +4157,7 @@ class Renderer : public NodeVisitor  {
   }
 
   void visit(const IfStatementNode& node) {
-    auto result = eval_expression_list(node.condition);
+    const auto result = eval_expression_list(node.condition);
     if (truthy(result.get())) {
       node.true_statement.accept(*this);
     } else if (node.has_false_statement) {
@@ -3901,8 +4167,7 @@ class Renderer : public NodeVisitor  {
 
   void visit(const IncludeStatementNode& node) {
     auto sub_renderer = Renderer(config, template_storage, function_storage);
-    auto included_template_it = template_storage.find(node.file);
-
+    const auto included_template_it = template_storage.find(node.file);
     if (included_template_it != template_storage.end()) {
       sub_renderer.render_to(*output_stream, included_template_it->second, *json_input, &json_additional_data);
     } else if (config.throw_at_missing_includes) {
@@ -3910,8 +4175,36 @@ class Renderer : public NodeVisitor  {
     }
   }
 
+  void visit(const ExtendsStatementNode& node) {
+    const auto included_template_it = template_storage.find(node.file);
+    if (included_template_it != template_storage.end()) {
+      const Template *parent_template = &included_template_it->second;
+      render_to(*output_stream, *parent_template, *json_input, &json_additional_data);
+      break_rendering = true;
+    } else if (config.throw_at_missing_includes) {
+      throw_renderer_error("extends '" + node.file + "' not found", node);
+    }
+  }
+
+  void visit(const BlockStatementNode& node) {
+    const size_t old_level = current_level;
+    current_level = 0;
+    current_template = template_stack.front();
+    const auto block_it = current_template->block_storage.find(node.name);
+    if (block_it != current_template->block_storage.end()) {
+      block_statement_stack.emplace_back(&node);
+      block_it->second->block.accept(*this);
+      block_statement_stack.pop_back(); 
+    }
+    current_level = old_level;
+    current_template = template_stack.back();
+  }
+
   void visit(const SetStatementNode& node) {
-    json_additional_data[node.key] = *eval_expression_list(node.expression);
+    std::string ptr = node.key;
+    replace_substring(ptr, ".", "/");
+    ptr = "/" + ptr;
+    json_additional_data[json::json_pointer(ptr)] = *eval_expression_list(node.expression);
   }
 
 public:
@@ -3927,6 +4220,7 @@ public:
       current_loop_data = &json_additional_data["loop"];
     }
 
+    template_stack.emplace_back(current_template);
     current_template->root.accept(*this);
 
     json_tmp_stack.clear();
@@ -3945,8 +4239,6 @@ public:
 
 
 namespace inja {
-
-using json = nlohmann::json;
 
 /*!
  * \brief Class for changing the configuration.
@@ -3998,7 +4290,9 @@ public:
   /// Sets the opener and closer for template comments
   void set_comment(const std::string &open, const std::string &close) {
     lexer_config.comment_open = open;
+    lexer_config.comment_open_force_lstrip = open + "-";
     lexer_config.comment_close = close;
+    lexer_config.comment_close_force_rstrip = "-" + close;
     lexer_config.update_open_chars();
   }
 
@@ -4090,7 +4384,10 @@ public:
 
   json load_json(const std::string &filename) {
     std::ifstream file;
-    open_file_or_throw(input_path + filename, file);
+    file.open(input_path + filename);
+    if (file.fail()) {
+      INJA_THROW(FileError("failed accessing file at '" + input_path + filename + "'"));
+    }
     json j;
     file >> j;
     return j;
@@ -4130,6 +4427,13 @@ public:
    */
   void include_template(const std::string &name, const Template &tmpl) {
     template_storage[name] = tmpl;
+  }
+
+  /*!
+  @brief Sets a function that is called when an included file is not found
+  */
+  void set_include_callback(const std::function<Template(const std::string&, const std::string&)>& callback) {
+    parser_config.include_callback = callback;
   }
 };
 
