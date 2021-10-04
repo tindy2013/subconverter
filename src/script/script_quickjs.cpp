@@ -227,7 +227,7 @@ public:
     qjs_fetch_Headers headers;
     std::string cookies;
     std::string postdata;
-    qjs_fetch_Request(const std::string &url) : url(url) {}
+    explicit qjs_fetch_Request(const std::string &url) : url(url) {}
 };
 
 class qjs_fetch_Response
@@ -390,14 +390,12 @@ void script_runtime_init(qjs::Runtime &runtime)
     JS_SetModuleLoaderFunc(runtime.rt, nullptr, js_module_loader, nullptr);
 }
 
-int ShowMsgbox(std::string title, std::string content, uint16_t type = 0)
+int ShowMsgbox(const std::string &title, std::string content, uint16_t type = 0)
 {
 #ifdef _WIN32
     if(!type)
         type = MB_ICONINFORMATION;
-    title = utf8ToACP(title);
-    content = utf8ToACP(content);
-    return MessageBoxA(NULL, content.c_str(), title.c_str(), type);
+    return MessageBoxA(NULL, utf8ToACP(content).c_str(), utf8ToACP(title).c_str(), type);
 #else
     return -1;
 #endif // _WIN32

@@ -391,7 +391,8 @@ namespace md5 {
         message_length[0] = 0;
         message_length[1] = 0;
         stored_size = 0;
-        memset(&stored, 0, BLOCK_SIZE * 2);
+        memset(stored, 0, BLOCK_SIZE * 2);
+        memset(signature, 0, MD5_SIZE);
 
         finished = false;
     }

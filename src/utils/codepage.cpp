@@ -71,30 +71,3 @@ std::string utf8ToACP(const std::string &str_src)
     return str_src;
 #endif
 }
-
-#ifdef _WIN32
-// std::string to wstring
-void stringToWstring(std::wstring& szDst, const std::string &str)
-{
-    std::string temp = str;
-    int len = MultiByteToWideChar(CP_ACP, 0, (LPCSTR)temp.c_str(), -1, NULL,0);
-    wchar_t* wszUtf8 = new wchar_t[len + 1];
-    memset(wszUtf8, 0, len * 2 + 2);
-    MultiByteToWideChar(CP_ACP, 0, (LPCSTR)temp.c_str(), -1, (LPWSTR)wszUtf8, len);
-    szDst = wszUtf8;
-    //std::wstring r = wszUtf8;
-    delete[] wszUtf8;
-}
-
-std::string wstringToString(LPWSTR str)
-{
-    std::string result;
-    size_t srclen = wcslen(str);
-    size_t len = WideCharToMultiByte(CP_ACP, 0, str, srclen, 0, 0, 0, 0);
-    result.resize(len);
-    WideCharToMultiByte(CP_ACP, 0, str, srclen, result.data(), len, 0, 0);
-    return result;
-}
-#else
-/* Unimplemented: std::codecvt_utf8 */
-#endif // _WIN32

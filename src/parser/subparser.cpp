@@ -528,7 +528,7 @@ void explodeSSConf(std::string content, std::vector<Proxy> &nodes)
 void explodeSSR(std::string ssr, Proxy &node)
 {
     std::string strobfs;
-    std::string remarks, group, server, port, method, password, protocol, protoparam, obfs, obfsparam, remarks_base64;
+    std::string remarks, group, server, port, method, password, protocol, protoparam, obfs, obfsparam;
     ssr = replaceAllDistinct(ssr.substr(6), "\r", "");
     ssr = urlSafeBase64Decode(ssr);
     if(strFind(ssr, "/?"))
@@ -537,7 +537,6 @@ void explodeSSR(std::string ssr, Proxy &node)
         ssr = ssr.substr(0, ssr.find("/?"));
         group = urlSafeBase64Decode(getUrlArg(strobfs, "group"));
         remarks = urlSafeBase64Decode(getUrlArg(strobfs, "remarks"));
-        remarks_base64 = urlSafeBase64Reverse(getUrlArg(strobfs, "remarks"));
         obfsparam = regReplace(urlSafeBase64Decode(getUrlArg(strobfs, "obfsparam")), "\\s", "");
         protoparam = regReplace(urlSafeBase64Decode(getUrlArg(strobfs, "protoparam")), "\\s", "");
     }
@@ -551,10 +550,7 @@ void explodeSSR(std::string ssr, Proxy &node)
     if(group.empty())
         group = SSR_DEFAULT_GROUP;
     if(remarks.empty())
-    {
         remarks = server + ":" + port;
-        remarks_base64 = base64Encode(remarks);
-    }
 
     if(find(ss_ciphers.begin(), ss_ciphers.end(), method) != ss_ciphers.end() && (obfs.empty() || obfs == "plain") && (protocol.empty() || protocol == "origin"))
     {
@@ -570,7 +566,7 @@ void explodeSSRConf(std::string content, std::vector<Proxy> &nodes)
 {
     Proxy node;
     Document json;
-    std::string remarks, remarks_base64, group, server, port, method, password, protocol, protoparam, obfs, obfsparam, plugin, pluginopts;
+    std::string remarks, group, server, port, method, password, protocol, protoparam, obfs, obfsparam, plugin, pluginopts;
     int index = nodes.size();
 
     json.Parse(content.data());
@@ -615,7 +611,6 @@ void explodeSSRConf(std::string content, std::vector<Proxy> &nodes)
         if(remarks.empty())
             remarks = server + ":" + port;
 
-        remarks_base64 = GetMember(json["configs"][i], "remarks_base64"); // electron-ssr does not contain this field
         password = GetMember(json["configs"][i], "password");
         method = GetMember(json["configs"][i], "method");
 
@@ -624,7 +619,7 @@ void explodeSSRConf(std::string content, std::vector<Proxy> &nodes)
         obfs = GetMember(json["configs"][i], "obfs");
         obfsparam = GetMember(json["configs"][i], "obfsparam");
 
-        ssrConstruct(node, group, remarks, remarks_base64, server, port, protocol, method, obfs, password, obfsparam, protoparam);
+        ssrConstruct(node, group, remarks, server, port, protocol, method, obfs, password, obfsparam, protoparam);
         node.Id = index;
         nodes.emplace_back(std::move(node));
         node = Proxy();

@@ -37,7 +37,7 @@ struct script_info
 
 int timeout_checker(JSRuntime *rt, void *opaque)
 {
-    script_info info = *((script_info*)opaque);
+    script_info info = *static_cast<script_info*>(opaque);
     if(info.timeout != 0 && time(NULL) >= info.begin_time + info.timeout) /// timeout reached
     {
         writeLog(0, "Script '" + info.name + "' has exceeded timeout " + std::to_string(info.timeout) + ", terminate now.", LOG_LEVEL_WARNING);
