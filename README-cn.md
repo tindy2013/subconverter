@@ -1367,7 +1367,7 @@ http://127.0.0.1:25500/render?path=xxx&额外的调试或控制参数
 
 > 启动程序后，在本地生成对应的配置文件文本
 
-在程序目录内的 [generate.ini](https://github.com/tindy2013/subconverter/blob/master/base/generate.ini) 中设定文件块([xxx])，生成的文件名(path=xxx)以及其所需要包含的参数，例如：
+在程序目录内的 [generate.ini](https://github.com/tindy2013/subconverter/blob/master/base/generate.ini) 中设定文件块(`[xxx]`)，生成的文件名(path=xxx)以及其所需要包含的参数，例如：
 
 ```ini
 [test]
