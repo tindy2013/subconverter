@@ -1,4 +1,4 @@
-FROM alpine:3.13
+FROM alpine:3.13 AS builder
 LABEL maintainer "tindy.it@gmail.com"
 ARG THREADS="4"
 ARG SHA=""
@@ -37,14 +37,18 @@ RUN apk add --no-cache --virtual .build-tools git g++ build-base linux-headers c
     cd subconverter && \
     [ -n "$SHA" ] && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h;\
     cmake -DCMAKE_BUILD_TYPE=Release . && \
-    make -j $THREADS && \
-    mv subconverter /usr/bin && \
-    mv base ../ && \
-    cd .. && \
-    rm -rf subconverter quickjspp libcron toml11 /usr/lib/lib*.a /usr/include/* /usr/local/include/lib*.a /usr/local/include/* && \
-    apk add --no-cache --virtual subconverter-deps pcre2 libcurl yaml-cpp libevent && \
-    apk del .build-tools .build-deps
+    make -j $THREADS
+
+FROM alpine:3.13
+LABEL maintainer "tindy.it@gmail.com"
+
+RUN apk add --no-cache --virtual subconverter-deps pcre2 libcurl yaml-cpp libevent
+
+COPY --from=builder /subconverter/subconverter /usr/bin/
+COPY --from=builder /subconverter/base /base/
 
 # set entry
 WORKDIR /base
 CMD subconverter
+
+EXPOSE 25500/tcp
