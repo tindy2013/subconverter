@@ -1,7 +1,8 @@
-#include <string>
-#include <sstream>
-#include <vector>
 #include <algorithm>
+#include <numeric>
+#include <sstream>
+#include <string>
+#include <vector>
 #include <stdlib.h>
 #include <time.h>
 
@@ -393,4 +394,13 @@ int to_int(const std::string &str, int def_value)
         return retval;
     */
     return std::atoi(str.data());
+}
+
+std::string join(const string_array &arr, const std::string &delimiter)
+{
+    if(arr.size() == 0)
+        return "";
+    if(arr.size() == 1)
+        return arr[0];
+    return std::accumulate(arr.begin() + 1, arr.end(), arr[0], [&](const std::string &a, const std::string &b) {return a + delimiter + b; });
 }

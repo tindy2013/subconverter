@@ -758,10 +758,7 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
                 args.emplace_back("-G");
                 args.emplace_back(std::move(protoparam));
             }
-            proxy += std::accumulate(std::next(args.begin()), args.end(), args[0], [](std::string a, std::string b)
-            {
-                return std::move(a) + "\", args=\"" + std::move(b);
-            });
+            proxy += join(args, "\", args=\"");
             proxy += "\", local-port=" + std::to_string(local_port);
             if(isIPv4(hostname) || isIPv6(hostname))
                 proxy += ", addresses=" + hostname;
@@ -843,10 +840,7 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
             [[fallthrough]];
         case ProxyGroupType::SSID:
             proxy = x.TypeStr() + ",default=" + x.Proxies[0] + ",";
-            proxy += std::accumulate(x.Proxies.begin() + 2, x.Proxies.end(), x.Proxies[1], [](std::string a, std::string b)
-            {
-                return std::move(a) + "," + std::move(b);
-            });
+            proxy += join(x.Proxies.begin() + 1, x.Proxies.end(), ",");
             ini.Set("{NONAME}", x.Name + " = " + proxy); //insert order
             continue;
         default:
@@ -873,10 +867,7 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
         }
 
         proxy = x.TypeStr() + ",";
-        proxy += std::accumulate(std::next(filtered_nodelist.cbegin()), filtered_nodelist.cend(), filtered_nodelist[0], [](std::string a, std::string b)
-        {
-            return std::move(a) + "," + std::move(b);
-        });
+        proxy += join(filtered_nodelist, ",");
         if(x.Type == ProxyGroupType::URLTest || x.Type == ProxyGroupType::Fallback)
         {
             proxy += ",url=" + x.Url + ",interval=" + std::to_string(x.Interval);
@@ -1068,10 +1059,7 @@ std::string proxyToQuan(std::vector<Proxy> &nodes, const std::string &base_conf,
         std::string allLinks;
         ini.GetAll("SERVER", "{NONAME}", allnodes);
         if(allnodes.size())
-            allLinks = std::accumulate(std::next(allnodes.begin()), allnodes.end(), allnodes[0], [](std::string a, std::string b)
-            {
-                return std::move(a) + "\n" + std::move(b);
-            });
+            allLinks = join(allnodes, "\n");
         return base64Encode(allLinks);
     }
     return ini.ToString();
@@ -1267,10 +1255,7 @@ void proxyToQuan(std::vector<Proxy> &nodes, INIReader &ini, std::vector<ruleset_
         if(filtered_nodelist.size() < 2) // force groups with 1 node to be static
             type = "static";
 
-        proxies = std::accumulate(std::next(filtered_nodelist.begin()), filtered_nodelist.end(), filtered_nodelist[0], [](std::string a, std::string b)
-        {
-            return std::move(a) + "\n" + std::move(b);
-        });
+        proxies = join(filtered_nodelist, "\n");
 
         singlegroup = x.Name + " : " + type;
         if(type == "static")
@@ -1308,10 +1293,7 @@ std::string proxyToQuanX(std::vector<Proxy> &nodes, const std::string &base_conf
         std::string allLinks;
         ini.GetAll("server_local", "{NONAME}", allnodes);
         if(allnodes.size())
-            allLinks = std::accumulate(std::next(allnodes.begin()), allnodes.end(), allnodes[0], [](std::string a, std::string b)
-            {
-                return std::move(a) + "\n" + std::move(b);
-            });
+            allLinks = join(allnodes, "\n");
         return allLinks;
     }
     return ini.ToString();
@@ -1514,10 +1496,7 @@ void proxyToQuanX(std::vector<Proxy> &nodes, INIReader &ini, std::vector<ruleset
             }
         }
 
-        proxies = std::accumulate(std::next(filtered_nodelist.begin()), filtered_nodelist.end(), filtered_nodelist[0], [](std::string a, std::string b)
-        {
-            return std::move(a) + ", " + std::move(b);
-        });
+        proxies = join(filtered_nodelist, ", ");
 
         singlegroup = type + "=" + x.Name + ", " + proxies;
         ini.Set("{NONAME}", singlegroup);
@@ -1829,10 +1808,7 @@ void proxyToMellow(std::vector<Proxy> &nodes, INIReader &ini, std::vector<rulese
             proxy += y + ":";
         proxy = proxy.substr(0, proxy.size() - 1);
         */
-        proxy += std::accumulate(std::next(filtered_nodelist.begin()), filtered_nodelist.end(), filtered_nodelist[0], [](std::string a, std::string b)
-        {
-            return std::move(a) + ":" + std::move(b);
-        });
+        proxy += join(filtered_nodelist, ":");
         proxy += ", latency, interval=300, timeout=6"; //use hard-coded values for now
 
         ini.Set("{NONAME}", proxy); //insert order
@@ -1977,10 +1953,7 @@ std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf,
             if(x.Proxies.size() < 2)
                 continue;
             proxy = x.TypeStr() + ",default=" + x.Proxies[0] + ",";
-            proxy += std::accumulate(x.Proxies.begin() + 2, x.Proxies.end(), vArray[1], [](std::string a, std::string b)
-            {
-                return std::move(a) + "," + std::move(b);
-            });
+            proxy += join(x.Proxies.begin() + 1, x.Proxies.end(), ",");
             ini.Set("{NONAME}", x.Name + " = " + proxy); //insert order
             continue;
         default:
@@ -1998,10 +1971,7 @@ std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf,
         for(std::string &y : filtered_nodelist)
             proxy += "," + y;
         */
-        proxy += std::accumulate(std::next(filtered_nodelist.cbegin()), filtered_nodelist.cend(), filtered_nodelist[0], [](std::string a, std::string b)
-        {
-            return std::move(a) + "," + std::move(b);
-        });
+        proxy += join(filtered_nodelist, ",");
         if(x.Type == ProxyGroupType::URLTest || x.Type == ProxyGroupType::Fallback)
             proxy += ",url=" + x.Url + ",interval=" + std::to_string(x.Interval);
 

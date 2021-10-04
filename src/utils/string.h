@@ -1,6 +1,7 @@
 #ifndef STRING_H_INCLUDED
 #define STRING_H_INCLUDED
 
+#include <numeric>
 #include <string>
 #include <sstream>
 #include <vector>
@@ -12,6 +13,18 @@ using string_map = std::map<std::string, std::string>;
 using string_pair_array = std::vector<std::pair<std::string, std::string>>;
 
 std::vector<std::string> split(const std::string &s, const std::string &seperator);
+std::string join(const string_array &arr, const std::string &delimiter);
+
+template <typename InputIt>
+std::string join(InputIt first, InputIt last, const std::string &delimiter)
+{
+    if(first == last)
+        return "";
+    if(std::next(first) == last)
+        return *first;
+    return std::accumulate(std::next(first), last, *first, [&](const std::string &a, const std::string &b) {return a + delimiter + b; });
+}
+
 std::string getUrlArg(const std::string &url, const std::string &request);
 std::string replaceAllDistinct(std::string str, const std::string &old_value, const std::string &new_value);
 std::string trimOf(const std::string& str, char target, bool before = true, bool after = true);

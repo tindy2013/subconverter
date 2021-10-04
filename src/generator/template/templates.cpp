@@ -42,7 +42,8 @@ int render_template(const std::string &content, const template_args &vars, std::
     std::string absolute_scope;
     try
     {
-        absolute_scope = std::filesystem::canonical(include_scope).string();
+        if(!include_scope.empty())
+            absolute_scope = std::filesystem::canonical(include_scope).string();
     }
     catch(std::exception &e)
     {
@@ -193,7 +194,7 @@ int render_template(const std::string &content, const template_args &vars, std::
         {
             throw inja::FileError(e.what());
         }
-        if(!include_scope.empty() && !startsWith(absolute_path, absolute_scope))
+        if(!absolute_scope.empty() && !startsWith(absolute_path, absolute_scope))
             throw inja::FileError("access denied when trying to include '" + template_name + "': out of scope");
         return env.parse(fileGet(template_name, true));
     });

@@ -216,7 +216,7 @@ update_ruleset_on_request = false
 import = "snippets/rulesets.toml"
 
 [template]
-template_path = "templates"
+template_path = ""
 
 [[template.globals]]
 key = "clash.http_port"

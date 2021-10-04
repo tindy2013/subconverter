@@ -924,15 +924,6 @@ void find_if_exist(const toml::value &v, const toml::key &k, T& target, U&&... a
     if constexpr (sizeof...(args) > 0) find_if_exist(v, std::forward<U>(args)...);
 }
 
-std::string join(const string_array &arr, const std::string &delimiter = "|")
-{
-    if(arr.size() == 0)
-        return "";
-    if(arr.size() == 1)
-        return arr[0];
-    return std::accumulate(arr.begin() + 1, arr.end(), arr[0], [&](const std::string &a, const std::string &b) { return a + delimiter + b; });
-}
-
 void operate_toml_kv_table(const std::vector<toml::table> &arr, const toml::key &key_name, const toml::key &value_name, std::function<void (const toml::value&, const toml::value&)> binary_op)
 {
     for(const toml::table &table : arr)
@@ -948,8 +939,8 @@ void readTOMLConf(toml::value &root)
     string_array default_url, insert_url;
 
     find_if_exist(section_common, "default_url", default_url, "insert_url", insert_url);
-    gDefaultUrls = join(default_url);
-    gInsertUrls = join(insert_url);
+    gDefaultUrls = join(default_url, "|");
+    gInsertUrls = join(insert_url, "|");
 
     bool filter = false;
     find_if_exist(section_common,

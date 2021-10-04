@@ -99,7 +99,7 @@ proxy_groups:
   - {import: snippets/groups.txt}
 
 template:
-  template_path: "templates"
+  template_path: ""
   globals:
   - {key: clash.http_port, value: 7890}
   - {key: clash.socks_port, value: 7891}
