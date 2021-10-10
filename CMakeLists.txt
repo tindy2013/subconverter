@@ -44,6 +44,7 @@ ADD_EXECUTABLE(subconverter
     src/handler/multithread.cpp
     src/handler/upload.cpp
     src/handler/webget.cpp
+    src/handler/settings.cpp
     src/main.cpp
     src/parser/infoparser.cpp
     src/parser/subparser.cpp
