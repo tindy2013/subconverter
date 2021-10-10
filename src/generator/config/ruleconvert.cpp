@@ -1,12 +1,11 @@
 #include <string>
 
+#include "../../handler/settings.h"
 #include "../../utils/logger.h"
 #include "../../utils/network.h"
 #include "../../utils/regexp.h"
 #include "../../utils/string.h"
 #include "subexport.h"
-
-extern size_t gMaxAllowedRules;
 
 /// rule type lists
 #define basic_types "DOMAIN", "DOMAIN-SUFFIX", "DOMAIN-KEYWORD", "IP-CIDR", "SRC-IP-CIDR", "GEOIP", "MATCH", "FINAL"
@@ -95,7 +94,7 @@ std::string convertRuleset(const std::string &content, int type)
 }
 
 
-void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset_content_array, bool overwrite_original_rules, bool new_field_name)
+void rulesetToClash(YAML::Node &base_rule, std::vector<RulesetContent> &ruleset_content_array, bool overwrite_original_rules, bool new_field_name)
 {
     string_array allRules;
     std::string rule_group, retrieved_rules, strLine;
@@ -107,9 +106,9 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset
     if(!overwrite_original_rules && base_rule[field_name].IsDefined())
         Rules = base_rule[field_name];
 
-    for(ruleset_content &x : ruleset_content_array)
+    for(RulesetContent &x : ruleset_content_array)
     {
-        if(gMaxAllowedRules && total_rules > gMaxAllowedRules)
+        if(global.maxAllowedRules && total_rules > global.maxAllowedRules)
             break;
         rule_group = x.rule_group;
         retrieved_rules = x.rule_content.get();
@@ -138,7 +137,7 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset
         std::string::size_type lineSize;
         while(getline(strStrm, strLine, delimiter))
         {
-            if(gMaxAllowedRules && total_rules > gMaxAllowedRules)
+            if(global.maxAllowedRules && total_rules > global.maxAllowedRules)
                 break;
             strLine = trimWhitespace(strLine, true, true); //remove whitespaces
             lineSize = strLine.size();
@@ -167,7 +166,7 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset
     base_rule[field_name] = Rules;
 }
 
-std::string rulesetToClashStr(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset_content_array, bool overwrite_original_rules, bool new_field_name)
+std::string rulesetToClashStr(YAML::Node &base_rule, std::vector<RulesetContent> &ruleset_content_array, bool overwrite_original_rules, bool new_field_name)
 {
     std::string rule_group, retrieved_rules, strLine;
     std::stringstream strStrm;
@@ -182,9 +181,9 @@ std::string rulesetToClashStr(YAML::Node &base_rule, std::vector<ruleset_content
     }
     base_rule.remove(field_name);
 
-    for(ruleset_content &x : ruleset_content_array)
+    for(RulesetContent &x : ruleset_content_array)
     {
-        if(gMaxAllowedRules && total_rules > gMaxAllowedRules)
+        if(global.maxAllowedRules && total_rules > global.maxAllowedRules)
             break;
         rule_group = x.rule_group;
         retrieved_rules = x.rule_content.get();
@@ -213,7 +212,7 @@ std::string rulesetToClashStr(YAML::Node &base_rule, std::vector<ruleset_content
         std::string::size_type lineSize;
         while(getline(strStrm, strLine, delimiter))
         {
-            if(gMaxAllowedRules && total_rules > gMaxAllowedRules)
+            if(global.maxAllowedRules && total_rules > global.maxAllowedRules)
                 break;
             strLine = trimWhitespace(strLine, true, true); //remove whitespaces
             lineSize = strLine.size();
@@ -236,7 +235,7 @@ std::string rulesetToClashStr(YAML::Node &base_rule, std::vector<ruleset_content
     return output_content;
 }
 
-void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_content_array, int surge_ver, bool overwrite_original_rules, std::string remote_path_prefix)
+void rulesetToSurge(INIReader &base_rule, std::vector<RulesetContent> &ruleset_content_array, int surge_ver, bool overwrite_original_rules, std::string remote_path_prefix)
 {
     string_array allRules;
     std::string rule_group, rule_path, rule_path_typed, retrieved_rules, strLine;
@@ -274,9 +273,9 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
 
     const std::string rule_match_regex = "^(.*?,.*?)(,.*)(,.*)$";
 
-    for(ruleset_content &x : ruleset_content_array)
+    for(RulesetContent &x : ruleset_content_array)
     {
-        if(gMaxAllowedRules && total_rules > gMaxAllowedRules)
+        if(global.maxAllowedRules && total_rules > global.maxAllowedRules)
             break;
         rule_group = x.rule_group;
         rule_path = x.rule_path;
@@ -387,7 +386,7 @@ void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_
             std::string::size_type lineSize;
             while(getline(strStrm, strLine, delimiter))
             {
-                if(gMaxAllowedRules && total_rules > gMaxAllowedRules)
+                if(global.maxAllowedRules && total_rules > global.maxAllowedRules)
                     break;
                 strLine = trimWhitespace(strLine, true, true);
                 lineSize = strLine.size();

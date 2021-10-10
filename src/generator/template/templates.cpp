@@ -5,15 +5,14 @@
 #include <inja.hpp>
 #include <nlohmann/json.hpp>
 
-#include "../../utils/yamlcpp_extra.h"
-#include "../../utils/urlencode.h"
-#include "../../utils/regexp.h"
 #include "../../handler/interfaces.h"
+#include "../../handler/settings.h"
 #include "../../utils/logger.h"
 #include "../../utils/network.h"
+#include "../../utils/regexp.h"
+#include "../../utils/urlencode.h"
+#include "../../utils/yamlcpp_extra.h"
 #include "templates.h"
-
-extern std::string gManagedConfigPrefix;
 
 namespace inja
 {
@@ -139,7 +138,7 @@ int render_template(const std::string &content, const template_args &vars, std::
     });
     env.add_callback("getLink", 1, [](inja::Arguments &args)
     {
-        return gManagedConfigPrefix + args.at(0)->get<std::string>();
+        return global.managedConfigPrefix + args.at(0)->get<std::string>();
     });
     env.add_callback("startsWith", 2, [](inja::Arguments &args)
     {
@@ -265,7 +264,7 @@ std::string findFileName(const std::string &path)
     return path.substr(pos + 1, pos2 - pos - 1);
 }
 
-int renderClashScript(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset_content_array, std::string remote_path_prefix, bool script, bool overwrite_original_rules, bool clash_classical_ruleset)
+int renderClashScript(YAML::Node &base_rule, std::vector<RulesetContent> &ruleset_content_array, std::string remote_path_prefix, bool script, bool overwrite_original_rules, bool clash_classical_ruleset)
 {
     nlohmann::json data;
     std::string match_group, geoips, retrieved_rules;
@@ -281,7 +280,7 @@ int renderClashScript(YAML::Node &base_rule, std::vector<ruleset_content> &rules
     if(!overwrite_original_rules && base_rule["rules"].IsDefined())
         rules = safe_as<string_array>(base_rule["rules"]);
 
-    for(ruleset_content &x : ruleset_content_array)
+    for(RulesetContent &x : ruleset_content_array)
     {
         rule_group = x.rule_group;
         rule_path = x.rule_path;

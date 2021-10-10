@@ -5,10 +5,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "../handler/settings.h"
 #include "logger.h"
-
-extern bool gPrintDbgInfo;
-int gLogLevel = LOG_LEVEL_INFO;
 
 std::string getTime(int type)
 {
@@ -38,7 +36,7 @@ std::string getTime(int type)
 
 void writeLog(int type, const std::string &content, int level)
 {
-    if(level > gLogLevel)
+    if(level > global.logLevel)
         return;
     const char *levels[] = {"[FATL]", "[ERRO]", "[WARN]", "[INFO]", "[DEBG]", "[VERB]"};
     std::cerr<<getTime(2)<<" ["<<getpid()<<" "<<std::this_thread::get_id()<<"]"<<levels[level % 6];

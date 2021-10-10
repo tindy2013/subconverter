@@ -7,6 +7,7 @@
 
 #include <curl/curl.h>
 
+#include "../handler/settings.h"
 #include "../utils/base64/base64.h"
 #include "../utils/defer.h"
 #include "../utils/file_extra.h"
@@ -20,9 +21,6 @@
 #define _stat stat
 #endif // _stat
 #endif // _WIN32
-
-extern bool gPrintDbgInfo, gServeCacheOnFetchFail;
-extern int gLogLevel;
 
 /*
 using guarded_mutex = std::lock_guard<std::mutex>;
@@ -150,7 +148,7 @@ static int size_checker(void *clientp, curl_off_t dltotal, curl_off_t dlnow, cur
 static inline void curl_set_common_options(CURL *curl_handle, const char *url, curl_progress_data *data)
 {
     curl_easy_setopt(curl_handle, CURLOPT_URL, url);
-    curl_easy_setopt(curl_handle, CURLOPT_VERBOSE, gLogLevel == LOG_LEVEL_VERBOSE ? 1L : 0L);
+    curl_easy_setopt(curl_handle, CURLOPT_VERBOSE, global.logLevel == LOG_LEVEL_VERBOSE ? 1L : 0L);
     curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 0L);
     curl_easy_setopt(curl_handle, CURLOPT_NOSIGNAL, 1L);
     curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1L);
@@ -355,7 +353,7 @@ std::string webGet(const std::string &url, const std::string &proxy, unsigned in
             writeLog(0, "CACHE NOT EXIST: '" + url + "', creating new cache.");
         //content = curlGet(url, proxy, response_headers, return_code); // try to fetch data
         curlGet(argument, fetch_res);
-        if(return_code == CURLE_OK) // success, save new cache
+        if(return_code == 200) // success, save new cache
         {
             //guarded_mutex guard(cache_rw_lock);
             cache_rw_lock.writeLock();
@@ -366,7 +364,7 @@ std::string webGet(const std::string &url, const std::string &proxy, unsigned in
         }
         else
         {
-            if(fileExist(path) && gServeCacheOnFetchFail) // failed, check if cache exist
+            if(fileExist(path) && global.serveCacheOnFetchFail) // failed, check if cache exist
             {
                 writeLog(0, "Fetch failed. Serving cached content."); // cache exist, serving cache
                 //guarded_mutex guard(cache_rw_lock);

@@ -3,6 +3,7 @@
 #include <iostream>
 #include <algorithm>
 
+#include "../../handler/settings.h"
 #include "../../handler/webget.h"
 #include "../../parser/config/proxy.h"
 #include "../../parser/infoparser.h"
@@ -17,10 +18,7 @@
 #include "nodemanip.h"
 #include "subexport.h"
 
-std::string override_conf_port;
-bool ss_libev, ssr_libev;
-extern int gCacheSubscription;
-extern bool gScriptCleanContext;
+extern Settings global;
 
 int explodeConf(const std::string &filepath, std::vector<Proxy> &nodes)
 {
@@ -39,7 +37,7 @@ int addNodes(std::string link, std::vector<Proxy> &allNodes, int groupID, parse_
     string_array &include_remarks = *parse_set.include_remarks;
     RegexMatchConfigs &stream_rules = *parse_set.stream_rules;
     RegexMatchConfigs &time_rules = *parse_set.time_rules;
-    string_icase_map &request_headers = *parse_set.request_header;
+    string_icase_map *request_headers = parse_set.request_header;
     bool &authorized = parse_set.authorized;
 
     ConfType linkType = ConfType::Unknow;
@@ -88,7 +86,7 @@ int addNodes(std::string link, std::vector<Proxy> &allNodes, int groupID, parse_
                 }
             }
         }
-    }, gScriptCleanContext);
+    }, global.scriptCleanContext);
             /*
             duk_context *ctx = duktape_init();
             defer(duk_destroy_heap(ctx);)
@@ -142,7 +140,7 @@ int addNodes(std::string link, std::vector<Proxy> &allNodes, int groupID, parse_
         writeLog(LOG_TYPE_INFO, "Downloading subscription data...");
         if(startsWith(link, "surge:///install-config")) //surge config link
             link = urlDecode(getUrlArg(link, "url"));
-        strSub = webGet(link, proxy, gCacheSubscription, &extra_headers, &request_headers);
+        strSub = webGet(link, proxy, global.cacheSubscription, &extra_headers, request_headers);
         /*
         if(strSub.size() == 0)
         {

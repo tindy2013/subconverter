@@ -9,13 +9,11 @@
 
 #include "../handler/multithread.h"
 #include "../handler/webget.h"
+#include "../handler/settings.h"
 #include "../parser/config/proxy.h"
 #include "../utils/map_extra.h"
 #include "../utils/system.h"
 #include "script_quickjs.h"
-
-extern int gCacheConfig;
-extern std::string gProxyConfig;
 
 std::string parseProxy(const std::string &source);
 
@@ -381,7 +379,7 @@ static qjs_fetch_Response qjs_fetch(qjs_fetch_Request request)
 
 std::string getGeoIP(const std::string &address, const std::string &proxy)
 {
-    return fetchFile("https://api.ip.sb/geoip/" + address, parseProxy(proxy), gCacheConfig);
+    return fetchFile("https://api.ip.sb/geoip/" + address, parseProxy(proxy), global.cacheConfig);
 }
 
 void script_runtime_init(qjs::Runtime &runtime)

@@ -50,22 +50,22 @@ struct extra_settings
     }
 };
 
-void rulesetToClash(YAML::Node &base_rule, std::vector<ruleset_content> &ruleset_content_array, bool overwrite_original_rules, bool new_field_name);
-void rulesetToSurge(INIReader &base_rule, std::vector<ruleset_content> &ruleset_content_array, int surge_ver, bool overwrite_original_rules, std::string remote_path_prefix);
+void rulesetToClash(YAML::Node &base_rule, std::vector<RulesetContent> &ruleset_content_array, bool overwrite_original_rules, bool new_field_name);
+void rulesetToSurge(INIReader &base_rule, std::vector<RulesetContent> &ruleset_content_array, int surge_ver, bool overwrite_original_rules, std::string remote_path_prefix);
 void preprocessNodes(std::vector<Proxy> &nodes, extra_settings &ext);
 
-std::string proxyToClash(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, bool clashR, extra_settings &ext);
+std::string proxyToClash(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, bool clashR, extra_settings &ext);
 void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGroupConfigs &extra_proxy_group, bool clashR, extra_settings &ext);
-std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, int surge_ver, extra_settings &ext);
-std::string proxyToMellow(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext);
-void proxyToMellow(std::vector<Proxy> &nodes, INIReader &ini, std::vector<ruleset_content> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext);
-std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext);
+std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, int surge_ver, extra_settings &ext);
+std::string proxyToMellow(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext);
+void proxyToMellow(std::vector<Proxy> &nodes, INIReader &ini, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext);
+std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext);
 std::string proxyToSSSub(std::string base_conf, std::vector<Proxy> &nodes, extra_settings &ext);
 std::string proxyToSingle(std::vector<Proxy> &nodes, int types, extra_settings &ext);
-std::string proxyToQuanX(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext);
-void proxyToQuanX(std::vector<Proxy> &nodes, INIReader &ini, std::vector<ruleset_content> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext);
-std::string proxyToQuan(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext);
-void proxyToQuan(std::vector<Proxy> &nodes, INIReader &ini, std::vector<ruleset_content> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext);
+std::string proxyToQuanX(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext);
+void proxyToQuanX(std::vector<Proxy> &nodes, INIReader &ini, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext);
+std::string proxyToQuan(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext);
+void proxyToQuan(std::vector<Proxy> &nodes, INIReader &ini, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext);
 std::string proxyToSSD(std::vector<Proxy> &nodes, std::string &group, std::string &userinfo, extra_settings &ext);
 
 #endif // SUBEXPORT_H_INCLUDED

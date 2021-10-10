@@ -5,28 +5,14 @@
 #include "../config/crontask.h"
 #include "../handler/interfaces.h"
 #include "../handler/multithread.h"
+#include "../handler/settings.h"
 #include "../server/webserver.h"
 #include "../utils/logger.h"
 #include "../utils/rapidjson_extra.h"
 #include "../utils/system.h"
 #include "script_quickjs.h"
 
-extern bool gEnableCron;
-extern CronTaskConfigs gCronTasks;
-extern std::string gProxyConfig, gAccessToken;
-extern int gCacheConfig;
-
 libcron::Cron cron;
-
-static std::string parseProxy(const std::string &source)
-{
-    std::string proxy = source;
-    if(source == "SYSTEM")
-        proxy = getSystemProxy();
-    else if(source == "NONE")
-        proxy = "";
-    return proxy;
-}
 
 struct script_info
 {
@@ -49,7 +35,7 @@ int timeout_checker(JSRuntime *rt, void *opaque)
 void refresh_schedule()
 {
     cron.clear_schedules();
-    for(const CronTaskConfig &x : gCronTasks)
+    for(const CronTaskConfig &x : global.cronTasks)
     {
         cron.add_schedule(x.Name, x.CronExp, [=](auto &)
         {
@@ -60,8 +46,8 @@ void refresh_schedule()
                 script_runtime_init(runtime);
                 script_context_init(context);
                 defer(script_cleanup(context);)
-                std::string proxy = parseProxy(gProxyConfig);
-                std::string script = fetchFile(x.Path, proxy, gCacheConfig);
+                std::string proxy = parseProxy(global.proxyConfig);
+                std::string script = fetchFile(x.Path, proxy, global.cacheConfig);
                 if(script.empty())
                 {
                     writeLog(0, "Script '" + x.Name + "' run failed: file is empty or not exist!", LOG_LEVEL_WARNING);
@@ -92,7 +78,7 @@ std::string list_cron_schedule(RESPONSE_CALLBACK_ARGS)
     rapidjson::StringBuffer sb;
     rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
     writer.StartObject();
-    if(token != gAccessToken)
+    if(token != global.accessToken)
     {
         response.status_code = 403;
         writer.Key("code");
@@ -106,7 +92,7 @@ std::string list_cron_schedule(RESPONSE_CALLBACK_ARGS)
     writer.Int(200);
     writer.Key("tasks");
     writer.StartArray();
-    for(const CronTaskConfig &x : gCronTasks)
+    for(const CronTaskConfig &x : global.cronTasks)
     {
         writer.StartObject();
         writer.Key("name");

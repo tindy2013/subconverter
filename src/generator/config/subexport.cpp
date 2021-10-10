@@ -11,6 +11,7 @@
 #include "../../config/regmatch.h"
 #include "../../generator/config/subexport.h"
 #include "../../generator/template/templates.h"
+#include "../../handler/settings.h"
 #include "../../parser/config/proxy.h"
 #include "../../script/script_quickjs.h"
 #include "../../utils/bitwise.h"
@@ -26,7 +27,6 @@
 #include "nodemanip.h"
 #include "ruleconvert.h"
 
-extern bool gAPIMode, gSurgeResolveHostname, gScriptCleanContext;
 extern string_array ss_ciphers, ssr_ciphers;
 
 const string_array clashr_protocols = {"origin", "auth_sha1_v4", "auth_aes128_md5", "auth_aes128_sha1", "auth_chain_a", "auth_chain_b"};
@@ -89,7 +89,7 @@ void nodeRename(Proxy &node, const RegexMatchConfigs &rename_array, extra_settin
                 {
                     script_print_stack(ctx);
                 }
-            }, gScriptCleanContext);
+            }, global.scriptCleanContext);
             continue;
         }
         if(applyMatcher(x.Match, real_rule, node) && real_rule.size())
@@ -142,7 +142,7 @@ std::string addEmoji(const Proxy &node, const RegexMatchConfigs &emoji_array, ex
                 {
                     script_print_stack(ctx);
                 }
-            }, gScriptCleanContext);
+            }, global.scriptCleanContext);
             if(!result.empty())
                 return result;
             continue;
@@ -175,28 +175,6 @@ void processRemark(std::string &oldremark, std::string &newremark, string_array 
     oldremark = newremark;
 }
 
-void parseGroupTimes(const std::string &src, int *interval, int *tolerance, int *timeout)
-{
-    std::vector<int*> ptrs;
-    ptrs.push_back(interval);
-    ptrs.push_back(timeout);
-    ptrs.push_back(tolerance);
-    string_size bpos = 0, epos = src.find(",");
-    for(int *x : ptrs)
-    {
-        if(x != NULL)
-            *x = to_int(src.substr(bpos, epos - bpos), 0);
-        if(epos != src.npos)
-        {
-            bpos = epos + 1;
-            epos = src.find(",", bpos);
-        }
-        else
-            return;
-    }
-    return;
-}
-
 void groupGenerate(const std::string &rule, std::vector<Proxy> &nodelist, string_array &filtered_nodelist, bool add_direct, extra_settings &ext)
 {
     std::string real_rule;
@@ -219,7 +197,7 @@ void groupGenerate(const std::string &rule, std::vector<Proxy> &nodelist, string
             {
                 script_print_stack(ctx);
             }
-        }, gScriptCleanContext);
+        }, global.scriptCleanContext);
     }
     else
     {
@@ -273,7 +251,7 @@ void preprocessNodes(std::vector<Proxy> &nodes, extra_settings &ext)
                 {
                     script_print_stack(ctx);
                 }
-            }, gScriptCleanContext);
+            }, global.scriptCleanContext);
         }
         if(failed) std::stable_sort(nodes.begin(), nodes.end(), [](const Proxy &a, const Proxy &b)
         {
@@ -592,7 +570,7 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
         yamlnode["Proxy Group"] = original_groups;
 }
 
-std::string proxyToClash(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, bool clashR, extra_settings &ext)
+std::string proxyToClash(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, bool clashR, extra_settings &ext)
 {
     YAML::Node yamlnode;
 
@@ -640,7 +618,7 @@ std::string proxyToClash(std::vector<Proxy> &nodes, const std::string &base_conf
     return output_content;
 }
 
-std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, int surge_ver, extra_settings &ext)
+std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, int surge_ver, extra_settings &ext)
 {
     INIReader ini;
     std::string proxy;
@@ -762,7 +740,7 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
             proxy += "\", local-port=" + std::to_string(local_port);
             if(isIPv4(hostname) || isIPv6(hostname))
                 proxy += ", addresses=" + hostname;
-            else if(gSurgeResolveHostname)
+            else if(global.surgeResolveHostname)
                 proxy += ", addresses=" + hostnameToIPAddr(hostname);
             local_port++;
             break;
@@ -1041,7 +1019,7 @@ std::string proxyToSSSub(std::string base_conf, std::vector<Proxy> &nodes, extra
     return output_content;
 }
 
-std::string proxyToQuan(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext)
+std::string proxyToQuan(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext)
 {
     INIReader ini;
     ini.store_any_line = true;
@@ -1065,7 +1043,7 @@ std::string proxyToQuan(std::vector<Proxy> &nodes, const std::string &base_conf,
     return ini.ToString();
 }
 
-void proxyToQuan(std::vector<Proxy> &nodes, INIReader &ini, std::vector<ruleset_content> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext)
+void proxyToQuan(std::vector<Proxy> &nodes, INIReader &ini, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext)
 {
     std::string type, proxyStr;
     tribool scv;
@@ -1268,7 +1246,7 @@ void proxyToQuan(std::vector<Proxy> &nodes, INIReader &ini, std::vector<ruleset_
         rulesetToSurge(ini, ruleset_content_array, -2, ext.overwrite_original_rules, std::string());
 }
 
-std::string proxyToQuanX(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext)
+std::string proxyToQuanX(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext)
 {
     INIReader ini;
     ini.store_any_line = true;
@@ -1299,7 +1277,7 @@ std::string proxyToQuanX(std::vector<Proxy> &nodes, const std::string &base_conf
     return ini.ToString();
 }
 
-void proxyToQuanX(std::vector<Proxy> &nodes, INIReader &ini, std::vector<ruleset_content> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext)
+void proxyToQuanX(std::vector<Proxy> &nodes, INIReader &ini, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext)
 {
     std::string type;
     std::string remark, hostname, port, method;
@@ -1661,7 +1639,7 @@ std::string proxyToSSD(std::vector<Proxy> &nodes, std::string &group, std::strin
     return "ssd://" + base64Encode(sb.GetString());
 }
 
-std::string proxyToMellow(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext)
+std::string proxyToMellow(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext)
 {
     INIReader ini;
     ini.store_any_line = true;
@@ -1676,7 +1654,7 @@ std::string proxyToMellow(std::vector<Proxy> &nodes, const std::string &base_con
     return ini.ToString();
 }
 
-void proxyToMellow(std::vector<Proxy> &nodes, INIReader &ini, std::vector<ruleset_content> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext)
+void proxyToMellow(std::vector<Proxy> &nodes, INIReader &ini, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext)
 {
     std::string proxy;
     std::string type, remark, hostname, port, username, password, method;
@@ -1818,7 +1796,7 @@ void proxyToMellow(std::vector<Proxy> &nodes, INIReader &ini, std::vector<rulese
         rulesetToSurge(ini, ruleset_content_array, 0, ext.overwrite_original_rules, std::string());
 }
 
-std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<ruleset_content> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext)
+std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext)
 {
     rapidjson::Document json;
     INIReader ini;
