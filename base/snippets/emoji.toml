@@ -107,6 +107,9 @@ match = "(KR|Korea|KOR|首尔|韩|韓)"
 emoji = "🇰🇷"
 
 [[emoji]]
+match = "(KZ|哈萨克斯坦)"
+emoji = "🇰🇿"
+[[emoji]]
 match = "(MO|Macao|澳门|CTM)"
 emoji = "🇲🇴"
 
@@ -129,6 +132,10 @@ emoji = "🇳🇿"
 [[emoji]]
 match = "(PH|Philippines|菲律宾)"
 emoji = "🇵🇭"
+
+[[emoji]]
+match = "(PK|巴基斯坦)"
+emoji = "🇵🇰"
 
 [[emoji]]
 match = "(RO|罗马尼亚)"
