@@ -212,10 +212,6 @@ match = "(拉脱维亚|Latvia)"
 emoji = "🇱🇻"
 
 [[emoji]]
-match = "(Macao|澳门|CTM)"
-emoji = "🇲🇴"
-
-[[emoji]]
 match = "(Moldova|摩尔多瓦)"
 emoji = "🇲🇩"
 
@@ -321,7 +317,7 @@ emoji = "🇹🇷"
 
 [[emoji]]
 match = "(?i:TW|Taiwan|新北|彰化|CHT|台湾|[^-]台|HINET)"
-emoji = "🇹🇼"
+emoji = "🇨🇳"
 
 [[emoji]]
 match = "(?i:US|America|United.*?States|美国|[^-]美|波特兰|达拉斯|俄勒冈|凤凰城|费利蒙|硅谷|拉斯维加斯|洛杉矶|圣何塞|圣克拉拉|西雅图|芝加哥)"
