@@ -723,7 +723,7 @@ void explodeHTTPSub(std::string link, Proxy &node)
 
 void explodeTrojan(std::string trojan, Proxy &node)
 {
-    std::string server, port, psk, addition, group, remark, host;
+    std::string server, port, psk, addition, group, remark, host, path, network;
     tribool tfo, scv;
     trojan.erase(0, 9);
     string_size pos = trojan.rfind("#");
@@ -748,8 +748,19 @@ void explodeTrojan(std::string trojan, Proxy &node)
     host = getUrlArg(addition, "peer");
     tfo = getUrlArg(addition, "tfo");
     scv = getUrlArg(addition, "allowInsecure");
+    
     group = urlDecode(getUrlArg(addition, "group"));
-
+    if (getUrlArg(addition, "ws") == "1")
+    {
+        path = getUrlArg(addition, "wspath");
+        network = "ws";
+    }
+    else
+    {
+        path = "";
+        network = "";
+    }
+    
     if(remark.empty())
         remark = server + ":" + port;
     if(host.empty() && !isIPv4(server) && !isIPv6(server))
@@ -757,7 +768,7 @@ void explodeTrojan(std::string trojan, Proxy &node)
     if(group.empty())
         group = TROJAN_DEFAULT_GROUP;
 
-    trojanConstruct(node, group, remark, server, port, psk, "", host, "", true, tribool(), tfo, scv);
+    trojanConstruct(node, group, remark, server, port, psk, network, host, path, true, tribool(), tfo, scv);
 }
 
 void explodeQuan(const std::string &quan, Proxy &node)
@@ -1108,6 +1119,11 @@ void explodeClash(Node yamlnode, std::vector<Proxy> &nodes)
             {
                 net = "grpc";
                 singleproxy["grpc-opts"]["grpc-service-name"] >>= path;
+            }
+            else if (safe_as<std::string>(singleproxy["network"]) == "ws")
+            {
+                net = "ws";
+                singleproxy["ws-opts"]["path"] >>= path;
             }
             else
             {
