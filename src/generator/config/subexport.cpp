@@ -1397,7 +1397,7 @@ void proxyToQuanX(std::vector<Proxy> &nodes, INIReader &ini, std::vector<Ruleset
             proxyStr += ", fast-open=" + tfo.get_str();
         if(!udp.is_undef())
             proxyStr += ", udp-relay=" + udp.get_str();
-        if(!scv.is_undef() && (x.Type == ProxyType::HTTP || x.Type == ProxyType::Trojan))
+        if(tlssecure && !scv.is_undef() && (x.Type == ProxyType::HTTP || x.Type == ProxyType::Trojan))
             proxyStr += ", tls-verification=" + scv.reverse().get_str();
         proxyStr += ", tag=" + remark;
 
