@@ -1298,25 +1298,3 @@ int loadExternalConfig(std::string &path, ExternalConfig &ext)
 
     return 0;
 }
-
-void parseGroupTimes(const std::string &src, int *interval, int *tolerance, int *timeout)
-{
-    std::vector<int*> ptrs;
-    ptrs.push_back(interval);
-    ptrs.push_back(timeout);
-    ptrs.push_back(tolerance);
-    string_size bpos = 0, epos = src.find(",");
-    for(int *x : ptrs)
-    {
-        if(x != NULL)
-            *x = to_int(src.substr(bpos, epos - bpos), 0);
-        if(epos != src.npos)
-        {
-            bpos = epos + 1;
-            epos = src.find(",", bpos);
-        }
-        else
-            return;
-    }
-    return;
-}

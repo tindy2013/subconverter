@@ -93,8 +93,6 @@ public:
 
 RWLock cache_rw_lock;
 
-long gMaxAllowedDownloadSize = 1048576L;
-
 //std::string user_agent_str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36";
 static std::string user_agent_str = "subconverter/" VERSION " cURL/" LIBCURL_VERSION;
 
@@ -190,7 +188,7 @@ static int curlGet(const FetchArgument &argument, FetchResult &result)
             curl_easy_setopt(curl_handle, CURLOPT_PROXY, argument.proxy.data());
     }
     curl_progress_data limit;
-    limit.size_limit = gMaxAllowedDownloadSize;
+    limit.size_limit = global.maxAllowedDownloadSize;
     curl_set_common_options(curl_handle, new_url.data(), &limit);
     list = curl_slist_append(list, "Content-Type: application/json;charset='utf-8'");
     if(argument.request_headers)

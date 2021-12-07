@@ -28,8 +28,8 @@ struct Settings
     bool printDbgInfo = false, CFWChildProcess = false, appendUserinfo = true, asyncFetchRuleset = false, surgeResolveHostname = true;
     std::string accessToken, basePath = "base";
     std::string custom_group;
-    int logLevel;
-    long maxAllowedDownloadSize;
+    int logLevel = 0;
+    long maxAllowedDownloadSize = 1048576L;
     string_map aliases;
 
     //global variables for template
@@ -97,6 +97,25 @@ extern Settings global;
 
 int importItems(string_array &target, bool scope_limit = true);
 int loadExternalConfig(std::string &path, ExternalConfig &ext);
-void parseGroupTimes(const std::string &src, int *interval, int *tolerance, int *timeout);
+
+template <class... Args>
+void parseGroupTimes(const std::string &src, Args... args)
+{
+    std::array<int*, sizeof...(args)> ptrs {args...};
+    string_size bpos = 0, epos = src.find(",");
+    for(int *x : ptrs)
+    {
+        if(x != nullptr)
+            *x = to_int(src.substr(bpos, epos - bpos), 0);
+        if(epos != src.npos)
+        {
+            bpos = epos + 1;
+            epos = src.find(",", bpos);
+        }
+        else
+            return;
+    }
+    return;
+}
 
 #endif // SETTINGS_H_INCLUDED

@@ -6,7 +6,7 @@ apk add mbedtls-dev mbedtls-static zlib-dev rapidjson-dev libevent-dev libevent-
 
 git clone https://github.com/curl/curl --depth=1
 cd curl
-cmake -DCMAKE_USE_MBEDTLS=ON -DHTTP_ONLY=ON -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_USE_LIBSSH2=OFF -DBUILD_CURL_EXE=OFF . > /dev/null
+cmake -DCURL_USE_MBEDTLS=ON -DHTTP_ONLY=ON -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_USE_LIBSSH2=OFF -DBUILD_CURL_EXE=OFF . > /dev/null
 make install -j2 > /dev/null
 cd ..
 
