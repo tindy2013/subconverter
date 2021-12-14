@@ -20,6 +20,8 @@
 
 extern Settings global;
 
+bool applyMatcher(const std::string &rule, std::string &real_rule, const Proxy &node);
+
 int explodeConf(const std::string &filepath, std::vector<Proxy> &nodes)
 {
     return explodeConfContent(fileGet(filepath), nodes);
@@ -372,103 +374,144 @@ void filterNodes(std::vector<Proxy> &nodes, string_array &exclude_remarks, strin
     writeLog(LOG_TYPE_INFO, "Filter done.");
 }
 
-bool matchRange(const std::string &range, int target)
+void nodeRename(Proxy &node, const RegexMatchConfigs &rename_array, extra_settings &ext)
 {
-    string_array vArray = split(range, ",");
-    bool match = false;
-    std::string range_begin_str, range_end_str;
-    int range_begin, range_end;
-    static const std::string reg_num = "-?\\d+", reg_range = "(\\d+)-(\\d+)", reg_not = "\\!-?(\\d+)", reg_not_range = "\\!(\\d+)-(\\d+)", reg_less = "(\\d+)-", reg_more = "(\\d+)\\+";
-    for(std::string &x : vArray)
+    std::string &remark = node.Remark, original_remark = node.Remark, returned_remark, real_rule;
+
+    for(const RegexMatchConfig &x : rename_array)
     {
-        if(regMatch(x, reg_num))
+        if(!x.Script.empty())
         {
-            if(to_int(x, INT_MAX) == target)
-                match = true;
+            script_safe_runner(ext.js_runtime, ext.js_context, [&](qjs::Context &ctx)
+            {
+                std::string script = x.Script;
+                if(startsWith(script, "path:"))
+                    script = fileGet(script.substr(5), true);
+                try
+                {
+                    ctx.eval(script);
+                    auto rename = (std::function<std::string(const Proxy&)>) ctx.eval("rename");
+                    returned_remark = rename(node);
+                    if(!returned_remark.empty())
+                        remark = returned_remark;
+                }
+                catch (qjs::exception)
+                {
+                    script_print_stack(ctx);
+                }
+            }, global.scriptCleanContext);
+            continue;
         }
-        else if(regMatch(x, reg_range))
-        {
-            /*
-            range_begin = to_int(regReplace(x, reg_range, "$1"), INT_MAX);
-            range_end = to_int(regReplace(x, reg_range, "$2"), INT_MIN);
-            */
-            regGetMatch(x, reg_range, 3, 0, &range_begin_str, &range_end_str);
-            range_begin = to_int(range_begin_str, INT_MAX);
-            range_end = to_int(range_end_str, INT_MIN);
-            if(target >= range_begin && target <= range_end)
-                match = true;
-        }
-        else if(regMatch(x, reg_not))
-        {
-            if(to_int(regReplace(x, reg_not, "$1"), INT_MAX) == target)
-                match = false;
-        }
-        else if(regMatch(x, reg_not_range))
-        {
-            /*
-            range_begin = to_int(regReplace(x, reg_range, "$1"), INT_MAX);
-            range_end = to_int(regReplace(x, reg_range, "$2"), INT_MIN);
-            */
-            regGetMatch(x, reg_range, 3, 0, &range_begin_str, &range_end_str);
-            range_begin = to_int(range_begin_str, INT_MAX);
-            range_end = to_int(range_end_str, INT_MIN);
-            if(target >= range_begin && target <= range_end)
-                match = false;
-        }
-        else if(regMatch(x, reg_less))
-        {
-            if(to_int(regReplace(x, reg_less, "$1"), INT_MAX) >= target)
-                match = true;
-        }
-        else if(regMatch(x, reg_more))
-        {
-            if(to_int(regReplace(x, reg_more, "$1"), INT_MIN) <= target)
-                match = true;
-        }
+        if(applyMatcher(x.Match, real_rule, node) && real_rule.size())
+            remark = regReplace(remark, real_rule, x.Replace);
     }
-    return match;
+    if(remark.empty())
+        remark = original_remark;
+    return;
 }
 
-bool applyMatcher(const std::string &rule, std::string &real_rule, const Proxy &node)
+std::string removeEmoji(const std::string &orig_remark)
 {
-    std::string target, ret_real_rule;
-    static const std::string groupid_regex = R"(^!!(?:GROUPID|INSERT)=([\d\-+!,]+)(?:!!(.*))?$)", group_regex = R"(^!!(?:GROUP)=(.+?)(?:!!(.*))?$)";
-    static const std::string type_regex = R"(^!!(?:TYPE)=(.+?)(?:!!(.*))?$)", port_regex = R"(^!!(?:PORT)=(.+?)(?:!!(.*))?$)", server_regex = R"(^!!(?:SERVER)=(.+?)(?:!!(.*))?$)";
-    static const string_array types = {"", "SS", "SSR", "VMESS", "TROJAN", "SNELL", "HTTP", "HTTPS", "SOCKS5"};
-    if(startsWith(rule, "!!GROUP="))
+    char emoji_id[2] = {(char)-16, (char)-97};
+    std::string remark = orig_remark;
+    while(true)
     {
-        regGetMatch(rule, group_regex, 3, 0, &target, &ret_real_rule);
-        real_rule = ret_real_rule;
-        return regFind(node.Group, target);
+        if(remark[0] == emoji_id[0] && remark[1] == emoji_id[1])
+            remark.erase(0, 4);
+        else
+            break;
     }
-    else if(startsWith(rule, "!!GROUPID=") || startsWith(rule, "!!INSERT="))
+    if(remark.empty())
+        return orig_remark;
+    return remark;
+}
+
+std::string addEmoji(const Proxy &node, const RegexMatchConfigs &emoji_array, extra_settings &ext)
+{
+    std::string real_rule, ret;
+
+    for(const RegexMatchConfig &x : emoji_array)
     {
-        int dir = startsWith(rule, "!!INSERT=") ? -1 : 1;
-        regGetMatch(rule, groupid_regex, 3, 0, &target, &ret_real_rule);
-        real_rule = ret_real_rule;
-        return matchRange(target, dir * node.GroupId);
+        if(!x.Script.empty())
+        {
+            std::string result;
+            script_safe_runner(ext.js_runtime, ext.js_context, [&](qjs::Context &ctx)
+            {
+                std::string script = x.Script;
+                if(startsWith(script, "path:"))
+                    script = fileGet(script.substr(5), true);
+                try
+                {
+                    ctx.eval(script);
+                    auto getEmoji = (std::function<std::string(const Proxy&)>) ctx.eval("getEmoji");
+                    ret = getEmoji(node);
+                    if(!ret.empty())
+                        result = ret + " " + node.Remark;
+                }
+                catch (qjs::exception)
+                {
+                    script_print_stack(ctx);
+                }
+            }, global.scriptCleanContext);
+            if(!result.empty())
+                return result;
+            continue;
+        }
+        if(x.Replace.empty())
+            continue;
+        if(applyMatcher(x.Match, real_rule, node) && real_rule.size() && regFind(node.Remark, real_rule))
+            return x.Replace + " " + node.Remark;
     }
-    else if(startsWith(rule, "!!TYPE="))
+    return node.Remark;
+}
+
+void preprocessNodes(std::vector<Proxy> &nodes, extra_settings &ext)
+{
+    std::for_each(nodes.begin(), nodes.end(), [&ext](Proxy &x)
     {
-        regGetMatch(rule, type_regex, 3, 0, &target, &ret_real_rule);
-        real_rule = ret_real_rule;
-        if(node.Type == ProxyType::Unknow)
-            return false;
-        return regMatch(types[node.Type], target);
-    }
-    else if(startsWith(rule, "!!PORT="))
+        if(ext.remove_emoji)
+            x.Remark = trim(removeEmoji(x.Remark));
+
+        nodeRename(x, ext.rename_array, ext);
+
+        if(ext.add_emoji)
+            x.Remark = addEmoji(x, ext.emoji_array, ext);
+    });
+
+    if(ext.sort_flag)
     {
-        regGetMatch(rule, port_regex, 3, 0, &target, &ret_real_rule);
-        real_rule = ret_real_rule;
-        return matchRange(target, node.Port);
+        bool failed = true;
+        if(ext.sort_script.size())
+        {
+            std::string script = ext.sort_script;
+            if(startsWith(script, "path:"))
+                script = fileGet(script.substr(5), false);
+            script_safe_runner(ext.js_runtime, ext.js_context, [&](qjs::Context &ctx)
+            {
+                try
+                {
+                    ctx.eval(script);
+                    auto compare = (std::function<int(const Proxy&, const Proxy&)>) ctx.eval("compare");
+                    auto comparer = [&](const Proxy &a, const Proxy &b)
+                    {
+                        if(a.Type == ProxyType::Unknow)
+                            return 1;
+                        if(b.Type == ProxyType::Unknow)
+                            return 0;
+                        return compare(a, b);
+                    };
+                    std::stable_sort(nodes.begin(), nodes.end(), comparer);
+                    failed = false;
+                }
+                catch(qjs::exception)
+                {
+                    script_print_stack(ctx);
+                }
+            }, global.scriptCleanContext);
+        }
+        if(failed) std::stable_sort(nodes.begin(), nodes.end(), [](const Proxy &a, const Proxy &b)
+        {
+            return a.Remark < b.Remark;
+        });
     }
-    else if(startsWith(rule, "!!SERVER="))
-    {
-        regGetMatch(rule, server_regex, 3, 0, &target, &ret_real_rule);
-        real_rule = ret_real_rule;
-        return regFind(node.Hostname, target);
-    }
-    else
-        real_rule = rule;
-    return true;
 }

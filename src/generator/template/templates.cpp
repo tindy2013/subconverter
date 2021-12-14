@@ -7,6 +7,7 @@
 
 #include "../../handler/interfaces.h"
 #include "../../handler/settings.h"
+#include "../../handler/webget.h"
 #include "../../utils/logger.h"
 #include "../../utils/network.h"
 #include "../../utils/regexp.h"
@@ -35,6 +36,46 @@ static inline void parse_json_pointer(nlohmann::json &json, const std::string &p
         //ignore broken pointer
     }
 }
+
+/*
+std::string parseHostname(inja::Arguments &args)
+{
+    std::string data = args.at(0)->get<std::string>(), hostname;
+    const std::string matcher = R"(^(?i:hostname\s*?=\s*?)(.*?)\s$)";
+    string_array urls = split(data, ",");
+    if(!urls.size())
+        return std::string();
+
+    std::string input_content, output_content, proxy = parseProxy(global.proxyConfig);
+    for(std::string &x : urls)
+    {
+        input_content = webGet(x, proxy, global.cacheConfig);
+        regGetMatch(input_content, matcher, 2, 0, &hostname);
+        if(hostname.size())
+        {
+            output_content += hostname + ",";
+            hostname.clear();
+        }
+    }
+    string_array vArray = split(output_content, ",");
+    std::set<std::string> hostnames;
+    for(std::string &x : vArray)
+        hostnames.emplace(trim(x));
+    output_content = std::accumulate(hostnames.begin(), hostnames.end(), std::string(), [](std::string a, std::string b)
+    {
+        return std::move(a) + "," + std::move(b);
+    });
+    return output_content;
+}*/
+
+#ifndef NO_WEBGET
+std::string template_webGet(inja::Arguments &args)
+{
+    std::string data = args.at(0)->get<std::string>(), proxy = parseProxy(global.proxyConfig);
+    writeLog(0, "Template called fetch with url '" + data + "'.", LOG_LEVEL_INFO);
+    return webGet(data, proxy, global.cacheConfig);
+}
+#endif // NO_WEBGET
 
 int render_template(const std::string &content, const template_args &vars, std::string &output, const std::string &include_scope)
 {
@@ -179,8 +220,10 @@ int render_template(const std::string &content, const template_args &vars, std::
     {
         return std::to_string(args.at(0)->get<int>());
     });
+#ifdef NO_WEBGET
     env.add_callback("fetch", 1, template_webGet);
-    env.add_callback("parseHostname", 1, parseHostname);
+#endif // NO_WEBGET
+    //env.add_callback("parseHostname", 1, parseHostname);
 
     env.set_include_callback([&](const std::string &name, const std::string &template_name)
     {

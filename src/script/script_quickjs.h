@@ -1,10 +1,12 @@
 #ifndef SCRIPT_QUICKJS_H_INCLUDED
 #define SCRIPT_QUICKJS_H_INCLUDED
 
-#include <quickjspp.hpp>
-
 #include "../parser/config/proxy.h"
 #include "../utils/defer.h"
+
+#ifndef NO_JS_RUNTIME
+
+#include <quickjspp.hpp>
 
 void script_runtime_init(qjs::Runtime &runtime);
 int script_context_init(qjs::Context &context);
@@ -206,5 +208,10 @@ void script_safe_runner(qjs::Runtime *runtime, qjs::Context *context, Fn runnabl
     if(internal_runtime && internal_context)
         runnable(*internal_context);
 }
+
+#else
+template <typename... Args>
+void script_safe_runner(Args... args) { }
+#endif // NO_JS_RUNTIME
 
 #endif // SCRIPT_QUICKJS_H_INCLUDED

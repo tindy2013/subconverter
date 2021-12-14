@@ -1307,49 +1307,13 @@ std::string getRewriteRemote(RESPONSE_CALLBACK_ARGS)
     return output_content;
 }
 
-std::string parseHostname(inja::Arguments &args)
-{
-    std::string data = args.at(0)->get<std::string>(), hostname;
-    const std::string matcher = R"(^(?i:hostname\s*?=\s*?)(.*?)\s$)";
-    string_array urls = split(data, ",");
-    if(!urls.size())
-        return std::string();
-
-    std::string input_content, output_content, proxy = parseProxy(global.proxyConfig);
-    for(std::string &x : urls)
-    {
-        input_content = webGet(x, proxy, global.cacheConfig);
-        regGetMatch(input_content, matcher, 2, 0, &hostname);
-        if(hostname.size())
-        {
-            output_content += hostname + ",";
-            hostname.clear();
-        }
-    }
-    string_array vArray = split(output_content, ",");
-    std::set<std::string> hostnames;
-    for(std::string &x : vArray)
-        hostnames.emplace(trim(x));
-    output_content = std::accumulate(hostnames.begin(), hostnames.end(), std::string(), [](std::string a, std::string b)
-    {
-        return std::move(a) + "," + std::move(b);
-    });
-    return output_content;
-}
-
-std::string template_webGet(inja::Arguments &args)
-{
-    std::string data = args.at(0)->get<std::string>(), proxy = parseProxy(global.proxyConfig);
-    writeLog(0, "Template called fetch with url '" + data + "'.", LOG_LEVEL_INFO);
-    return webGet(data, proxy, global.cacheConfig);
-}
-
+/*
 std::string jinja2_webGet(const std::string &url)
 {
     std::string proxy = parseProxy(global.proxyConfig);
     writeLog(0, "Template called fetch with url '" + url + "'.", LOG_LEVEL_INFO);
     return webGet(url, proxy, global.cacheConfig);
-}
+}*/
 
 inline std::string intToStream(unsigned long long stream)
 {

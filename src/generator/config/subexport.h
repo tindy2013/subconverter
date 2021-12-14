@@ -3,7 +3,9 @@
 
 #include <string>
 
+#ifndef NO_JS_RUNTIME
 #include <quickjspp.hpp>
+#endif // NO_JS_RUNTIME
 
 #include "../../config/proxygroup.h"
 #include "../../config/regmatch.h"
@@ -38,21 +40,24 @@ struct extra_settings
     std::string sort_script = "";
     std::string clash_proxies_style = "flow";
 
-    qjs::Runtime *js_runtime = nullptr;
-    qjs::Context *js_context = nullptr;
     extra_settings() {};
     extra_settings(const extra_settings&) = delete;
     extra_settings(extra_settings&&) = delete;
+
+#ifndef NO_JS_RUNTIME
+    qjs::Runtime *js_runtime = nullptr;
+    qjs::Context *js_context = nullptr;
+
     ~extra_settings()
     {
         delete js_context;
         delete js_runtime;
     }
+#endif // NO_JS_RUNTIME
 };
 
 void rulesetToClash(YAML::Node &base_rule, std::vector<RulesetContent> &ruleset_content_array, bool overwrite_original_rules, bool new_field_name);
 void rulesetToSurge(INIReader &base_rule, std::vector<RulesetContent> &ruleset_content_array, int surge_ver, bool overwrite_original_rules, std::string remote_path_prefix);
-void preprocessNodes(std::vector<Proxy> &nodes, extra_settings &ext);
 
 std::string proxyToClash(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, bool clashR, extra_settings &ext);
 void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGroupConfigs &extra_proxy_group, bool clashR, extra_settings &ext);
