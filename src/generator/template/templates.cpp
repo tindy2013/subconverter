@@ -220,7 +220,7 @@ int render_template(const std::string &content, const template_args &vars, std::
     {
         return std::to_string(args.at(0)->get<int>());
     });
-#ifdef NO_WEBGET
+#ifndef NO_WEBGET
     env.add_callback("fetch", 1, template_webGet);
 #endif // NO_WEBGET
     //env.add_callback("parseHostname", 1, parseHostname);

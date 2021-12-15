@@ -65,10 +65,8 @@ std::shared_future<std::string> fetchFileAsync(const std::string &path, const st
         retVal = std::async(std::launch::async, [path](){return vfs::vfs_get(path);});
     else */if(fileExist(path, true))
         retVal = std::async(std::launch::async, [path](){return fileGet(path, true);});
-#ifdef NO_WEBGET
     else if(isLink(path))
         retVal = std::async(std::launch::async, [path, proxy, cache_ttl](){return webGet(path, proxy, cache_ttl);});
-#endif // NO_WEBGET
     else
         return std::async(std::launch::async, [](){return std::string();});
     if(!async)
