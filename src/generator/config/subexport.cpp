@@ -45,13 +45,13 @@ std::string vmessLinkConstruct(const std::string &remarks, const std::string &ad
     writer.Key("add");
     writer.String(add.data());
     writer.Key("port");
-    writer.Int(to_int(port));
+    writer.String(port.data());
     writer.Key("type");
     writer.String(type.empty() ? "none" : type.data());
     writer.Key("id");
     writer.String(id.data());
     writer.Key("aid");
-    writer.Int(to_int(aid));
+    writer.String(aid.data());
     writer.Key("net");
     writer.String(net.empty() ? "tcp" : net.data());
     writer.Key("path");
