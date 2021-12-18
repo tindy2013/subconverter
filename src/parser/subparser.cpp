@@ -161,7 +161,7 @@ void explodeVmess(std::string vmess, Proxy &node)
     switch(to_int(version))
     {
     case 1:
-        if(host.size())
+        if(!host.empty())
         {
             vArray = split(host, ";");
             if(vArray.size() == 2)
@@ -286,7 +286,7 @@ void explodeVmessConf(std::string content, std::vector<Proxy> &nodes)
             continue;
         json["vmess"][i]["subid"] >> subid;
 
-        if(subid.size())
+        if(!subid.empty())
         {
             iter = subdata.find(subid);
             if(iter != subdata.end())
@@ -346,8 +346,9 @@ void explodeSS(std::string ss, Proxy &node)
         plugins = urlDecode(getUrlArg(addition, "plugin"));
         plugin = plugins.substr(0, plugins.find(";"));
         pluginopts = plugins.substr(plugins.find(";") + 1);
-        if(getUrlArg(addition, "group").size())
-            group = urlSafeBase64Decode(getUrlArg(addition, "group"));
+        group = getUrlArg(addition, "group");
+        if(!group.empty())
+            group = urlSafeBase64Decode(group);
         ss.erase(ss.find("?"));
     }
     if(strFind(ss, "@"))
@@ -723,7 +724,7 @@ void explodeHTTPSub(std::string link, Proxy &node)
 
 void explodeTrojan(std::string trojan, Proxy &node)
 {
-    std::string server, port, psk, addition, group, remark, host;
+    std::string server, port, psk, addition, group, remark, host, path, network;
     tribool tfo, scv;
     trojan.erase(0, 9);
     string_size pos = trojan.rfind("#");
@@ -750,6 +751,12 @@ void explodeTrojan(std::string trojan, Proxy &node)
     scv = getUrlArg(addition, "allowInsecure");
     group = urlDecode(getUrlArg(addition, "group"));
 
+    if(getUrlArg(addition, "ws") == "1")
+    {
+        path = getUrlArg(addition, "wspath");
+        network = "ws";
+    }
+
     if(remark.empty())
         remark = server + ":" + port;
     if(host.empty() && !isIPv4(server) && !isIPv6(server))
@@ -757,7 +764,7 @@ void explodeTrojan(std::string trojan, Proxy &node)
     if(group.empty())
         group = TROJAN_DEFAULT_GROUP;
 
-    trojanConstruct(node, group, remark, server, port, psk, "", host, "", true, tribool(), tfo, scv);
+    trojanConstruct(node, group, remark, server, port, psk, network, host, path, true, tribool(), tfo, scv);
 }
 
 void explodeQuan(const std::string &quan, Proxy &node)
@@ -1044,11 +1051,11 @@ void explodeClash(Node yamlnode, std::vector<Proxy> &nodes)
                 break;
             case "v2ray-plugin"_hash:
                 pluginopts = "mode=" + pluginopts_mode + ";" + tls + pluginopts_mux;
-                if(pluginopts_host.size())
+                if(!pluginopts_host.empty())
                     pluginopts += "host=" + pluginopts_host + ";";
-                if(path.size())
+                if(!path.empty())
                     pluginopts += "path=" + path + ";";
-                if(pluginopts_mux.size())
+                if(!pluginopts_mux.empty())
                     pluginopts += "mux=" + pluginopts_mux + ";";
                 break;
             }
@@ -1104,15 +1111,19 @@ void explodeClash(Node yamlnode, std::vector<Proxy> &nodes)
             group = TROJAN_DEFAULT_GROUP;
             singleproxy["password"] >>= password;
             singleproxy["sni"] >>= host;
-            if(safe_as<std::string>(singleproxy["network"]) == "grpc")
+            singleproxy["network"] >>= net;
+            switch(hash_(net))
             {
-                net = "grpc";
+            case "grpc"_hash:
                 singleproxy["grpc-opts"]["grpc-service-name"] >>= path;
-            }
-            else
-            {
+                break;
+            case "ws"_hash:
+                singleproxy["ws-opts"]["path"] >>= path;
+                break;
+            default:
                 net = "tcp";
                 path.clear();
+                break;
             }
 
             trojanConstruct(node, group, ps, server, port, password, net, host, path, true, udp, tfo, scv);
@@ -1198,7 +1209,7 @@ void explodeShadowrocket(std::string rocket, Proxy &node)
         return;
     remarks = urlDecode(getUrlArg(addition, "remarks"));
     obfs = getUrlArg(addition, "obfs");
-    if(obfs.size())
+    if(!obfs.empty())
     {
         if(obfs == "websocket")
         {
@@ -1368,7 +1379,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
                     continue;
                 }
             }
-            if(plugin.size())
+            if(!plugin.empty())
             {
                 pluginopts = "obfs=" + pluginopts_mode;
                 pluginopts += pluginopts_host.empty() ? "" : ";obfs-host=" + pluginopts_host;
@@ -1417,7 +1428,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
                     continue;
                 }
             }
-            if(plugin.size())
+            if(!plugin.empty())
             {
                 pluginopts = "obfs=" + pluginopts_mode;
                 pluginopts += pluginopts_host.empty() ? "" : ";obfs-host=" + pluginopts_host;
@@ -1714,22 +1725,22 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
                 {
                 case "simple-obfs"_hash:
                     pluginopts = "obfs=" + pluginopts_mode;
-                    if(pluginopts_host.size())
+                    if(!pluginopts_host.empty())
                         pluginopts += ";obfs-host=" + pluginopts_host;
                     break;
                 case "v2ray-plugin"_hash:
                     if(pluginopts_host.empty() && !isIPv4(server) && !isIPv6(server))
                         pluginopts_host = server;
                     pluginopts = "mode=" + pluginopts_mode;
-                    if(pluginopts_host.size())
+                    if(!pluginopts_host.empty())
                         pluginopts += ";host=" + pluginopts_host;
-                    if(path.size())
+                    if(!path.empty())
                         pluginopts += ";path=" + path;
                     pluginopts += ";" + tls;
                     break;
                 }
 
-                if(protocol.size())
+                if(!protocol.empty())
                 {
                     ssrConstruct(node, SSR_DEFAULT_GROUP, remarks, server, port, protocol, method, pluginopts_mode, password, pluginopts_host, protoparam, udp, tfo, scv);
                 }
@@ -2053,7 +2064,7 @@ int explodeConfContent(const std::string &content, std::vector<Proxy> &nodes)
         explodeSub(content, nodes);
     }
 
-    return nodes.size() != 0;
+    return !nodes.empty();
 }
 
 void explode(const std::string &link, Proxy &node)
@@ -2134,7 +2145,7 @@ void explodeSub(std::string sub, std::vector<Proxy> &nodes)
             if(strLink.rfind("\r") != strLink.npos)
                 strLink.erase(strLink.size() - 1);
             explode(strLink, node);
-            if(strLink.size() == 0 || node.Type == ProxyType::Unknow)
+            if(strLink.empty() || node.Type == ProxyType::Unknow)
             {
                 continue;
             }
