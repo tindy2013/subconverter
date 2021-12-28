@@ -8,6 +8,9 @@ DOMAIN-SUFFIX,twitch.tv
 DOMAIN-SUFFIX,twitchcdn.net
 
 # (Music)
+# > Apple Music Radio
+DOMAIN,radio.itunes.apple.com
+DOMAIN,tv.applemusic.com
 # > Deezer
 USER-AGENT,Deezer*
 DOMAIN-SUFFIX,deezer.com
@@ -86,6 +89,7 @@ DOMAIN-KEYWORD,avoddashs
 # > Apple TV
 DOMAIN,linear.tv.apple.com
 DOMAIN,play-edge.itunes.apple.com
+DOMAIN,uts-api.itunes.apple.com
 # > Bahamut
 USER-AGENT,Anime*
 DOMAIN-SUFFIX,bahamut.com.tw
@@ -199,6 +203,7 @@ IP-CIDR,203.74.95.139/32,no-resolve
 IP-CIDR,203.74.95.153/32,no-resolve
 IP-CIDR,203.211.4.169/32,no-resolve
 IP-CIDR,203.211.4.193/32,no-resolve
+IP-CIDR,210.71.227.200/32,no-resolve
 IP-CIDR,210.71.227.202/32,no-resolve
 IP-CIDR,210.201.32.8/32,no-resolve
 IP-CIDR,210.201.32.11/32,no-resolve

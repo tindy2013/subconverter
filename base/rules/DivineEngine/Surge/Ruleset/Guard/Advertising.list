@@ -58,7 +58,9 @@ IP-CIDR,124.192.153.42/32,no-resolve
 # ------
 # > ByteDance
 DOMAIN-SUFFIX,pangolin-sdk-toutiao.com
+DOMAIN-SUFFIX,pangolin-sdk-toutiao-b.com
 DOMAIN,ad.toutiao.com
+DOMAIN,dsp.toutiao.com
 DOMAIN,pangolin.snssdk.com
 # > baicizhan
 DOMAIN,advertise.baicizhan.com
@@ -175,6 +177,14 @@ DOMAIN,ad.api.moji.com
 DOMAIN,adlaunch.moji.com
 DOMAIN,ads.mojicdn.com
 DOMAIN,v1.log.moji.com
+# > MiguVideo
+DOMAIN-SUFFIX,ad.cmvideo.cn
+DOMAIN,ggc.cmvideo.cn
+DOMAIN,ggic03.miguvideo.com
+DOMAIN,ggmk.miguvideo.com
+DOMAIN,ggv.cmvideo.cn
+DOMAIN,ggx.cmvideo.cn
+DOMAIN,ggx03.miguvideo.com
 
 # (N)
 # > NetEase
@@ -183,6 +193,7 @@ DOMAIN-SUFFIX,union.youdao.com
 DOMAIN,ad.bn.netease.com
 DOMAIN,ad.yixin.im
 DOMAIN,admusicpic.music.126.net
+DOMAIN,g1.163.com
 DOMAIN,gorgon.youdao.com
 DOMAIN,iad.g.163.com
 DOMAIN,iadmat.nosdn.127.net
@@ -242,8 +253,6 @@ DOMAIN,saxn.sina.com.cn
 DOMAIN-SUFFIX,ad.sohu.com
 DOMAIN-SUFFIX,ads.sohu.com
 DOMAIN-SUFFIX,aty.sohu.com
-DOMAIN,imp.optaim.com
-DOMAIN,v2.reachmax.cn
 DOMAIN,hui.sohu.com
 # > Snapcha‪t‬
 DOMAIN,ads.snapchat.com
@@ -266,6 +275,7 @@ DOMAIN,pgdt.gtimg.cn
 DOMAIN,pgdt.gtimg.com
 DOMAIN,pgdt.ugdtimg.com
 DOMAIN,splashqqlive.gtimg.com
+DOMAIN,vv.video.qq.com
 DOMAIN,wa.gtimg.com
 DOMAIN,wxsnsdy.wxs.qq.com
 DOMAIN,wxsnsdythumb.wxs.qq.com
@@ -281,6 +291,7 @@ DOMAIN,kgmobilestatbak.kugou.com
 DOMAIN,mobilelog.kugou.com
 DOMAIN,mobilead.kuwo.cn
 DOMAIN,rich.kuwo.cn
+DOMAIN,tmead.y.qq.com
 # ------
 # > TongHuaShun
 DOMAIN,adm.10jqka.com.cn
@@ -322,6 +333,7 @@ DOMAIN,adse.wsa.ximalaya.com
 DOMAIN,adbehavior.wsa.ximalaya.com
 DOMAIN,adbehavior.ximalaya.com
 DOMAIN,adsebs.ximalaya.com
+DOMAIN,adwbs.ximalaya.com
 # > Xiaohongshu
 DOMAIN,ads-img-qc.xhscdn.com
 DOMAIN,ads-video-al.xhscdn.com

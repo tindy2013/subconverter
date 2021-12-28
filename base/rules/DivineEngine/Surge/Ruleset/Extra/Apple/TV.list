@@ -6,3 +6,4 @@ DOMAIN-SUFFIX,tv.apple.com
 DOMAIN,hls.itunes.apple.com // Trailers
 DOMAIN,hls-amt.itunes.apple.com // Trailers
 DOMAIN,play-edge.itunes.apple.com // Unblock Region
+DOMAIN,uts-api.itunes.apple.com

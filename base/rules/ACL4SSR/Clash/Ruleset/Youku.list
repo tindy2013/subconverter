@@ -1,3 +1,4 @@
 # 内容：Youku 优酷
-# 数量：1条
+# 数量：2条
+DOMAIN-SUFFIX,youku.com
 IP-CIDR,106.11.0.0/16,no-resolve
