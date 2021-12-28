@@ -15,6 +15,8 @@ DOMAIN-SUFFIX,tracking-protection.cdn.mozilla.net
 
 # Origin
 DOMAIN,origin-a.akamaihd.net
+DOMAIN,xivanalysis.com
+DOMAIN,picanalysis.vivo.com.cn
 
 # Tencent
 DOMAIN,fairplay.l.qq.com

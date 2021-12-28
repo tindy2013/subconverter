@@ -3,7 +3,6 @@ DOMAIN,apm.music.163.com
 DOMAIN,apm3.music.163.com
 DOMAIN,interface.music.163.com
 DOMAIN,interface3.music.163.com
-DOMAIN,music.126.net
 DOMAIN,music.163.com
 IP-CIDR,101.71.154.241/32,no-resolve
 IP-CIDR,103.126.92.132/32,no-resolve

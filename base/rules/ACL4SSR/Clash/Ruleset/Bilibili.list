@@ -1,7 +1,9 @@
 # 内容：Bilibili 哔哩哔哩
-# 数量：19条
+# 数量：21条
 USER-AGENT,Bilibili*
 USER-AGENT,bili*
+USER-AGENT,bili-inter*
+DOMAIN,apiintl.biliapi.net
 DOMAIN,upos-hz-mirrorakam.akamaized.net
 DOMAIN-SUFFIX,acg.tv
 DOMAIN-SUFFIX,acgvideo.com
