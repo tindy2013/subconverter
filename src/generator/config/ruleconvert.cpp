@@ -14,6 +14,7 @@ string_array Surge2RuleTypes = {basic_types, "IP-CIDR6", "USER-AGENT", "URL-REGE
 string_array SurgeRuleTypes = {basic_types, "IP-CIDR6", "USER-AGENT", "URL-REGEX", "AND", "OR", "NOT", "PROCESS-NAME", "IN-PORT", "DEST-PORT", "SRC-IP"};
 string_array QuanXRuleTypes = {basic_types, "USER-AGENT", "HOST", "HOST-SUFFIX", "HOST-KEYWORD"};
 string_array SurfRuleTypes = {basic_types, "IP-CIDR6", "PROCESS-NAME", "IN-PORT", "DEST-PORT", "SRC-IP"};
+string_array StashRuleTypes = {basic_types, "IP-CIDR6","USER-AGENT", "URL-REGEX", "SRC-PORT", "DST-PORT"};
 
 std::string convertRuleset(const std::string &content, int type)
 {
@@ -219,6 +220,75 @@ std::string rulesetToClashStr(YAML::Node &base_rule, std::vector<RulesetContent>
             if(!lineSize || strLine[0] == ';' || strLine[0] == '#' || (lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')) //empty lines and comments are ignored
                 continue;
             if(std::none_of(ClashRuleTypes.begin(), ClashRuleTypes.end(), [strLine](std::string type){ return startsWith(strLine, type); }))
+                continue;
+            if(strFind(strLine, "//"))
+            {
+                strLine.erase(strLine.find("//"));
+                strLine = trimWhitespace(strLine);
+            }
+            strLine += "," + rule_group;
+            if(count_least(strLine, ',', 3))
+                strLine = regReplace(strLine, "^(.*?,.*?)(,.*)(,.*)$", "$1$3$2");
+            output_content += " - " + strLine + "\n";
+            total_rules++;
+        }
+    }
+    return output_content;
+}
+
+std::string rulesetToStashStr(YAML::Node &base_rule, std::vector<RulesetContent> &ruleset_content_array, bool overwrite_original_rules)
+{
+    std::string rule_group, retrieved_rules, strLine;
+    std::stringstream strStrm;
+    const std::string field_name = "rules";
+    std::string output_content = "\n" + field_name + ":\n";
+    size_t total_rules = 0;
+
+    if(!overwrite_original_rules && base_rule[field_name].IsDefined())
+    {
+        for(size_t i = 0; i < base_rule[field_name].size(); i++)
+            output_content += " - " + safe_as<std::string>(base_rule[field_name][i]) + "\n";
+    }
+    base_rule.remove(field_name);
+
+    for(RulesetContent &x : ruleset_content_array)
+    {
+        if(global.maxAllowedRules && total_rules > global.maxAllowedRules)
+            break;
+        rule_group = x.rule_group;
+        retrieved_rules = x.rule_content.get();
+        if(retrieved_rules.empty())
+        {
+            writeLog(0, "Failed to fetch ruleset or ruleset is empty: '" + x.rule_path + "'!", LOG_LEVEL_WARNING);
+            continue;
+        }
+        if(startsWith(retrieved_rules, "[]"))
+        {
+            strLine = retrieved_rules.substr(2);
+            if(startsWith(strLine, "FINAL"))
+                strLine.replace(0, 5, "MATCH");
+            strLine += "," + rule_group;
+            if(count_least(strLine, ',', 3))
+                strLine = regReplace(strLine, "^(.*?,.*?)(,.*)(,.*)$", "$1$3$2");
+            output_content += " - " + strLine + "\n";
+            total_rules++;
+            continue;
+        }
+        retrieved_rules = convertRuleset(retrieved_rules, x.rule_type);
+        char delimiter = getLineBreak(retrieved_rules);
+
+        strStrm.clear();
+        strStrm<<retrieved_rules;
+        std::string::size_type lineSize;
+        while(getline(strStrm, strLine, delimiter))
+        {
+            if(global.maxAllowedRules && total_rules > global.maxAllowedRules)
+                break;
+            strLine = trimWhitespace(strLine, true, true); //remove whitespaces
+            lineSize = strLine.size();
+            if(!lineSize || strLine[0] == ';' || strLine[0] == '#' || (lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')) //empty lines and comments are ignored
+                continue;
+            if(std::none_of(StashRuleTypes.begin(), StashRuleTypes.end(), [strLine](std::string type){ return startsWith(strLine, type); }))
                 continue;
             if(strFind(strLine, "//"))
             {
