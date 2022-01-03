@@ -306,18 +306,22 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
                 break;
             case "ws"_hash:
                 singleproxy["network"] = x.TransferProtocol;
-                /*
-                singleproxy["ws-opts"]["path"] = x.Path;
-                if(!x.Host.empty())
-                    singleproxy["ws-opts"]["headers"]["Host"] = x.Host;
-                if(!x.Edge.empty())
-                    singleproxy["ws-opts"]["headers"]["Edge"] = x.Edge;
-                */
-                singleproxy["ws-path"] = x.Path;
-                if(!x.Host.empty())
-                    singleproxy["ws-headers"]["Host"] = x.Host;
-                if(!x.Edge.empty())
-                    singleproxy["ws-headers"]["Edge"] = x.Edge;
+                if(ext.clash_new_field_name)
+                {
+                    singleproxy["ws-opts"]["path"] = x.Path;
+                    if(!x.Host.empty())
+                        singleproxy["ws-opts"]["headers"]["Host"] = x.Host;
+                    if(!x.Edge.empty())
+                        singleproxy["ws-opts"]["headers"]["Edge"] = x.Edge;
+                }
+                else
+                {
+                    singleproxy["ws-path"] = x.Path;
+                    if(!x.Host.empty())
+                        singleproxy["ws-headers"]["Host"] = x.Host;
+                    if(!x.Edge.empty())
+                        singleproxy["ws-headers"]["Edge"] = x.Edge;
+                }
                 break;
             case "http"_hash:
                 singleproxy["network"] = x.TransferProtocol;
@@ -835,7 +839,6 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
 std::string proxyToSingle(std::vector<Proxy> &nodes, int types, extra_settings &ext)
 {
     /// types: SS=1 SSR=2 VMess=4 Trojan=8
-    rapidjson::Document json;
     std::string remark, hostname, port, password, method;
     std::string plugin, pluginopts;
     std::string protocol, protoparam, obfs, obfsparam;
@@ -865,7 +868,7 @@ std::string proxyToSingle(std::vector<Proxy> &nodes, int types, extra_settings &
             }
             else if(ssr)
             {
-                if(std::count(ssr_ciphers.begin(), ssr_ciphers.end(), method) > 0 && GetMember(json, "Plugin").empty() && GetMember(json, "Plugin").empty())
+                if(std::find(ssr_ciphers.begin(), ssr_ciphers.end(), method) != ssr_ciphers.end() && plugin.empty())
                     proxyStr = "ssr://" + urlSafeBase64Encode(hostname + ":" + port + ":origin:" + method + ":plain:" + urlSafeBase64Encode(password) \
                                + "/?group=" + urlSafeBase64Encode(x.Group) + "&remarks=" + urlSafeBase64Encode(remark));
             }
@@ -881,7 +884,7 @@ std::string proxyToSingle(std::vector<Proxy> &nodes, int types, extra_settings &
             }
             else if(ss)
             {
-                if(std::count(ss_ciphers.begin(), ss_ciphers.end(), method) > 0 && protocol == "origin" && obfs == "plain")
+                if(std::find(ss_ciphers.begin(), ss_ciphers.end(), method) != ss_ciphers.end() && protocol == "origin" && obfs == "plain")
                     proxyStr = "ss://" + urlSafeBase64Encode(method + ":" + password) + "@" + hostname + ":" + port + "#" + urlEncode(remark);
             }
             else
@@ -898,6 +901,12 @@ std::string proxyToSingle(std::vector<Proxy> &nodes, int types, extra_settings &
             proxyStr = "trojan://" + password + "@" + hostname + ":" + port + "?allowInsecure=" + (x.AllowInsecure.get() ? "1" : "0");
             if(!host.empty())
                 proxyStr += "&sni=" + host;
+            if(transproto == "ws")
+            {
+                proxyStr += "&ws=1";
+                if(!path.empty())
+                    proxyStr += "&wspath=" + urlEncode(path);
+            }
             proxyStr += "#" + urlEncode(remark);
             break;
         default:
@@ -1394,6 +1403,8 @@ void proxyToQuanX(std::vector<Proxy> &nodes, INIReader &ini, std::vector<Ruleset
             type = "static";
             break;
         case ProxyGroupType::URLTest:
+            type = "url-latency-benchmark";
+            break;
         case ProxyGroupType::Fallback:
             type = "available";
             break;
