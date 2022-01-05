@@ -47,7 +47,7 @@ match = "(Brazil|Paulo|巴西|圣保罗)"
 emoji = "🇧🇷"
 
 [[emoji]]
-match = "(Canada|Montreal|Vancouver|加拿大|蒙特利尔|温哥华|楓葉|枫叶)"
+match = "(?i:CA|Canada|Toronto|Montreal|Vancouver|加拿大|蒙特利尔|温哥华|楓葉|枫叶)"
 emoji = "🇨🇦"
 
 [[emoji]]
