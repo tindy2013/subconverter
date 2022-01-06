@@ -260,6 +260,8 @@ int main(int argc, char *argv[])
         return "done";
     });
 
+    webServer.append_response("HEAD", "/sub", "text/plain;charset=utf-8", subconverter);
+
     webServer.append_response("GET", "/sub", "text/plain;charset=utf-8", subconverter);
 
     webServer.append_response("GET", "/sub2clashr", "text/plain;charset=utf-8", simpleToClashR);

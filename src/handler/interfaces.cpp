@@ -676,6 +676,9 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     if(subInfo.size() && argAppendUserinfo.get(global.appendUserinfo))
         response.headers.emplace("Subscription-UserInfo", subInfo);
 
+    if (request.method == "HEAD")
+        return "";
+
     //do pre-process now
     preprocessNodes(nodes, ext);
 

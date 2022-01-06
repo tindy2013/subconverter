@@ -217,6 +217,7 @@ void WebServer::on_request(evhttp_request *req, void *args)
 
     switch (req->type)
     {
+        case EVHTTP_REQ_HEAD: request.method = "HEAD"; break;
         case EVHTTP_REQ_GET: request.method = "GET"; break;
         case EVHTTP_REQ_POST: request.method = "POST"; break;
         case EVHTTP_REQ_OPTIONS: request.method = "OPTIONS"; break;
@@ -304,7 +305,7 @@ int WebServer::start_web_server(void *argv)
 
     auto call_on_request = [&](evhttp_request *req, void *args) { on_request(req, args); };
 
-    evhttp_set_allowed_methods(server.get(), EVHTTP_REQ_GET | EVHTTP_REQ_POST | EVHTTP_REQ_OPTIONS | EVHTTP_REQ_PUT | EVHTTP_REQ_PATCH | EVHTTP_REQ_DELETE);
+    evhttp_set_allowed_methods(server.get(), EVHTTP_REQ_HEAD | EVHTTP_REQ_GET | EVHTTP_REQ_POST | EVHTTP_REQ_OPTIONS | EVHTTP_REQ_PUT | EVHTTP_REQ_PATCH | EVHTTP_REQ_DELETE);
     evhttp_set_gencb(server.get(), wrap(call_on_request), nullptr);
     evhttp_set_timeout(server.get(), 30);
     if (event_dispatch() == -1)
@@ -388,7 +389,7 @@ int WebServer::start_web_server_multi(void *argv)
         if (evhttp_accept_socket(httpd, nfd) != 0)
             return -1;
 
-        evhttp_set_allowed_methods(httpd, EVHTTP_REQ_GET | EVHTTP_REQ_POST | EVHTTP_REQ_OPTIONS | EVHTTP_REQ_PUT | EVHTTP_REQ_PATCH | EVHTTP_REQ_DELETE);
+        evhttp_set_allowed_methods(httpd, EVHTTP_REQ_HEAD | EVHTTP_REQ_GET | EVHTTP_REQ_POST | EVHTTP_REQ_OPTIONS | EVHTTP_REQ_PUT | EVHTTP_REQ_PATCH | EVHTTP_REQ_DELETE);
         evhttp_set_gencb(httpd, wrap(call_on_request), nullptr);
         evhttp_set_timeout(httpd, 30);
         if (pthread_create(&ths[i], nullptr, httpserver_dispatch, base[i]) != 0)
