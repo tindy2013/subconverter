@@ -1,5 +1,5 @@
 # 内容：Top Blocked Sites
-# 数量：109条
+# 数量：110条
 DOMAIN-SUFFIX,4sqi.net
 DOMAIN-SUFFIX,a248.e.akamai.net
 DOMAIN-SUFFIX,adobedtm.com
@@ -76,6 +76,7 @@ DOMAIN-SUFFIX,nintendo.net
 DOMAIN-SUFFIX,nsstatic.net
 DOMAIN-SUFFIX,nytstyle.com
 DOMAIN-SUFFIX,openvpn.net
+DOMAIN-SUFFIX,overcast.fm
 DOMAIN-SUFFIX,periscope.tv
 DOMAIN-SUFFIX,pinimg.com
 DOMAIN-SUFFIX,pinterest.com

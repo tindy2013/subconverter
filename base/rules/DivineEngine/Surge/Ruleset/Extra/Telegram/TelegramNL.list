@@ -1,8 +1,6 @@
 # Telegram NL
-IP-CIDR,91.108.4.0/24,no-resolve
-IP-CIDR,91.108.8.0/27,no-resolve
-IP-CIDR,149.154.160.0/22,no-resolve
-IP-CIDR,149.154.164.0/22,no-resolve
-IP-CIDR6,2001:67c:4e8:f002::e/128,no-resolve
-IP-CIDR6,2001:67c:4e8:f002::a/128,no-resolve
-IP-CIDR6,2001:67c:4e8:f004::a/128,no-resolve
+IP-CIDR,91.108.4.0/22,no-resolve
+IP-CIDR,91.108.8.0/22,no-resolve
+IP-CIDR,149.154.160.0/20,no-resolve
+IP-CIDR6,2001:67c:4e8::/48,no-resolve
+IP-CIDR6,2001:b28:f23c::/48,no-resolve

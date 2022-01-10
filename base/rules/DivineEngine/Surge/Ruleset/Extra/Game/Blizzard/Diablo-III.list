@@ -1,0 +1,18 @@
+# North America
+IP-CIDR,24.105.30.129/32
+
+# Brazil (Americas)
+IP-CIDR,54.94.196.47/32
+
+# Europe
+IP-CIDR,185.60.112.157/32
+IP-CIDR,185.60.112.158/32
+
+# Korea
+IP-CIDR,182.162.135.1/32
+
+# Taiwan
+IP-CIDR,210.242.235.6/32
+
+# Australia
+IP-CIDR,103.4.115.248/32

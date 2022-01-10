@@ -1,0 +1,74 @@
+# for forcerule.yml
+
+[[custom_groups]]
+name = "Proxy"
+type = "select"
+rule = [".*", "[]AUTO", "[]DIRECT", ".*"]
+
+[[custom_groups]]
+name = "AUTO"
+type = "url-test"
+rule = [".*"]
+url = "http://www.gstatic.com/generate_204"
+interval = 300
+
+[[custom_groups]]
+name = "google"
+type = "select"
+rule = [".*"]
+
+[[custom_groups]]
+name = "netflix"
+type = "select"
+rule = [".*"]
+
+[[custom_groups]]
+name = "动画疯"
+type = "select"
+rule = ["(深台|彰化|新北|台)"]
+
+[[custom_groups]]
+name = "fox+"
+type = "select"
+rule = ["(HGC|HKBN|PCCW|HKT|深台|彰化|新北|台|新加坡|sg|hk|tw)"]
+
+[[custom_groups]]
+name = "美区影视"
+type = "select"
+rule = ["(美|美国)"]
+
+[[custom_groups]]
+name = "Global_media"
+type = "select"
+rule = [".*"]
+
+[[custom_groups]]
+name = "Domestic"
+type = "select"
+rule = ["[]DIRECT", "[]Proxy"]
+
+[[custom_groups]]
+name = "Apple"
+type = "select"
+rule = ["[]DIRECT", "[]Proxy"]
+
+[[custom_groups]]
+name = "Final"
+type = "select"
+rule = ["[]Proxy", "[]DIRECT"]
+
+[[custom_groups]]
+name = "屏蔽广告"
+type = "select"
+rule = ["[]REJECT", "[]DIRECT"]
+
+[[custom_groups]]
+name = "UnblockNeteaseMusic"
+type = "select"
+rule = ["云音乐解锁", "[]DIRECT"]
+
+[[custom_groups]]
+name = "Telegram"
+type = "select"
+rule = ["新加坡", "[]Proxy"]
+

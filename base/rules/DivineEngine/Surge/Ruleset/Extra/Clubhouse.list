@@ -1,0 +1,13 @@
+# > Clubhouse
+# 如果的你代理服务器不支持或没有开启 udp-relay，请不要使用本文件。
+
+IP-CIDR,3.0.163.78/32,no-resolve
+IP-CIDR,52.52.84.170/32,no-resolve
+IP-CIDR,52.58.56.244/32,no-resolve
+
+IP-CIDR,107.155.5.0/24,no-resolve
+IP-CIDR,128.1.193.0/24,no-resolve
+IP-CIDR,128.14.208.0/24,no-resolve
+IP-CIDR,129.227.57.0/24,no-resolve
+IP-CIDR,129.227.71.0/24,no-resolve
+IP-CIDR,129.227.234.0/24,no-resolve

@@ -1,0 +1,35 @@
+# > encoreTVB
+USER-AGENT,encoreTVB*
+DOMAIN-SUFFIX,encoretvb.com
+DOMAIN,edge.api.brightcove.com
+DOMAIN,bcbolt446c5271-a.akamaihd.net
+
+# > HBO NOW & Max
+USER-AGENT,HBO%20NOW*
+DOMAIN-SUFFIX,hbo.com
+DOMAIN-SUFFIX,hbogo.com
+DOMAIN-SUFFIX,hbonow.com
+USER-AGENT,HBOMAX*
+DOMAIN-SUFFIX,hbomax.com
+DOMAIN-SUFFIX,hbomaxcdn.com
+
+# > Hulu
+DOMAIN-SUFFIX,hulu.com
+DOMAIN-SUFFIX,huluim.com
+DOMAIN-SUFFIX,hulustream.com
+
+# > Paramount+
+USER-AGENT,PPlus*
+DOMAIN-SUFFIX,cbsi.com
+DOMAIN-SUFFIX,cbsaavideo.com
+DOMAIN-SUFFIX,cbsivideo.com
+DOMAIN-SUFFIX,paramountplus.com
+DOMAIN-SUFFIX,pplusstatic.com
+DOMAIN,cbsi.live.ott.irdeto.com
+DOMAIN,cbsplaylistserver.aws.syncbak.com
+DOMAIN,cbsservice.aws.syncbak.com
+DOMAIN,link.theplatform.com
+
+# > PBS
+USER-AGENT,PBS*
+DOMAIN-SUFFIX,pbs.org

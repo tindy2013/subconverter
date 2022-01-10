@@ -2,22 +2,26 @@
 
 # MyList && Other
 DOMAIN-SUFFIX,1password.com
+DOMAIN-SUFFIX,adguard.org
 DOMAIN-SUFFIX,bit.no.com
 DOMAIN-SUFFIX,btlibrary.me
 DOMAIN-SUFFIX,cccat.io
 DOMAIN-SUFFIX,cloudcone.com
 DOMAIN-SUFFIX,dubox.com
 DOMAIN-SUFFIX,gameloft.com
+DOMAIN-SUFFIX,garena.com
+DOMAIN-SUFFIX,hoyolab.com
 DOMAIN-SUFFIX,inoreader.com
 DOMAIN-SUFFIX,ip138.com
+DOMAIN-SUFFIX,linkedin.com
+DOMAIN-SUFFIX,myteamspeak.com
+DOMAIN-SUFFIX,notion.so
 DOMAIN-SUFFIX,ping.pe
 DOMAIN-SUFFIX,reddit.com
 DOMAIN-SUFFIX,teddysun.com
 DOMAIN-SUFFIX,tumbex.com
 DOMAIN-SUFFIX,twdvd.com
 DOMAIN-SUFFIX,unsplash.com
-DOMAIN-SUFFIX,xn--i2ru8q2qg.com
-DOMAIN-SUFFIX,yunpanjingling.com
 
 # 国外域名
 DOMAIN-SUFFIX,eu
@@ -127,6 +131,7 @@ DOMAIN-SUFFIX,netdna-cdn.com
 DOMAIN-SUFFIX,nintendo.net
 DOMAIN-SUFFIX,nsstatic.net
 DOMAIN-SUFFIX,nytstyle.com
+DOMAIN-SUFFIX,overcast.fm
 DOMAIN-SUFFIX,openvpn.net
 DOMAIN-SUFFIX,periscope.tv
 DOMAIN-SUFFIX,pinimg.com
@@ -268,11 +273,30 @@ DOMAIN-SUFFIX,ytimg.com
 IP-CIDR,74.125.0.0/16,no-resolve
 IP-CIDR,173.194.0.0/16,no-resolve
 
+# GoogleCNProxyIP 谷歌中国服务 services.googleapis.cn
+IP-CIDR,120.232.181.162/32,no-resolve
+IP-CIDR,120.241.147.226/32,no-resolve
+IP-CIDR,120.253.253.226/32,no-resolve
+IP-CIDR,120.253.255.162/32,no-resolve
+IP-CIDR,120.253.255.34/32,no-resolve
+IP-CIDR,120.253.255.98/32,no-resolve
+IP-CIDR,180.163.150.162/32,no-resolve
+IP-CIDR,180.163.150.34/32,no-resolve
+IP-CIDR,180.163.151.162/32,no-resolve
+IP-CIDR,180.163.151.34/32,no-resolve
+IP-CIDR,203.208.39.0/24,no-resolve
+IP-CIDR,203.208.40.0/24,no-resolve
+IP-CIDR,203.208.41.0/24,no-resolve
+IP-CIDR,203.208.43.0/24,no-resolve
+IP-CIDR,203.208.50.0/24,no-resolve
+IP-CIDR,220.181.174.162/32,no-resolve
+IP-CIDR,220.181.174.226/32,no-resolve
+IP-CIDR,220.181.174.34/32,no-resolve
+
 # Instagram
 DOMAIN-SUFFIX,cdninstagram.com
 DOMAIN-SUFFIX,instagram.com
 DOMAIN-SUFFIX,instagr.am
-DOMAIN-SUFFIX,akamaihd.net
 
 # Kakao Talk
 DOMAIN-SUFFIX,kakao.com
@@ -346,13 +370,21 @@ DOMAIN-SUFFIX,ypncdn.com
 DOMAIN-SUFFIX,pixiv.net
 DOMAIN-SUFFIX,pximg.net
 
+# Spark
+DOMAIN-SUFFIX,amplitude.com
+DOMAIN-SUFFIX,firebaseio.com
+DOMAIN-SUFFIX,hockeyapp.net
+DOMAIN-SUFFIX,readdle.com
+DOMAIN-SUFFIX,smartmailcloud.com
+
 # Steam
 DOMAIN-SUFFIX,fanatical.com
 DOMAIN-SUFFIX,humblebundle.com
-DOMAIN-SUFFIX,steam-chat.com
 DOMAIN-SUFFIX,steamcommunity.com
-DOMAIN-SUFFIX,steampowered.com
-DOMAIN-SUFFIX,steamstatic.com
+
+# TapTap
+DOMAIN-SUFFIX,tap.io
+DOMAIN-SUFFIX,taptap.tw
 
 # Twitch
 DOMAIN-SUFFIX,twitch.tv
@@ -379,6 +411,10 @@ IP-CIDR,149.154.160.0/20,no-resolve
 IP-CIDR6,2001:67c:4e8::/48,no-resolve
 IP-CIDR6,2001:b28:f23d::/48,no-resolve
 IP-CIDR6,2001:b28:f23f::/48,no-resolve
+
+# TeraBox
+DOMAIN-SUFFIX,terabox.com
+DOMAIN-SUFFIX,teraboxcdn.com
 
 # Whatsapp
 IP-CIDR,18.194.0.0/15,no-resolve

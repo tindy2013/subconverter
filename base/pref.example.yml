@@ -5,7 +5,7 @@ common:
   enable_insert: true
   insert_url: []
   prepend_insert_url: true
-  exclude_remarks: ["(到期|剩余流量|时间|官网|产品)"]
+  exclude_remarks: ["(到期|剩余流量|时间|官网|产品|平台)"]
   include_remarks: []
   enable_filter: false
   filter_script: ""
@@ -99,7 +99,7 @@ proxy_groups:
   - {import: snippets/groups.txt}
 
 template:
-  template_path: "templates"
+  template_path: ""
   globals:
   - {key: clash.http_port, value: 7890}
   - {key: clash.socks_port, value: 7891}
@@ -123,6 +123,12 @@ aliases:
   - {uri: /v2ray, target: "/sub?target=v2ray"}
   - {uri: /trojan, target: "/sub?target=trojan"}
 
+tasks:
+#  - name: tick
+#    cronexp: "0/10 * * * * ?"
+#    path: tick.js
+#    timeout: 3
+
 server:
   listen: 0.0.0.0
   port: 25500
@@ -140,5 +146,6 @@ advanced:
   cache_subscription: 60
   cache_config: 300
   cache_ruleset: 21600
+  script_clean_context: true
   async_fetch_ruleset: false
   skip_failed_links: false

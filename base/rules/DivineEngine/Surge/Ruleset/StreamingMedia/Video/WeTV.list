@@ -1,0 +1,5 @@
+# > WeTV
+USER-AGENT,WeTV*
+DOMAIN-SUFFIX,wetv.vip
+DOMAIN-SUFFIX,wetvinfo.com
+IP-CIDR,150.109.28.51/32,no-resolve

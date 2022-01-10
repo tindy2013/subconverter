@@ -1,13 +1,19 @@
 # 直连列表
 
 # MyList
+DOMAIN-SUFFIX,13th.tech
 DOMAIN-SUFFIX,423down.com
 DOMAIN-SUFFIX,bokecc.com
 DOMAIN-SUFFIX,chaipip.com
+DOMAIN-SUFFIX,chinaplay.store
 DOMAIN-SUFFIX,hrtsea.com
 DOMAIN-SUFFIX,kaikeba.com
 DOMAIN-SUFFIX,laomo.me
 DOMAIN-SUFFIX,mpyit.com
+DOMAIN-SUFFIX,msftconnecttest.com
+DOMAIN-SUFFIX,msftncsi.com
+DOMAIN-SUFFIX,qupu123.com
+DOMAIN-SUFFIX,pdfwifi.com
 
 # CN域名直连
 DOMAIN-SUFFIX,cn
@@ -61,6 +67,7 @@ DOMAIN-SUFFIX,alibaba.com
 DOMAIN-SUFFIX,alibabacloud.com
 DOMAIN-SUFFIX,alibabausercontent.com
 DOMAIN-SUFFIX,alicdn.com
+DOMAIN-SUFFIX,alicloudccp.com
 DOMAIN-SUFFIX,aliexpress.com
 DOMAIN-SUFFIX,aliimg.com
 DOMAIN-SUFFIX,alikunlun.com
@@ -70,6 +77,7 @@ DOMAIN-SUFFIX,alisoft.com
 DOMAIN-SUFFIX,aliyun.com
 DOMAIN-SUFFIX,aliyuncdn.com
 DOMAIN-SUFFIX,aliyuncs.com
+DOMAIN-SUFFIX,aliyundrive.com
 DOMAIN-SUFFIX,amap.com
 DOMAIN-SUFFIX,autonavi.com
 DOMAIN-SUFFIX,dingtalk.com
@@ -108,13 +116,18 @@ DOMAIN-SUFFIX,yunjiasu-cdn.net
 DOMAIN-SUFFIX,acg.tv
 DOMAIN-SUFFIX,acgvideo.com
 DOMAIN-SUFFIX,b23.tv
+DOMAIN-SUFFIX,bigfun.cn
+DOMAIN-SUFFIX,bigfunapp.cn
 DOMAIN-SUFFIX,biliapi.com
 DOMAIN-SUFFIX,biliapi.net
+DOMAIN-SUFFIX,bilibili.com
 DOMAIN-SUFFIX,biligame.com
 DOMAIN-SUFFIX,biligame.net
 DOMAIN-SUFFIX,bilivideo.com
+DOMAIN-SUFFIX,bilivideo.cn
 DOMAIN-SUFFIX,hdslb.com
 DOMAIN-SUFFIX,im9.com
+DOMAIN-SUFFIX,smtcdns.net
 
 # Blizzard
 DOMAIN-SUFFIX,battle.net
@@ -164,6 +177,7 @@ DOMAIN-SUFFIX,udache.com
 # Douyu 斗鱼
 DOMAIN-SUFFIX,douyu.com
 DOMAIN-SUFFIX,douyu.tv
+DOMAIN-SUFFIX,douyuscdn.com
 DOMAIN-SUFFIX,douyutv.com
 
 # Epic
@@ -294,12 +308,6 @@ DOMAIN-SUFFIX,playstationnetwork.com
 DOMAIN-SUFFIX,sony.com
 DOMAIN-SUFFIX,sonyentertainmentnetwork.com
 
-# Spark
-DOMAIN-SUFFIX,amplitude.com
-DOMAIN-SUFFIX,firebaseio.com
-DOMAIN-SUFFIX,hockeyapp.net
-DOMAIN-SUFFIX,smartmailcloud.com
-
 # SteamCN
 DOMAIN-SUFFIX,csgo.wmsj.cn
 DOMAIN-SUFFIX,dl.steam.ksyna.com
@@ -307,13 +315,14 @@ DOMAIN-SUFFIX,dota2.wmsj.cn
 DOMAIN-SUFFIX,st.dl.bscstorage.net
 DOMAIN-SUFFIX,st.dl.eccdnx.com
 DOMAIN-SUFFIX,st.dl.pinyuncloud.com
-DOMAIN-SUFFIX,steamcdn-a.akamaihd.net
+DOMAIN-SUFFIX,steamcommunity-a.akamaihd.net
 DOMAIN-SUFFIX,steamcontent.com
 DOMAIN-SUFFIX,steamgames.com
 DOMAIN-SUFFIX,steampowered.com.8686c.com
 DOMAIN-SUFFIX,steamstat.us
 DOMAIN-SUFFIX,steamstatic.com
 DOMAIN-SUFFIX,steamusercontent.com
+DOMAIN-SUFFIX,steamuserimages-a.akamaihd.net
 
 # Tencent
 DOMAIN-SUFFIX,foxmail.com
@@ -358,7 +367,7 @@ DOMAIN-SUFFIX,xunlei.com
 
 # YYeTs 人人影视
 DOMAIN-SUFFIX,got001.com
-DOMAIN-SUFFIX,jstucdn.com
+DOMAIN-SUFFIX,p4pfile.com
 DOMAIN-SUFFIX,rrys.tv
 DOMAIN-SUFFIX,rrys2020.com
 DOMAIN-SUFFIX,yyets.com
@@ -377,6 +386,7 @@ DOMAIN-SUFFIX,zmzfile.com
 DOMAIN-KEYWORD,announce
 DOMAIN-KEYWORD,torrent
 DOMAIN-KEYWORD,tracker
+DOMAIN-SUFFIX,animebytes.tv
 DOMAIN-SUFFIX,animetorrents.me
 DOMAIN-SUFFIX,awesome-hd.me
 DOMAIN-SUFFIX,beitai.pt
@@ -432,7 +442,6 @@ IP-CIDR6,2a0b:b583::/48,no-resolve
 DOMAIN-SUFFIX,baomitu.com
 DOMAIN-SUFFIX,bootcss.com
 DOMAIN-SUFFIX,jiasule.com
-DOMAIN-SUFFIX,jsdelivr.net
 DOMAIN-SUFFIX,staticfile.org
 DOMAIN-SUFFIX,upaiyun.com
 
@@ -517,7 +526,6 @@ DOMAIN-SUFFIX,geetest.com
 DOMAIN-SUFFIX,geilicdn.com
 DOMAIN-SUFFIX,ghpym.com
 DOMAIN-SUFFIX,godic.net
-DOMAIN-SUFFIX,gravatar.com
 DOMAIN-SUFFIX,guazi.com
 DOMAIN-SUFFIX,gwdang.com
 DOMAIN-SUFFIX,gzlzfm.com
@@ -553,9 +561,10 @@ DOMAIN-SUFFIX,kugou.com
 DOMAIN-SUFFIX,lancdns.com
 DOMAIN-SUFFIX,landiannews.com
 DOMAIN-SUFFIX,lanzou.com
+DOMAIN-SUFFIX,lanzoui.com
+DOMAIN-SUFFIX,lanzoux.com
 DOMAIN-SUFFIX,lemicp.com
 DOMAIN-SUFFIX,letitfly.me
-DOMAIN-SUFFIX,linkedin.com
 DOMAIN-SUFFIX,lizhi.fm
 DOMAIN-SUFFIX,lizhi.io
 DOMAIN-SUFFIX,lizhifm.com
@@ -586,7 +595,6 @@ DOMAIN-SUFFIX,onlinedown.net
 DOMAIN-SUFFIX,oracle.com
 DOMAIN-SUFFIX,oschina.net
 DOMAIN-SUFFIX,ourdvs.com
-DOMAIN-SUFFIX,overcast.fm
 DOMAIN-SUFFIX,paypal.com
 DOMAIN-SUFFIX,polyv.net
 DOMAIN-SUFFIX,qbox.me
@@ -620,10 +628,10 @@ DOMAIN-SUFFIX,sm.ms
 DOMAIN-SUFFIX,smzdm.com
 DOMAIN-SUFFIX,snwx.com
 DOMAIN-SUFFIX,soufunimg.com
-DOMAIN-SUFFIX,ssl-images-amazon.com
 DOMAIN-SUFFIX,sspai.com
 DOMAIN-SUFFIX,startssl.com
 DOMAIN-SUFFIX,suning.com
+DOMAIN-SUFFIX,synology.com
 DOMAIN-SUFFIX,taihe.com
 DOMAIN-SUFFIX,th-sjy.com
 DOMAIN-SUFFIX,tianqi.com
@@ -642,7 +650,6 @@ DOMAIN-SUFFIX,umengcloud.com
 DOMAIN-SUFFIX,upyun.com
 DOMAIN-SUFFIX,uxengine.net
 DOMAIN-SUFFIX,videocc.net
-DOMAIN-SUFFIX,vmware.com
 DOMAIN-SUFFIX,wandoujia.com
 DOMAIN-SUFFIX,weather.com
 DOMAIN-SUFFIX,weico.cc

@@ -17,20 +17,33 @@ cmake -DCMAKE_BUILD_TYPE=Release -DYAML_CPP_BUILD_TESTS=OFF -DYAML_CPP_BUILD_TOO
 make install -j8 > /dev/null
 cd ..
 
-git clone https://github.com/svaarala/duktape --depth=1
-cd duktape
-pip2 install PyYAML
-mkdir dist
-python2 util/dist.py
-cd dist/source/src
-cc -c -O3 -o duktape.o duktape.c
-cc -c -O3 -o duk_module_node.o -I. ../extras/module-node/duk_module_node.c
-ar cr libduktape.a duktape.o
-ar cr libduktape_module.a duk_module_node.o
-install -m0644 ./*.a /usr/local/lib
-install -m0644 ./duk*.h /usr/local/include
-install -m0644 ../extras/module-node/duk_module_node.h /usr/local/include
-cd ../../../..
+git clone https://github.com/ftk/quickjspp --depth=1
+cd quickjspp
+cmake -DCMAKE_BUILD_TYPE=Release .
+make quickjs -j8
+install -m644 quickjs/libquickjs.a /usr/local/lib/
+install -d /usr/local/include/quickjs/
+install -m644 quickjs/quickjs.h quickjs/quickjs-libc.h /usr/local/include/quickjs/
+install -m644 quickjspp.hpp /usr/local/include/
+cd ..
+
+git clone https://github.com/PerMalmberg/libcron --depth=1
+cd libcron
+git submodule update --init
+cmake -DCMAKE_BUILD_TYPE=Release .
+make libcron -j8
+install -m644 libcron/out/Release/liblibcron.a /usr/local/lib/
+install -d /usr/local/include/libcron/
+install -m644 libcron/include/libcron/* /usr/local/include/libcron/
+install -d /usr/local/include/date/
+install -m644 libcron/externals/date/include/date/* /usr/local/include/date/
+cd ..
+
+git clone https://github.com/ToruNiina/toml11 --depth=1
+cd toml11
+cmake .
+make install -j4
+cd ..
 
 cp /usr/local/lib/libevent.a .
 cp /usr/local/opt/zlib/lib/libz.a .

@@ -1,8 +1,13 @@
 # 内容：BilibiliHMT 哔哩哔哩 港澳台番剧
-# 数量：13条
+# 数量：18条
+DOMAIN,p-bstarstatic.akamaized.net
+DOMAIN,p.bstarstatic.com
+DOMAIN,upos-bstar-mirrorakam.akamaized.net
+DOMAIN,upos-bstar1-mirrorakam.akamaized.net
 DOMAIN,upos-hz-mirrorakam.akamaized.net
 DOMAIN-SUFFIX,acgvideo.com
 DOMAIN-SUFFIX,bilibili.com
+DOMAIN-SUFFIX,bilibili.tv
 IP-CIDR,45.43.32.234/32
 IP-CIDR,119.29.29.29/32
 IP-CIDR,128.1.62.200/32

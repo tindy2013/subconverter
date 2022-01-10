@@ -1,5 +1,5 @@
 # 内容：AccelerateDirectSites
-# 数量：244条
+# 数量：242条
 DOMAIN-SUFFIX,10010.com
 DOMAIN-SUFFIX,115.com
 DOMAIN-SUFFIX,12306.com
@@ -80,7 +80,6 @@ DOMAIN-SUFFIX,geetest.com
 DOMAIN-SUFFIX,geilicdn.com
 DOMAIN-SUFFIX,ghpym.com
 DOMAIN-SUFFIX,godic.net
-DOMAIN-SUFFIX,gravatar.com
 DOMAIN-SUFFIX,guazi.com
 DOMAIN-SUFFIX,gwdang.com
 DOMAIN-SUFFIX,gzlzfm.com
@@ -116,9 +115,10 @@ DOMAIN-SUFFIX,kugou.com
 DOMAIN-SUFFIX,lancdns.com
 DOMAIN-SUFFIX,landiannews.com
 DOMAIN-SUFFIX,lanzou.com
+DOMAIN-SUFFIX,lanzoui.com
+DOMAIN-SUFFIX,lanzoux.com
 DOMAIN-SUFFIX,lemicp.com
 DOMAIN-SUFFIX,letitfly.me
-DOMAIN-SUFFIX,linkedin.com
 DOMAIN-SUFFIX,lizhi.fm
 DOMAIN-SUFFIX,lizhi.io
 DOMAIN-SUFFIX,lizhifm.com
@@ -149,7 +149,6 @@ DOMAIN-SUFFIX,onlinedown.net
 DOMAIN-SUFFIX,oracle.com
 DOMAIN-SUFFIX,oschina.net
 DOMAIN-SUFFIX,ourdvs.com
-DOMAIN-SUFFIX,overcast.fm
 DOMAIN-SUFFIX,paypal.com
 DOMAIN-SUFFIX,polyv.net
 DOMAIN-SUFFIX,qbox.me
@@ -183,10 +182,10 @@ DOMAIN-SUFFIX,sm.ms
 DOMAIN-SUFFIX,smzdm.com
 DOMAIN-SUFFIX,snwx.com
 DOMAIN-SUFFIX,soufunimg.com
-DOMAIN-SUFFIX,ssl-images-amazon.com
 DOMAIN-SUFFIX,sspai.com
 DOMAIN-SUFFIX,startssl.com
 DOMAIN-SUFFIX,suning.com
+DOMAIN-SUFFIX,synology.com
 DOMAIN-SUFFIX,taihe.com
 DOMAIN-SUFFIX,th-sjy.com
 DOMAIN-SUFFIX,tianqi.com
@@ -205,7 +204,6 @@ DOMAIN-SUFFIX,umengcloud.com
 DOMAIN-SUFFIX,upyun.com
 DOMAIN-SUFFIX,uxengine.net
 DOMAIN-SUFFIX,videocc.net
-DOMAIN-SUFFIX,vmware.com
 DOMAIN-SUFFIX,wandoujia.com
 DOMAIN-SUFFIX,weather.com
 DOMAIN-SUFFIX,weico.cc

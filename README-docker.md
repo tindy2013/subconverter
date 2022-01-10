@@ -14,7 +14,7 @@ curl http://localhost:25500/version
 If you want to update `pref` configuration inside the docker, you can use the following command:
 ```bash
 # assume your configuration file name is `newpref.ini`
-curl -F "@data=newpref.ini" http://localhost:25500/updateconf?type=form\&token=password
+curl -F "data=@newpref.ini" http://localhost:25500/updateconf?type=form\&token=password
 # you may want to change this token in your configuration file
 ```
 
