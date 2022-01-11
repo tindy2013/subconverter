@@ -1,0 +1,30 @@
+name: 建议新功能
+description: 建议此项目增加的功能
+title: "[Feature] <title>"
+body:
+  - type: checkboxes
+    id: ensure
+    attributes:
+      label: verify
+      description: 在提交之前，请确认完成以下选项
+      options:
+      - label: 我已经仔细阅读[项目文档](https://github.com/tindy2013/subconverter/blob/master/README-cn.md)，确认现有功能无法解决我的需求
+        required: true
+      - label: 我已经检索过现有[issue](https://github.com/tindy2013/subconverter/issues)，确认与现有issue的内容并不重复
+        required: true
+      - label: 我已经尝试自行解决，确认自己没有能力解决
+        required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: 功能描述
+      description: 请详细、清晰地表达你要提出的论述，例如这个问题如何影响到你？你想实现什么功能？目前 subconverter 的行为是什么？
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: 可能的解决方案
+      description: 您期望的解决方案，可能的实现方法或者可供参考的示例
+    validations:
+      required: false
