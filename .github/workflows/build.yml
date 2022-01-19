@@ -1,7 +1,7 @@
 name: GitHub CI
 on: [push]
 
-concurrency: 
+concurrency:
   group: ${{ github.ref }}-${{ github.workflow }}
   cancel-in-progress: true
 
@@ -10,126 +10,153 @@ jobs:
     name: Linux x86 Build
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Add commit id into version
-      if: ${{ !startsWith(github.ref, 'refs/tags/') }}
-      run: SHA=$(git rev-parse --short HEAD) && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h
-    - name: Build
-      run: docker run --rm -v $GITHUB_WORKSPACE:/root/workdir multiarch/alpine:x86-latest-stable /bin/sh -c "apk add bash git nodejs npm && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
-    - name: Upload
-      uses: actions/upload-artifact@v1
-      with:
-        name: subconverter_linux32
-        path: subconverter/
-    - name: Package Release
-      if: startsWith(github.ref, 'refs/tags/')
-      run: tar czf subconverter_linux32.tar.gz subconverter
-    - name: Draft Release
-      uses: softprops/action-gh-release@v1
-      if: startsWith(github.ref, 'refs/tags/')
-      with:
-        files: subconverter_linux32.tar.gz
-        draft: true
+      - uses: actions/checkout@v2
+      - name: Add commit id into version
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        run: SHA=$(git rev-parse --short HEAD) && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h
+      - name: Build
+        run: docker run --rm -v $GITHUB_WORKSPACE:/root/workdir multiarch/alpine:x86-latest-stable /bin/sh -c "apk add bash git nodejs npm && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
+      - name: Upload
+        uses: actions/upload-artifact@v1
+        with:
+          name: subconverter_linux32
+          path: subconverter/
+      - name: Package Release
+        if: startsWith(github.ref, 'refs/tags/')
+        run: tar czf subconverter_linux32.tar.gz subconverter
+      - name: Draft Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: subconverter_linux32.tar.gz
+          draft: true
 
   linux64_build:
     name: Linux x86_64 Build
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Add commit id into version
-      if: ${{ !startsWith(github.ref, 'refs/tags/') }}
-      run: SHA=$(git rev-parse --short HEAD) && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h
-    - name: Build
-      run: docker run -v $GITHUB_WORKSPACE:/root/workdir multiarch/alpine:amd64-latest-stable /bin/sh -c "apk add bash git nodejs npm && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
-    - name: Upload
-      uses: actions/upload-artifact@v1
-      with:
-        name: subconverter_linux64
-        path: subconverter/
-    - name: Package Release
-      if: startsWith(github.ref, 'refs/tags/')
-      run: tar czf subconverter_linux64.tar.gz subconverter
-    - name: Draft Release
-      uses: softprops/action-gh-release@v1
-      if: startsWith(github.ref, 'refs/tags/')
-      with:
-        files: subconverter_linux64.tar.gz
-        draft: true
+      - uses: actions/checkout@v2
+      - name: Add commit id into version
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        run: SHA=$(git rev-parse --short HEAD) && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h
+      - name: Build
+        run: docker run -v $GITHUB_WORKSPACE:/root/workdir multiarch/alpine:amd64-latest-stable /bin/sh -c "apk add bash git nodejs npm && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
+      - name: Upload
+        uses: actions/upload-artifact@v1
+        with:
+          name: subconverter_linux64
+          path: subconverter/
+      - name: Package Release
+        if: startsWith(github.ref, 'refs/tags/')
+        run: tar czf subconverter_linux64.tar.gz subconverter
+      - name: Draft Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: subconverter_linux64.tar.gz
+          draft: true
 
   armv7_build:
     name: Linux armv7 Build
-    runs-on: [self-hosted, linux, ARM64]
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Add commit id into version
-      if: ${{ !startsWith(github.ref, 'refs/tags/') }}
-      run: SHA=$(git rev-parse --short HEAD) && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h
-    - name: Build
-      run: docker run -v $GITHUB_WORKSPACE:/root/workdir multiarch/alpine:armv7-latest-stable /bin/sh -c "apk add bash git nodejs npm && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
-    - name: Upload
-      uses: actions/upload-artifact@v1
-      with:
-        name: subconverter_armv7
-        path: subconverter/
-    - name: Package Release
-      if: startsWith(github.ref, 'refs/tags/')
-      run: tar czf subconverter_armv7.tar.gz subconverter
-    - name: Draft Release
-      uses: softprops/action-gh-release@v1
-      if: startsWith(github.ref, 'refs/tags/')
-      with:
-        files: subconverter_armv7.tar.gz
-        draft: true
+      - uses: actions/checkout@v2
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Add commit id into version
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        run: SHA=$(git rev-parse --short HEAD) && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h
+      - name: Build
+        run: docker run -v $GITHUB_WORKSPACE:/root/workdir multiarch/alpine:armv7-latest-stable /bin/sh -c "apk add bash git nodejs npm && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
+      - name: Upload
+        uses: actions/upload-artifact@v1
+        with:
+          name: subconverter_armv7
+          path: subconverter/
+      - name: Package Release
+        if: startsWith(github.ref, 'refs/tags/')
+        run: tar czf subconverter_armv7.tar.gz subconverter
+      - name: Draft Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: subconverter_armv7.tar.gz
+          draft: true
+
+  armhf_build:
+    name: Linux armhf Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Add commit id into version
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        run: SHA=$(git rev-parse --short HEAD) && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h
+      - name: Build
+        run: docker run -v $GITHUB_WORKSPACE:/root/workdir multiarch/alpine:armhf-latest-stable /bin/sh -c "apk add bash git nodejs npm && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
+      - name: Upload
+        uses: actions/upload-artifact@v1
+        with:
+          name: subconverter_armhf
+          path: subconverter/
+      - name: Package Release
+        run: tar czf subconverter_armhf.tar.gz subconverter
+      - name: Draft Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: subconverter_armhf.tar.gz
+          release: true
 
   aarch64_build:
     name: Linux aarch64 Build
-    runs-on: [self-hosted, linux, ARM64]
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Add commit id into version
-      if: ${{ !startsWith(github.ref, 'refs/tags/') }}
-      run: SHA=$(git rev-parse --short HEAD) && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h
-    - name: Build
-      run: docker run -v $GITHUB_WORKSPACE:/root/workdir multiarch/alpine:aarch64-latest-stable /bin/sh -c "apk add bash git nodejs npm && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
-    - name: Upload
-      uses: actions/upload-artifact@v1
-      with:
-        name: subconverter_aarch64
-        path: subconverter/
-    - name: Package Release
-      if: startsWith(github.ref, 'refs/tags/')
-      run: tar czf subconverter_aarch64.tar.gz subconverter
-    - name: Draft Release
-      uses: softprops/action-gh-release@v1
-      if: startsWith(github.ref, 'refs/tags/')
-      with:
-        files: subconverter_aarch64.tar.gz
-        draft: true
+      - uses: actions/checkout@v2
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Add commit id into version
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        run: SHA=$(git rev-parse --short HEAD) && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h
+      - name: Build
+        run: docker run -v $GITHUB_WORKSPACE:/root/workdir multiarch/alpine:aarch64-latest-stable /bin/sh -c "apk add bash git nodejs npm && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
+      - name: Upload
+        uses: actions/upload-artifact@v1
+        with:
+          name: subconverter_aarch64
+          path: subconverter/
+      - name: Package Release
+        run: tar czf subconverter_aarch64.tar.gz subconverter
+      - name: Draft Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: subconverter_aarch64.tar.gz
+          release: true
 
   macos_build:
     name: macOS Build
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Add commit id into version
-      if: ${{ !startsWith(github.ref, 'refs/tags/') }}
-      run: SHA=$(git rev-parse --short HEAD) && sed -i -e 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h
-    - name: Build
-      run: bash scripts/build.macos.release.sh
-    - name: Upload
-      uses: actions/upload-artifact@v1
-      with:
-        name: subconverter_darwin64
-        path: subconverter/
-    - name: Package Release
-      if: startsWith(github.ref, 'refs/tags/')
-      run: tar czf subconverter_darwin64.tar.gz subconverter
-    - name: Draft Release
-      uses: softprops/action-gh-release@v1
-      if: startsWith(github.ref, 'refs/tags/')
-      with:
-        files: subconverter_darwin64.tar.gz
-        draft: true
+      - uses: actions/checkout@v2
+      - name: Add commit id into version
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        run: SHA=$(git rev-parse --short HEAD) && sed -i -e 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h
+      - name: Build
+        run: bash scripts/build.macos.release.sh
+      - name: Upload
+        uses: actions/upload-artifact@v1
+        with:
+          name: subconverter_darwin64
+          path: subconverter/
+      - name: Package Release
+        if: startsWith(github.ref, 'refs/tags/')
+        run: tar czf subconverter_darwin64.tar.gz subconverter
+      - name: Draft Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: subconverter_darwin64.tar.gz
+          draft: true
 
   windows64_build:
     name: Windows x86_64 Build
@@ -138,35 +165,35 @@ jobs:
       run:
         shell: msys2 {0}
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v2-beta
-      with:
-        node-version: '12'
-    - uses: msys2/setup-msys2@v2
-      with:
-        update: true
-        install: base-devel git mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-libevent mingw-w64-x86_64-pcre2 patch
-        msystem: MINGW64
-        path-type: inherit
-    - name: Add commit id into version
-      if: ${{ !startsWith(github.ref, 'refs/tags/') }}
-      run: SHA=$(git rev-parse --short HEAD) && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h
-    - name: Build
-      run: bash scripts/build.windows.release.sh
-    - name: Upload
-      uses: actions/upload-artifact@v1
-      with:
-        name: subconverter_win64
-        path: subconverter/
-    - name: Package Release
-      if: startsWith(github.ref, 'refs/tags/')
-      run: 7z a subconverter_win64.7z subconverter/
-    - name: Draft Release
-      uses: softprops/action-gh-release@v1
-      if: startsWith(github.ref, 'refs/tags/')
-      with:
-        files: subconverter_win64.7z
-        draft: true
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2-beta
+        with:
+          node-version: '12'
+      - uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          install: base-devel git mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-libevent mingw-w64-x86_64-pcre2 patch
+          msystem: MINGW64
+          path-type: inherit
+      - name: Add commit id into version
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        run: SHA=$(git rev-parse --short HEAD) && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h
+      - name: Build
+        run: bash scripts/build.windows.release.sh
+      - name: Upload
+        uses: actions/upload-artifact@v1
+        with:
+          name: subconverter_win64
+          path: subconverter/
+      - name: Package Release
+        if: startsWith(github.ref, 'refs/tags/')
+        run: 7z a subconverter_win64.7z subconverter/
+      - name: Draft Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: subconverter_win64.7z
+          draft: true
 
   windows32_build:
     name: Windows x86 Build
@@ -175,32 +202,32 @@ jobs:
       run:
         shell: msys2 {0}
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v2-beta
-      with:
-        node-version: '12'
-    - uses: msys2/setup-msys2@v2
-      with:
-        update: true
-        install: base-devel git mingw-w64-i686-gcc mingw-w64-i686-cmake mingw-w64-i686-libevent mingw-w64-i686-pcre2 patch
-        msystem: MINGW32
-        path-type: inherit
-    - name: Add commit id into version
-      if: ${{ !startsWith(github.ref, 'refs/tags/') }}
-      run: SHA=$(git rev-parse --short HEAD) && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h
-    - name: Build
-      run: bash scripts/build.windows.release.sh
-    - name: Upload
-      uses: actions/upload-artifact@v1
-      with:
-        name: subconverter_win32
-        path: subconverter/
-    - name: Package Release
-      if: startsWith(github.ref, 'refs/tags/')
-      run: 7z a subconverter_win32.7z subconverter/
-    - name: Draft Release
-      uses: softprops/action-gh-release@v1
-      if: startsWith(github.ref, 'refs/tags/')
-      with:
-        files: subconverter_win32.7z
-        draft: true
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2-beta
+        with:
+          node-version: '12'
+      - uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          install: base-devel git mingw-w64-i686-gcc mingw-w64-i686-cmake mingw-w64-i686-libevent mingw-w64-i686-pcre2 patch
+          msystem: MINGW32
+          path-type: inherit
+      - name: Add commit id into version
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        run: SHA=$(git rev-parse --short HEAD) && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h
+      - name: Build
+        run: bash scripts/build.windows.release.sh
+      - name: Upload
+        uses: actions/upload-artifact@v1
+        with:
+          name: subconverter_win32
+          path: subconverter/
+      - name: Package Release
+        if: startsWith(github.ref, 'refs/tags/')
+        run: 7z a subconverter_win32.7z subconverter/
+      - name: Draft Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: subconverter_win32.7z
+          draft: true

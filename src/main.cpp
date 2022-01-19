@@ -76,6 +76,11 @@ void chkArg(int argc, char *argv[])
         {
             global.generatorMode = true;
         }
+        else if(strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--version") == 0)
+        {
+            std::cerr<<"subconverter " VERSION " backend\n";
+            return;
+        }
         else if(strcmp(argv[i], "--artifact") == 0)
         {
             if(i < argc - 1)
