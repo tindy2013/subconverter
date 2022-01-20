@@ -1011,7 +1011,7 @@ void explodeClash(Node yamlnode, std::vector<Proxy> &nodes)
                 switch(hash_(safe_as<std::string>(singleproxy["plugin"])))
                 {
                 case "obfs"_hash:
-                    plugin = "simple-obfs";
+                    plugin = "obfs-local";
                     if(singleproxy["plugin-opts"].IsDefined())
                     {
                         singleproxy["plugin-opts"]["mode"] >>= pluginopts_mode;
