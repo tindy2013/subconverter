@@ -3,10 +3,6 @@
 #include <numeric>
 #include <cmath>
 #include <climits>
-#include <rapidjson/writer.h>
-#include <rapidjson/document.h>
-#include <rapidjson/error/en.h>
-#include <yaml-cpp/yaml.h>
 
 #include "../../config/regmatch.h"
 #include "../../generator/config/subexport.h"
@@ -295,7 +291,7 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
         case ProxyType::VMess:
             singleproxy["type"] = "vmess";
             singleproxy["uuid"] = x.UserId;
-            singleproxy["alterId"] = static_cast<uint32_t>(x.AlterId);
+            singleproxy["alterId"] = x.AlterId;
             singleproxy["cipher"] = x.EncryptMethod;
             singleproxy["tls"] = x.TLSSecure;
             if(!scv.is_undef())
@@ -433,6 +429,8 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
         case ProxyType::Snell:
             singleproxy["type"] = "snell";
             singleproxy["psk"] = x.Password;
+            if(x.AlterId != 0)
+                singleproxy["version"] = x.AlterId;
             if(!x.OBFS.empty())
             {
                 singleproxy["obfs-opts"]["mode"] = x.OBFS;

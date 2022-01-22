@@ -6,7 +6,7 @@
 template <typename T> void exception_thrower(T e)
 {
     if(!e)
-        throw std::runtime_error("assert");
+        throw std::runtime_error("rapidjson assertion failed");
 }
 
 #ifdef RAPIDJSON_ASSERT
@@ -15,6 +15,7 @@ template <typename T> void exception_thrower(T e)
 #define RAPIDJSON_ASSERT(x) exception_thrower(x)
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
+#include <rapidjson/error/en.h>
 #include <string>
 
 inline void operator >> (const rapidjson::Value& value, std::string& i)

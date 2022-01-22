@@ -162,7 +162,7 @@ int addNodes(std::string link, std::vector<Proxy> &allNodes, int groupID, parse_
             writeLog(LOG_TYPE_INFO, "Parsing subscription data...");
             if(explodeConfContent(strSub, nodes) == 0)
             {
-                writeLog(LOG_TYPE_ERROR, "Invalid subscription!");
+                writeLog(LOG_TYPE_ERROR, "Invalid subscription: '" + link + "'!");
                 return -1;
             }
             if(startsWith(strSub, "ssd://"))

@@ -139,8 +139,19 @@ inline int WebServer::process_request(Request &request, Response &response, std:
         if(x.method == request.method && x.path == request.url)
         {
             response_callback &rc = x.rc;
-            return_data = rc(request, response);
-            response.content_type = x.content_type;
+            try
+            {
+                return_data = rc(request, response);
+                response.content_type = x.content_type;
+            }
+            catch(std::exception &e)
+            {
+                return_data = "Internal server error while processing request path '" + request.url + "' with arguments '" + request.argument + "'!\n  what(): ";
+                return_data += e.what();
+                response.content_type = "text/plain";
+                response.status_code = 500;
+                writeLog(0, return_data, LOG_LEVEL_ERROR);
+            }
             return 0;
         }
     }
