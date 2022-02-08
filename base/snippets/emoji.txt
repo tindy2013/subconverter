@@ -58,7 +58,7 @@
 (蒙古|Монголулс|Mongolia),🇲🇳
 (Macao|澳门|\bCTM\b),🇲🇴
 (墨西哥|Mexico),🇲🇽
-(Malaysia|马来),🇲🇾
+(Malaysia|马来|MY),🇲🇾
 (尼日利亚|Nigeria),🇳🇬
 (?i:\bNL[D]?\b|Netherlands|荷兰|阿姆斯特丹),🇳🇱
 (挪威|Norway),🇳🇴
