@@ -240,7 +240,7 @@ match = "(墨西哥|Mexico)"
 emoji = "🇲🇽"
 
 [[emoji]]
-match = "(Malaysia|马来)"
+match = "(Malaysia|马来|MY)"
 emoji = "🇲🇾"
 
 [[emoji]]
