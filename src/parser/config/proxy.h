@@ -81,6 +81,9 @@ struct Proxy
     tribool TCPFastOpen;
     tribool AllowInsecure;
     tribool TLS13;
+
+    uint16_t SnellVersion = 0;
+    String ServerName;
 };
 
 #define SS_DEFAULT_GROUP "SSProvider"

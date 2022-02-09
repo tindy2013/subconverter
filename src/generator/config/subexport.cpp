@@ -76,10 +76,6 @@ bool matchRange(const std::string &range, int target)
         }
         else if(regMatch(x, reg_range))
         {
-            /*
-            range_begin = to_int(regReplace(x, reg_range, "$1"), INT_MAX);
-            range_end = to_int(regReplace(x, reg_range, "$2"), INT_MIN);
-            */
             regGetMatch(x, reg_range, 3, 0, &range_begin_str, &range_end_str);
             range_begin = to_int(range_begin_str, INT_MAX);
             range_end = to_int(range_end_str, INT_MIN);
@@ -88,15 +84,13 @@ bool matchRange(const std::string &range, int target)
         }
         else if(regMatch(x, reg_not))
         {
+            match = true;
             if(to_int(regReplace(x, reg_not, "$1"), INT_MAX) == target)
                 match = false;
         }
         else if(regMatch(x, reg_not_range))
         {
-            /*
-            range_begin = to_int(regReplace(x, reg_range, "$1"), INT_MAX);
-            range_end = to_int(regReplace(x, reg_range, "$2"), INT_MIN);
-            */
+            match = true;
             regGetMatch(x, reg_range, 3, 0, &range_begin_str, &range_end_str);
             range_begin = to_int(range_begin_str, INT_MAX);
             range_end = to_int(range_end_str, INT_MIN);
@@ -296,6 +290,8 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
             singleproxy["tls"] = x.TLSSecure;
             if(!scv.is_undef())
                 singleproxy["skip-cert-verify"] = scv.get();
+            if(!x.ServerName.empty())
+                singleproxy["servername"] = x.ServerName;
             switch(hash_(x.TransferProtocol))
             {
             case "tcp"_hash:
@@ -387,6 +383,7 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
                 singleproxy["skip-cert-verify"] = scv.get();
             break;
         case ProxyType::HTTP:
+        case ProxyType::HTTPS:
             singleproxy["type"] = "http";
             if(!x.Username.empty())
                 singleproxy["username"] = x.Username;
@@ -396,7 +393,7 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
                 if(std::all_of(x.Password.begin(), x.Password.end(), ::isdigit))
                     singleproxy["password"].SetTag("str");
             }
-            singleproxy["tls"] = type == "HTTPS";
+            singleproxy["tls"] = x.TLSSecure;
             if(!scv.is_undef())
                 singleproxy["skip-cert-verify"] = scv.get();
             break;
@@ -429,8 +426,8 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
         case ProxyType::Snell:
             singleproxy["type"] = "snell";
             singleproxy["psk"] = x.Password;
-            if(x.AlterId != 0)
-                singleproxy["version"] = x.AlterId;
+            if(x.SnellVersion != 0)
+                singleproxy["version"] = x.SnellVersion;
             if(!x.OBFS.empty())
             {
                 singleproxy["obfs-opts"]["mode"] = x.OBFS;
@@ -672,7 +669,7 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
         case ProxyType::VMess:
             if(surge_ver < 4 && surge_ver != -3)
                 continue;
-            proxy = "vmess, " + hostname + ", " + port + ", username=" + id + ", tls=" + (tlssecure ? "true" : "false");
+            proxy = "vmess, " + hostname + ", " + port + ", username=" + id + ", tls=" + (tlssecure ? "true" : "false") +  ", vmess-aead=" + (x.AlterId == 0 ? "true" : "false");
             if(tlssecure && !tls13.is_undef())
                 proxy += ", tls13=" + std::string(tls13 ? "true" : "false");
             switch(hash_(transproto))
@@ -723,6 +720,7 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
                 proxy += ", skip-cert-verify=" + scv.get_str();
             break;
         case ProxyType::HTTP:
+        case ProxyType::HTTPS:
             proxy = "http, " + hostname + ", " + port;
             if(!username.empty())
                 proxy += ", username=" + username;
@@ -736,6 +734,8 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
             if(surge_ver < 4)
                 continue;
             proxy = "trojan, " + hostname + ", " + port + ", password=" + password;
+            if(x.SnellVersion != 0)
+                proxy += ", version=" + std::to_string(x.SnellVersion);
             if(!host.empty())
                 proxy += ", sni=" + host;
             if(!scv.is_undef())
@@ -1104,6 +1104,7 @@ void proxyToQuan(std::vector<Proxy> &nodes, INIReader &ini, std::vector<RulesetC
             }
             break;
         case ProxyType::HTTP:
+        case ProxyType::HTTPS:
             proxyStr = remark + " = http, upstream-proxy-address=" + hostname + ", upstream-proxy-port=" + port + ", group=" + x.Group;
             if(!username.empty() && !password.empty())
                 proxyStr += ", upstream-proxy-auth=true, upstream-proxy-username=" + username + ", upstream-proxy-password=" + password;
@@ -1290,7 +1291,7 @@ void proxyToQuanX(std::vector<Proxy> &nodes, INIReader &ini, std::vector<Ruleset
         case ProxyType::VMess:
             if(method == "auto")
                 method = "chacha20-ietf-poly1305";
-            proxyStr = "vmess = " + hostname + ":" + port + ", method=" + method + ", password=" + id;
+            proxyStr = "vmess = " + hostname + ":" + port + ", method=" + method + ", password=" + id + ", aead=" + (x.AlterId == 0 ? "true" : "false");
             if(tlssecure && !tls13.is_undef())
                 proxyStr += ", tls13=" + std::string(tls13 ? "true" : "false");
             if(transproto == "ws")
@@ -1347,6 +1348,7 @@ void proxyToQuanX(std::vector<Proxy> &nodes, INIReader &ini, std::vector<Ruleset
                 proxyStr += ", obfs-host=" + obfsparam;
             break;
         case ProxyType::HTTP:
+        case ProxyType::HTTPS:
             proxyStr = "http = " + hostname + ":" + port + ", username=" + (username.empty() ? "none" : username) + ", password=" + (password.empty() ? "none" : password);
             if(tlssecure)
             {

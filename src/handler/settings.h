@@ -9,6 +9,7 @@
 #include "../config/ruleset.h"
 #include "../generator/config/ruleconvert.h"
 #include "../generator/template/templates.h"
+#include "../utils/logger.h"
 #include "../utils/string.h"
 #include "../utils/stl_extra.h"
 #include "../utils/tribool.h"
@@ -28,7 +29,7 @@ struct Settings
     bool printDbgInfo = false, CFWChildProcess = false, appendUserinfo = true, asyncFetchRuleset = false, surgeResolveHostname = true;
     std::string accessToken, basePath = "base";
     std::string custom_group;
-    int logLevel = 0;
+    int logLevel = LOG_LEVEL_INFO;
     long maxAllowedDownloadSize = 1048576L;
     string_map aliases;
 
