@@ -3,7 +3,7 @@ set -xe
 
 apt update
 apt install -y git cmake clang pkg-config
-apt install -y libevent libcurl openssl pcre2 python2
+apt install -y libevent libcurl openssl pcre2
 
 git clone https://github.com/jbeder/yaml-cpp --depth=1
 cd yaml-cpp
@@ -36,4 +36,10 @@ install -d $PREFIX/include/libcron/
 install -m644 libcron/include/libcron/* $PREFIX/include/libcron/
 install -d $PREFIX/include/date/
 install -m644 libcron/externals/date/include/date/* $PREFIX/include/date/
+cd ..
+
+git clone https://github.com/ToruNiina/toml11 --depth=1
+cd toml11
+cmake -DCMAKE_INSTALL_PREFIX=$PREFIX .
+make install -j3
 cd ..
