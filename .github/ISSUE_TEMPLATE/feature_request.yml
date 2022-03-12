@@ -13,7 +13,6 @@ body:
       - label: 我已经检索过现有[issue](https://github.com/tindy2013/subconverter/issues)，确认与现有issue的内容并不重复
         required: true
       - label: 我已经尝试自行解决，确认自己没有能力解决
-        required: true
   - type: textarea
     id: description
     attributes:
