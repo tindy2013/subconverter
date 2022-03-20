@@ -2,6 +2,7 @@
 #define LOGGER_H_INCLUDED
 
 #include <string>
+#include <typeinfo>
 
 enum
 {
@@ -30,5 +31,12 @@ enum
 
 std::string getTime(int type);
 void writeLog(int type, const std::string &content, int level = LOG_LEVEL_VERBOSE);
+std::string demangle(const char* name);
+
+template <class T>
+std::string type(const T& t) {
+
+    return demangle(typeid(t).name());
+}
 
 #endif // LOGGER_H_INCLUDED

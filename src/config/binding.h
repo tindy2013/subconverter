@@ -224,7 +224,7 @@ namespace INIBinding
                         continue;
                     rules_upper_bound -= 2;
                     conf.Url = vArray[rules_upper_bound];
-                    parseGroupTimes(vArray[rules_upper_bound + 1], &conf.Interval, &conf.Tolerance, &conf.Timeout);
+                    parseGroupTimes(vArray[rules_upper_bound + 1], &conf.Interval, &conf.Timeout, &conf.Tolerance);
                 }
 
                 for(unsigned int i = 2; i < rules_upper_bound; i++)

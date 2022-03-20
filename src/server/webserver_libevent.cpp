@@ -146,7 +146,10 @@ inline int WebServer::process_request(Request &request, Response &response, std:
             }
             catch(std::exception &e)
             {
-                return_data = "Internal server error while processing request path '" + request.url + "' with arguments '" + request.argument + "'!\n  what(): ";
+                return_data = "Internal server error while processing request path '" + request.url + "' with arguments '" + request.argument + "'!";
+                return_data += "\n  exception: ";
+                return_data += type(e);
+                return_data += "\n  what(): ";
                 return_data += e.what();
                 response.content_type = "text/plain";
                 response.status_code = 500;
@@ -234,6 +237,7 @@ void WebServer::on_request(evhttp_request *req, void *args)
         case EVHTTP_REQ_PUT: request.method = "PUT"; break;
         case EVHTTP_REQ_PATCH: request.method = "PATCH"; break;
         case EVHTTP_REQ_DELETE: request.method = "DELETE"; break;
+        case EVHTTP_REQ_HEAD: request.method = "HEAD"; break;
         default: break;
     }
     request.url = uri;
@@ -315,7 +319,7 @@ int WebServer::start_web_server(void *argv)
 
     auto call_on_request = [&](evhttp_request *req, void *args) { on_request(req, args); };
 
-    evhttp_set_allowed_methods(server.get(), EVHTTP_REQ_GET | EVHTTP_REQ_POST | EVHTTP_REQ_OPTIONS | EVHTTP_REQ_PUT | EVHTTP_REQ_PATCH | EVHTTP_REQ_DELETE);
+    evhttp_set_allowed_methods(server.get(), EVHTTP_REQ_GET | EVHTTP_REQ_POST | EVHTTP_REQ_OPTIONS | EVHTTP_REQ_PUT | EVHTTP_REQ_PATCH | EVHTTP_REQ_DELETE | EVHTTP_REQ_HEAD);
     evhttp_set_gencb(server.get(), wrap(call_on_request), nullptr);
     evhttp_set_timeout(server.get(), 30);
     if (event_dispatch() == -1)
@@ -399,7 +403,7 @@ int WebServer::start_web_server_multi(void *argv)
         if (evhttp_accept_socket(httpd, nfd) != 0)
             return -1;
 
-        evhttp_set_allowed_methods(httpd, EVHTTP_REQ_GET | EVHTTP_REQ_POST | EVHTTP_REQ_OPTIONS | EVHTTP_REQ_PUT | EVHTTP_REQ_PATCH | EVHTTP_REQ_DELETE);
+        evhttp_set_allowed_methods(httpd, EVHTTP_REQ_GET | EVHTTP_REQ_POST | EVHTTP_REQ_OPTIONS | EVHTTP_REQ_PUT | EVHTTP_REQ_PATCH | EVHTTP_REQ_DELETE | EVHTTP_REQ_HEAD);
         evhttp_set_gencb(httpd, wrap(call_on_request), nullptr);
         evhttp_set_timeout(httpd, 30);
         if (pthread_create(&ths[i], nullptr, httpserver_dispatch, base[i]) != 0)
