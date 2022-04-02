@@ -8,8 +8,8 @@ log-level: {{ default(global.clash.log_level, "info") }}
 external-controller: :9090
 {% if default(request.clash.dns, "") == "1" %}
 dns:
-  enabled: true
-  listen: 1053
+  enable: true
+  listen: :1053
 {% endif %}
 {% if local.clash.new_field_name == "true" %}
 proxies: ~
