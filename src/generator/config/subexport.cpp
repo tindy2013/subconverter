@@ -644,13 +644,13 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
         switch(x.Type)
         {
         case ProxyType::Shadowsocks:
-            if(surge_ver >= 3)
+            if(surge_ver >= 3 || surge_ver == -3)
             {
                 proxy = "ss, " + hostname + ", " + port + ", encrypt-method=" + method + ", password=" + password;
             }
             else
             {
-                proxy = "custom, "  + hostname + ", " + port + ", " + method + ", " + password + ", https://github.com/ConnersHua/SSEncrypt/raw/master/SSEncrypt.module";
+                proxy = "custom, "  + hostname + ", " + port + ", " + method + ", " + password + ", https://github.com/pobizhe/SSEncrypt/raw/master/SSEncrypt.module";
             }
             if(!plugin.empty())
             {
@@ -719,8 +719,16 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
             if(!scv.is_undef())
                 proxy += ", skip-cert-verify=" + scv.get_str();
             break;
-        case ProxyType::HTTP:
         case ProxyType::HTTPS:
+            if(surge_ver == -3)
+            {
+                proxy = "https, " + hostname + ", " + port + ", " + username + ", " + password;
+                if(!scv.is_undef())
+                    proxy += ", skip-cert-verify=" + scv.get_str();
+                break;
+            }
+            [[fallthrough]];
+        case ProxyType::HTTP:
             proxy = "http, " + hostname + ", " + port;
             if(!username.empty())
                 proxy += ", username=" + username;
@@ -731,7 +739,7 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
                 proxy += ", skip-cert-verify=" + scv.get_str();
             break;
         case ProxyType::Trojan:
-            if(surge_ver < 4)
+            if(surge_ver < 4 && surge_ver != -3)
                 continue;
             proxy = "trojan, " + hostname + ", " + port + ", password=" + password;
             if(x.SnellVersion != 0)
@@ -1356,6 +1364,10 @@ void proxyToQuanX(std::vector<Proxy> &nodes, INIReader &ini, std::vector<Ruleset
                 if(!tls13.is_undef())
                     proxyStr += ", tls13=" + std::string(tls13 ? "true" : "false");
             }
+            else
+            {
+                proxyStr += ", over-tls=false";
+            }
             break;
         case ProxyType::Trojan:
             proxyStr = "trojan = " + hostname + ":" + port + ", password=" + password;
@@ -1364,6 +1376,10 @@ void proxyToQuanX(std::vector<Proxy> &nodes, INIReader &ini, std::vector<Ruleset
                 proxyStr += ", over-tls=true, tls-host=" + host;
                 if(!tls13.is_undef())
                     proxyStr += ", tls13=" + std::string(tls13 ? "true" : "false");
+            }
+            else
+            {
+                proxyStr += ", over-tls=false";
             }
             break;
         default:
