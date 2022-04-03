@@ -183,7 +183,7 @@ void groupGenerate(const std::string &rule, std::vector<Proxy> &nodelist, string
         filtered_nodelist.emplace_back(rule.substr(2));
     }
 #ifndef NO_JS_RUNTIME
-    else if(startsWith(rule, "script:"))
+    else if(startsWith(rule, "script:") && ext.authorized)
     {
         script_safe_runner(ext.js_runtime, ext.js_context, [&](qjs::Context &ctx){
             std::string script = fileGet(rule.substr(7), true);

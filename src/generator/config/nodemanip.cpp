@@ -51,7 +51,7 @@ int addNodes(std::string link, std::vector<Proxy> &allNodes, int groupID, parse_
     link = replaceAllDistinct(link, "\"", "");
 
     /// script:filepath,arg1,arg2,...
-    script_safe_runner(parse_set.js_runtime, parse_set.js_context, [&](qjs::Context &ctx)
+    if(authorized) script_safe_runner(parse_set.js_runtime, parse_set.js_context, [&](qjs::Context &ctx)
     {
         if(startsWith(link, "script:")) /// process subscription with script
         {
@@ -380,7 +380,7 @@ void nodeRename(Proxy &node, const RegexMatchConfigs &rename_array, extra_settin
 
     for(const RegexMatchConfig &x : rename_array)
     {
-        if(!x.Script.empty())
+        if(!x.Script.empty() && ext.authorized)
         {
             script_safe_runner(ext.js_runtime, ext.js_context, [&](qjs::Context &ctx)
             {
@@ -432,7 +432,7 @@ std::string addEmoji(const Proxy &node, const RegexMatchConfigs &emoji_array, ex
 
     for(const RegexMatchConfig &x : emoji_array)
     {
-        if(!x.Script.empty())
+        if(!x.Script.empty() && ext.authorized)
         {
             std::string result;
             script_safe_runner(ext.js_runtime, ext.js_context, [&](qjs::Context &ctx)
@@ -481,7 +481,7 @@ void preprocessNodes(std::vector<Proxy> &nodes, extra_settings &ext)
     if(ext.sort_flag)
     {
         bool failed = true;
-        if(ext.sort_script.size())
+        if(ext.sort_script.size() && ext.authorized)
         {
             std::string script = ext.sort_script;
             if(startsWith(script, "path:"))

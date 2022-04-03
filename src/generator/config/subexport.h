@@ -39,6 +39,7 @@ struct extra_settings
     bool clash_classical_ruleset = false;
     std::string sort_script = "";
     std::string clash_proxies_style = "flow";
+    bool authorized = false;
 
     extra_settings() {};
     extra_settings(const extra_settings&) = delete;

@@ -577,6 +577,7 @@ void readYAMLConf(YAML::Node &node)
         node["advanced"]["async_fetch_ruleset"] >> global.asyncFetchRuleset;
         node["advanced"]["skip_failed_links"] >> global.skipFailedLinks;
     }
+    writeLog(0, "Load preference settings in YAML format completed.", LOG_LEVEL_INFO);
 }
 
 template <class T, class... U>
@@ -786,13 +787,14 @@ void readTOMLConf(toml::value &root)
     {
         global.cacheSubscription = global.cacheConfig = global.cacheRuleset = 0;
     }
+
+    writeLog(0, "Load preference settings in TOML format completed.", LOG_LEVEL_INFO);
 }
 
 void readConf()
 {
     guarded_mutex guard(gMutexConfigure);
-    //std::cerr<<"Reading preference settings..."<<std::endl;
-    writeLog(0, "Reading preference settings...", LOG_LEVEL_INFO);
+    writeLog(0, "Loading preference settings...", LOG_LEVEL_INFO);
 
     eraseElements(global.excludeRemarks);
     eraseElements(global.includeRemarks);
@@ -815,11 +817,14 @@ void readConf()
     catch (YAML::Exception &e)
     {
         //ignore yaml parse error
+        writeLog(0, e.what(), LOG_LEVEL_DEBUG);
+        writeLog(0, "Unable to load preference settings as YAML.", LOG_LEVEL_DEBUG);
     }
     catch (toml::exception &e)
     {
         //ignore toml parse error
         writeLog(0, e.what(), LOG_LEVEL_DEBUG);
+        writeLog(0, "Unable to load preference settings as TOML.", LOG_LEVEL_DEBUG);
     }
 
     INIReader ini;
@@ -828,8 +833,7 @@ void readConf()
     int retVal = ini.ParseFile(global.prefPath);
     if(retVal != INIREADER_EXCEPTION_NONE)
     {
-        //std::cerr<<"Unable to load preference settings. Reason: "<<ini.GetLastError()<<"\n";
-        writeLog(0, "Unable to load preference settings. Reason: " + ini.GetLastError(), LOG_LEVEL_FATAL);
+        writeLog(0, "Unable to load preference settings as INI. Reason: " + ini.GetLastError(), LOG_LEVEL_FATAL);
         return;
     }
 
@@ -1070,8 +1074,7 @@ void readConf()
     ini.GetBoolIfExist("async_fetch_ruleset", global.asyncFetchRuleset);
     ini.GetBoolIfExist("skip_failed_links", global.skipFailedLinks);
 
-    //std::cerr<<"Read preference settings completed."<<std::endl;
-    writeLog(0, "Read preference settings completed.", LOG_LEVEL_INFO);
+    writeLog(0, "Load preference settings in INI format completed.", LOG_LEVEL_INFO);
 }
 
 int loadExternalYAML(YAML::Node &node, ExternalConfig &ext)

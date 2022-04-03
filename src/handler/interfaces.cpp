@@ -407,6 +407,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     std::string proxy = parseProxy(global.proxySubscription);
 
     /// check other flags
+    ext.authorized = authorized;
     ext.append_proxy_type = argAppendType.get(global.appendType);
     if((argTarget == "clash" || argTarget == "clashr") && argGenClashScript.is_undef())
         argExpandRulesets.define(true);
