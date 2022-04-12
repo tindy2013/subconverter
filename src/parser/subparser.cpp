@@ -899,7 +899,7 @@ void explodeNetch(std::string netch, Proxy &node)
 {
     Document json;
     std::string type, group, remark, address, port, username, password, method, plugin, pluginopts;
-    std::string protocol, protoparam, obfs, obfsparam, id, aid, transprot, faketype, host, edge, path, tls, sni, flow;
+    std::string protocol, protoparam, obfs, obfsparam, id, aid, transprot, faketype, host, edge, path, tls, sni, flow, alpn, mode;
     tribool udp, tfo, scv;
     netch = urlSafeBase64Decode(netch.substr(8));
 
@@ -1427,7 +1427,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
     {
         std::string remarks, server, port, method, username, password; //common
         std::string plugin, pluginopts, pluginopts_mode, pluginopts_host, mod_url, mod_md5; //ss
-        std::string id, net, tls, host, edge, path, sni, alpn; //v2
+        std::string id, net, tls, host, edge, path, sni, alpn, mode, flow; //v2
         std::string protocol, protoparam; //ssr
         std::string version, aead = "1";
         std::string itemName, itemVal, config;
@@ -1722,7 +1722,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
                 }
             }
 
-            trojanConstruct(node, TROJAN_DEFAULT_GROUP, remarks, server, port, password, "", "", host, "", "", true, udp, tfo, scv);
+            trojanConstruct(node, TROJAN_DEFAULT_GROUP, remarks, server, port, password, "", mode, host, "", true, flow, udp, tfo, scv);
             break;
         case "snell"_hash:
             server = trim(configs[1]);
@@ -1986,7 +1986,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
                     remarks = server + ":" + port;
                 if(host.empty() && !isIPv4(server) && !isIPv6(server))
                     host = server;
-                trojanConstruct(node, TROJAN_DEFAULT_GROUP, remarks, server, port, password, "", "", host, "", "", true, udp, tfo, scv, tls13);
+                trojanConstruct(node, TROJAN_DEFAULT_GROUP, remarks, server, port, password, "", mode, host, "", true, flow, udp, tfo, scv, tls13);
                 break;
             case "http"_hash: //quantumult x style http links
                 server = trim(configs[0].substr(0, configs[0].rfind(":")));
