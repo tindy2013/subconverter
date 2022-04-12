@@ -58,7 +58,7 @@ jobs:
 
   armv7_build:
     name: Linux armv7 Build
-    runs-on: [self-hosted, linux, ARM64]
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - name: Add commit id into version
@@ -83,7 +83,7 @@ jobs:
 
   aarch64_build:
     name: Linux aarch64 Build
-    runs-on: [self-hosted, linux, ARM64]
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - name: Add commit id into version
