@@ -56,6 +56,33 @@ jobs:
         files: subconverter_linux64.tar.gz
         draft: true
 
+  armv7_build:
+    name: Linux armv7 Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Add commit id into version
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        run: SHA=$(git rev-parse --short HEAD) && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h
+      - name: Build
+        run: docker run -v $GITHUB_WORKSPACE:/root/workdir multiarch/alpine:armv7-latest-stable /bin/sh -c "apk add bash git nodejs npm && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
+      - name: Upload
+        uses: actions/upload-artifact@v1
+        with:
+          name: subconverter_armv7
+          path: subconverter/
+      - name: Package Release
+        if: startsWith(github.ref, 'refs/tags/')
+        run: tar czf subconverter_armv7.tar.gz subconverter
+      - name: Draft Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: subconverter_armv7.tar.gz
+          draft: true
+
   armhf_build:
     name: Linux armhf Build
     runs-on: ubuntu-latest
@@ -82,31 +109,31 @@ jobs:
           files: subconverter_armhf.tar.gz
           release: true
 
-    aarch64_build:
-      name: Linux aarch64 Build
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v2
-        - name: Set up QEMU
-          uses: docker/setup-qemu-action@v1
-        - name: Add commit id into version
-          if: ${{ !startsWith(github.ref, 'refs/tags/') }}
-          run: SHA=$(git rev-parse --short HEAD) && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h
-        - name: Build
-          run: docker run -v $GITHUB_WORKSPACE:/root/workdir multiarch/alpine:aarch64-latest-stable /bin/sh -c "apk add bash git nodejs npm && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
-        - name: Upload
-          uses: actions/upload-artifact@v1
-          with:
-            name: subconverter_aarch64
-            path: subconverter/
-        - name: Package Release
-          run: tar czf subconverter_aarch64.tar.gz subconverter
-        - name: Draft Release
-          uses: softprops/action-gh-release@v1
-          with:
-            tag_name: Alpha
-            files: subconverter_aarch64.tar.gz
-            release: true
+  aarch64_build:
+    name: Linux aarch64 Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Add commit id into version
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        run: SHA=$(git rev-parse --short HEAD) && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h
+      - name: Build
+        run: docker run -v $GITHUB_WORKSPACE:/root/workdir multiarch/alpine:aarch64-latest-stable /bin/sh -c "apk add bash git nodejs npm && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
+      - name: Upload
+        uses: actions/upload-artifact@v1
+        with:
+          name: subconverter_aarch64
+          path: subconverter/
+      - name: Package Release
+        run: tar czf subconverter_aarch64.tar.gz subconverter
+      - name: Draft Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: Alpha
+          files: subconverter_aarch64.tar.gz
+          release: true
 
   macos_build:
     name: macOS Build
