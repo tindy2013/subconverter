@@ -825,7 +825,7 @@ void explodeTrojan(std::string trojan, Proxy &node)
     if(group.empty())
         group = TROJAN_DEFAULT_GROUP;
 
-    trojanConstruct(node, group, remark, server, port, psk, network, mode, host, path, tls, flow, tribool(), tfo, scv);
+    trojanConstruct(node, group, remark, server, port, psk, network, mode, host, path, flow, tls, tribool(), tfo, scv);
 }
 
 void explodeQuan(const std::string &quan, Proxy &node)
@@ -984,7 +984,7 @@ void explodeNetch(std::string netch, Proxy &node)
         tls = GetMember(json, "TLSSecure");
         if(group.empty())
             group = TROJAN_DEFAULT_GROUP;
-        trojanConstruct(node, group, remark, address, port, password, transprot, mode, host, path, tls, flow, udp, tfo, scv);
+        trojanConstruct(node, group, remark, address, port, password, transprot, mode, host, path, flow, tls, udp, tfo, scv);
         break;
     case "Snell"_hash:
         obfs = GetMember(json, "OBFS");
@@ -1722,7 +1722,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
                 }
             }
 
-            trojanConstruct(node, TROJAN_DEFAULT_GROUP, remarks, server, port, password, "", mode, host, "", true, flow, udp, tfo, scv);
+            trojanConstruct(node, TROJAN_DEFAULT_GROUP, remarks, server, port, password, "", mode, host, true, "", flow, udp, tfo, scv);
             break;
         case "snell"_hash:
             server = trim(configs[1]);
@@ -1986,7 +1986,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
                     remarks = server + ":" + port;
                 if(host.empty() && !isIPv4(server) && !isIPv6(server))
                     host = server;
-                trojanConstruct(node, TROJAN_DEFAULT_GROUP, remarks, server, port, password, "", mode, host, "", true, flow, udp, tfo, scv, tls13);
+                trojanConstruct(node, TROJAN_DEFAULT_GROUP, remarks, server, port, password, "", mode, host, "", flow, true, udp, tfo, scv, tls13);
                 break;
             case "http"_hash: //quantumult x style http links
                 server = trim(configs[0].substr(0, configs[0].rfind(":")));
