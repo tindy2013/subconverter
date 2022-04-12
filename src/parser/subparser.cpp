@@ -891,7 +891,7 @@ void explodeQuan(const std::string &quan, Proxy &node)
         if(path.empty())
             path = "/";
 
-        vmessConstruct(node, group, ps, add, port, type, id, aid, net, cipher, path, host, edge, tls, "");
+        vmessConstruct(node, group, ps, add, port, type, id, aid, net, cipher, path, host, edge, tls, "","");
     }
 }
 
@@ -984,7 +984,7 @@ void explodeNetch(std::string netch, Proxy &node)
         tls = GetMember(json, "TLSSecure");
         if(group.empty())
             group = TROJAN_DEFAULT_GROUP;
-        trojanConstruct(node, group, remark, address, port, password, transprot, host, path, tls, flow, udp, tfo, scv);
+        trojanConstruct(node, group, remark, address, port, password, transprot, mode, host, path, tls, flow, udp, tfo, scv);
         break;
     case "Snell"_hash:
         obfs = GetMember(json, "OBFS");
@@ -1258,7 +1258,7 @@ void explodeStdVMess(std::string vmess, Proxy &node)
     if(remarks.empty())
         remarks = add + ":" + port;
 
-    vmessConstruct(node, V2RAY_DEFAULT_GROUP, remarks, add, port, type, id, aid, net, "auto", path, host, "", tls, "");
+    vmessConstruct(node, V2RAY_DEFAULT_GROUP, remarks, add, port, type, id, aid, net, "auto", path, host, "", tls, "","");
     return;
 }
 
@@ -1354,7 +1354,7 @@ void explodeShadowrocket(std::string rocket, Proxy &node)
     if(remarks.empty())
         remarks = add + ":" + port;
 
-    vmessConstruct(node, V2RAY_DEFAULT_GROUP, remarks, add, port, type, id, aid, net, cipher, path, host, "", tls, "");
+    vmessConstruct(node, V2RAY_DEFAULT_GROUP, remarks, add, port, type, id, aid, net, cipher, path, host, "", tls, "","");
 }
 
 void explodeKitsunebi(std::string kit, Proxy &node)
@@ -1392,7 +1392,7 @@ void explodeKitsunebi(std::string kit, Proxy &node)
     if(remarks.empty())
         remarks = add + ":" + port;
 
-    vmessConstruct(node, V2RAY_DEFAULT_GROUP, remarks, add, port, type, id, aid, net, cipher, path, host, "", tls, "");
+    vmessConstruct(node, V2RAY_DEFAULT_GROUP, remarks, add, port, type, id, aid, net, cipher, path, host, "", tls, "","");
 }
 
 bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
@@ -1986,7 +1986,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
                     remarks = server + ":" + port;
                 if(host.empty() && !isIPv4(server) && !isIPv6(server))
                     host = server;
-                trojanConstruct(node, TROJAN_DEFAULT_GROUP, remarks, server, port, password, "", "", host, "", "", tls == "true", udp, tfo, scv, tls13);
+                trojanConstruct(node, TROJAN_DEFAULT_GROUP, remarks, server, port, password, "", "", host, "", "", true, udp, tfo, scv, tls13);
                 break;
             case "http"_hash: //quantumult x style http links
                 server = trim(configs[0].substr(0, configs[0].rfind(":")));
