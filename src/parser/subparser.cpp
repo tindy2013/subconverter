@@ -1722,7 +1722,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
                 }
             }
 
-            trojanConstruct(node, TROJAN_DEFAULT_GROUP, remarks, server, port, password, "", mode, host, true, "", flow, udp, tfo, scv);
+            trojanConstruct(node, TROJAN_DEFAULT_GROUP, remarks, server, port, password, "", mode, host, "", flow, tls, udp, tfo, scv);
             break;
         case "snell"_hash:
             server = trim(configs[1]);
@@ -1986,7 +1986,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
                     remarks = server + ":" + port;
                 if(host.empty() && !isIPv4(server) && !isIPv6(server))
                     host = server;
-                trojanConstruct(node, TROJAN_DEFAULT_GROUP, remarks, server, port, password, "", mode, host, "", flow, true, udp, tfo, scv, tls13);
+                trojanConstruct(node, TROJAN_DEFAULT_GROUP, remarks, server, port, password, "", mode, host, "", flow, tls, udp, tfo, scv, tls13);
                 break;
             case "http"_hash: //quantumult x style http links
                 server = trim(configs[0].substr(0, configs[0].rfind(":")));
