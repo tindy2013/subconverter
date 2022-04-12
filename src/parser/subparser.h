@@ -35,6 +35,7 @@ void explodeSS(std::string ss, Proxy &node);
 void explodeTrojan(std::string trojan, Proxy &node);
 void explodeQuan(const std::string &quan, Proxy &node);
 void explodeStdVMess(std::string vmess, Proxy &node);
+void explodeStdVless(std::string vless, Proxy &node);
 void explodeShadowrocket(std::string kit, Proxy &node);
 void explodeKitsunebi(std::string kit, Proxy &node);
 /// Parse a link

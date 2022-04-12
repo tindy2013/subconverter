@@ -91,7 +91,7 @@ void vlessConstruct(Proxy &node, const std::string &group, const std::string &re
             break;
         default:
             node.Host = (host.empty() && !isIPv4(add) && !isIPv6(add)) ? add.data() : trim(host);
-            node.Path = path.empty() ? "/" : urlDecode(trim(path);
+            node.Path = path.empty() ? "/" : urlDecode(trim(path));
             break;
     }
 }
@@ -136,7 +136,7 @@ void trojanConstruct(Proxy &node, const std::string &group, const std::string &r
     commonConstruct(node, ProxyType::Trojan, group, remarks, server, port, udp, tfo, scv, tls13);
     node.Password = password;
     node.Host = host;
-    node.TLSSecure = tlssecure = tls == "tls" || tls == "xtls";;
+    node.TLSSecure = tls == "tls" || tls == "xtls";;
     node.TransferProtocol = network.empty() ? "tcp" : network;
     node.Path = path;
     node.Flow = flow;
