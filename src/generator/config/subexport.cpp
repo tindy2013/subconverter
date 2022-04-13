@@ -344,8 +344,6 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
             singleproxy["type"] = "vless";
             singleproxy["uuid"] = x.UserId;
             singleproxy["tls"] = x.TLSSecure;
-            if(!x.Host.empty())
-                singleproxy["servername"] = x.Host;
             if (!x.Flow.empty())
                 singleproxy["flow"] = x.Flow;
             if(!scv.is_undef())
@@ -389,6 +387,7 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
                         singleproxy["h2-opts"]["host"].push_back(x.Host);
                     break;
                 case "grpc"_hash:
+                    singleproxy["servername"] = x.Host;
                     singleproxy["network"] = x.TransferProtocol;
                     singleproxy["grpc-opts"]["grpc-mode"] = x.GRPCMode;
                     singleproxy["grpc-opts"]["grpc-service-name"] = x.GRPCServiceName;
