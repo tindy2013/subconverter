@@ -73,6 +73,7 @@ struct Proxy
     String Host;
     String Path;
     String Edge;
+    String Cookie;
 
     String QUICSecure;
     String QUICSecret;
