@@ -580,6 +580,8 @@ std::string proxyToClash(std::vector<Proxy> &nodes, const std::string &base_conf
 
     std::string output_content = rulesetToClashStr(yamlnode, ruleset_content_array, ext.overwrite_original_rules, ext.clash_new_field_name);
     output_content.insert(0, YAML::Dump(yamlnode));
+    //rulesetToClash(yamlnode, ruleset_content_array, ext.overwrite_original_rules, ext.clash_new_field_name);
+    //std::string output_content = YAML::Dump(yamlnode);
 
     return output_content;
 }
@@ -790,9 +792,9 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
         case ProxyGroupType::Fallback:
             break;
         case ProxyGroupType::LoadBalance:
-            if(surge_ver < 1)
+            if(surge_ver < 1 && surge_ver != -3)
                 continue;
-            [[fallthrough]];
+            break;
         case ProxyGroupType::SSID:
             proxy = x.TypeStr() + ",default=" + x.Proxies[0] + ",";
             proxy += join(x.Proxies.begin() + 1, x.Proxies.end(), ",");
@@ -823,16 +825,18 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
 
         proxy = x.TypeStr() + ",";
         proxy += join(filtered_nodelist, ",");
-        if(x.Type == ProxyGroupType::URLTest || x.Type == ProxyGroupType::Fallback)
+        if(x.Type == ProxyGroupType::URLTest || x.Type == ProxyGroupType::Fallback || x.Type == ProxyGroupType::LoadBalance)
         {
             proxy += ",url=" + x.Url + ",interval=" + std::to_string(x.Interval);
             if(x.Tolerance > 0)
                 proxy += ",tolerance=" + std::to_string(x.Tolerance);
             if(x.Timeout > 0)
                 proxy += ",timeout=" + std::to_string(x.Timeout);
+            if(!x.Persistent.is_undef())
+                proxy += ",persistent=" + x.Persistent.get_str();
+            if(!x.EvaluateBeforeUse.is_undef())
+                proxy += ",evaluate-before-use=" + x.EvaluateBeforeUse.get_str();
         }
-        else if(x.Type == ProxyGroupType::LoadBalance)
-            proxy += ",url=" + x.Url;
 
         ini.Set("{NONAME}", x.Name + " = " + proxy); //insert order
     }
