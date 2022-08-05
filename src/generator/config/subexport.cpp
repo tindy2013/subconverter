@@ -1386,6 +1386,23 @@ void proxyToQuanX(std::vector<Proxy> &nodes, INIReader &ini, std::vector<Ruleset
                 proxyStr += ", over-tls=false";
             }
             break;
+        case ProxyType::SOCKS5:
+            proxyStr = "socks5 = " + hostname + ":" + port;
+            if(!username.empty() && !password.empty())
+            {
+                proxyStr += ", username=" + username + ", password=" + password;
+                if(tlssecure)
+                {
+                    proxyStr += ", over-tls=true, tls-host=" + host;
+                    if(!tls13.is_undef())
+                        proxyStr += ", tls13=" + std::string(tls13 ? "true" : "false");
+                }
+                else
+                {
+                    proxyStr += ", over-tls=false";
+                }
+            }
+            break;
         default:
             continue;
         }
@@ -1393,7 +1410,7 @@ void proxyToQuanX(std::vector<Proxy> &nodes, INIReader &ini, std::vector<Ruleset
             proxyStr += ", fast-open=" + tfo.get_str();
         if(!udp.is_undef())
             proxyStr += ", udp-relay=" + udp.get_str();
-        if(tlssecure && !scv.is_undef() && (x.Type == ProxyType::HTTP || x.Type == ProxyType::Trojan))
+        if(tlssecure && !scv.is_undef() && (x.Type != ProxyType::Shadowsocks && x.Type != ProxyType::ShadowsocksR))
             proxyStr += ", tls-verification=" + scv.reverse().get_str();
         proxyStr += ", tag=" + remark;
 
@@ -1406,17 +1423,13 @@ void proxyToQuanX(std::vector<Proxy> &nodes, INIReader &ini, std::vector<Ruleset
         return;
 
     string_multimap original_groups;
-    string_array filtered_nodelist;
     ini.SetCurrentSection("policy");
     ini.GetItems(original_groups);
     ini.EraseSection();
 
-    std::string singlegroup;
-    std::string proxies;
-    string_array vArray;
     for(const ProxyGroupConfig &x : extra_proxy_group)
     {
-        eraseElements(filtered_nodelist);
+        string_array filtered_nodelist;
 
         switch(x.Type)
         {
@@ -1464,7 +1477,7 @@ void proxyToQuanX(std::vector<Proxy> &nodes, INIReader &ini, std::vector<Ruleset
         });
         if(iter != original_groups.end())
         {
-            vArray = split(iter->second, ",");
+            string_array vArray = split(iter->second, ",");
             if(vArray.size() > 1)
             {
                 if(trim(vArray[vArray.size() - 1]).find("img-url") == 0)
@@ -1472,9 +1485,9 @@ void proxyToQuanX(std::vector<Proxy> &nodes, INIReader &ini, std::vector<Ruleset
             }
         }
 
-        proxies = join(filtered_nodelist, ", ");
+        std::string proxies = join(filtered_nodelist, ", ");
 
-        singlegroup = type + "=" + x.Name + ", " + proxies;
+        std::string singlegroup = type + "=" + x.Name + ", " + proxies;
         ini.Set("{NONAME}", singlegroup);
     }
 
