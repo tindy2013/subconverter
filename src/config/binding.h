@@ -32,6 +32,8 @@ namespace toml
                 conf.Tolerance = toml::find_or<Integer>(v, "tolerance", 0);
                 if(v.contains("lazy"))
                     conf.Lazy = toml::find_or<bool>(v, "lazy", false);
+                if(v.contains("evaluate-before-use"))
+                    conf.EvaluateBeforeUse = toml::find_or(v, "evaluate-before-use", conf.EvaluateBeforeUse.get());
                 break;
             case "load-balance"_hash:
                 conf.Type = ProxyGroupType::LoadBalance;
@@ -46,11 +48,15 @@ namespace toml
                     conf.Strategy = BalanceStrategy::RoundRobin;
                     break;
                 }
+                if(v.contains("persistent"))
+                    conf.Persistent = toml::find_or(v, "persistent", conf.Persistent.get());
                 break;
             case "fallback"_hash:
                 conf.Type = ProxyGroupType::Fallback;
                 conf.Url = toml::find<String>(v, "url");
                 conf.Interval = toml::find<Integer>(v, "interval");
+                if(v.contains("evaluate-before-use"))
+                    conf.EvaluateBeforeUse = toml::find_or(v, "evaluate-before-use", conf.EvaluateBeforeUse.get());
                 break;
             case "relay"_hash:
                 conf.Type = ProxyGroupType::Relay;

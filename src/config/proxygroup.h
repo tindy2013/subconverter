@@ -32,6 +32,8 @@ struct ProxyGroupConfig
     BalanceStrategy Strategy = BalanceStrategy::ConsistentHashing;
     Boolean Lazy;
     Boolean DisableUdp;
+    Boolean Persistent;
+    Boolean EvaluateBeforeUse;
 
     String TypeStr() const
     {

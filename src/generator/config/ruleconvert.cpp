@@ -100,11 +100,11 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<RulesetContent> &ruleset_
     std::string rule_group, retrieved_rules, strLine;
     std::stringstream strStrm;
     const std::string field_name = new_field_name ? "rules" : "Rule";
-    YAML::Node Rules;
+    YAML::Node rules;
     size_t total_rules = 0;
 
     if(!overwrite_original_rules && base_rule[field_name].IsDefined())
-        Rules = base_rule[field_name];
+        rules = base_rule[field_name];
 
     for(RulesetContent &x : ruleset_content_array)
     {
@@ -154,16 +154,16 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<RulesetContent> &ruleset_
             if(count_least(strLine, ',', 3))
                 strLine = regReplace(strLine, "^(.*?,.*?)(,.*)(,.*)$", "$1$3$2");
             allRules.emplace_back(std::move(strLine));
-            //Rules.push_back(strLine);
+            //rules.push_back(strLine);
         }
     }
 
     for(std::string &x : allRules)
     {
-        Rules.push_back(x);
+        rules.push_back(x);
     }
 
-    base_rule[field_name] = Rules;
+    base_rule[field_name] = rules;
 }
 
 std::string rulesetToClashStr(YAML::Node &base_rule, std::vector<RulesetContent> &ruleset_content_array, bool overwrite_original_rules, bool new_field_name)
