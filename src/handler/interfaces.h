@@ -17,10 +17,8 @@ int simpleGenerator();
 std::string convertRuleset(const std::string &content, int type);
 
 std::string getConvertedRuleset(RESPONSE_CALLBACK_ARGS);
-std::string getScript(RESPONSE_CALLBACK_ARGS);
 std::string getProfile(RESPONSE_CALLBACK_ARGS);
 std::string getRuleset(RESPONSE_CALLBACK_ARGS);
-std::string getRewriteRemote(RESPONSE_CALLBACK_ARGS);
 
 std::string subconverter(RESPONSE_CALLBACK_ARGS);
 std::string simpleToClashR(RESPONSE_CALLBACK_ARGS);

@@ -262,6 +262,8 @@ int main(int argc, char *argv[])
 
     webServer.append_response("GET", "/sub", "text/plain;charset=utf-8", subconverter);
 
+    webServer.append_response("HEAD", "/sub", "text/plain", subconverter);
+
     webServer.append_response("GET", "/sub2clashr", "text/plain;charset=utf-8", simpleToClashR);
 
     webServer.append_response("GET", "/surge2clash", "text/plain;charset=utf-8", surgeConfToClash);
@@ -269,10 +271,6 @@ int main(int argc, char *argv[])
     webServer.append_response("GET", "/getruleset", "text/plain;charset=utf-8", getRuleset);
 
     webServer.append_response("GET", "/getprofile", "text/plain;charset=utf-8", getProfile);
-
-    webServer.append_response("GET", "/qx-script", "text/plain;charset=utf-8", getScript);
-
-    webServer.append_response("GET", "/qx-rewrite", "text/plain;charset=utf-8", getRewriteRemote);
 
     webServer.append_response("GET", "/render", "text/plain;charset=utf-8", renderTemplate);
 

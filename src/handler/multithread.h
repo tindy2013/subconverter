@@ -22,7 +22,7 @@ void safe_set_emojis(RegexMatchConfigs data);
 void safe_set_renames(RegexMatchConfigs data);
 void safe_set_streams(RegexMatchConfigs data);
 void safe_set_times(RegexMatchConfigs data);
-std::shared_future<std::string> fetchFileAsync(const std::string &path, const std::string &proxy, int cache_ttl, bool async = false);
-std::string fetchFile(const std::string &path, const std::string &proxy, int cache_ttl);
+std::shared_future<std::string> fetchFileAsync(const std::string &path, const std::string &proxy, int cache_ttl, bool find_local = true, bool async = false);
+std::string fetchFile(const std::string &path, const std::string &proxy, int cache_ttl, bool find_local = true);
 
 #endif // MULTITHREAD_H_INCLUDED
