@@ -18,6 +18,12 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
+      - name: Docker login
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
       - name: Get commit SHA
         id: vars
         run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
@@ -31,14 +37,7 @@ jobs:
           tags: tindy2013/subconverter:latest
           build-args: |
             SHA=${{ steps.vars.outputs.sha_short }}
-          outputs: type=docker,dest=/tmp/image_amd64.tar
-
-      - name: Upload artifact
-        if: github.ref == 'refs/heads/master'
-        uses: actions/upload-artifact@v3
-        with:
-          name: image_amd64
-          path: /tmp/image_amd64.tar
+          outputs: type=image,push=true
 
       - name: Replace tag without `v`
         if: startsWith(github.ref, 'refs/tags/')
@@ -50,21 +49,28 @@ jobs:
           result-encoding: string
 
       - name: Build release and export
+        id: build_rel
         if: startsWith(github.ref, 'refs/tags/')
         uses: docker/build-push-action@v3
         with:
           platforms: linux/amd64
           context: scripts/
           tags: tindy2013/subconverter:${{steps.version.outputs.result}}
-          outputs: type=docker,dest=/tmp/image_amd64_release.tar
-          
+          outputs: type=image,push=true
 
-      - name: Upload release artifact
+      - name: Save digest
+        if: github.ref == 'refs/heads/master'
+        run: echo ${{ steps.build.outputs.digest }} > /tmp/digest.txt
+
+      - name: Save release digest
         if: startsWith(github.ref, 'refs/tags/')
+        run: echo ${{ steps.build_rel.outputs.digest }} > /tmp/digest.txt
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: image_amd64_release
-          path: /tmp/image_amd64_release.tar
+          name: digest_amd64
+          path: /tmp/digest.txt
 
   x86_build:
     name: Build x86 Image
@@ -78,11 +84,18 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
+      - name: Docker login
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
       - name: Get commit SHA
         id: vars
         run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
 
       - name: Build and export
+        id: build
         if: github.ref == 'refs/heads/master'
         uses: docker/build-push-action@v3
         with:
@@ -91,14 +104,7 @@ jobs:
           tags: tindy2013/subconverter:latest
           build-args: |
             SHA=${{ steps.vars.outputs.sha_short }}
-          outputs: type=docker,dest=/tmp/image_386.tar
-
-      - name: Upload artifact
-        if: github.ref == 'refs/heads/master'
-        uses: actions/upload-artifact@v3
-        with:
-          name: image_386
-          path: /tmp/image_386.tar
+          outputs: type=image,push=true
 
       - name: Replace tag without `v`
         if: startsWith(github.ref, 'refs/tags/')
@@ -110,21 +116,28 @@ jobs:
           result-encoding: string
 
       - name: Build release and export
+        id: build_rel
         if: startsWith(github.ref, 'refs/tags/')
         uses: docker/build-push-action@v3
         with:
           platforms: linux/386
           context: scripts/
           tags: tindy2013/subconverter:${{steps.version.outputs.result}}
-          outputs: type=docker,dest=/tmp/image_386_release.tar
-          
+          outputs: type=image,push=true
 
-      - name: Upload release artifact
+      - name: Save digest
+        if: github.ref == 'refs/heads/master'
+        run: echo ${{ steps.build.outputs.digest }} > /tmp/digest.txt
+
+      - name: Save release digest
         if: startsWith(github.ref, 'refs/tags/')
+        run: echo ${{ steps.build_rel.outputs.digest }} > /tmp/digest.txt
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: image_386_release
-          path: /tmp/image_386_release.tar
+          name: digest_386
+          path: /tmp/digest.txt
 
   armv7_build:
     name: Build ARMv7 Image
@@ -141,11 +154,18 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
+      - name: Docker login
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
       - name: Get commit SHA
         id: vars
         run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
 
       - name: Build and export
+        id: build
         if: github.ref == 'refs/heads/master'
         uses: docker/build-push-action@v3
         with:
@@ -155,14 +175,7 @@ jobs:
           build-args: |
             SHA=${{ steps.vars.outputs.sha_short }}
             THREADS=2
-          outputs: type=docker,dest=/tmp/image_armv7.tar
-
-      - name: Upload artifact
-        if: github.ref == 'refs/heads/master'
-        uses: actions/upload-artifact@v3
-        with:
-          name: image_armv7
-          path: /tmp/image_armv7.tar
+          outputs: type=image,push=true
 
       - name: Replace tag without `v`
         if: startsWith(github.ref, 'refs/tags/')
@@ -174,6 +187,7 @@ jobs:
           result-encoding: string
 
       - name: Build release and export
+        id: build_rel
         if: startsWith(github.ref, 'refs/tags/')
         uses: docker/build-push-action@v3
         with:
@@ -182,16 +196,22 @@ jobs:
           tags: tindy2013/subconverter:${{steps.version.outputs.result}}
           build-args: |
             THREADS=2
-          outputs: type=docker,dest=/tmp/image_armv7_release.tar
-          
+          outputs: type=image,push=true
 
-      - name: Upload release artifact
+      - name: Save digest
+        if: github.ref == 'refs/heads/master'
+        run: echo ${{ steps.build.outputs.digest }} > /tmp/digest.txt
+
+      - name: Save release digest
         if: startsWith(github.ref, 'refs/tags/')
+        run: echo ${{ steps.build_rel.outputs.digest }} > /tmp/digest.txt
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: image_armv7_release
-          path: /tmp/image_armv7_release.tar
-          
+          name: digest_armv7
+          path: /tmp/digest.txt
+
   arm64_build:
     name: Build ARM64 Image
     runs-on: ubuntu-latest
@@ -203,15 +223,22 @@ jobs:
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
-        
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
+
+      - name: Docker login
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Get commit SHA
         id: vars
         run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
 
       - name: Build and export
+        id: build
         if: github.ref == 'refs/heads/master'
         uses: docker/build-push-action@v3
         with:
@@ -221,14 +248,7 @@ jobs:
           build-args: |
             SHA=${{ steps.vars.outputs.sha_short }}
             THREADS=2
-          outputs: type=docker,dest=/tmp/image_arm64.tar
-
-      - name: Upload artifact
-        if: github.ref == 'refs/heads/master'
-        uses: actions/upload-artifact@v3
-        with:
-          name: image_arm64
-          path: /tmp/image_arm64.tar
+          outputs: type=image,push=true
 
       - name: Replace tag without `v`
         if: startsWith(github.ref, 'refs/tags/')
@@ -240,6 +260,7 @@ jobs:
           result-encoding: string
 
       - name: Build release and export
+        id: build_rel
         if: startsWith(github.ref, 'refs/tags/')
         uses: docker/build-push-action@v3
         with:
@@ -248,15 +269,21 @@ jobs:
           tags: tindy2013/subconverter:${{steps.version.outputs.result}}
           build-args: |
             THREADS=2
-          outputs: type=docker,dest=/tmp/image_arm64_release.tar
-          
+          outputs: type=image,push=true
 
-      - name: Upload release artifact
+      - name: Save digest
+        if: github.ref == 'refs/heads/master'
+        run: echo ${{ steps.build.outputs.digest }} > /tmp/digest.txt
+
+      - name: Save release digest
         if: startsWith(github.ref, 'refs/tags/')
+        run: echo ${{ steps.build_rel.outputs.digest }} > /tmp/digest.txt
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: image_arm64_release
-          path: /tmp/image_arm64_release.tar
+          name: digest_arm64
+          path: /tmp/digest.txt
 
   build:
     name: Build
@@ -283,16 +310,16 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v3
         with:
-          path: /tmp
+          path: /tmp/images/
 
-      - name: Load image
-        if: github.ref == 'refs/heads/master'
-        run: |
-          docker load --input /tmp/image_amd64/image_amd64.tar
-          docker load --input /tmp/image_386/image_386.tar
-          docker load --input /tmp/image_armv7/image_armv7.tar
-          docker load --input /tmp/image_arm64/image_arm64.tar
-          docker image ls -a
+#      - name: Load image
+#        if: github.ref == 'refs/heads/master'
+#        run: |
+#          docker load --input /tmp/image_amd64/image_amd64.tar
+#          docker load --input /tmp/image_386/image_386.tar
+#          docker load --input /tmp/image_armv7/image_armv7.tar
+#          docker load --input /tmp/image_arm64/image_arm64.tar
+#          docker image ls -a
 
       - name: Docker login
         uses: docker/login-action@v2
@@ -300,22 +327,22 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Get commit SHA
-        id: vars
-        run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
-      
-      - name: Docker buildx image and push on master branch
-        if: github.ref == 'refs/heads/master'
-        uses: docker/build-push-action@v3
-        with:
-          platforms: linux/amd64,linux/arm/v7,linux/arm64,linux/386
-          context: scripts/
-          tags: tindy2013/subconverter:latest
-          build-args: |
-            SHA=${{ steps.vars.outputs.sha_short }}
-            THREADS=1
-          outputs: |
-            type=image,push=true
+#      - name: Get commit SHA
+#        id: vars
+#        run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+
+#      - name: Docker buildx image and push on master branch
+#        if: github.ref == 'refs/heads/master'
+#        uses: docker/build-push-action@v3
+#        with:
+#          platforms: linux/amd64,linux/arm/v7,linux/arm64,linux/386
+#          context: scripts/
+#          tags: tindy2013/subconverter:latest
+#          build-args: |
+#            SHA=${{ steps.vars.outputs.sha_short }}
+#            THREADS=1
+#          outputs: |
+#            type=image,push=true
 
       - name: Replace tag without `v`
         if: startsWith(github.ref, 'refs/tags/')
@@ -325,24 +352,30 @@ jobs:
           script: |
             return context.payload.ref.replace(/\/?refs\/tags\/v/, '')
           result-encoding: string
-          
-      - name: Load release image
-        if: startsWith(github.ref, 'refs/tags/')
-        run: |
-          docker load --input /tmp/image_amd64/image_amd64_release.tar
-          docker load --input /tmp/image_386/image_386_release.tar
-          docker load --input /tmp/image_armv7/image_armv7_release.tar
-          docker load --input /tmp/image_arm64/image_arm64_release.tar
-          docker image ls -a
 
-      - name: Docker buildx image and push on release
+#      - name: Load release image
+#        if: startsWith(github.ref, 'refs/tags/')
+#        run: |
+#          docker load --input /tmp/image_amd64/image_amd64_release.tar
+#          docker load --input /tmp/image_386/image_386_release.tar
+#          docker load --input /tmp/image_armv7/image_armv7_release.tar
+#          docker load --input /tmp/image_arm64/image_arm64_release.tar
+#          docker image ls -a
+
+#      - name: Docker buildx image and push on release
+#        if: startsWith(github.ref, 'refs/tags/')
+#        uses: docker/build-push-action@v3
+#        with:
+#          platforms: linux/amd64,linux/arm/v7,linux/arm64,linux/386
+#          context: scripts/
+#          tags: tindy2013/subconverter:${{steps.version.outputs.result}}
+#          build-args: THREADS=1
+#          outputs: type=image,push=true
+
+      - name: Merge and push manifest on master branch
+        if: github.ref == 'refs/heads/master'
+        run: python scripts/merge_manifest.py
+
+      - name: Merge and push manifest on release
         if: startsWith(github.ref, 'refs/tags/')
-        uses: docker/build-push-action@v3
-        with:
-          platforms: linux/amd64,linux/arm/v7,linux/arm64,linux/386
-          context: scripts/
-          tags: tindy2013/subconverter:${{steps.version.outputs.result}}
-          build-args: |
-            THREADS=1
-          outputs: |
-            type=image,push=true
+        run: python scripts/merge_manifest.py ${{steps.version.outputs.result}}
