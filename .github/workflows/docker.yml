@@ -29,6 +29,7 @@ jobs:
         run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
 
       - name: Build and export
+        id: build
         if: github.ref == 'refs/heads/master'
         uses: docker/build-push-action@v3
         with:
