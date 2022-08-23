@@ -31,7 +31,6 @@ jobs:
           tags: tindy2013/subconverter:latest
           build-args: |
             SHA=${{ steps.vars.outputs.sha_short }}
-            THREADS=1
           outputs: type=docker,dest=/tmp/image_amd64.tar
 
       - name: Upload artifact
@@ -57,8 +56,6 @@ jobs:
           platforms: linux/amd64
           context: scripts/
           tags: tindy2013/subconverter:${{steps.version.outputs.result}}
-          build-args: |
-            THREADS=1
           outputs: type=docker,dest=/tmp/image_amd64_release.tar
           
 
@@ -94,7 +91,6 @@ jobs:
           tags: tindy2013/subconverter:latest
           build-args: |
             SHA=${{ steps.vars.outputs.sha_short }}
-            THREADS=1
           outputs: type=docker,dest=/tmp/image_386.tar
 
       - name: Upload artifact
@@ -120,8 +116,6 @@ jobs:
           platforms: linux/386
           context: scripts/
           tags: tindy2013/subconverter:${{steps.version.outputs.result}}
-          build-args: |
-            THREADS=1
           outputs: type=docker,dest=/tmp/image_386_release.tar
           
 
@@ -157,7 +151,6 @@ jobs:
           tags: tindy2013/subconverter:latest
           build-args: |
             SHA=${{ steps.vars.outputs.sha_short }}
-            THREADS=1
           outputs: type=docker,dest=/tmp/image_armv7.tar
 
       - name: Upload artifact
@@ -183,8 +176,6 @@ jobs:
           platforms: linux/arm/v7
           context: scripts/
           tags: tindy2013/subconverter:${{steps.version.outputs.result}}
-          build-args: |
-            THREADS=1
           outputs: type=docker,dest=/tmp/image_armv7_release.tar
           
 
@@ -220,7 +211,6 @@ jobs:
           tags: tindy2013/subconverter:latest
           build-args: |
             SHA=${{ steps.vars.outputs.sha_short }}
-            THREADS=1
           outputs: type=docker,dest=/tmp/image_arm64.tar
 
       - name: Upload artifact
@@ -246,8 +236,6 @@ jobs:
           platforms: linux/arm64
           context: scripts/
           tags: tindy2013/subconverter:${{steps.version.outputs.result}}
-          build-args: |
-            THREADS=1
           outputs: type=docker,dest=/tmp/image_arm64_release.tar
           
 
