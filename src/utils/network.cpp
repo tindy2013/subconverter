@@ -146,6 +146,7 @@ std::string getFormData(const std::string &raw_data)
                 file.append(buffer, j);
                 j = 0;
             };
+            file.erase(file.length() - bl);
             break;
         }
         i++;
