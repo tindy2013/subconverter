@@ -34,9 +34,9 @@ void SetConsoleTitle(const std::string &title)
 }
 #endif // _WIN32
 
-/*
 void setcd(std::string &file)
 {
+/*
     char szTemp[1024] = {}, filename[256] = {};
     std::string path;
 #ifdef _WIN32
@@ -58,8 +58,11 @@ void setcd(std::string &file)
     file.assign(filename);
     path.assign(szTemp);
     chdir(path.data());
-}
 */
+    namespace fs = std::filesystem;
+	fs::path filepath(file);
+    fs::current_path(fs::absolute(filepath).parent_path());
+}
 
 void chkArg(int argc, char *argv[])
 {
@@ -118,34 +121,31 @@ void cron_tick_caller()
 
 int main(int argc, char *argv[])
 {
-    namespace fs = std::filesystem;
 #ifndef _DEBUG
-    fs::path prgpath(argv[0]);
-    fs::current_path(fs::absolute(prgpath).parent_path());
-    //setcd(prgpath); //first switch to program directory
+    std::string prgpath = argv[0];
+    setcd(prgpath); //first switch to program directory
 #endif // _DEBUG
-    if(fs::exists("pref.toml"))
+    if(fileExist("pref.toml"))
         global.prefPath = "pref.toml";
-    else if(fs::exists("pref.yml"))
+    else if(fileExist("pref.yml"))
         global.prefPath = "pref.yml";
-    else if(!fs::exists("pref.ini"))
+    else if(!fileExist("pref.ini"))
     {
-        if(fs::exists("pref.example.toml"))
+        if(fileExist("pref.example.toml"))
         {
-            fs::copy("pref.example.toml", "pref.toml");
+            fileCopy("pref.example.toml", "pref.toml");
             global.prefPath = "pref.toml";
         }
-        else if(fs::exists("pref.example.yml"))
+        else if(fileExist("pref.example.yml"))
         {
-            fs::copy("pref.example.yml", "pref.yml");
+            fileCopy("pref.example.yml", "pref.yml");
             global.prefPath = "pref.yml";
         }
-        else if(fs::exists("pref.example.ini"))
-            fs::copy("pref.example.ini", "pref.ini");
+        else if(fileExist("pref.example.ini"))
+            fileCopy("pref.example.ini", "pref.ini");
     }
     chkArg(argc, argv);
-    //setcd(global.prefPath); //then switch to pref directory
-    //global.prefPath is already at current_path, seams no need to switch.
+    setcd(global.prefPath); //then switch to pref directory
     writeLog(0, "SubConverter " VERSION " starting up..", LOG_LEVEL_INFO);
 #ifdef _WIN32
     WSADATA wsaData;
