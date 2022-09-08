@@ -60,7 +60,7 @@ void setcd(std::string &file)
     chdir(path.data());
 */
     namespace fs = std::filesystem;
-	fs::path filepath(file);
+    fs::path filepath(file);
     fs::current_path(fs::absolute(filepath).parent_path());
 }
 
