@@ -61,6 +61,7 @@ void setcd(std::string &file)
 */
     namespace fs = std::filesystem;
     fs::path filepath(file);
+    file = filepath.filename();
     fs::current_path(fs::absolute(filepath).parent_path());
 }
 
