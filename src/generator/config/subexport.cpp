@@ -297,7 +297,7 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
             case "tcp"_hash:
                 if(x.FakeType == "http")
                 {
-                    singleproxy["network"] = x.TransferProtocol;
+                    singleproxy["network"] = "http";
                     singleproxy["http-opts"]["method"] = "GET";
                     singleproxy["http-opts"]["path"].push_back(x.Path);
                     if(!x.Host.empty())
