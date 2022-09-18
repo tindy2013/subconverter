@@ -47,4 +47,5 @@ RUN apk add --no-cache --virtual .build-tools git g++ build-base linux-headers c
 
 # set entry
 WORKDIR /base
+EXPOSE 25500
 CMD subconverter
