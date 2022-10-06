@@ -305,6 +305,8 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
                         singleproxy["ws-opts"]["headers"]["Host"] = x.Host;
                     if(!x.Edge.empty())
                         singleproxy["ws-opts"]["headers"]["Edge"] = x.Edge;
+                    if(!x.Cookie.empty())
+                        singleproxy["ws-opts"]["headers"]["Cookie"] = x.Cookie;
                 }
                 else
                 {
@@ -313,6 +315,8 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
                         singleproxy["ws-headers"]["Host"] = x.Host;
                     if(!x.Edge.empty())
                         singleproxy["ws-headers"]["Edge"] = x.Edge;
+                    if(!x.Cookie.empty())
+                        singleproxy["ws-headers"]["Cookie"] = x.Cookie;
                 }
                 break;
             case "http"_hash:
