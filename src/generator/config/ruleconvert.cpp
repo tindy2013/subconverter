@@ -177,7 +177,7 @@ std::string rulesetToClashStr(YAML::Node &base_rule, std::vector<RulesetContent>
     if(!overwrite_original_rules && base_rule[field_name].IsDefined())
     {
         for(size_t i = 0; i < base_rule[field_name].size(); i++)
-            output_content += " - " + safe_as<std::string>(base_rule[field_name][i]) + "\n";
+            output_content += "  - " + safe_as<std::string>(base_rule[field_name][i]) + "\n";
     }
     base_rule.remove(field_name);
 
@@ -200,7 +200,7 @@ std::string rulesetToClashStr(YAML::Node &base_rule, std::vector<RulesetContent>
             strLine += "," + rule_group;
             if(count_least(strLine, ',', 3))
                 strLine = regReplace(strLine, "^(.*?,.*?)(,.*)(,.*)$", "$1$3$2");
-            output_content += " - " + strLine + "\n";
+            output_content += "  - " + strLine + "\n";
             total_rules++;
             continue;
         }
@@ -228,7 +228,7 @@ std::string rulesetToClashStr(YAML::Node &base_rule, std::vector<RulesetContent>
             strLine += "," + rule_group;
             if(count_least(strLine, ',', 3))
                 strLine = regReplace(strLine, "^(.*?,.*?)(,.*)(,.*)$", "$1$3$2");
-            output_content += " - " + strLine + "\n";
+            output_content += "  - " + strLine + "\n";
             total_rules++;
         }
     }
