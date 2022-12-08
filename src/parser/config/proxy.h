@@ -14,6 +14,7 @@ enum ProxyType
     ShadowsocksR,
     VMess,
     Vless,
+    Hysteria,
     Trojan,
     Snell,
     HTTP,
@@ -92,12 +93,19 @@ struct Proxy
 
     uint16_t SnellVersion = 0;
     String ServerName;
+
+    String Auth;
+    String Alpn;
+    String UpMbps;
+    String DownMbps;
+    String Insecure;
 };
 
 #define SS_DEFAULT_GROUP "SSProvider"
 #define SSR_DEFAULT_GROUP "SSRProvider"
 #define V2RAY_DEFAULT_GROUP "V2RayProvider"
 #define XRAY_DEFAULT_GROUP "XRayProvider"
+#define HYSTERIA_DEFAULT_GROUP "HysteriaProvider"
 #define SOCKS_DEFAULT_GROUP "SocksProvider"
 #define HTTP_DEFAULT_GROUP "HTTPProvider"
 #define TROJAN_DEFAULT_GROUP "TrojanProvider"

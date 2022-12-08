@@ -340,6 +340,24 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
                 continue;
             }
             break;
+        case ProxyType::Hysteria:
+            singleproxy["type"] = "hysteria";
+            singleproxy["auth_str"] = x.Auth;
+            singleproxy["up"] = x.UpMbps;
+            singleproxy["down"] = x.DownMbps;
+            if(!x.FakeType.empty())
+                singleproxy["protocol"] = x.Type;
+            if(!x.Host.empty())
+                singleproxy["sni"] = x.Host;
+            if(!scv.is_undef())
+                singleproxy["skip-cert-verify"] = scv.get();
+            if(x.Insecure == "1")
+                singleproxy["skip-cert-verify"] = true;
+            if(!x.Alpn.empty())
+                singleproxy["apln"].push_back(x.Alpn);
+            if(!x.OBFSParam.empty())
+                singleproxy["obfs"] = x.OBFSParam;
+            break;
         case ProxyType::Vless:
             singleproxy["type"] = "vless";
             singleproxy["uuid"] = x.UserId;
