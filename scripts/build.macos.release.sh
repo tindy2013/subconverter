@@ -31,7 +31,7 @@ git clone https://github.com/PerMalmberg/libcron --depth=1
 cd libcron
 git submodule update --init
 cmake -DCMAKE_BUILD_TYPE=Release .
-make libcron -j8
+make libcron install -j8
 install -m644 libcron/out/Release/liblibcron.a /usr/local/lib/
 install -d /usr/local/include/libcron/
 install -m644 libcron/include/libcron/* /usr/local/include/libcron/
@@ -41,7 +41,7 @@ cd ..
 
 git clone https://github.com/ToruNiina/toml11 --depth=1
 cd toml11
-cmake .
+cmake -DCMAKE_CXX_STANDARD=11 .
 make install -j4
 cd ..
 
