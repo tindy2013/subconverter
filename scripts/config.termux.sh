@@ -40,6 +40,6 @@ cd ..
 
 git clone https://github.com/ToruNiina/toml11 --depth=1
 cd toml11
-cmake -DCMAKE_INSTALL_PREFIX=$PREFIX .
+cmake -DCMAKE_CXX_STANDARD=11 -DCMAKE_INSTALL_PREFIX=$PREFIX .
 make install -j3
 cd ..
