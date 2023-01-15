@@ -87,6 +87,7 @@ struct Proxy
     String GRPCMode;
 
     tribool UDP;
+    tribool XUDP;
     tribool TCPFastOpen;
     tribool AllowInsecure;
     tribool TLS13;
