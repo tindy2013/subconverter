@@ -81,7 +81,7 @@ void hysteriaConstruct(Proxy &node, const std::string &group, const std::string 
 
 void vlessConstruct(Proxy &node, const std::string &group, const std::string &remarks, const std::string &add, const std::string &port, const std::string &type, const std::string &id, const std::string &aid, const std::string &net, const std::string &cipher, const std::string &flow, const std::string &mode, const std::string &path, const std::string &host, const std::string &edge, const std::string &tls, tribool udp, tribool tfo, tribool scv, tribool tls13)
 {
-    commonConstruct(node, ProxyType::Vless, group, remarks, add, port, udp, tfo, scv, tls13);
+    commonConstruct(node, ProxyType::VLESS, group, remarks, add, port, udp, tfo, scv, tls13);
     node.UserId = id.empty() ? "00000000-0000-0000-0000-000000000000" : id;
     node.AlterId = to_int(aid);
     node.EncryptMethod = cipher;

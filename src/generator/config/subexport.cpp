@@ -219,9 +219,9 @@ proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGroupCo
         tribool scv = ext.skip_cert_verify;
         tribool tfo = ext.tfo;
         udp.define(x.UDP);
-        xudp.define(x.XUDP)
+        xudp.define(x.XUDP);
         scv.define(x.AllowInsecure);
-        tfo.define(x.TCPFastOpen)
+        tfo.define(x.TCPFastOpen);
 
         singleproxy["name"] = remark;
         singleproxy["server"] = x.Hostname;
@@ -262,7 +262,7 @@ proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGroupCo
                 singleproxy["alterId"] = x.AlterId;
                 singleproxy["cipher"] = x.EncryptMethod;
                 singleproxy["tls"] = x.TLSSecure;
-                if (xudp) && (udp)
+                if (xudp && udp)
                     singleproxy["xudp"] = true;
                 if (!scv.is_undef())
                     singleproxy["skip-cert-verify"] = scv.get();
@@ -332,11 +332,11 @@ proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGroupCo
                 if (!x.OBFSParam.empty())
                     singleproxy["obfs"] = x.OBFSParam;
                 break;
-            case ProxyType::Vless:
+            case ProxyType::VLESS:
                 singleproxy["type"] = "vless";
                 singleproxy["uuid"] = x.UserId;
                 singleproxy["tls"] = x.TLSSecure;
-                if (xudp) && (udp)
+                if (xudp && udp)
                     singleproxy["xudp"] = true;
                 if (!x.Host.empty())
                     singleproxy["servername"] = x.Host;

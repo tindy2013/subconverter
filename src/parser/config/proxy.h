@@ -13,7 +13,7 @@ enum ProxyType
     Shadowsocks,
     ShadowsocksR,
     VMess,
-    Vless,
+    VLESS,
     Hysteria,
     Trojan,
     Snell,
@@ -32,8 +32,10 @@ inline String getProxyTypeName(int type)
         return "SSR";
     case ProxyType::VMess:
         return "VMess";
-    case ProxyType::Vless:
-        return "Vless";
+    case ProxyType::VLESS:
+        return "VLESS";
+    case ProxyType::Hysteria:
+        return "Hysteria";
     case ProxyType::Trojan:
         return "Trojan";
     case ProxyType::Snell:
