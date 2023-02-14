@@ -27,13 +27,8 @@ cd ..
 git clone https://github.com/PerMalmberg/libcron --depth=1
 cd libcron
 git submodule update --init
-cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release .
-make libcron -j4
-install -m644 libcron/out/Release/liblibcron.a "$MINGW_PREFIX/lib/"
-install -d "$MINGW_PREFIX/include/libcron/"
-install -m644 libcron/include/libcron/* "$MINGW_PREFIX/include/libcron/"
-install -d "$MINGW_PREFIX/include/date/"
-install -m644 libcron/externals/date/include/date/* "$MINGW_PREFIX/include/date/"
+cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$MINGW_PREFIX" .
+make libcron install -j4
 cd ..
 
 git clone https://github.com/Tencent/rapidjson --depth=1
@@ -44,7 +39,7 @@ cd ..
 
 git clone https://github.com/ToruNiina/toml11 --depth=1
 cd toml11
-cmake -DCMAKE_INSTALL_PREFIX="$MINGW_PREFIX" -G "Unix Makefiles" .
+cmake -DCMAKE_INSTALL_PREFIX="$MINGW_PREFIX" -G "Unix Makefiles" -DCMAKE_CXX_STANDARD=11 .
 make install -j4
 cd ..
 
