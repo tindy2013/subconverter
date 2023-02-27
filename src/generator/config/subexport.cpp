@@ -235,6 +235,8 @@ proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGroupCo
                 singleproxy["type"] = "ss";
                 singleproxy["cipher"] = x.EncryptMethod;
                 singleproxy["password"] = x.Password;
+                if (!x.TCPFastOpen.is_undef())
+                    singleproxy["tfo"] = x.TCPFastOpen.get();
                 if (std::all_of(x.Password.begin(), x.Password.end(), ::isdigit) && !x.Password.empty())
                     singleproxy["password"].SetTag("str");
                 switch (hash_(x.Plugin)) {
@@ -264,6 +266,8 @@ proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGroupCo
                 singleproxy["tls"] = x.TLSSecure;
                 if (xudp && udp)
                     singleproxy["xudp"] = true;
+                if (!x.TCPFastOpen.is_undef())
+                    singleproxy["tfo"] = x.TCPFastOpen.get();
                 if (!scv.is_undef())
                     singleproxy["skip-cert-verify"] = scv.get();
                 if (!x.ServerName.empty())
@@ -336,6 +340,8 @@ proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGroupCo
                 singleproxy["type"] = "vless";
                 singleproxy["uuid"] = x.UserId;
                 singleproxy["tls"] = x.TLSSecure;
+                if (!x.TCPFastOpen.is_undef())
+                    singleproxy["tfo"] = x.TCPFastOpen.get();
                 if (xudp && udp)
                     singleproxy["xudp"] = true;
                 if (!x.Host.empty())
@@ -403,6 +409,8 @@ proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGroupCo
                 singleproxy["type"] = "ssr";
                 singleproxy["cipher"] = x.EncryptMethod == "none" ? "dummy" : x.EncryptMethod;
                 singleproxy["password"] = x.Password;
+                if (!x.TCPFastOpen.is_undef())
+                    singleproxy["tfo"] = x.TCPFastOpen.get();
                 if (std::all_of(x.Password.begin(), x.Password.end(), ::isdigit) && !x.Password.empty())
                     singleproxy["password"].SetTag("str");
                 singleproxy["protocol"] = x.Protocol;
@@ -444,6 +452,8 @@ proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGroupCo
             case ProxyType::Trojan:
                 singleproxy["type"] = "trojan";
                 singleproxy["password"] = x.Password;
+                if (!x.TCPFastOpen.is_undef())
+                    singleproxy["tfo"] = x.TCPFastOpen.get();
                 if (!x.Host.empty())
                     singleproxy["sni"] = x.Host;
                 if (std::all_of(x.Password.begin(), x.Password.end(), ::isdigit) && !x.Password.empty())
@@ -469,6 +479,8 @@ proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGroupCo
             case ProxyType::Snell:
                 singleproxy["type"] = "snell";
                 singleproxy["psk"] = x.Password;
+                if (!x.TCPFastOpen.is_undef())
+                    singleproxy["tfo"] = x.TCPFastOpen.get();
                 if (x.SnellVersion != 0)
                     singleproxy["version"] = x.SnellVersion;
                 if (!x.OBFS.empty()) {
