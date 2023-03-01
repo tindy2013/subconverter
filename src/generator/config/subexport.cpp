@@ -324,7 +324,7 @@ proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGroupCo
                 if (!x.TCPFastOpen.is_undef())
                     singleproxy["fast-open"] = x.TCPFastOpen.get();
                 if (!x.FakeType.empty())
-                    singleproxy["protocol"] = x.Type;
+                    singleproxy["protocol"] = x.FakeType;
                 if (!x.Host.empty())
                     singleproxy["sni"] = x.Host;
                 if (!scv.is_undef())
@@ -332,7 +332,7 @@ proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGroupCo
                 if (x.Insecure == "1")
                     singleproxy["skip-cert-verify"] = true;
                 if (!x.Alpn.empty())
-                    singleproxy["apln"].push_back(x.Alpn);
+                    singleproxy["alpn"].push_back(x.Alpn);
                 if (!x.OBFSParam.empty())
                     singleproxy["obfs"] = x.OBFSParam;
                 break;
