@@ -1,0 +1,2 @@
+DOMAIN-SUFFIX,openai.com
+DOMAIN-SUFFIX,bing.com
