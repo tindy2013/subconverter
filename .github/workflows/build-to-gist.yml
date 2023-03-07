@@ -1,0 +1,24 @@
+name: Build to Gist
+on: 
+  push:
+    branches: [ dev ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Update jms.ini file
+      run: |
+        echo "url=${{ secrets.URL }}" >> replacements/profiles/jms.ini
+    - name: Build Docker image
+      run: docker build -t my-image .
+    - name: Run command
+      run: docker run --rm -v "$(pwd)"/output:/base/output my-image subconverter -g
+    - name: Push to gist
+      uses: exuanbo/actions-deploy-gist@v1
+      with:
+        token: ${{ secrets.TOKEN }}
+        gist_id: ${{ secrets.GIST_ID }}
+        file_path: output/jms.yaml
+        file_type: text
