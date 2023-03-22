@@ -103,6 +103,7 @@ struct Proxy
     String DownMbps;
     String Insecure;
 
+    String Fingerprint;
     String PublicKey;
     String ShortId;
 
