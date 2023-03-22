@@ -1306,7 +1306,9 @@ void proxyToQuanX(std::vector<Proxy> &nodes, INIReader &ini, std::vector<Ruleset
         case ProxyType::VMess:
             if(method == "auto")
                 method = "chacha20-ietf-poly1305";
-            proxyStr = "vmess = " + hostname + ":" + port + ", method=" + method + ", password=" + id + ", aead=" + (x.AlterId == 0 ? "true" : "false");
+            proxyStr = "vmess = " + hostname + ":" + port + ", method=" + method + ", password=" + id;
+            if (x.AlterId != 0)
+                proxyStr += ", aead=false";
             if(tlssecure && !tls13.is_undef())
                 proxyStr += ", tls13=" + std::string(tls13 ? "true" : "false");
             if(transproto == "ws")
