@@ -1,7 +1,7 @@
 #!/bin/bash
 set -xe
 
-git clone https://github.com/curl/curl --depth=1
+git clone https://github.com/curl/curl --depth=1 --branch curl-7_88_1
 cd curl
 cmake -DCMAKE_BUILD_TYPE=Release -DCURL_USE_LIBSSH2=OFF -DHTTP_ONLY=ON -DCURL_USE_SCHANNEL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_CURL_EXE=OFF -DCMAKE_INSTALL_PREFIX="$MINGW_PREFIX" -G "Unix Makefiles" -DHAVE_LIBIDN2=OFF -DCURL_USE_LIBPSL=OFF .
 make install -j4
