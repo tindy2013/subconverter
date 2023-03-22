@@ -102,6 +102,10 @@ struct Proxy
     String UpMbps;
     String DownMbps;
     String Insecure;
+
+    String PublicKey;
+    String ShortId;
+
 };
 
 #define SS_DEFAULT_GROUP "SSProvider"
