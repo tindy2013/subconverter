@@ -1794,9 +1794,9 @@ std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf,
 
         tribool scv = ext.skip_cert_verify;
         scv.define(x.AllowInsecure);
-/*
+
         proxy.clear();
-*/
+
         switch(x.Type)
         {
         case ProxyType::Shadowsocks:
@@ -1854,12 +1854,12 @@ std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf,
             continue;
         }
 
-        /*
+
         if(ext.tfo)
-            proxy += ", tfo=true";
+            proxy += ", fast-open=true";
         if(ext.udp)
-            proxy += ", udp-relay=true";
-        */
+            proxy += ", udp=true";
+
 
         if(ext.nodelist)
             output_nodelist += remark + " = " + proxy + "\n";
