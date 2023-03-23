@@ -1794,9 +1794,9 @@ std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf,
 
         tribool scv = ext.skip_cert_verify;
         scv.define(x.AllowInsecure);
-
+/*
         proxy.clear();
-
+*/
         switch(x.Type)
         {
         case ProxyType::Shadowsocks:
