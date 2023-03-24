@@ -1833,13 +1833,11 @@ std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf,
         case ProxyType::ShadowsocksR:
             proxy = "ShadowsocksR," + hostname + "," + port + "," + method + ",\"" + password + "\"," + protocol + ",{" + protoparam + "}," + obfs + ",{" + obfsparam + "}";
             break;
-        /*
         case ProxyType::SOCKS5:
             proxy = "socks5, " + hostname + ", " + port + ", " + username + ", " + password;
             if(ext.skip_cert_verify)
                 proxy += ", skip-cert-verify:1";
             break;
-        */
         case ProxyType::HTTP:
             proxy = "http," + hostname + "," + port + "," + username + "," + password;
             break;
