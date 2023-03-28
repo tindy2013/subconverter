@@ -1,2 +1,5 @@
 DOMAIN-SUFFIX,openai.com
 DOMAIN-SUFFIX,bing.com
+DOMAIN-SUFFIX,discord.com
+DOMAIN-SUFFIX,discordapp.com
+DOMAIN-SUFFIX,discordapp.net
