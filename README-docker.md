@@ -10,6 +10,18 @@ docker run -d --restart=always -p 25500:25500 tindy2013/subconverter:latest
 curl http://localhost:25500/version
 # if you see `subconverter vx.x.x backend` then the container is up and running
 ```
+Or run in docker-compose:
+```yaml
+---
+version: '3'
+services:
+  subconverter:
+    image: tindy2013/subconverter:latest
+    container_name: subconverter
+    ports:
+      - "15051:25500"
+    restart: always
+```
 
 If you want to update `pref` configuration inside the docker, you can use the following command:
 ```bash
