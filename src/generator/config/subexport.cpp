@@ -1883,6 +1883,7 @@ std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf,
         {
         case ProxyGroupType::Select:
         case ProxyGroupType::URLTest:
+        case ProxyGroupType::Relay:
         case ProxyGroupType::Fallback:
             break;
         case ProxyGroupType::SSID:
