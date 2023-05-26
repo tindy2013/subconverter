@@ -1913,7 +1913,20 @@ std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf,
         */
         proxy += join(filtered_nodelist, ",");
         if(x.Type == ProxyGroupType::URLTest || x.Type == ProxyGroupType::Fallback)
+            /*
             proxy += ",url=" + x.Url + ",interval=" + std::to_string(x.Interval);
+            */
+         {
+            proxy += ",url=" + x.Url + ",interval=" + std::to_string(x.Interval);
+            if(x.Tolerance > 0)
+                proxy += ",tolerance=" + std::to_string(x.Tolerance);
+            if(x.Timeout > 0)
+                proxy += ",max-timeout=" + std::to_string(x.Timeout);
+            if(!x.Persistent.is_undef())
+                proxy += ",persistent=" + x.Persistent.get_str();
+            if(!x.EvaluateBeforeUse.is_undef())
+                proxy += ",evaluate-before-use=" + x.EvaluateBeforeUse.get_str();
+        } 
 
         ini.Set("{NONAME}", x.Name + " = " + proxy); //insert order
     }
