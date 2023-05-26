@@ -1890,7 +1890,7 @@ std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf,
             if(x.Proxies.size() < 2)
                 continue;
             proxy = x.TypeStr() + ",default=" + x.Proxies[0] + ",cellular=" + x.Proxies[0] + ",";
-            proxy += join(x.Proxies.begin() + 1, x.Proxies.end(), ",\"");
+            proxy += join(x.Proxies.begin() + 1, x.Proxies.end(), ",");
             /*
             proxy += join("\"" , x.Proxies.begin() + 1 , "\"", x.Proxies.end(), ",");
             */
