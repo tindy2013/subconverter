@@ -39,7 +39,7 @@ namespace toml
                 conf.Type = ProxyGroupType::LoadBalance;
                 conf.Url = toml::find<String>(v, "url");
                 conf.Interval = toml::find<Integer>(v, "interval");
-                conf.Algorithm = toml::find<String>(v, "algorithm");
+               // conf.Algorithm = toml::find<String>(v, "algorithm");
                 switch(hash_(strategy))
                 {
                 case "consistent-hashing"_hash:
@@ -231,7 +231,7 @@ namespace INIBinding
                         continue;
                     rules_upper_bound -= 2;
                     conf.Url = vArray[rules_upper_bound];
-                    parseGroupTimes(vArray[rules_upper_bound + 1], &conf.Interval, &conf.Timeout, &conf.Tolerance, conf.Algorithm);
+                    parseGroupTimes(vArray[rules_upper_bound + 1], &conf.Interval, &conf.Timeout, &conf.Tolerance);
                 }
 
                 for(unsigned int i = 2; i < rules_upper_bound; i++)
