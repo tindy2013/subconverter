@@ -1885,6 +1885,7 @@ std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf,
         case ProxyGroupType::URLTest:
         case ProxyGroupType::Relay:
         case ProxyGroupType::Fallback:
+        case ProxyGroupType::LoadBalance:
             break;
         case ProxyGroupType::SSID:
             if(x.Proxies.size() < 2)
@@ -1912,7 +1913,7 @@ std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf,
             proxy += "," + y;
         */
         proxy += join(filtered_nodelist, ",");
-        if(x.Type == ProxyGroupType::URLTest || x.Type == ProxyGroupType::Fallback)
+        if(x.Type == ProxyGroupType::URLTest || x.Type == ProxyGroupType::Fallback  || x.Type == ProxyGroupType::LoadBalance)
             /*
             proxy += ",url=" + x.Url + ",interval=" + std::to_string(x.Interval);
             */
@@ -1923,7 +1924,7 @@ std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf,
             if(x.Timeout > 0)
                 proxy += ",max-timeout=" + std::to_string(x.Timeout);
             if(!x.Persistent.is_undef())
-                proxy += ",persistent=" + x.Persistent.get_str();
+                proxy += ",algorithm=" + x.Persistent.get_str();
             if(!x.EvaluateBeforeUse.is_undef())
                 proxy += ",evaluate-before-use=" + x.EvaluateBeforeUse.get_str();
         } 
