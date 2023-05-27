@@ -1923,7 +1923,7 @@ std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf,
                 proxy += ",tolerance=" + std::to_string(x.Tolerance);
             if(x.Timeout > 0)
                 proxy += ",max-timeout=" + std::to_string(x.Timeout);
-            if(!x.Persistent.is_undef())
+            if(!x.Persistent != NULL)
                 proxy += ",algorithm=" + x.Persistent.get_str();
             if(!x.EvaluateBeforeUse.is_undef())
                 proxy += ",evaluate-before-use=" + x.EvaluateBeforeUse.get_str();
