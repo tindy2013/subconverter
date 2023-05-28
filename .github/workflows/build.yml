@@ -51,11 +51,11 @@ jobs:
         name: subconverter_linux64
         path: subconverter/
     - name: Package Release
-      if: ${{ github.event_name != 'pull_request' && startsWith(github.ref, 'refs/tags/') }}
+      if: startsWith(github.ref, 'refs/tags/')
       run: tar czf subconverter_linux64.tar.gz subconverter
     - name: Draft Release
       uses: softprops/action-gh-release@v1
-      if: ${{ github.event_name != 'pull_request' && startsWith(github.ref, 'refs/tags/') }}
+      if: startsWith(github.ref, 'refs/tags/')
       with:
         files: subconverter_linux64.tar.gz
         draft: true
