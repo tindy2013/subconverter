@@ -1883,10 +1883,14 @@ std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf,
         {
         case ProxyGroupType::Select:
         case ProxyGroupType::URLTest:
-        case ProxyGroupType::Relay:
         case ProxyGroupType::Fallback:
         case ProxyGroupType::LoadBalance:
             break;
+        case ProxyGroupType::Relay:
+                /*
+            type = "relaymark";
+            break;
+            */
         case ProxyGroupType::SSID:
             if(x.Proxies.size() < 2)
                 continue;
