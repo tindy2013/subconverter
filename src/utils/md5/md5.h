@@ -1,6 +1,7 @@
 #ifndef __MD5_H__
 #define __MD5_H__
 
+#include <cstdint>
 /*
  * Size of a standard MD5 signature in bytes.  This definition is for
  * external programs only.  The MD5 routines themselves reference the
