@@ -2,6 +2,7 @@
 #define STRING_HASH_H_INCLUDED
 
 #include <string>
+#include <cstdint>
 
 using hash_t = uint64_t;
 
