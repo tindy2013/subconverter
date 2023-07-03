@@ -18,7 +18,7 @@ std::string hostnameToIPAddr(const std::string &host)
     if(retVal != 0)
     {
         freeaddrinfo(retAddrInfo);
-        return std::string();
+        return "";
     }
 
     for(cur = retAddrInfo; cur != NULL; cur = cur->ai_next)

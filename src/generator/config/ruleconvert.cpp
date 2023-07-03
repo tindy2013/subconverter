@@ -245,28 +245,28 @@ void rulesetToSurge(INIReader &base_rule, std::vector<RulesetContent> &ruleset_c
     switch(surge_ver) //other version: -3 for Surfboard, -4 for Loon
     {
     case 0:
-        base_rule.SetCurrentSection("RoutingRule"); //Mellow
+        base_rule.set_current_section("RoutingRule"); //Mellow
         break;
     case -1:
-        base_rule.SetCurrentSection("filter_local"); //Quantumult X
+        base_rule.set_current_section("filter_local"); //Quantumult X
         break;
     case -2:
-        base_rule.SetCurrentSection("TCP"); //Quantumult
+        base_rule.set_current_section("TCP"); //Quantumult
         break;
     default:
-        base_rule.SetCurrentSection("Rule");
+        base_rule.set_current_section("Rule");
     }
 
     if(overwrite_original_rules)
     {
-        base_rule.EraseSection();
+        base_rule.erase_section();
         switch(surge_ver)
         {
         case -1:
-            base_rule.EraseSection("filter_remote");
+            base_rule.erase_section("filter_remote");
             break;
         case -4:
-            base_rule.EraseSection("Remote Rule");
+            base_rule.erase_section("Remote Rule");
             break;
         }
     }
@@ -308,7 +308,7 @@ void rulesetToSurge(INIReader &base_rule, std::vector<RulesetContent> &ruleset_c
             if(surge_ver == -1 && x.rule_type == RULESET_QUANX && isLink(rule_path))
             {
                 strLine = rule_path + ", tag=" + rule_group + ", force-policy=" + rule_group + ", enabled=true";
-                base_rule.Set("filter_remote", "{NONAME}", strLine);
+                base_rule.set("filter_remote", "{NONAME}", strLine);
                 continue;
             }
             if(fileExist(rule_path))
@@ -325,13 +325,13 @@ void rulesetToSurge(INIReader &base_rule, std::vector<RulesetContent> &ruleset_c
                 {
                     strLine = remote_path_prefix + "/getruleset?type=2&url=" + urlSafeBase64Encode(rule_path_typed) + "&group=" + urlSafeBase64Encode(rule_group);
                     strLine += ", tag=" + rule_group + ", enabled=true";
-                    base_rule.Set("filter_remote", "{NONAME}", strLine);
+                    base_rule.set("filter_remote", "{NONAME}", strLine);
                     continue;
                 }
                 else if(surge_ver == -4 && remote_path_prefix.size())
                 {
                     strLine = remote_path_prefix + "/getruleset?type=1&url=" + urlSafeBase64Encode(rule_path_typed) + "," + rule_group;
-                    base_rule.Set("Remote Rule", "{NONAME}", strLine);
+                    base_rule.set("Remote Rule", "{NONAME}", strLine);
                     continue;
                 }
             }
@@ -359,13 +359,13 @@ void rulesetToSurge(INIReader &base_rule, std::vector<RulesetContent> &ruleset_c
                 {
                     strLine = remote_path_prefix + "/getruleset?type=2&url=" + urlSafeBase64Encode(rule_path_typed) + "&group=" + urlSafeBase64Encode(rule_group);
                     strLine += ", tag=" + rule_group + ", enabled=true";
-                    base_rule.Set("filter_remote", "{NONAME}", strLine);
+                    base_rule.set("filter_remote", "{NONAME}", strLine);
                     continue;
                 }
                 else if(surge_ver == -4)
                 {
                     strLine = rule_path + "," + rule_group;
-                    base_rule.Set("Remote Rule", "{NONAME}", strLine);
+                    base_rule.set("Remote Rule", "{NONAME}", strLine);
                     continue;
                 }
             }
@@ -450,6 +450,6 @@ void rulesetToSurge(INIReader &base_rule, std::vector<RulesetContent> &ruleset_c
 
     for(std::string &x : allRules)
     {
-        base_rule.Set("{NONAME}", x);
+        base_rule.set("{NONAME}", x);
     }
 }

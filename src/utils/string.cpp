@@ -234,13 +234,13 @@ std::string trimWhitespace(const std::string &str, bool before, bool after)
     {
         epos = str.find_last_not_of(whitespaces);
         if(epos == std::string::npos)
-            return std::string();
+            return "";
     }
     if(before)
     {
         bpos = str.find_first_not_of(whitespaces);
         if(bpos == std::string::npos)
-            return std::string();
+            return "";
     }
     return str.substr(bpos, epos - bpos + 1);
 }
@@ -295,7 +295,7 @@ std::string getUrlArg(const std::string &url, const std::string &request)
             break;
         pos--;
     }
-    return std::string();
+    return "";
 }
 
 std::string replaceAllDistinct(std::string str, const std::string &old_value, const std::string &new_value)

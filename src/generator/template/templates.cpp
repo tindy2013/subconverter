@@ -151,7 +151,7 @@ int render_template(const std::string &content, const template_args &vars, std::
     {
         std::string key = args.at(0)->get<std::string>(), value = args.at(1)->get<std::string>();
         parse_json_pointer(data, key, value);
-        return std::string();
+        return "";
     });
     env.add_callback("split", 3, [&data](inja::Arguments &args)
     {
@@ -159,7 +159,7 @@ int render_template(const std::string &content, const template_args &vars, std::
         string_array vArray = split(content, delim);
         for(size_t index = 0; index < vArray.size(); index++)
             parse_json_pointer(data, dest + "." + std::to_string(index), vArray[index]);
-        return std::string();
+        return "";
     });
     env.add_callback("append", 2, [&data](inja::Arguments &args)
     {
@@ -175,7 +175,7 @@ int render_template(const std::string &content, const template_args &vars, std::
         }
         output_content.append(value);
         data[nlohmann::json::json_pointer(pointer)] = output_content;
-        return std::string();
+        return "";
     });
     env.add_callback("getLink", 1, [](inja::Arguments &args)
     {

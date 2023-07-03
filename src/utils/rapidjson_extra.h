@@ -21,7 +21,7 @@ template <typename T> void exception_thrower(T e)
 inline void operator >> (const rapidjson::Value& value, std::string& i)
 {
     if(value.IsNull())
-        i = std::string();
+        i = "";
     else if(value.IsString())
         i = std::string(value.GetString());
     else if(value.IsInt64())
@@ -31,7 +31,7 @@ inline void operator >> (const rapidjson::Value& value, std::string& i)
     else if(value.IsDouble())
         i = std::to_string(value.GetDouble());
     else
-        i = std::string();
+        i = "";
 }
 
 inline void operator >> (const rapidjson::Value& value, int& i)

@@ -958,15 +958,15 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
 
     base_content = fetchFile(url, proxy, global.cacheConfig);
 
-    if(ini.Parse(base_content) != INIREADER_EXCEPTION_NONE)
+    if(ini.parse(base_content) != INIREADER_EXCEPTION_NONE)
     {
-        std::string errmsg = "Parsing Surge config failed! Reason: " + ini.GetLastError();
+        std::string errmsg = "Parsing Surge config failed! Reason: " + ini.get_last_error();
         //std::cerr<<errmsg<<"\n";
         writeLog(0, errmsg, LOG_LEVEL_ERROR);
         *status_code = 400;
         return errmsg;
     }
-    if(!ini.SectionExist("Proxy") || !ini.SectionExist("Proxy Group") || !ini.SectionExist("Rule"))
+    if(!ini.section_exist("Proxy") || !ini.section_exist("Proxy Group") || !ini.section_exist("Rule"))
     {
         std::string errmsg = "Incomplete surge config! Missing critical sections!";
         //std::cerr<<errmsg<<"\n";
@@ -977,7 +977,7 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
 
     //scan groups first, get potential policy-path
     string_multimap section;
-    ini.GetItems("Proxy Group", section);
+    ini.get_items("Proxy Group", section);
     std::string name, type, content;
     string_array links;
     links.emplace_back(url);
@@ -1058,7 +1058,7 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
     proxyToClash(nodes, clash, dummy_groups, false, ext);
 
     section.clear();
-    ini.GetItems("Proxy", section);
+    ini.get_items("Proxy", section);
     for(auto &x : section)
     {
         singlegroup.reset();
@@ -1088,7 +1088,7 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
     }
 
     eraseElements(dummy_str_array);
-    ini.GetAll("Rule", "{NONAME}", dummy_str_array);
+    ini.get_all("Rule", "{NONAME}", dummy_str_array);
     YAML::Node rule;
     string_array strArray;
     std::string strLine;
@@ -1166,17 +1166,17 @@ std::string getProfile(RESPONSE_CALLBACK_ARGS)
     //std::cerr<<"Trying to load profile '" + name + "'.\n";
     writeLog(0, "Trying to load profile '" + name + "'.", LOG_LEVEL_INFO);
     INIReader ini;
-    if(ini.Parse(profile_content) != INIREADER_EXCEPTION_NONE && !ini.SectionExist("Profile"))
+    if(ini.parse(profile_content) != INIREADER_EXCEPTION_NONE && !ini.section_exist("Profile"))
     {
-        //std::cerr<<"Load profile failed! Reason: "<<ini.GetLastError()<<"\n";
-        writeLog(0, "Load profile failed! Reason: " + ini.GetLastError(), LOG_LEVEL_ERROR);
+        //std::cerr<<"Load profile failed! Reason: "<<ini.get_last_error()<<"\n";
+        writeLog(0, "Load profile failed! Reason: " + ini.get_last_error(), LOG_LEVEL_ERROR);
         *status_code = 500;
         return "Broken profile!";
     }
     //std::cerr<<"Trying to parse profile '" + name + "'.\n";
     writeLog(0, "Trying to parse profile '" + name + "'.", LOG_LEVEL_INFO);
     string_multimap contents;
-    ini.GetItems("Profile", contents);
+    ini.get_items("Profile", contents);
     if(!contents.size())
     {
         //std::cerr<<"Load profile failed! Reason: Empty Profile section\n";
@@ -1218,12 +1218,12 @@ std::string getProfile(RESPONSE_CALLBACK_ARGS)
                 writeLog(0, "Ignoring non-exist profile '" + name + "'...", LOG_LEVEL_WARNING);
                 continue;
             }
-            if(ini.ParseFile(name) != INIREADER_EXCEPTION_NONE && !ini.SectionExist("Profile"))
+            if(ini.parse_file(name) != INIREADER_EXCEPTION_NONE && !ini.section_exist("Profile"))
             {
                 writeLog(0, "Ignoring broken profile '" + name + "'...", LOG_LEVEL_WARNING);
                 continue;
             }
-            url = ini.Get("Profile", "url");
+            url = ini.get("Profile", "url");
             if(url.size())
             {
                 all_urls += "|" + url;
@@ -1308,16 +1308,16 @@ int simpleGenerator()
     }
 
     INIReader ini;
-    if(ini.Parse(config) != INIREADER_EXCEPTION_NONE)
+    if(ini.parse(config) != INIREADER_EXCEPTION_NONE)
     {
-        //std::cerr<<"Generator configuration broken! Reason:"<<ini.GetLastError()<<"\n";
-        writeLog(0, "Generator configuration broken! Reason:" + ini.GetLastError(), LOG_LEVEL_ERROR);
+        //std::cerr<<"Generator configuration broken! Reason:"<<ini.get_last_error()<<"\n";
+        writeLog(0, "Generator configuration broken! Reason:" + ini.get_last_error(), LOG_LEVEL_ERROR);
         return -2;
     }
     //std::cerr<<"Read generator configuration completed.\n\n";
     writeLog(0, "Read generator configuration completed.\n", LOG_LEVEL_INFO);
 
-    string_array sections = ini.GetSections();
+    string_array sections = ini.get_section_names();
     if(global.generateProfiles.size())
     {
         //std::cerr<<"Generating with specific artifacts: \""<<gen_profile<<"\"...\n";
@@ -1352,26 +1352,26 @@ int simpleGenerator()
         response.status_code = 200;
         //std::cerr<<"Generating artifact '"<<x<<"'...\n";
         writeLog(0, "Generating artifact '" + x + "'...", LOG_LEVEL_INFO);
-        ini.EnterSection(x);
-        if(ini.ItemExist("path"))
-            path = ini.Get("path");
+        ini.enter_section(x);
+        if(ini.item_exist("path"))
+            path = ini.get("path");
         else
         {
             //std::cerr<<"Artifact '"<<x<<"' output path missing! Skipping...\n\n";
             writeLog(0, "Artifact '" + x + "' output path missing! Skipping...\n", LOG_LEVEL_ERROR);
             continue;
         }
-        if(ini.ItemExist("profile"))
+        if(ini.item_exist("profile"))
         {
-            profile = ini.Get("profile");
+            profile = ini.get("profile");
             request.argument = "name=" + urlEncode(profile) + "&token=" + global.accessToken + "&expand=true";
             content = getProfile(request, response);
         }
         else
         {
-            if(ini.GetBool("direct") == true)
+            if(ini.get_bool("direct") == true)
             {
-                std::string url = ini.Get("url");
+                std::string url = ini.get("url");
                 content = fetchFile(url, proxy, global.cacheSubscription);
                 if(content.empty())
                 {
@@ -1384,7 +1384,7 @@ int simpleGenerator()
                 fileWrite(path, "\xEF\xBB\xBF" + content, true);
                 continue;
             }
-            ini.GetItems(allItems);
+            ini.get_items(allItems);
             allItems.emplace("expand", "true");
             for(auto &y : allItems)
             {

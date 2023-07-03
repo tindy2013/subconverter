@@ -169,9 +169,9 @@ int main(int argc, char *argv[])
 
     std::string env_api_mode = getEnv("API_MODE"), env_managed_prefix = getEnv("MANAGED_PREFIX"), env_token = getEnv("API_TOKEN");
     global.APIMode = tribool().parse(toLower(env_api_mode)).get(global.APIMode);
-    if(env_managed_prefix.size())
+    if(!env_managed_prefix.empty())
         global.managedConfigPrefix = env_managed_prefix;
-    if(env_token.size())
+    if(!env_token.empty())
         global.accessToken = env_token;
 
     if(global.generatorMode)
@@ -191,7 +191,7 @@ int main(int argc, char *argv[])
 
     webServer.append_response("GET", "/refreshrules", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
-        if(global.accessToken.size())
+        if(!global.accessToken.empty())
         {
             std::string token = getUrlArg(request.argument, "token");
             if(token != global.accessToken)
@@ -206,7 +206,7 @@ int main(int argc, char *argv[])
 
     webServer.append_response("GET", "/readconf", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
-        if(global.accessToken.size())
+        if(!global.accessToken.empty())
         {
             std::string token = getUrlArg(request.argument, "token");
             if(token != global.accessToken)
@@ -223,7 +223,7 @@ int main(int argc, char *argv[])
 
     webServer.append_response("POST", "/updateconf", "text/plain", [](RESPONSE_CALLBACK_ARGS) -> std::string
     {
-        if(global.accessToken.size())
+        if(!global.accessToken.empty())
         {
             std::string token = getUrlArg(request.argument, "token");
             if(token != global.accessToken)

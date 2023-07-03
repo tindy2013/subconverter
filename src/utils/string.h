@@ -7,6 +7,7 @@
 #include <vector>
 #include <map>
 
+using string = std::string;
 using string_size = std::string::size_type;
 using string_array = std::vector<std::string>;
 using string_map = std::map<std::string, std::string>;

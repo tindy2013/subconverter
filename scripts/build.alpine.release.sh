@@ -20,7 +20,8 @@ git clone https://github.com/ftk/quickjspp --depth=1
 cd quickjspp
 cmake -DCMAKE_BUILD_TYPE=Release .
 make quickjs -j2
-install -m644 quickjs/libquickjs.a /usr/lib/
+install -d /usr/lib/quickjs/
+install -m644 quickjs/libquickjs.a /usr/lib/quickjs/
 install -d /usr/include/quickjs/
 install -m644 quickjs/quickjs.h quickjs/quickjs-libc.h /usr/include/quickjs/
 install -m644 quickjspp.hpp /usr/include/

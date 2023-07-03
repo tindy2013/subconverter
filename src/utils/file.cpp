@@ -2,7 +2,7 @@
 #include <fstream>
 #include <sys/stat.h>
 
-#include "string.h"
+#include "utils/string.h"
 
 bool isInScope(const std::string &path)
 {
@@ -22,7 +22,7 @@ std::string fileGet(const std::string &path, bool scope_limit)
     std::string content;
 
     if(scope_limit && !isInScope(path))
-        return std::string();
+        return "";
 
     std::FILE *fp = std::fopen(path.c_str(), "rb");
     if(fp)

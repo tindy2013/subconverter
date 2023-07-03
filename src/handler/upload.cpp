@@ -41,15 +41,15 @@ int uploadGist(std::string name, std::string path, std::string content, bool wri
         return -1;
     }
 
-    ini.ParseFile("gistconf.ini");
-    if(ini.EnterSection("common") != 0)
+    ini.parse_file("gistconf.ini");
+    if(ini.enter_section("common") != 0)
     {
         //std::cerr<<"gistconf.ini has incorrect format. Skipping...\n";
         writeLog(0, "gistconf.ini has incorrect format. Skipping...", LOG_LEVEL_ERROR);
         return -1;
     }
 
-    token = ini.Get("token");
+    token = ini.get("token");
     if(!token.size())
     {
         //std::cerr<<"No token is provided. Skipping...\n";
@@ -57,12 +57,12 @@ int uploadGist(std::string name, std::string path, std::string content, bool wri
         return -1;
     }
 
-    id = ini.Get("id");
-    username = ini.Get("username");
+    id = ini.get("id");
+    username = ini.get("username");
     if(!path.size())
     {
-        if(ini.ItemExist("path"))
-            path = ini.Get(name, "path");
+        if(ini.item_exist("path"))
+            path = ini.get(name, "path");
         else
             path = name;
     }
@@ -102,16 +102,16 @@ int uploadGist(std::string name, std::string path, std::string content, bool wri
     //std::cerr<<"Writing to Gist success!\nGenerator: "<<name<<"\nPath: "<<path<<"\nRaw URL: "<<url<<"\nGist owner: "<<username<<"\n";
     writeLog(0, "Writing to Gist success!\nGenerator: " + name + "\nPath: " + path + "\nRaw URL: " + url + "\nGist owner: " + username, LOG_LEVEL_INFO);
 
-    ini.EraseSection();
-    ini.Set("token", token);
-    ini.Set("id", id);
-    ini.Set("username", username);
+    ini.erase_section();
+    ini.set("token", token);
+    ini.set("id", id);
+    ini.set("username", username);
 
-    ini.SetCurrentSection(path);
-    ini.EraseSection();
-    ini.Set("type", name);
-    ini.Set("url", url);
+    ini.set_current_section(path);
+    ini.erase_section();
+    ini.set("type", name);
+    ini.set("url", url);
 
-    ini.ToFile("gistconf.ini");
+    ini.to_file("gistconf.ini");
     return 0;
 }

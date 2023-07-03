@@ -1293,17 +1293,17 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
     ini.store_isolated_line = true;
     ini.keep_empty_section = false;
     ini.allow_dup_section_titles = true;
-    ini.SetIsolatedItemsSection("Proxy");
-    ini.IncludeSection("Proxy");
-    ini.AddDirectSaveSection("Proxy");
+    ini.set_isolated_items_section("Proxy");
+    ini.include_section("Proxy");
+    ini.add_direct_save_section("Proxy");
     if(surge.find("[Proxy]") != surge.npos)
-        surge = regReplace(surge, "^[\\S\\s]*?\\[", "[", false);
-    ini.Parse(surge);
+        surge = regReplace(surge, R"(^[\S\s]*?\[)", "[", false);
+    ini.parse(surge);
 
-    if(!ini.SectionExist("Proxy"))
+    if(!ini.section_exist("Proxy"))
         return false;
-    ini.EnterSection("Proxy");
-    ini.GetItems(proxies);
+    ini.enter_section("Proxy");
+    ini.get_items(proxies);
 
     const std::string proxystr = "(.*?)\\s*=\\s*(.*)";
 

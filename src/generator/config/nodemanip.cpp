@@ -68,7 +68,7 @@ int addNodes(std::string link, std::vector<Proxy> &allNodes, int groupID, parse_
                     switch(args.size())
                     {
                     case 0:
-                        link = parse(std::string(), string_array());
+                        link = parse("", string_array());
                         break;
                     case 1:
                         link = parse(args[0], string_array());

@@ -295,10 +295,10 @@ static int curlGet(const FetchArgument &argument, FetchResult &result)
 static std::string dataGet(const std::string &url)
 {
     if (!startsWith(url, "data:"))
-        return std::string();
+        return "";
     std::string::size_type comma = url.find(',');
     if (comma == std::string::npos || comma == url.size() - 1)
-        return std::string();
+        return "";
 
     std::string data = urlDecode(url.substr(comma + 1));
     if (endsWith(url.substr(0, comma), ";base64")) {

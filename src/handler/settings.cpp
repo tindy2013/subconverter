@@ -804,7 +804,7 @@ void readConf()
     try
     {
         std::string prefdata = fileGet(global.prefPath, false);
-        if(prefdata.find("common:") != prefdata.npos)
+        if(prefdata.find("common:") != std::string::npos)
         {
             YAML::Node yaml = YAML::Load(prefdata);
             if(yaml.size() && yaml["common"])
@@ -830,69 +830,69 @@ void readConf()
     INIReader ini;
     ini.allow_dup_section_titles = true;
     //ini.do_utf8_to_gbk = true;
-    int retVal = ini.ParseFile(global.prefPath);
+    int retVal = ini.parse_file(global.prefPath);
     if(retVal != INIREADER_EXCEPTION_NONE)
     {
-        writeLog(0, "Unable to load preference settings as INI. Reason: " + ini.GetLastError(), LOG_LEVEL_FATAL);
+        writeLog(0, "Unable to load preference settings as INI. Reason: " + ini.get_last_error(), LOG_LEVEL_FATAL);
         return;
     }
 
     string_array tempArray;
 
-    ini.EnterSection("common");
-    ini.GetBoolIfExist("api_mode", global.APIMode);
-    ini.GetIfExist("api_access_token", global.accessToken);
-    ini.GetIfExist("default_url", global.defaultUrls);
-    global.enableInsert = ini.Get("enable_insert");
-    ini.GetIfExist("insert_url", global.insertUrls);
-    ini.GetBoolIfExist("prepend_insert_url", global.prependInsert);
-    if(ini.ItemPrefixExist("exclude_remarks"))
-        ini.GetAll("exclude_remarks", global.excludeRemarks);
-    if(ini.ItemPrefixExist("include_remarks"))
-        ini.GetAll("include_remarks", global.includeRemarks);
-    global.filterScript = ini.GetBool("enable_filter") ? ini.Get("filter_script"): "";
-    ini.GetIfExist("base_path", global.basePath);
-    ini.GetIfExist("clash_rule_base", global.clashBase);
-    ini.GetIfExist("surge_rule_base", global.surgeBase);
-    ini.GetIfExist("surfboard_rule_base", global.surfboardBase);
-    ini.GetIfExist("mellow_rule_base", global.mellowBase);
-    ini.GetIfExist("quan_rule_base", global.quanBase);
-    ini.GetIfExist("quanx_rule_base", global.quanXBase);
-    ini.GetIfExist("loon_rule_base", global.loonBase);
-    ini.GetIfExist("default_external_config", global.defaultExtConfig);
-    ini.GetBoolIfExist("append_proxy_type", global.appendType);
-    ini.GetIfExist("proxy_config", global.proxyConfig);
-    ini.GetIfExist("proxy_ruleset", global.proxyRuleset);
-    ini.GetIfExist("proxy_subscription", global.proxySubscription);
+    ini.enter_section("common");
+    ini.get_bool_if_exist("api_mode", global.APIMode);
+    ini.get_if_exist("api_access_token", global.accessToken);
+    ini.get_if_exist("default_url", global.defaultUrls);
+    global.enableInsert = ini.get("enable_insert");
+    ini.get_if_exist("insert_url", global.insertUrls);
+    ini.get_bool_if_exist("prepend_insert_url", global.prependInsert);
+    if(ini.item_prefix_exist("exclude_remarks"))
+        ini.get_all("exclude_remarks", global.excludeRemarks);
+    if(ini.item_prefix_exist("include_remarks"))
+        ini.get_all("include_remarks", global.includeRemarks);
+    global.filterScript = ini.get_bool("enable_filter") ? ini.get("filter_script") : "";
+    ini.get_if_exist("base_path", global.basePath);
+    ini.get_if_exist("clash_rule_base", global.clashBase);
+    ini.get_if_exist("surge_rule_base", global.surgeBase);
+    ini.get_if_exist("surfboard_rule_base", global.surfboardBase);
+    ini.get_if_exist("mellow_rule_base", global.mellowBase);
+    ini.get_if_exist("quan_rule_base", global.quanBase);
+    ini.get_if_exist("quanx_rule_base", global.quanXBase);
+    ini.get_if_exist("loon_rule_base", global.loonBase);
+    ini.get_if_exist("default_external_config", global.defaultExtConfig);
+    ini.get_bool_if_exist("append_proxy_type", global.appendType);
+    ini.get_if_exist("proxy_config", global.proxyConfig);
+    ini.get_if_exist("proxy_ruleset", global.proxyRuleset);
+    ini.get_if_exist("proxy_subscription", global.proxySubscription);
 
-    if(ini.SectionExist("surge_external_proxy"))
+    if(ini.section_exist("surge_external_proxy"))
     {
-        ini.EnterSection("surge_external_proxy");
-        ini.GetIfExist("surge_ssr_path", global.surgeSSRPath);
-        ini.GetBoolIfExist("resolve_hostname", global.surgeResolveHostname);
+        ini.enter_section("surge_external_proxy");
+        ini.get_if_exist("surge_ssr_path", global.surgeSSRPath);
+        ini.get_bool_if_exist("resolve_hostname", global.surgeResolveHostname);
     }
 
-    if(ini.SectionExist("node_pref"))
+    if(ini.section_exist("node_pref"))
     {
-        ini.EnterSection("node_pref");
+        ini.enter_section("node_pref");
         /*
         ini.GetBoolIfExist("udp_flag", udp_flag);
-        ini.GetBoolIfExist("tcp_fast_open_flag", tfo_flag);
-        ini.GetBoolIfExist("skip_cert_verify_flag", scv_flag);
+        ini.get_bool_if_exist("tcp_fast_open_flag", tfo_flag);
+        ini.get_bool_if_exist("skip_cert_verify_flag", scv_flag);
         */
-        global.UDPFlag.set(ini.Get("udp_flag"));
-        global.TFOFlag.set(ini.Get("tcp_fast_open_flag"));
-        global.skipCertVerify.set(ini.Get("skip_cert_verify_flag"));
-        global.TLS13Flag.set(ini.Get("tls13_flag"));
-        ini.GetBoolIfExist("sort_flag", global.enableSort);
-        global.sortScript = ini.Get("sort_script");
-        ini.GetBoolIfExist("filter_deprecated_nodes", global.filterDeprecated);
-        ini.GetBoolIfExist("append_sub_userinfo", global.appendUserinfo);
-        ini.GetBoolIfExist("clash_use_new_field_name", global.clashUseNewField);
-        ini.GetIfExist("clash_proxies_style", global.clashProxiesStyle);
-        if(ini.ItemPrefixExist("rename_node"))
+        global.UDPFlag.set(ini.get("udp_flag"));
+        global.TFOFlag.set(ini.get("tcp_fast_open_flag"));
+        global.skipCertVerify.set(ini.get("skip_cert_verify_flag"));
+        global.TLS13Flag.set(ini.get("tls13_flag"));
+        ini.get_bool_if_exist("sort_flag", global.enableSort);
+        global.sortScript = ini.get("sort_script");
+        ini.get_bool_if_exist("filter_deprecated_nodes", global.filterDeprecated);
+        ini.get_bool_if_exist("append_sub_userinfo", global.appendUserinfo);
+        ini.get_bool_if_exist("clash_use_new_field_name", global.clashUseNewField);
+        ini.get_if_exist("clash_proxies_style", global.clashProxiesStyle);
+        if(ini.item_prefix_exist("rename_node"))
         {
-            ini.GetAll("rename_node", tempArray);
+            ini.get_all("rename_node", tempArray);
             importItems(tempArray, false);
             auto configs = INIBinding::from<RegexMatchConfig>::from_ini(tempArray, "@");
             safe_set_renames(configs);
@@ -900,20 +900,20 @@ void readConf()
         }
     }
 
-    if(ini.SectionExist("userinfo"))
+    if(ini.section_exist("userinfo"))
     {
-        ini.EnterSection("userinfo");
-        if(ini.ItemPrefixExist("stream_rule"))
+        ini.enter_section("userinfo");
+        if(ini.item_prefix_exist("stream_rule"))
         {
-            ini.GetAll("stream_rule", tempArray);
+            ini.get_all("stream_rule", tempArray);
             importItems(tempArray, false);
             auto configs = INIBinding::from<RegexMatchConfig>::from_ini(tempArray, "|");
             safe_set_streams(configs);
             eraseElements(tempArray);
         }
-        if(ini.ItemPrefixExist("time_rule"))
+        if(ini.item_prefix_exist("time_rule"))
         {
-            ini.GetAll("time_rule", tempArray);
+            ini.get_all("time_rule", tempArray);
             importItems(tempArray, false);
             auto configs = INIBinding::from<RegexMatchConfig>::from_ini(tempArray, "|");
             safe_set_times(configs);
@@ -921,45 +921,45 @@ void readConf()
         }
     }
 
-    ini.EnterSection("managed_config");
-    ini.GetBoolIfExist("write_managed_config", global.writeManagedConfig);
-    ini.GetIfExist("managed_config_prefix", global.managedConfigPrefix);
-    ini.GetIntIfExist("config_update_interval", global.updateInterval);
-    ini.GetBoolIfExist("config_update_strict", global.updateStrict);
-    ini.GetIfExist("quanx_device_id", global.quanXDevID);
+    ini.enter_section("managed_config");
+    ini.get_bool_if_exist("write_managed_config", global.writeManagedConfig);
+    ini.get_if_exist("managed_config_prefix", global.managedConfigPrefix);
+    ini.get_int_if_exist("config_update_interval", global.updateInterval);
+    ini.get_bool_if_exist("config_update_strict", global.updateStrict);
+    ini.get_if_exist("quanx_device_id", global.quanXDevID);
 
-    ini.EnterSection("emojis");
-    ini.GetBoolIfExist("add_emoji", global.addEmoji);
-    ini.GetBoolIfExist("remove_old_emoji", global.removeEmoji);
-    if(ini.ItemPrefixExist("rule"))
+    ini.enter_section("emojis");
+    ini.get_bool_if_exist("add_emoji", global.addEmoji);
+    ini.get_bool_if_exist("remove_old_emoji", global.removeEmoji);
+    if(ini.item_prefix_exist("rule"))
     {
-        ini.GetAll("rule", tempArray);
+        ini.get_all("rule", tempArray);
         importItems(tempArray, false);
         auto configs = INIBinding::from<RegexMatchConfig>::from_ini(tempArray, ",");
         safe_set_emojis(configs);
         eraseElements(tempArray);
     }
 
-    if(ini.SectionExist("rulesets"))
-        ini.EnterSection("rulesets");
+    if(ini.section_exist("rulesets"))
+        ini.enter_section("rulesets");
     else
-        ini.EnterSection("ruleset");
-    global.enableRuleGen = ini.GetBool("enabled");
+        ini.enter_section("ruleset");
+    global.enableRuleGen = ini.get_bool("enabled");
     if(global.enableRuleGen)
     {
-        ini.GetBoolIfExist("overwrite_original_rules", global.overwriteOriginalRules);
-        ini.GetBoolIfExist("update_ruleset_on_request", global.updateRulesetOnRequest);
-        if(ini.ItemPrefixExist("ruleset"))
+        ini.get_bool_if_exist("overwrite_original_rules", global.overwriteOriginalRules);
+        ini.get_bool_if_exist("update_ruleset_on_request", global.updateRulesetOnRequest);
+        if(ini.item_prefix_exist("ruleset"))
         {
             string_array vArray;
-            ini.GetAll("ruleset", vArray);
+            ini.get_all("ruleset", vArray);
             importItems(vArray, false);
             global.customRulesets = INIBinding::from<RulesetConfig>::from_ini(vArray);
         }
-        else if(ini.ItemPrefixExist("surge_ruleset"))
+        else if(ini.item_prefix_exist("surge_ruleset"))
         {
             string_array vArray;
-            ini.GetAll("surge_ruleset", vArray);
+            ini.get_all("surge_ruleset", vArray);
             importItems(vArray, false);
             global.customRulesets = INIBinding::from<RulesetConfig>::from_ini(vArray);
         }
@@ -970,22 +970,22 @@ void readConf()
         global.updateRulesetOnRequest = false;
     }
 
-    if(ini.SectionExist("proxy_groups"))
-        ini.EnterSection("proxy_groups");
+    if(ini.section_exist("proxy_groups"))
+        ini.enter_section("proxy_groups");
     else
-        ini.EnterSection("clash_proxy_group");
-    if(ini.ItemPrefixExist("custom_proxy_group"))
+        ini.enter_section("clash_proxy_group");
+    if(ini.item_prefix_exist("custom_proxy_group"))
     {
         string_array vArray;
-        ini.GetAll("custom_proxy_group", vArray);
+        ini.get_all("custom_proxy_group", vArray);
         importItems(vArray, false);
         global.customProxyGroups = INIBinding::from<ProxyGroupConfig>::from_ini(vArray);
     }
 
-    ini.EnterSection("template");
-    ini.GetIfExist("template_path", global.templatePath);
+    ini.enter_section("template");
+    ini.get_if_exist("template_path", global.templatePath);
     string_multimap tempmap;
-    ini.GetItems(tempmap);
+    ini.get_items(tempmap);
     eraseElements(global.templateVars);
     for(auto &x : tempmap)
     {
@@ -995,36 +995,36 @@ void readConf()
     }
     global.templateVars["managed_config_prefix"] = global.managedConfigPrefix;
 
-    if(ini.SectionExist("aliases"))
+    if(ini.section_exist("aliases"))
     {
-        ini.EnterSection("aliases");
-        ini.GetItems(tempmap);
+        ini.enter_section("aliases");
+        ini.get_items(tempmap);
         webServer.reset_redirect();
         for(auto &x : tempmap)
             webServer.append_redirect(x.first, x.second);
     }
 
-    if(ini.SectionExist("tasks"))
+    if(ini.section_exist("tasks"))
     {
         string_array vArray;
-        ini.EnterSection("tasks");
-        ini.GetAll("task", vArray);
+        ini.enter_section("tasks");
+        ini.get_all("task", vArray);
         importItems(vArray, false);
         global.enableCron = !vArray.empty();
         global.cronTasks = INIBinding::from<CronTaskConfig>::from_ini(vArray);
         refresh_schedule();
     }
 
-    ini.EnterSection("server");
-    ini.GetIfExist("listen", global.listenAddress);
-    ini.GetIntIfExist("port", global.listenPort);
-    webServer.serve_file_root = ini.Get("serve_file_root");
+    ini.enter_section("server");
+    ini.get_if_exist("listen", global.listenAddress);
+    ini.get_int_if_exist("port", global.listenPort);
+    webServer.serve_file_root = ini.get("serve_file_root");
     webServer.serve_file = !webServer.serve_file_root.empty();
 
-    ini.EnterSection("advanced");
+    ini.enter_section("advanced");
     std::string log_level;
-    ini.GetIfExist("log_level", log_level);
-    ini.GetBoolIfExist("print_debug_info", global.printDbgInfo);
+    ini.get_if_exist("log_level", log_level);
+    ini.get_bool_if_exist("print_debug_info", global.printDbgInfo);
     if(global.printDbgInfo)
         global.logLevel = LOG_LEVEL_VERBOSE;
     else
@@ -1050,19 +1050,19 @@ void readConf()
             global.logLevel = LOG_LEVEL_INFO;
         }
     }
-    ini.GetIntIfExist("max_pending_connections", global.maxPendingConns);
-    ini.GetIntIfExist("max_concurrent_threads", global.maxConcurThreads);
-    ini.GetNumberIfExist("max_allowed_rulesets", global.maxAllowedRulesets);
-    ini.GetNumberIfExist("max_allowed_rules", global.maxAllowedRules);
-    ini.GetNumberIfExist("max_allowed_download_size", global.maxAllowedDownloadSize);
-    if(ini.ItemExist("enable_cache"))
+    ini.get_int_if_exist("max_pending_connections", global.maxPendingConns);
+    ini.get_int_if_exist("max_concurrent_threads", global.maxConcurThreads);
+    ini.get_number_if_exist("max_allowed_rulesets", global.maxAllowedRulesets);
+    ini.get_number_if_exist("max_allowed_rules", global.maxAllowedRules);
+    ini.get_number_if_exist("max_allowed_download_size", global.maxAllowedDownloadSize);
+    if(ini.item_exist("enable_cache"))
     {
-        if(ini.GetBool("enable_cache"))
+        if(ini.get_bool("enable_cache"))
         {
-            ini.GetIntIfExist("cache_subscription", global.cacheSubscription);
-            ini.GetIntIfExist("cache_config", global.cacheConfig);
-            ini.GetIntIfExist("cache_ruleset", global.cacheRuleset);
-            ini.GetBoolIfExist("serve_cache_on_fetch_fail", global.serveCacheOnFetchFail);
+            ini.get_int_if_exist("cache_subscription", global.cacheSubscription);
+            ini.get_int_if_exist("cache_config", global.cacheConfig);
+            ini.get_int_if_exist("cache_ruleset", global.cacheRuleset);
+            ini.get_bool_if_exist("serve_cache_on_fetch_fail", global.serveCacheOnFetchFail);
         }
         else
         {
@@ -1070,9 +1070,9 @@ void readConf()
             global.serveCacheOnFetchFail = false;
         }
     }
-    ini.GetBoolIfExist("script_clean_context", global.scriptCleanContext);
-    ini.GetBoolIfExist("async_fetch_ruleset", global.asyncFetchRuleset);
-    ini.GetBoolIfExist("skip_failed_links", global.skipFailedLinks);
+    ini.get_bool_if_exist("script_clean_context", global.scriptCleanContext);
+    ini.get_bool_if_exist("async_fetch_ruleset", global.asyncFetchRuleset);
+    ini.get_bool_if_exist("skip_failed_links", global.skipFailedLinks);
 
     writeLog(0, "Load preference settings in INI format completed.", LOG_LEVEL_INFO);
 }
@@ -1227,27 +1227,27 @@ int loadExternalConfig(std::string &path, ExternalConfig &ext)
 
     INIReader ini;
     ini.store_isolated_line = true;
-    ini.SetIsolatedItemsSection("custom");
-    if(ini.Parse(base_content) != INIREADER_EXCEPTION_NONE)
+    ini.set_isolated_items_section("custom");
+    if(ini.parse(base_content) != INIREADER_EXCEPTION_NONE)
     {
-        //std::cerr<<"Load external configuration failed. Reason: "<<ini.GetLastError()<<"\n";
-        writeLog(0, "Load external configuration failed. Reason: " + ini.GetLastError(), LOG_LEVEL_ERROR);
+        //std::cerr<<"Load external configuration failed. Reason: "<<ini.get_last_error()<<"\n";
+        writeLog(0, "Load external configuration failed. Reason: " + ini.get_last_error(), LOG_LEVEL_ERROR);
         return -1;
     }
 
-    ini.EnterSection("custom");
-    if(ini.ItemPrefixExist("custom_proxy_group"))
+    ini.enter_section("custom");
+    if(ini.item_prefix_exist("custom_proxy_group"))
     {
         string_array vArray;
-        ini.GetAll("custom_proxy_group", vArray);
+        ini.get_all("custom_proxy_group", vArray);
         importItems(vArray, global.APIMode);
         ext.custom_proxy_group = INIBinding::from<ProxyGroupConfig>::from_ini(vArray);
     }
-    std::string ruleset_name = ini.ItemPrefixExist("ruleset") ? "ruleset" : "surge_ruleset";
-    if(ini.ItemPrefixExist(ruleset_name))
+    std::string ruleset_name = ini.item_prefix_exist("ruleset") ? "ruleset" : "surge_ruleset";
+    if(ini.item_prefix_exist(ruleset_name))
     {
         string_array vArray;
-        ini.GetAll(ruleset_name, vArray);
+        ini.get_all(ruleset_name, vArray);
         importItems(vArray, global.APIMode);
         if(global.maxAllowedRulesets && vArray.size() > global.maxAllowedRulesets)
         {
@@ -1257,44 +1257,44 @@ int loadExternalConfig(std::string &path, ExternalConfig &ext)
         ext.surge_ruleset = INIBinding::from<RulesetConfig>::from_ini(vArray);
     }
 
-    ini.GetIfExist("clash_rule_base", ext.clash_rule_base);
-    ini.GetIfExist("surge_rule_base", ext.surge_rule_base);
-    ini.GetIfExist("surfboard_rule_base", ext.surfboard_rule_base);
-    ini.GetIfExist("mellow_rule_base", ext.mellow_rule_base);
-    ini.GetIfExist("quan_rule_base", ext.quan_rule_base);
-    ini.GetIfExist("quanx_rule_base", ext.quanx_rule_base);
-    ini.GetIfExist("loon_rule_base", ext.loon_rule_base);
-    ini.GetIfExist("sssub_rule_base", ext.sssub_rule_base);
+    ini.get_if_exist("clash_rule_base", ext.clash_rule_base);
+    ini.get_if_exist("surge_rule_base", ext.surge_rule_base);
+    ini.get_if_exist("surfboard_rule_base", ext.surfboard_rule_base);
+    ini.get_if_exist("mellow_rule_base", ext.mellow_rule_base);
+    ini.get_if_exist("quan_rule_base", ext.quan_rule_base);
+    ini.get_if_exist("quanx_rule_base", ext.quanx_rule_base);
+    ini.get_if_exist("loon_rule_base", ext.loon_rule_base);
+    ini.get_if_exist("sssub_rule_base", ext.sssub_rule_base);
 
-    ini.GetBoolIfExist("overwrite_original_rules", ext.overwrite_original_rules);
-    ini.GetBoolIfExist("enable_rule_generator", ext.enable_rule_generator);
+    ini.get_bool_if_exist("overwrite_original_rules", ext.overwrite_original_rules);
+    ini.get_bool_if_exist("enable_rule_generator", ext.enable_rule_generator);
 
-    if(ini.ItemPrefixExist("rename"))
+    if(ini.item_prefix_exist("rename"))
     {
         string_array vArray;
-        ini.GetAll("rename", vArray);
+        ini.get_all("rename", vArray);
         importItems(vArray, global.APIMode);
         ext.rename = INIBinding::from<RegexMatchConfig>::from_ini(vArray, "@");
     }
-    ext.add_emoji = ini.Get("add_emoji");
-    ext.remove_old_emoji = ini.Get("remove_old_emoji");
-    if(ini.ItemPrefixExist("emoji"))
+    ext.add_emoji = ini.get("add_emoji");
+    ext.remove_old_emoji = ini.get("remove_old_emoji");
+    if(ini.item_prefix_exist("emoji"))
     {
         string_array vArray;
-        ini.GetAll("emoji", vArray);
+        ini.get_all("emoji", vArray);
         importItems(vArray, global.APIMode);
         ext.emoji = INIBinding::from<RegexMatchConfig>::from_ini(vArray, ",");
     }
-    if(ini.ItemPrefixExist("include_remarks"))
-        ini.GetAll("include_remarks", ext.include);
-    if(ini.ItemPrefixExist("exclude_remarks"))
-        ini.GetAll("exclude_remarks", ext.exclude);
+    if(ini.item_prefix_exist("include_remarks"))
+        ini.get_all("include_remarks", ext.include);
+    if(ini.item_prefix_exist("exclude_remarks"))
+        ini.get_all("exclude_remarks", ext.exclude);
 
-    if(ini.SectionExist("template") && ext.tpl_args != nullptr)
+    if(ini.section_exist("template") && ext.tpl_args != nullptr)
     {
-        ini.EnterSection("template");
+        ini.enter_section("template");
         string_multimap tempmap;
-        ini.GetItems(tempmap);
+        ini.get_items(tempmap);
         for(auto &x : tempmap)
             ext.tpl_args->local_vars[x.first] = x.second;
     }
