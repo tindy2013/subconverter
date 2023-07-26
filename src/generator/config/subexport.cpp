@@ -754,7 +754,9 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
         case ProxyType::Snell:
             proxy = "snell, " + hostname + ", " + port + ", psk=" + password;
             if(!obfs.empty())
-                proxy += ", obfs=" + obfs + ", obfs-host=" + host;
+                proxy += ", obfs=" + obfs;
+                if(!host.empty())
+                    proxy += ", obfs-host=" + host
             break;
         default:
             continue;
