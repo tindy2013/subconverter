@@ -756,7 +756,7 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
             if(!obfs.empty())
                 proxy += ", obfs=" + obfs;
                 if(!host.empty())
-                    proxy += ", obfs-host=" + host
+                    proxy += ", obfs-host=" + host;
             break;
         default:
             continue;
