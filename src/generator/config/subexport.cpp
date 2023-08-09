@@ -157,6 +157,11 @@ bool applyMatcher(const std::string &rule, std::string &real_rule, const Proxy &
 
 void processRemark(std::string &oldremark, std::string &newremark, string_array &remarks_list, bool proc_comma = true)
 {
+    // Replace every '=' with '-' in the remark string to avoid parse errors from the clients.
+    //     Surge is tested to yield an error when handling '=' in the remark string, 
+    //     not sure if other clients have the same problem.
+    std::replace(oldremark.begin(), oldremark.end(), '=', '-');
+
     if(proc_comma)
     {
         if(oldremark.find(',') != std::string::npos)
