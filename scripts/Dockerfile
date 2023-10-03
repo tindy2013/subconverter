@@ -5,7 +5,7 @@ ARG SHA=""
 
 # build minimized
 WORKDIR /
-RUN apk add --no-cache --virtual .build-tools git g++ build-base linux-headers cmake && \
+RUN apk add --no-cache --virtual .build-tools git g++ build-base linux-headers cmake python3 && \
     apk add --no-cache --virtual .build-deps curl-dev rapidjson-dev libevent-dev pcre2-dev yaml-cpp-dev && \
     git clone https://github.com/ftk/quickjspp --depth=1 && \
     cd quickjspp && \
@@ -37,6 +37,9 @@ RUN apk add --no-cache --virtual .build-tools git g++ build-base linux-headers c
     git clone https://github.com/tindy2013/subconverter --depth=1 && \
     cd subconverter && \
     [ -n "$SHA" ] && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h;\
+    python3 -m ensurepip && \
+    python3 -m pip install gitpython && \
+    python3 scripts/update_rules.py -c scripts/rules_config.conf && \
     cmake -DCMAKE_BUILD_TYPE=Release . && \
     make -j $THREADS && \
     mv subconverter /usr/bin && \
