@@ -1491,6 +1491,12 @@ void proxyToQuanX(std::vector<Proxy> &nodes, INIReader &ini, std::vector<Ruleset
         std::string proxies = join(filtered_nodelist, ", ");
 
         std::string singlegroup = type + "=" + x.Name + ", " + proxies;
+        if(type != "static")
+        {
+            singlegroup += ", check-interval=" + std::to_string(x.Interval);
+            if(x.Tolerance > 0)
+                singlegroup += ", tolerance=" + std::to_string(x.Tolerance);
+        }
         ini.set("{NONAME}", singlegroup);
     }
 
@@ -1903,10 +1909,22 @@ std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf,
             group += "," + y;
         */
         group += join(filtered_nodelist, ",");
-        if(x.Type != ProxyGroupType::Select) {
+        if(x.Type != ProxyGroupType::Select)
+        {
             group += ",url=" + x.Url + ",interval=" + std::to_string(x.Interval);
-            if (x.Type == ProxyGroupType::LoadBalance)
-                group += ",strategy=" + std::string(x.Strategy == BalanceStrategy::RoundRobin ? "round-robin" : "pcc");
+            if(x.Type == ProxyGroupType::LoadBalance)
+            {
+                group += ",algorithm=" + std::string(x.Strategy == BalanceStrategy::RoundRobin ? "round-robin" : "pcc");
+                if(x.Timeout > 0)
+                    group += ",max-timeout=" + std::to_string(x.Timeout);
+            }
+            if(x.Type == ProxyGroupType::URLTest)
+            {
+                if(x.Tolerance > 0)
+                    group += ",tolerance=" + std::to_string(x.Tolerance);
+            }
+            if(x.Type == ProxyGroupType::Fallback)
+                group += ",max-timeout=" + std::to_string(x.Timeout);
         }
 
         ini.set("{NONAME}", x.Name + " = " + group); //insert order
