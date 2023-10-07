@@ -1849,6 +1849,19 @@ std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf,
             if(!scv.is_undef())
                 proxy += ",skip-cert-verify=" + std::string(scv.get() ? "true" : "false");
             break;
+        case ProxyType::SOCKS5:
+            proxy = "socks5," + hostname + "," + port;
+            if (!username.empty() && !password.empty())
+                proxy += "," + username + ",\"" + password + "\"";
+            proxy += ",over-tls=" + std::string(tlssecure ? "true" : "false");
+            if (tlssecure)
+            {
+                if(!host.empty())
+                    proxy += ",tls-name=" + host;
+                if(!scv.is_undef())
+                    proxy += ",skip-cert-verify=" + std::string(scv.get() ? "true" : "false");
+            }
+            break;
         default:
             continue;
         }
