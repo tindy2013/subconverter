@@ -1768,6 +1768,7 @@ std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf,
     string_array remarks_list;
 
     ini.store_any_line = true;
+    ini.add_direct_save_section("Plugin");
     if(ini.parse(base_conf) != INIREADER_EXCEPTION_NONE && !ext.nodelist)
     {
         writeLog(0, "Loon base loader failed with error: " + ini.get_last_error(), LOG_LEVEL_ERROR);

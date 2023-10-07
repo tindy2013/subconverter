@@ -718,6 +718,7 @@ void readTOMLConf(toml::value &root)
     auto tasks = toml::find_or<std::vector<toml::value>>(root, "tasks", {});
     importItems(tasks, "tasks", false);
     global.cronTasks = toml::get<CronTaskConfigs>(toml::value(tasks));
+    refresh_schedule();
 
     const auto &section_server = toml::find(root, "server");
 
