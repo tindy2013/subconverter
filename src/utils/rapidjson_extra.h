@@ -3,16 +3,17 @@
 
 #include <stdexcept>
 
-template <typename T> void exception_thrower(T e)
+template <typename T> void exception_thrower(T e, const std::string &cond, const std::string &file, int line)
 {
     if(!e)
-        throw std::runtime_error("rapidjson assertion failed");
+        throw std::runtime_error("rapidjson assertion failed: " + cond + " (" + file + ":" + std::to_string(line) + ")");
 }
 
 #ifdef RAPIDJSON_ASSERT
 #undef RAPIDJSON_ASSERT
 #endif // RAPIDJSON_ASSERT
-#define RAPIDJSON_ASSERT(x) exception_thrower(x)
+#define VALUE(x) #x
+#define RAPIDJSON_ASSERT(x) exception_thrower(x, VALUE(x), __FILE__, __LINE__)
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
 #include <rapidjson/error/en.h>
