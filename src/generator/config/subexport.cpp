@@ -645,7 +645,7 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
         tls13.define(x.TLS13);
 
         std::string proxy;
-        string_array args;
+        string_array args, headers;
 
         switch(x.Type)
         {
@@ -683,12 +683,13 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
             case "tcp"_hash:
                 break;
             case "ws"_hash:
-                if(host.empty())
-                    proxy += ", ws=true, ws-path=" + path + ", sni=" + hostname;
-                else
-                    proxy += ", ws=true, ws-path=" + path + ", sni=" + hostname + ", ws-headers=Host:" + host;
+                proxy += ", ws=true, ws-path=" + path + ", sni=" + hostname;
+                if(!host.empty())
+                    headers.push_back("Host:" + host);
                 if(!edge.empty())
-                    proxy += "|Edge:" + edge;
+                    headers.push_back("Edge:" + edge);
+                if(!headers.empty())
+                    proxy += ", ws-headers=" + join(headers, "|");
                 break;
             default:
                 continue;
@@ -766,6 +767,8 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
                 if(!host.empty())
                     proxy += ", obfs-host=" + host;
             }
+            if(x.SnellVersion != 0)
+                proxy += ", version=" + std::to_string(x.SnellVersion);
             break;
         default:
             continue;
