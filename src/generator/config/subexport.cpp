@@ -1453,8 +1453,8 @@ void proxyToQuanX(std::vector<Proxy> &nodes, INIReader &ini, std::vector<Ruleset
             break;
         case ProxyGroupType::SSID:
             type = "ssid";
-            for(auto iter = x.Proxies.begin(); iter != x.Proxies.end(); iter++)
-                filtered_nodelist.emplace_back(replaceAllDistinct(*iter, "=", ":"));
+            for(const auto & proxy : x.Proxies)
+                filtered_nodelist.emplace_back(replaceAllDistinct(proxy, "=", ":"));
             break;
         default:
             continue;
@@ -1889,8 +1889,11 @@ std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf,
     if(ext.nodelist)
         return output_nodelist;
 
+    string_multimap original_groups;
     ini.set_current_section("Proxy Group");
+    ini.get_items(original_groups);
     ini.erase_section();
+
     for(const ProxyGroupConfig &x : extra_proxy_group)
     {
         string_array filtered_nodelist;
@@ -1919,6 +1922,21 @@ std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf,
 
         if(filtered_nodelist.empty())
             filtered_nodelist.emplace_back("DIRECT");
+
+        auto iter = std::find_if(original_groups.begin(), original_groups.end(), [&](const string_multimap::value_type &n)
+        {
+            return trim(n.first) == x.Name;
+        });
+
+        if(iter != original_groups.end())
+        {
+            string_array vArray = split(iter->second, ",");
+            if(vArray.size() > 1)
+            {
+                if(trim(vArray[vArray.size() - 1]).find("img-url") == 0)
+                    filtered_nodelist.emplace_back(trim(vArray[vArray.size() - 1]));
+            }
+        }
 
         group = x.TypeStr() + ",";
         /*
