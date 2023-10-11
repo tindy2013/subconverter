@@ -30,7 +30,7 @@ int importItems(string_array &target, bool scope_limit)
     unsigned int itemCount = 0;
     for(std::string &x : target)
     {
-        if(x.find("!!import:") == x.npos)
+        if(x.find("!!import:") == std::string::npos)
         {
             result.emplace_back(x);
             continue;
@@ -46,7 +46,7 @@ int importItems(string_array &target, bool scope_limit)
             content = webGet(path, proxy, global.cacheConfig);
         else
             writeLog(0, "File not found or not a valid URL: " + path, LOG_LEVEL_ERROR);
-        if(!content.size())
+        if(content.empty())
             return -1;
 
         ss << content;
@@ -98,7 +98,7 @@ void importItems(std::vector<toml::value> &root, const std::string &import_key, 
                 content = webGet(path, proxy, global.cacheConfig);
             else
                 writeLog(0, "File not found or not a valid URL: " + path, LOG_LEVEL_ERROR);
-            if(content.size())
+            if(!content.empty())
             {
                 auto items = parseToml(content, path);
                 auto list = toml::find<std::vector<toml::value>>(items, import_key);
@@ -110,32 +110,28 @@ void importItems(std::vector<toml::value> &root, const std::string &import_key, 
     }
     root.swap(newRoot);
     writeLog(0, "Imported " + std::to_string(count) + " item(s).");
-    return;
 }
 
 void readRegexMatch(YAML::Node node, const std::string &delimiter, string_array &dest, bool scope_limit = true)
 {
-    YAML::Node object;
-    std::string script, url, match, rep, strLine;
-
-    for(unsigned i = 0; i < node.size(); i++)
+    for(auto && object : node)
     {
-        object = node[i];
+        std::string script, url, match, rep, strLine;
         object["script"] >>= script;
-        if(script.size())
+        if(!script.empty())
         {
             dest.emplace_back("!!script:" + script);
             continue;
         }
         object["import"] >>= url;
-        if(url.size())
+        if(!url.empty())
         {
             dest.emplace_back("!!import:" + url);
             continue;
         }
         object["match"] >>= match;
         object["replace"] >>= rep;
-        if(match.size() && rep.size())
+        if(!match.empty() && !rep.empty())
             strLine = match + delimiter + rep;
         else
             continue;
@@ -146,20 +142,17 @@ void readRegexMatch(YAML::Node node, const std::string &delimiter, string_array 
 
 void readEmoji(YAML::Node node, string_array &dest, bool scope_limit = true)
 {
-    YAML::Node object;
-    std::string script, url, match, rep, strLine;
-
-    for(unsigned i = 0; i < node.size(); i++)
+    for(auto && object : node)
     {
-        object = node[i];
+        std::string script, url, match, rep, strLine;
         object["script"] >>= script;
-        if(script.size())
+        if(!script.empty())
         {
             dest.emplace_back("!!script:" + script);
             continue;
         }
         object["import"] >>= url;
-        if(url.size())
+        if(!url.empty())
         {
             url = "!!import:" + url;
             dest.emplace_back(url);
@@ -167,7 +160,7 @@ void readEmoji(YAML::Node node, string_array &dest, bool scope_limit = true)
         }
         object["match"] >>= match;
         object["emoji"] >>= rep;
-        if(match.size() && rep.size())
+        if(!match.empty() && !rep.empty())
             strLine = match + "," + rep;
         else
             continue;
@@ -178,17 +171,12 @@ void readEmoji(YAML::Node node, string_array &dest, bool scope_limit = true)
 
 void readGroup(YAML::Node node, string_array &dest, bool scope_limit = true)
 {
-    std::string strLine, name, type;
-    string_array tempArray;
-    YAML::Node object;
-    unsigned int i, j;
-
-    for(i = 0; i < node.size(); i++)
+    for(YAML::Node && object : node)
     {
-        eraseElements(tempArray);
-        object = node[i];
+        string_array tempArray;
+        std::string name, type;
         object["import"] >>= name;
-        if(name.size())
+        if(!name.empty())
         {
             dest.emplace_back("!!import:" + name);
             continue;
@@ -202,7 +190,7 @@ void readGroup(YAML::Node node, string_array &dest, bool scope_limit = true)
         object["interval"] >>= interval;
         object["tolerance"] >>= tolerance;
         object["timeout"] >>= timeout;
-        for(j = 0; j < object["rule"].size(); j++)
+        for(std::size_t j = 0; j < object["rule"].size(); j++)
             tempArray.emplace_back(safe_as<std::string>(object["rule"][j]));
         switch(hash_(type))
         {
@@ -221,10 +209,7 @@ void readGroup(YAML::Node node, string_array &dest, bool scope_limit = true)
             tempArray.emplace_back(interval + "," + timeout + "," + tolerance);
         }
 
-        strLine = std::accumulate(std::next(tempArray.begin()), tempArray.end(), tempArray[0], [](std::string a, std::string b) -> std::string
-        {
-            return std::move(a) + "`" + std::move(b);
-        });
+        std::string strLine = join(tempArray, "`");
         dest.emplace_back(std::move(strLine));
     }
     importItems(dest, scope_limit);
@@ -232,14 +217,11 @@ void readGroup(YAML::Node node, string_array &dest, bool scope_limit = true)
 
 void readRuleset(YAML::Node node, string_array &dest, bool scope_limit = true)
 {
-    std::string strLine, name, url, group, interval;
-    YAML::Node object;
-
-    for(unsigned int i = 0; i < node.size(); i++)
+    for(auto && object : node)
     {
-        object = node[i];
+        std::string strLine, name, url, group, interval;
         object["import"] >>= name;
-        if(name.size())
+        if(!name.empty())
         {
             dest.emplace_back("!!import:" + name);
             continue;
@@ -248,13 +230,13 @@ void readRuleset(YAML::Node node, string_array &dest, bool scope_limit = true)
         object["group"] >>= group;
         object["rule"] >>= name;
         object["interval"] >>= interval;
-        if(url.size())
+        if(!url.empty())
         {
             strLine = group + "," + url;
-            if(interval.size())
+            if(!interval.empty())
                 strLine += "," + interval;
         }
-        else if(name.size())
+        else if(!name.empty())
             strLine = group + ",[]" + name;
         else
             continue;
@@ -718,6 +700,7 @@ void readTOMLConf(toml::value &root)
     auto tasks = toml::find_or<std::vector<toml::value>>(root, "tasks", {});
     importItems(tasks, "tasks", false);
     global.cronTasks = toml::get<CronTaskConfigs>(toml::value(tasks));
+    refresh_schedule();
 
     const auto &section_server = toml::find(root, "server");
 

@@ -190,7 +190,7 @@ export function require (path) {
 class qjs_fetch_Headers
 {
 public:
-    qjs_fetch_Headers() {}
+    qjs_fetch_Headers() = default;
 
     string_icase_map headers;
 
@@ -218,7 +218,7 @@ public:
 class qjs_fetch_Request
 {
 public:
-    qjs_fetch_Request() {}
+    qjs_fetch_Request() = default;
     std::string method = "GET";
     std::string url;
     std::string proxy;
@@ -231,7 +231,7 @@ public:
 class qjs_fetch_Response
 {
 public:
-    qjs_fetch_Response() {}
+    qjs_fetch_Response() = default;
     int status_code = 200;
     std::string content;
     std::string cookies;

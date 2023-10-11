@@ -55,6 +55,10 @@ make -j8
 rm subconverter
 c++ -Xlinker -unexported_symbol -Xlinker "*" -o base/subconverter -framework CoreFoundation -framework Security $(find CMakeFiles/subconverter.dir/src/ -name "*.o") $(find . -name "*.a") -lcurl -O3
 
+python -m ensurepip
+python -m pip install gitpython
+python scripts/update_rules.py -c scripts/rules_config.conf
+
 cd base
 chmod +rx subconverter
 chmod +r ./*

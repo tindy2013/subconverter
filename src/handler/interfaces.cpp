@@ -141,12 +141,6 @@ void matchUserAgent(const std::string &user_agent, std::string &target, tribool 
     return;
 }
 
-std::string getConvertedRuleset(RESPONSE_CALLBACK_ARGS)
-{
-    std::string url = urlDecode(getUrlArg(request.argument, "url")), type = getUrlArg(request.argument, "type");
-    return convertRuleset(fetchFile(url, parseProxy(global.proxyRuleset), global.cacheRuleset), to_int(type));
-}
-
 std::string getRuleset(RESPONSE_CALLBACK_ARGS)
 {
     std::string &argument = request.argument;

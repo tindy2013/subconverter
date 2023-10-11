@@ -44,6 +44,10 @@ cmake -DCMAKE_INSTALL_PREFIX="$MINGW_PREFIX" -G "Unix Makefiles" -DCMAKE_CXX_STA
 make install -j4
 cd ..
 
+python -m ensurepip
+python -m pip install gitpython
+python scripts/update_rules.py -c scripts/rules_config.conf
+
 rm -f C:/Strawberry/perl/bin/pkg-config C:/Strawberry/perl/bin/pkg-config.bat
 cmake -DCMAKE_BUILD_TYPE=Release -G "Unix Makefiles" .
 make -j4
