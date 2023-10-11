@@ -49,7 +49,7 @@ std::string parseProxy(const std::string &source)
     return proxy;
 }
 
-extern string_array ClashRuleTypes, SurgeRuleTypes, QuanXRuleTypes;
+extern string_array ClashRuleTypes, SurgeRuleTypes, QuanXRuleTypes, StashRuleTypes;
 
 struct UAProfile
 {
@@ -70,6 +70,7 @@ const std::vector<UAProfile> UAMatchList = {
     {"ClashX Pro","","","clash",true},
     {"ClashX","\\/([0-9.]+)","0.13","clash",true},
     {"Clash","","","clash",true},
+    {"Stash","","","stash",true},
     {"Kitsunebi","","","v2ray"},
     {"Loon","","","loon"},
     {"Pharos","","","mixed"},
@@ -321,7 +322,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     case "ss"_hash: case "ssd"_hash: case "ssr"_hash: case "sssub"_hash: case "v2ray"_hash: case "trojan"_hash: case "mixed"_hash:
         lSimpleSubscription = true;
         break;
-    case "clash"_hash: case "clashr"_hash: case "surge"_hash: case "quan"_hash: case "quanx"_hash: case "loon"_hash: case "surfboard"_hash: case "mellow"_hash:
+    case "clash"_hash: case "clashr"_hash: case "surge"_hash: case "quan"_hash: case "quanx"_hash: case "loon"_hash: case "surfboard"_hash: case "mellow"_hash: case "stash"_hash:
         break;
     default:
         *status_code = 400;
@@ -870,6 +871,30 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
 
         if(argUpload)
             uploadGist("loon", argUploadPath, output_content, false);
+        break;
+    case "stash"_hash:
+        writeLog(0, "Generate target: Stash", LOG_LEVEL_INFO);
+        ext.clash_new_field_name = true;
+        tpl_args.local_vars["clash.new_field_name"] = "true";
+        response.headers["profile-update-interval"] = std::to_string(interval / 3600);
+        if(ext.nodelist)
+        {
+            YAML::Node yamlnode;
+            proxyToStash(nodes, yamlnode, dummy_group, ext);
+            output_content = YAML::Dump(yamlnode);
+        }
+        else
+        {
+            if(render_template(fetchFile(lClashBase, proxy, global.cacheConfig), tpl_args, base_content, global.templatePath) != 0)
+            {
+                *status_code = 400;
+                return base_content;
+            }
+            output_content = proxyToStash(nodes, base_content, lRulesetContent, lCustomProxyGroups, ext);
+        }
+
+        if(argUpload)
+            uploadGist(argTarget, argUploadPath, output_content, false);
         break;
     case "ssd"_hash:
         writeLog(0, "Generate target: SSD", LOG_LEVEL_INFO);
