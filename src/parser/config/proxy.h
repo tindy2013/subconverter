@@ -2,10 +2,12 @@
 #define PROXY_H_INCLUDED
 
 #include <string>
+#include <vector>
 
 #include "../../utils/tribool.h"
 
 using String = std::string;
+using StringArray = std::vector<String>;
 
 enum ProxyType
 {
@@ -17,7 +19,8 @@ enum ProxyType
     Snell,
     HTTP,
     HTTPS,
-    SOCKS5
+    SOCKS5,
+    WireGuard
 };
 
 inline String getProxyTypeName(int type)
@@ -84,6 +87,18 @@ struct Proxy
 
     uint16_t SnellVersion = 0;
     String ServerName;
+
+    String SelfIP;
+    String SelfIPv6;
+    String PublicKey;
+    String PrivateKey;
+    String PreSharedKey;
+    StringArray DnsServers;
+    uint16_t Mtu = 0;
+    String AllowedIPs = "0.0.0.0/0, ::/0";
+    uint16_t KeepAlive = 0;
+    String TestUrl;
+    String ClientId;
 };
 
 #define SS_DEFAULT_GROUP "SSProvider"
@@ -93,5 +108,6 @@ struct Proxy
 #define HTTP_DEFAULT_GROUP "HTTPProvider"
 #define TROJAN_DEFAULT_GROUP "TrojanProvider"
 #define SNELL_DEFAULT_GROUP "SnellProvider"
+#define WG_DEFAULT_GROUP "WireGuardProvider"
 
 #endif // PROXY_H_INCLUDED

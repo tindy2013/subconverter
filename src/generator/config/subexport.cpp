@@ -444,6 +444,20 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
             if(std::all_of(x.Password.begin(), x.Password.end(), ::isdigit) && !x.Password.empty())
                 singleproxy["password"].SetTag("str");
             break;
+        case ProxyType::WireGuard:
+            singleproxy["type"] = "wireguard";
+            singleproxy["public-key"] = x.PublicKey;
+            singleproxy["private-key"] = x.PrivateKey;
+            singleproxy["ip"] = x.SelfIP;
+            if(!x.SelfIPv6.empty())
+                singleproxy["ipv6"] = x.SelfIPv6;
+            if(!x.PreSharedKey.empty())
+                singleproxy["preshared-key"] = x.PreSharedKey;
+            if(!x.DnsServers.empty())
+                singleproxy["dns"] = x.DnsServers;
+            if(x.Mtu > 0)
+                singleproxy["mtu"] = x.Mtu;
+            break;
         default:
             continue;
         }
@@ -595,6 +609,24 @@ std::string proxyToClash(std::vector<Proxy> &nodes, const std::string &base_conf
     return output_content;
 }
 
+// peer = (public-key = bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=, allowed-ips = "0.0.0.0/0, ::/0", endpoint = engage.cloudflareclient.com:2408, client-id = 139/184/125),(public-key = bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=, endpoint = engage.cloudflareclient.com:2408)
+std::string generatePeer(Proxy &node, bool client_id_as_reserved = false)
+{
+    std::string result;
+    result += "public-key = " + node.PublicKey;
+    result += ", endpoint = " + node.Hostname + ":" + std::to_string(node.Port);
+    if(!node.AllowedIPs.empty())
+        result += ", allowed-ips = \"" + node.AllowedIPs + "\"";
+    if(!node.ClientId.empty())
+    {
+        if(client_id_as_reserved)
+            result += ", reserved = [" + node.ClientId + "]";
+        else
+            result += ", client-id = " + node.ClientId;
+    }
+    return result;
+}
+
 std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, int surge_ver, extra_settings &ext)
 {
     INIReader ini;
@@ -644,7 +676,7 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
         scv.define(x.AllowInsecure);
         tls13.define(x.TLS13);
 
-        std::string proxy;
+        std::string proxy, section, real_section;
         string_array args, headers;
 
         switch(x.Type)
@@ -769,6 +801,28 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
             }
             if(x.SnellVersion != 0)
                 proxy += ", version=" + std::to_string(x.SnellVersion);
+            break;
+        case ProxyType::WireGuard:
+            if(surge_ver < 4 && surge_ver != -3)
+                continue;
+            section = randomStr(5);
+            real_section = "WireGuard " + section;
+            proxy = "wireguard, section-name=" + section;
+            if(!x.TestUrl.empty())
+                proxy += ", test-url=" + x.TestUrl;
+            ini.set(real_section, "private-key", x.PrivateKey);
+            ini.set(real_section, "self-ip", x.SelfIP);
+            if(!x.SelfIPv6.empty())
+                ini.set(real_section, "self-ip-v6", x.SelfIPv6);
+            if(!x.PreSharedKey.empty())
+                ini.set(real_section, "preshared-key", x.PreSharedKey);
+            if(!x.DnsServers.empty())
+                ini.set(real_section, "dns-server", join(x.DnsServers, ","));
+            if(x.Mtu > 0)
+                ini.set(real_section, "mtu", std::to_string(x.Mtu));
+            if(x.KeepAlive > 0)
+                ini.set(real_section, "keepalive", std::to_string(x.KeepAlive));
+            ini.set(real_section, "peer", "(" + generatePeer(x) + ")");
             break;
         default:
             continue;
@@ -1865,6 +1919,24 @@ std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf,
                 if(!scv.is_undef())
                     proxy += ",skip-cert-verify=" + std::string(scv.get() ? "true" : "false");
             }
+            break;
+        case ProxyType::WireGuard:
+            proxy = "wireguard, interface-ip=" + x.SelfIP;
+            if(!x.SelfIPv6.empty())
+                proxy += ", interface-ipv6=" + x.SelfIPv6;
+            proxy += ", private-key=" + x.PrivateKey;
+            for(const auto &y : x.DnsServers)
+            {
+                if(isIPv4(y))
+                    proxy += ", dns=" + y;
+                else if(isIPv6(y))
+                    proxy += ", dnsv6=" + y;
+            }
+            if(x.Mtu > 0)
+                proxy += ", mtu=" + std::to_string(x.Mtu);
+            if(x.KeepAlive > 0)
+                proxy += ", keepalive=" + std::to_string(x.KeepAlive);
+            proxy += ", peers=[{" + generatePeer(x, true) + "}]";
             break;
         default:
             continue;

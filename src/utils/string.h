@@ -33,7 +33,7 @@ std::string trim(const std::string& str, bool before = true, bool after = true);
 std::string trimQuote(const std::string &str, bool before = true, bool after = true);
 void trimSelfOf(std::string &str, char target, bool before = true, bool after = true);
 std::string trimWhitespace(const std::string &str, bool before = false, bool after = true);
-std::string randomStr(const int len);
+std::string randomStr(int len);
 bool isStrUTF8(const std::string &data);
 
 void removeUTF8BOM(std::string &data);

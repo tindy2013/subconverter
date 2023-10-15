@@ -10,6 +10,8 @@
 using jp = jpcre2::select<char>;
 //#endif // USE_STD_REGEX
 
+#include "regexp.h"
+
 /*
 #ifdef USE_STD_REGEX
 bool regValid(const std::string &reg)
@@ -165,33 +167,53 @@ bool regValid(const std::string &reg)
 
 int regGetMatch(const std::string &src, const std::string &match, size_t group_count, ...)
 {
+    auto result = regGetAllMatch(src, match, false);
+    if(result.empty())
+        return -1;
+    va_list vl;
+    va_start(vl, group_count);
+    size_t index = 0;
+    while(group_count)
+    {
+        std::string* arg = va_arg(vl, std::string*);
+        if(arg != nullptr)
+            *arg = std::move(result[index]);
+        index++;
+        group_count--;
+        if(result.size() <= index)
+            break;
+    }
+    va_end(vl);
+    return 0;
+}
+
+std::vector<std::string> regGetAllMatch(const std::string &src, const std::string &match, bool group_only)
+{
     jp::Regex reg;
     reg.setPattern(match).addModifier("m").addPcre2Option(PCRE2_UTF|PCRE2_ALT_BSUX).compile();
     jp::VecNum vec_num;
     jp::RegexMatch rm;
     size_t count = rm.setRegexObject(&reg).setSubject(src).setNumberedSubstringVector(&vec_num).setModifier("g").match();
+    std::vector<std::string> result;
     if(!count)
-        return -1;
-    va_list vl;
-    va_start(vl, group_count);
-    size_t index = 0, match_index = 0;
-    while(group_count)
+        return result;
+    size_t begin = 0;
+    if(group_only)
+        begin = 1;
+    size_t index = begin, match_index = 0;
+    while(true)
     {
-        std::string* arg = va_arg(vl, std::string*);
-        if(arg != NULL)
-            *arg = std::move(vec_num[match_index][index]);
-        index++;
-        group_count--;
+        if(vec_num.size() <= match_index)
+            break;
         if(vec_num[match_index].size() <= index)
         {
             match_index++;
-            index = 0;
+            index = begin;
         }
-        if(vec_num.size() <= match_index)
-            break;
+        result.push_back(std::move(vec_num[match_index][index]));
+        index++;
     }
-    va_end(vl);
-    return 0;
+    return result;
 }
 
 //#endif // USE_STD_REGEX

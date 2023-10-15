@@ -115,6 +115,20 @@ void snellConstruct(Proxy &node, const std::string &group, const std::string &re
     node.SnellVersion = version;
 }
 
+void wireguardConstruct(Proxy &node, const std::string &group, const std::string &remarks, const std::string &server, const std::string &port, const std::string &selfIp, const std::string &selfIpv6, const std::string &privKey, const std::string &pubKey, const std::string &psk, const string_array &dns, const std::string &mtu, const std::string &keepalive, const std::string &testUrl, const std::string &clientId, const tribool &udp) {
+    commonConstruct(node, ProxyType::WireGuard, group, remarks, server, port, udp, tribool(), tribool(), tribool());
+    node.SelfIP = selfIp;
+    node.SelfIPv6 = selfIpv6;
+    node.PrivateKey = privKey;
+    node.PublicKey = pubKey;
+    node.PreSharedKey = psk;
+    node.DnsServers = dns;
+    node.Mtu = to_int(mtu);
+    node.KeepAlive = to_int(keepalive);
+    node.TestUrl = testUrl;
+    node.ClientId = clientId;
+}
+
 void explodeVmess(std::string vmess, Proxy &node)
 {
     std::string version, ps, add, port, type, id, aid, net, path, host, tls, sni;
@@ -953,6 +967,8 @@ void explodeClash(Node yamlnode, std::vector<Proxy> &nodes)
     std::string plugin, pluginopts, pluginopts_mode, pluginopts_host, pluginopts_mux; //ss
     std::string protocol, protoparam, obfs, obfsparam; //ssr
     std::string user; //socks
+    std::string ip, ipv6, private_key, public_key, mtu; //wireguard
+    string_array dns_server;
     tribool udp, tfo, scv;
     Node singleproxy;
     uint32_t index = nodes.size();
@@ -1151,6 +1167,18 @@ void explodeClash(Node yamlnode, std::vector<Proxy> &nodes)
 
             snellConstruct(node, group, ps, server, port, password, obfs, host, to_int(aid, 0), udp, tfo, scv);
             break;
+        case "wireguard"_hash:
+            group = WG_DEFAULT_GROUP;
+            singleproxy["public-key"] >>= public_key;
+            singleproxy["private-key"] >>= private_key;
+            singleproxy["dns"] >>= dns_server;
+            singleproxy["mtu"] >>= mtu;
+            singleproxy["preshared-key"] >>= password;
+            singleproxy["ip"] >>= ip;
+            singleproxy["ipv6"] >>= ipv6;
+
+            wireguardConstruct(node, group, ps, server, port, ip, ipv6, private_key, public_key, password, dns_server, mtu, "0", "", "", udp);
+            break;
         default:
             continue;
         }
@@ -1288,6 +1316,41 @@ void explodeKitsunebi(std::string kit, Proxy &node)
     vmessConstruct(node, V2RAY_DEFAULT_GROUP, remarks, add, port, type, id, aid, net, cipher, path, host, "", tls, "");
 }
 
+// peer = (public-key = bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=, allowed-ips = "0.0.0.0/0, ::/0", endpoint = engage.cloudflareclient.com:2408, client-id = 139/184/125),(public-key = bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=, endpoint = engage.cloudflareclient.com:2408)
+void parsePeers(Proxy &node, const std::string &data)
+{
+    auto peers = regGetAllMatch(data, R"(\((.*?)\))", true);
+    if(peers.empty())
+        return;
+    auto peer = peers[0];
+    auto peerdata = regGetAllMatch(peer, R"(([a-z-]+) ?= ?([^" ),]+|".*?"),? ?)", true);
+    if(peerdata.size() % 2 != 0)
+        return;
+    for(size_t i = 0; i < peerdata.size(); i += 2)
+    {
+        auto key = peerdata[i];
+        auto val = peerdata[i + 1];
+        switch(hash_(key))
+        {
+        case "public-key"_hash:
+            node.PublicKey = val;
+            break;
+        case "endpoint"_hash:
+            node.Hostname = val.substr(0, val.rfind(':'));
+            node.Port = to_int(val.substr(val.rfind(':') + 1));
+            break;
+        case "client-id"_hash:
+            node.ClientId = val;
+            break;
+        case "allowed-ips"_hash:
+            node.AllowedIPs = trimOf(val, '"');
+            break;
+        default:
+            break;
+        }
+    }
+}
+
 bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
 {
     std::multimap<std::string, std::string> proxies;
@@ -1303,7 +1366,6 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
     ini.keep_empty_section = false;
     ini.allow_dup_section_titles = true;
     ini.set_isolated_items_section("Proxy");
-    ini.include_section("Proxy");
     ini.add_direct_save_section("Proxy");
     if(surge.find("[Proxy]") != surge.npos)
         surge = regReplace(surge, R"(^[\S\s]*?\[)", "[", false);
@@ -1322,6 +1384,9 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
         std::string plugin, pluginopts, pluginopts_mode, pluginopts_host, mod_url, mod_md5; //ss
         std::string id, net, tls, host, edge, path; //v2
         std::string protocol, protoparam; //ssr
+        std::string section, ip, ipv6, private_key, public_key, mtu, test_url, client_id, peer, keepalive; //wireguard
+        string_array dns_servers;
+        string_multimap wireguard_config;
         std::string version, aead = "1";
         std::string itemName, itemVal, config;
         std::vector<std::string> configs, vArray, headers, header;
@@ -1659,6 +1724,65 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
             }
 
             snellConstruct(node, SNELL_DEFAULT_GROUP, remarks, server, port, password, plugin, host, to_int(version, 0), udp, tfo, scv);
+            break;
+        case "wireguard"_hash:
+            for (i = 1; i < configs.size(); i++)
+            {
+                vArray = split(trim(configs[i]), "=");
+                if(vArray.size() != 2)
+                    continue;
+                itemName = trim(vArray[0]);
+                itemVal = trim(vArray[1]);
+                switch(hash_(itemName))
+                {
+                case "section-name"_hash:
+                    section = itemVal;
+                    break;
+                case "test-url"_hash:
+                    test_url = itemVal;
+                    break;
+                }
+            }
+            if(section.empty())
+                continue;
+            ini.get_items("WireGuard " + section, wireguard_config);
+            if(wireguard_config.empty())
+                continue;
+
+            for (auto &c : wireguard_config)
+            {
+                itemName = trim(c.first);
+                itemVal = trim(c.second);
+                switch(hash_(itemName))
+                {
+                case "self-ip"_hash:
+                    ip = itemVal;
+                    break;
+                case "self-ip-v6"_hash:
+                    ipv6 = itemVal;
+                    break;
+                case "private-key"_hash:
+                    private_key = itemVal;
+                    break;
+                case "dns-server"_hash:
+                    vArray = split(itemVal, ",");
+                    for (auto &y : vArray)
+                        dns_servers.emplace_back(trim(y));
+                    break;
+                case "mtu"_hash:
+                    mtu = itemVal;
+                    break;
+                case "peer"_hash:
+                    peer = itemVal;
+                    break;
+                case "keepalive"_hash:
+                    keepalive = itemVal;
+                    break;
+                }
+            }
+
+            wireguardConstruct(node, WG_DEFAULT_GROUP, remarks, "", "0", ip, ipv6, private_key, "", "", dns_servers, mtu, keepalive, test_url, "", udp);
+            parsePeers(node, peer);
             break;
         default:
             switch(hash_(remarks))

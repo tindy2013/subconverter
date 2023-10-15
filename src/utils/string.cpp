@@ -354,7 +354,7 @@ bool isStrUTF8(const std::string &data)
     return true;
 }
 
-std::string randomStr(const int len)
+std::string randomStr(int len)
 {
     std::string retData;
     srand(time(NULL));
