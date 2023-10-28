@@ -656,6 +656,14 @@ void explodeSocks(std::string link, Proxy &node)
             link.erase(link.find("#"));
         }
         link = urlSafeBase64Decode(link.substr(8));
+        if(strFind(link, "@"))
+        {
+            std::string userinfo;
+            userinfo = link.substr(0, link.find("@"));
+            username = urlDecode(userinfo.substr(0, link.find(":")));
+            password = urlDecode(userinfo.substr(link.find(":") + 1));
+            link = link.substr(link.find("@") + 1);
+        }
         arguments = split(link, ":");
         if(arguments.size() < 2)
             return;
