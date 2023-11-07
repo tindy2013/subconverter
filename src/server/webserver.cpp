@@ -74,7 +74,7 @@ void file_not_found(std::string arguments, int sock)
     std::string response = "HTTP/1.1 404 Not Found\r\n"
                            "Content-Type: text/plain\r\nConnection: close\r\n"
                            "Access-Control-Allow-Origin: *\r\nAccess-Control-Allow-Headers: *\r\n"
-                           "Content-Length: " + std::__cxx11::to_string(prompt_info.size()) + "\r\n\r\n" + prompt_info + "\r\n";
+                           "Content-Length: " + std::to_string(prompt_info.size()) + "\r\n\r\n" + prompt_info + "\r\n";
 
     if (sendall(sock, response) == -1)
     {
@@ -124,7 +124,7 @@ void serve_options(SOCKET sock)
 void serve_content(SOCKET sock, std::string type, std::string content)
 {
     send_header(sock, type.data());
-    std::string extra_header = "Content-Length: " + std::__cxx11::to_string(content.size()) + "\r\n";
+    std::string extra_header = "Content-Length: " + std::to_string(content.size()) + "\r\n";
     sendall(sock, extra_header);
     send(sock, "\r\n", 2, 0);
     if (sendall(sock, content) == -1)

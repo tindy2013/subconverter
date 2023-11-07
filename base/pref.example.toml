@@ -25,8 +25,8 @@ exclude_remarks = ["(到期|剩余流量|时间|官网|产品)"]
 # Enable script support for filtering nodes
 enable_filter = false
 # Script used for filtering nodes. Supports inline script and script path. A "filter" function with 1 argument which is a node should be defined in the script.
-# Example: Inline script: Set value to content of script.
-#          Script path: Set value to "path:/path/to/script.js".
+# Example: Inline script: set value to content of script.
+#          Script path: set value to "path:/path/to/script.js".
 #filter_script = '''
 #function filter(node) {
 #    const info = JSON.parse(node.ProxyInfo);
@@ -65,6 +65,9 @@ loon_rule_base = "base/all_base.tpl"
 
 # Shadowsocks Android config base used by the generator, supports local files/URL
 sssub_rule_base = "base/all_base.tpl"
+
+# sing-box config base used by the generator, supports local files/URL
+singbox_rule_base = "base/all_base.tpl"
 
 # Proxy used to download rulesets or subscriptions, set to NONE or empty to disable it, set to SYSTEM to use system proxy.
 # Accept cURL-supported proxies (http:// https:// socks4a:// socks5://)
@@ -265,6 +268,10 @@ target = "/sub?target=surfboard"
 [[aliases]]
 uri = "/loon"
 target = "/sub?target=loon"
+
+[[aliases]]
+uri = "/singbox"
+target = "/sub?target=singbox"
 
 [[aliases]]
 uri = "/ss"

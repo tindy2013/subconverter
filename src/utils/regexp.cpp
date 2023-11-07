@@ -1,5 +1,5 @@
 #include <string>
-#include <stdarg.h>
+#include <cstdarg>
 
 /*
 #ifdef USE_STD_REGEX
@@ -193,7 +193,7 @@ std::vector<std::string> regGetAllMatch(const std::string &src, const std::strin
     reg.setPattern(match).addModifier("m").addPcre2Option(PCRE2_UTF|PCRE2_ALT_BSUX).compile();
     jp::VecNum vec_num;
     jp::RegexMatch rm;
-    size_t count = rm.setRegexObject(&reg).setSubject(src).setNumberedSubstringVector(&vec_num).setModifier("g").match();
+    size_t count = rm.setRegexObject(&reg).setSubject(src).setNumberedSubstringVector(&vec_num).setModifier("gm").match();
     std::vector<std::string> result;
     if(!count)
         return result;
@@ -209,6 +209,7 @@ std::vector<std::string> regGetAllMatch(const std::string &src, const std::strin
         {
             match_index++;
             index = begin;
+            continue;
         }
         result.push_back(std::move(vec_num[match_index][index]));
         index++;
@@ -220,5 +221,5 @@ std::vector<std::string> regGetAllMatch(const std::string &src, const std::strin
 
 std::string regTrim(const std::string &src)
 {
-    return regReplace(src, "^\\s*([\\s\\S]*)\\s*$", "$1", false, false);
+    return regReplace(src, R"(^\s*([\s\S]*)\s*$)", "$1", false, false);
 }

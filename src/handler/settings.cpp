@@ -331,6 +331,7 @@ void readYAMLConf(YAML::Node &node)
     section["quanx_rule_base"] >> global.quanXBase;
     section["loon_rule_base"] >> global.loonBase;
     section["sssub_rule_base"] >> global.SSSubBase;
+    section["singbox_rule_base"] >> global.singBoxBase;
 
     section["default_external_config"] >> global.defaultExtConfig;
     section["append_proxy_type"] >> global.appendType;
@@ -605,6 +606,8 @@ void readTOMLConf(toml::value &root)
                   "quan_rule_base", global.quanBase,
                   "quanx_rule_base", global.quanXBase,
                   "loon_rule_base", global.loonBase,
+                  "sssub_rule_base", global.SSSubBase,
+                  "singbox_rule_base", global.singBoxBase,
                   "proxy_config", global.proxyConfig,
                   "proxy_ruleset", global.proxyRuleset,
                   "proxy_subscription", global.proxySubscription,
@@ -842,6 +845,8 @@ void readConf()
     ini.get_if_exist("quan_rule_base", global.quanBase);
     ini.get_if_exist("quanx_rule_base", global.quanXBase);
     ini.get_if_exist("loon_rule_base", global.loonBase);
+    ini.get_if_exist("sssub_rule_base", global.SSSubBase);
+    ini.get_if_exist("singbox_rule_base", global.singBoxBase);
     ini.get_if_exist("default_external_config", global.defaultExtConfig);
     ini.get_bool_if_exist("append_proxy_type", global.appendType);
     ini.get_if_exist("proxy_config", global.proxyConfig);
@@ -1074,6 +1079,7 @@ int loadExternalYAML(YAML::Node &node, ExternalConfig &ext)
     section["quanx_rule_base"] >> ext.quanx_rule_base;
     section["loon_rule_base"] >> ext.loon_rule_base;
     section["sssub_rule_base"] >> ext.sssub_rule_base;
+    section["singbox_rule_base"] >> ext.singbox_rule_base;
 
     section["enable_rule_generator"] >> ext.enable_rule_generator;
     section["overwrite_original_rules"] >> ext.overwrite_original_rules;
@@ -1146,7 +1152,9 @@ int loadExternalTOML(toml::value &root, ExternalConfig &ext)
                   "mellow_rule_base", ext.mellow_rule_base,
                   "quan_rule_base", ext.quan_rule_base,
                   "quanx_rule_base", ext.quanx_rule_base,
+                  "loon_rule_base", ext.loon_rule_base,
                   "sssub_rule_base", ext.sssub_rule_base,
+                  "singbox_rule_base", ext.singbox_rule_base,
                   "add_emoji", ext.add_emoji,
                   "remove_old_emoji", ext.remove_old_emoji,
                   "include_remarks", ext.include,
@@ -1248,6 +1256,7 @@ int loadExternalConfig(std::string &path, ExternalConfig &ext)
     ini.get_if_exist("quanx_rule_base", ext.quanx_rule_base);
     ini.get_if_exist("loon_rule_base", ext.loon_rule_base);
     ini.get_if_exist("sssub_rule_base", ext.sssub_rule_base);
+    ini.get_if_exist("singbox_rule_base", ext.singbox_rule_base);
 
     ini.get_bool_if_exist("overwrite_original_rules", ext.overwrite_original_rules);
     ini.get_bool_if_exist("enable_rule_generator", ext.enable_rule_generator);

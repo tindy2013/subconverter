@@ -3,7 +3,7 @@ set -xe
 
 apt update
 apt install -y git cmake clang pkg-config
-apt install -y libevent libcurl openssl pcre2
+apt install -y libcurl openssl pcre2
 
 git clone https://github.com/jbeder/yaml-cpp --depth=1
 cd yaml-cpp

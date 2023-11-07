@@ -4,7 +4,6 @@
 #include <string>
 #include <map>
 #include <atomic>
-#include <event2/http.h>
 #include <curl/curlver.h>
 
 #include "../utils/map_extra.h"
@@ -69,10 +68,7 @@ public:
     int start_web_server(void *argv);
     int start_web_server_multi(void *argv);
     void stop_web_server();
-private:
-    int serveFile(const std::string &filename, std::string &content_type, std::string &return_data);
-    inline int process_request(Request &request, Response &response, std::string &return_data);
-    void on_request(evhttp_request *req, void *args);
+
     std::vector<responseRoute> responses;
     string_map redirect_map;
 };

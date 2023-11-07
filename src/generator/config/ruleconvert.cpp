@@ -5,6 +5,7 @@
 #include "../../utils/network.h"
 #include "../../utils/regexp.h"
 #include "../../utils/string.h"
+#include "../../utils/rapidjson_extra.h"
 #include "subexport.h"
 
 /// rule type lists
@@ -28,7 +29,7 @@ std::string convertRuleset(const std::string &content, int type)
 
     if(regFind(content, "^payload:\\r?\\n")) /// Clash
     {
-        output = regReplace(regReplace(content, "payload:\\r?\\n", "", true), "\\s?^\\s*-\\s+('|\"?)(.*)\\1$", "\n$2", true);
+        output = regReplace(regReplace(content, "payload:\\r?\\n", "", true), R"(\s?^\s*-\s+('|"?)(.*)\1$)", "\n$2", true);
         if(type == RULESET_CLASH_CLASSICAL) /// classical type
             return output;
         std::stringstream ss;
@@ -51,8 +52,8 @@ std::string convertRuleset(const std::string &content, int type)
 
             if(!strLine.empty() && (strLine[0] != ';' && strLine[0] != '#' && !(lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')))
             {
-                pos = strLine.find("/");
-                if(pos != strLine.npos) /// ipcidr
+                pos = strLine.find('/');
+                if(pos != std::string::npos) /// ipcidr
                 {
                     if(isIPv4(strLine.substr(0, pos)))
                         output += "IP-CIDR,";
@@ -143,7 +144,7 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<RulesetContent> &ruleset_
             lineSize = strLine.size();
             if(!lineSize || strLine[0] == ';' || strLine[0] == '#' || (lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')) //empty lines and comments are ignored
                 continue;
-            if(std::none_of(ClashRuleTypes.begin(), ClashRuleTypes.end(), [strLine](std::string type){return startsWith(strLine, type);}))
+            if(std::none_of(ClashRuleTypes.begin(), ClashRuleTypes.end(), [strLine](const std::string& type){return startsWith(strLine, type);}))
                 continue;
             if(strFind(strLine, "//"))
             {
@@ -218,7 +219,7 @@ std::string rulesetToClashStr(YAML::Node &base_rule, std::vector<RulesetContent>
             lineSize = strLine.size();
             if(!lineSize || strLine[0] == ';' || strLine[0] == '#' || (lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')) //empty lines and comments are ignored
                 continue;
-            if(std::none_of(ClashRuleTypes.begin(), ClashRuleTypes.end(), [strLine](std::string type){ return startsWith(strLine, type); }))
+            if(std::none_of(ClashRuleTypes.begin(), ClashRuleTypes.end(), [strLine](const std::string& type){ return startsWith(strLine, type); }))
                 continue;
             if(strFind(strLine, "//"))
             {
@@ -235,7 +236,7 @@ std::string rulesetToClashStr(YAML::Node &base_rule, std::vector<RulesetContent>
     return output_content;
 }
 
-void rulesetToSurge(INIReader &base_rule, std::vector<RulesetContent> &ruleset_content_array, int surge_ver, bool overwrite_original_rules, std::string remote_path_prefix)
+void rulesetToSurge(INIReader &base_rule, std::vector<RulesetContent> &ruleset_content_array, int surge_ver, bool overwrite_original_rules, const std::string &remote_path_prefix)
 {
     string_array allRules;
     std::string rule_group, rule_path, rule_path_typed, retrieved_rules, strLine;
@@ -267,6 +268,8 @@ void rulesetToSurge(INIReader &base_rule, std::vector<RulesetContent> &ruleset_c
             break;
         case -4:
             base_rule.erase_section("Remote Rule");
+            break;
+        default:
             break;
         }
     }
@@ -313,7 +316,7 @@ void rulesetToSurge(INIReader &base_rule, std::vector<RulesetContent> &ruleset_c
             }
             if(fileExist(rule_path))
             {
-                if(surge_ver > 2 && remote_path_prefix.size())
+                if(surge_ver > 2 && !remote_path_prefix.empty())
                 {
                     strLine = "RULE-SET," + remote_path_prefix + "/getruleset?type=1&url=" + urlSafeBase64Encode(rule_path_typed) + "," + rule_group;
                     if(x.update_interval)
@@ -321,14 +324,14 @@ void rulesetToSurge(INIReader &base_rule, std::vector<RulesetContent> &ruleset_c
                     allRules.emplace_back(std::move(strLine));
                     continue;
                 }
-                else if(surge_ver == -1 && remote_path_prefix.size())
+                else if(surge_ver == -1 && !remote_path_prefix.empty())
                 {
                     strLine = remote_path_prefix + "/getruleset?type=2&url=" + urlSafeBase64Encode(rule_path_typed) + "&group=" + urlSafeBase64Encode(rule_group);
                     strLine += ", tag=" + rule_group + ", enabled=true";
                     base_rule.set("filter_remote", "{NONAME}", strLine);
                     continue;
                 }
-                else if(surge_ver == -4 && remote_path_prefix.size())
+                else if(surge_ver == -4 && !remote_path_prefix.empty())
                 {
                     strLine = remote_path_prefix + "/getruleset?type=1&url=" + urlSafeBase64Encode(rule_path_typed) + "," + rule_group;
                     base_rule.set("Remote Rule", "{NONAME}", strLine);
@@ -341,7 +344,7 @@ void rulesetToSurge(INIReader &base_rule, std::vector<RulesetContent> &ruleset_c
                 {
                     if(x.rule_type != RULESET_SURGE)
                     {
-                        if(remote_path_prefix.size())
+                        if(!remote_path_prefix.empty())
                             strLine = "RULE-SET," + remote_path_prefix + "/getruleset?type=1&url=" + urlSafeBase64Encode(rule_path_typed) + "," + rule_group;
                         else
                             continue;
@@ -355,7 +358,7 @@ void rulesetToSurge(INIReader &base_rule, std::vector<RulesetContent> &ruleset_c
                     allRules.emplace_back(std::move(strLine));
                     continue;
                 }
-                else if(surge_ver == -1 && remote_path_prefix.size())
+                else if(surge_ver == -1 && !remote_path_prefix.empty())
                 {
                     strLine = remote_path_prefix + "/getruleset?type=2&url=" + urlSafeBase64Encode(rule_path_typed) + "&group=" + urlSafeBase64Encode(rule_group);
                     strLine += ", tag=" + rule_group + ", enabled=true";
@@ -401,22 +404,22 @@ void rulesetToSurge(INIReader &base_rule, std::vector<RulesetContent> &ruleset_c
                         continue;
                     [[fallthrough]];
                 case -1:
-                    if(!std::any_of(QuanXRuleTypes.begin(), QuanXRuleTypes.end(), [strLine](std::string type){return startsWith(strLine, type);}))
+                    if(!std::any_of(QuanXRuleTypes.begin(), QuanXRuleTypes.end(), [strLine](const std::string& type){return startsWith(strLine, type);}))
                         continue;
                     break;
                 case -3:
-                    if(!std::any_of(SurfRuleTypes.begin(), SurfRuleTypes.end(), [strLine](std::string type){return startsWith(strLine, type);}))
+                    if(!std::any_of(SurfRuleTypes.begin(), SurfRuleTypes.end(), [strLine](const std::string& type){return startsWith(strLine, type);}))
                         continue;
                     break;
                 default:
                     if(surge_ver > 2)
                     {
-                        if(!std::any_of(SurgeRuleTypes.begin(), SurgeRuleTypes.end(), [strLine](std::string type){return startsWith(strLine, type);}))
+                        if(!std::any_of(SurgeRuleTypes.begin(), SurgeRuleTypes.end(), [strLine](const std::string& type){return startsWith(strLine, type);}))
                             continue;
                     }
                     else
                     {
-                        if(!std::any_of(Surge2RuleTypes.begin(), Surge2RuleTypes.end(), [strLine](std::string type){return startsWith(strLine, type);}))
+                        if(!std::any_of(Surge2RuleTypes.begin(), Surge2RuleTypes.end(), [strLine](const std::string& type){return startsWith(strLine, type);}))
                             continue;
                     }
                 }
@@ -452,4 +455,101 @@ void rulesetToSurge(INIReader &base_rule, std::vector<RulesetContent> &ruleset_c
     {
         base_rule.set("{NONAME}", x);
     }
+}
+
+static rapidjson::Value transformRuleToSingBox(const std::string& rule, rapidjson::MemoryPoolAllocator<>& allocator)
+{
+    std::string type, value, group, option;
+
+    regGetMatch(rule, "^(.*?),(.*?)(?:,(.*?))?(,.*)?$", 5, nullptr, &type, &value, &group, &option);
+    rapidjson::Value rule_obj(rapidjson::kObjectType);
+    type = replaceAllDistinct(toLower(type), "-", "_");
+    type = replaceAllDistinct(type, "ip_cidr6", "ip_cidr");
+    if (type == "match" || type == "final") {
+        rule_obj.AddMember("outbound", rapidjson::Value(value.c_str(), allocator), allocator);
+    } else {
+        rule_obj.AddMember(rapidjson::Value(type.c_str(), allocator), rapidjson::Value(value.c_str(), allocator), allocator);
+        rule_obj.AddMember("outbound", rapidjson::Value(group.c_str(), allocator), allocator);
+    }
+    return rule_obj;
+}
+
+void rulesetToSingBox(rapidjson::Document &base_rule, std::vector<RulesetContent> &ruleset_content_array, bool overwrite_original_rules)
+{
+    std::string rule_group, retrieved_rules, strLine, final;
+    std::stringstream strStrm;
+    size_t total_rules = 0;
+    rapidjson::MemoryPoolAllocator<>& allocator = base_rule.GetAllocator();
+
+    rapidjson::Value rules(rapidjson::kArrayType);
+    if (!overwrite_original_rules)
+    {
+        if (base_rule.HasMember("route") && base_rule["route"].HasMember("rules") && base_rule["route"]["rules"].IsArray())
+            rules.Swap(base_rule["route"]["rules"]);
+    }
+
+    for(RulesetContent &x : ruleset_content_array)
+    {
+        if(global.maxAllowedRules && total_rules > global.maxAllowedRules)
+            break;
+        rule_group = x.rule_group;
+        retrieved_rules = x.rule_content.get();
+        if(retrieved_rules.empty())
+        {
+            writeLog(0, "Failed to fetch ruleset or ruleset is empty: '" + x.rule_path + "'!", LOG_LEVEL_WARNING);
+            continue;
+        }
+        if(startsWith(retrieved_rules, "[]"))
+        {
+            strLine = retrieved_rules.substr(2);
+            if(startsWith(strLine, "FINAL") || startsWith(strLine, "MATCH"))
+            {
+                final = rule_group;
+                continue;
+            }
+            strLine += "," + rule_group;
+            if(count_least(strLine, ',', 3))
+                strLine = regReplace(strLine, "^(.*?,.*?)(,.*)(,.*)$", "$1$3$2");
+            rules.PushBack(transformRuleToSingBox(strLine, allocator), allocator);
+            total_rules++;
+            continue;
+        }
+        retrieved_rules = convertRuleset(retrieved_rules, x.rule_type);
+        char delimiter = getLineBreak(retrieved_rules);
+
+        strStrm.clear();
+        strStrm<<retrieved_rules;
+        std::string::size_type lineSize;
+        while(getline(strStrm, strLine, delimiter))
+        {
+            if(global.maxAllowedRules && total_rules > global.maxAllowedRules)
+                break;
+            strLine = trimWhitespace(strLine, true, true); //remove whitespaces
+            lineSize = strLine.size();
+            if(!lineSize || strLine[0] == ';' || strLine[0] == '#' || (lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')) //empty lines and comments are ignored
+                continue;
+            if(std::none_of(ClashRuleTypes.begin(), ClashRuleTypes.end(), [strLine](const std::string& type){return startsWith(strLine, type);}))
+                continue;
+            if(strFind(strLine, "//"))
+            {
+                strLine.erase(strLine.find("//"));
+                strLine = trimWhitespace(strLine);
+            }
+            strLine += "," + rule_group;
+            if(count_least(strLine, ',', 3))
+                strLine = regReplace(strLine, "^(.*?,.*?)(,.*)(,.*)$", "$1$3$2");
+            rules.PushBack(transformRuleToSingBox(strLine, allocator), allocator);
+        }
+    }
+
+    if (!base_rule.HasMember("route"))
+        base_rule.AddMember("route", rapidjson::Value(rapidjson::kObjectType), allocator);
+    if (!base_rule["route"].HasMember("rules"))
+        base_rule["route"].AddMember("rules", rapidjson::Value(rapidjson::kArrayType), allocator);
+    base_rule["route"]["rules"].Swap(rules);
+
+    if (!base_rule["route"].HasMember("final"))
+        base_rule["route"].AddMember("final", rapidjson::Value(final.c_str(), allocator), allocator);
+    else
+        base_rule["route"]["final"].SetString(final.c_str(), allocator);
 }

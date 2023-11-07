@@ -89,30 +89,28 @@ const std::vector<UAProfile> UAMatchList = {
     {"V2RayX","","","v2ray"}
 };
 
-bool verGreaterEqual(const std::string &src_ver, const std::string &target_ver)
+bool verGreaterEqual(const std::string& src_ver, const std::string& target_ver)
 {
-    string_size src_pos_beg = 0, src_pos_end, target_pos_beg = 0, target_pos_end;
-    while(true)
-    {
-        src_pos_end = src_ver.find('.', src_pos_beg);
-        if(src_pos_end == src_ver.npos)
-            src_pos_end = src_ver.size();
-        int part_src = std::stoi(src_ver.substr(src_pos_beg, src_pos_end - src_pos_beg));
-        target_pos_end = target_ver.find('.', target_pos_beg);
-        if(target_pos_end == target_ver.npos)
-            target_pos_end = target_ver.size();
-        int part_target = std::stoi(target_ver.substr(target_pos_beg, target_pos_end - target_pos_beg));
-        if(part_src > part_target)
-            break;
-        else if(part_src < part_target)
-            return false;
-        else if(src_pos_end >= src_ver.size() - 1 || target_pos_end >= target_ver.size() - 1)
-            break;
-        src_pos_beg = src_pos_end + 1;
-        target_pos_beg = target_pos_end + 1;
+    std::istringstream src_stream(src_ver), target_stream(target_ver);
+    int src_part, target_part;
+    char dot;
+    while (src_stream >> src_part) {
+        if (target_stream >> target_part) {
+            if (src_part < target_part) {
+                return false;
+            } else if (src_part > target_part) {
+                return true;
+            }
+            // Skip the dot separator in both streams
+            src_stream >> dot;
+            target_stream >> dot;
+        } else {
+            // If we run out of target parts, the source version is greater only if it has more parts
+            return true;
+        }
     }
-    return true;
-
+    // If we get here, the common parts are equal, so check if target_ver has more parts
+    return !bool(target_stream >> target_part);
 }
 
 void matchUserAgent(const std::string &user_agent, std::string &target, tribool &clash_new_name, int &surge_ver)
@@ -321,7 +319,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     case "ss"_hash: case "ssd"_hash: case "ssr"_hash: case "sssub"_hash: case "v2ray"_hash: case "trojan"_hash: case "mixed"_hash:
         lSimpleSubscription = true;
         break;
-    case "clash"_hash: case "clashr"_hash: case "surge"_hash: case "quan"_hash: case "quanx"_hash: case "loon"_hash: case "surfboard"_hash: case "mellow"_hash:
+    case "clash"_hash: case "clashr"_hash: case "surge"_hash: case "quan"_hash: case "quanx"_hash: case "loon"_hash: case "surfboard"_hash: case "mellow"_hash: case "singbox"_hash:
         break;
     default:
         *status_code = 400;
@@ -363,6 +361,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     /// for external configuration
     std::string lClashBase = global.clashBase, lSurgeBase = global.surgeBase, lMellowBase = global.mellowBase, lSurfboardBase = global.surfboardBase;
     std::string lQuanBase = global.quanBase, lQuanXBase = global.quanXBase, lLoonBase = global.loonBase, lSSSubBase = global.SSSubBase;
+    std::string lSingBoxBase = global.singBoxBase;
 
     /// validate urls
     argEnableInsert.define(global.enableInsert);
@@ -458,6 +457,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
                     checkExternalBase(extconf.quan_rule_base, lQuanBase);
                     checkExternalBase(extconf.quanx_rule_base, lQuanXBase);
                     checkExternalBase(extconf.loon_rule_base, lLoonBase);
+                    checkExternalBase(extconf.singbox_rule_base, lSingBoxBase);
 
                     if(extconf.surge_ruleset.size())
                         lCustomRulesets = extconf.surge_ruleset;
@@ -876,6 +876,22 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         output_content = proxyToSSD(nodes, argGroupName, subInfo, ext);
         if(argUpload)
             uploadGist("ssd", argUploadPath, output_content, false);
+        break;
+    case "singbox"_hash:
+        writeLog(0, "Generate target: sing-box", LOG_LEVEL_INFO);
+        if(!ext.nodelist)
+        {
+            if(render_template(fetchFile(lSingBoxBase, proxy, global.cacheConfig), tpl_args, base_content, global.templatePath) != 0)
+            {
+                *status_code = 400;
+                return base_content;
+            }
+        }
+
+        output_content = proxyToSingBox(nodes, base_content, lRulesetContent, lCustomProxyGroups, ext);
+
+        if(argUpload)
+            uploadGist("singbox", argUploadPath, output_content, false);
         break;
     default:
         writeLog(0, "Generate target: Unspecified", LOG_LEVEL_INFO);

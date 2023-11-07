@@ -72,5 +72,26 @@ inline std::string SerializeObject(const rapidjson::Value& value)
     return sb.GetString();
 }
 
+template <typename ...Args>
+inline rapidjson::Value buildObject(rapidjson::MemoryPoolAllocator<> & allocator, Args... kvs)
+{
+    static_assert(sizeof...(kvs) % 2 == 0, "buildObject requires an even number of arguments");
+    static_assert((std::is_same<Args, const char*>::value && ...), "buildObject requires all arguments to be const char*");
+    rapidjson::Value ret(rapidjson::kObjectType);
+    auto args = {kvs...};
+    auto it = args.begin();
+    while (it != args.end())
+    {
+        const char *key = *it++, *value = *it++;
+        ret.AddMember(rapidjson::StringRef(key), rapidjson::StringRef(value), allocator);
+    }
+    return ret;
+}
+
+inline rapidjson::Value buildBooleanValue(bool value)
+{
+    return value ? rapidjson::Value(rapidjson::kTrueType) : rapidjson::Value(rapidjson::kFalseType);
+}
+
 
 #endif // RAPIDJSON_EXTRA_H_INCLUDED

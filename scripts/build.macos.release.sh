@@ -1,7 +1,7 @@
 #!/bin/bash
 set -xe
 
-brew reinstall rapidjson libevent zlib pcre2 pkgconfig
+brew reinstall rapidjson zlib pcre2 pkgconfig
 
 #git clone https://github.com/curl/curl --depth=1 --branch curl-7_88_1
 #cd curl
@@ -46,13 +46,13 @@ cmake -DCMAKE_CXX_STANDARD=11 .
 make install -j4
 cd ..
 
-cp /usr/local/lib/libevent.a .
 cp /usr/local/opt/zlib/lib/libz.a .
 cp /usr/local/lib/libpcre2-8.a .
 
 cmake -DCMAKE_BUILD_TYPE=Release .
 make -j8
 rm subconverter
+# shellcheck disable=SC2046
 c++ -Xlinker -unexported_symbol -Xlinker "*" -o base/subconverter -framework CoreFoundation -framework Security $(find CMakeFiles/subconverter.dir/src/ -name "*.o") $(find . -name "*.a") -lcurl -O3
 
 python -m ensurepip
