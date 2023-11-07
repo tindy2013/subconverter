@@ -62,12 +62,11 @@ def main():
 
         r = open_repo(repo_path)
         if r is None:
-            logging.info(f"cloning {url} to {repo_path}")
+            logging.info(f"cloning repo {url} to {repo_path}")
             r = Repo.clone_from(url, repo_path)
         else:
-            logging.info(f"pulling changes for {repo} from {url}")
-            r.remotes.origin.pull()
-
+            logging.info(f"repo {repo_path} exists")
+            
         r.git.checkout(commit)
         update_rules(repo_path, save_path, commit, matches, keep_tree)
 
