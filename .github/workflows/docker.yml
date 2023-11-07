@@ -179,7 +179,7 @@ jobs:
           tags: tindy2013/subconverter:latest
           build-args: |
             SHA=${{ steps.vars.outputs.sha_short }}
-            THREADS=2
+            THREADS=4
           outputs: type=image,push=true
 
       - name: Replace tag without `v`
@@ -200,7 +200,7 @@ jobs:
           context: scripts/
           tags: tindy2013/subconverter:${{steps.version.outputs.result}}
           build-args: |
-            THREADS=2
+            THREADS=4
           outputs: type=image,push=true
 
       - name: Save digest
@@ -252,7 +252,7 @@ jobs:
           tags: tindy2013/subconverter:latest
           build-args: |
             SHA=${{ steps.vars.outputs.sha_short }}
-            THREADS=2
+            THREADS=4
           outputs: type=image,push=true
 
       - name: Replace tag without `v`
@@ -273,7 +273,7 @@ jobs:
           context: scripts/
           tags: tindy2013/subconverter:${{steps.version.outputs.result}}
           build-args: |
-            THREADS=2
+            THREADS=4
           outputs: type=image,push=true
 
       - name: Save digest
