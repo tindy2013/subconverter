@@ -1003,7 +1003,7 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
         name = x.first;
         content = x.second;
         dummy_str_array = split(content, ",");
-        if(!dummy_str_array.size())
+        if(dummy_str_array.empty())
             continue;
         type = dummy_str_array[0];
         if(!(type == "select" || type == "url-test" || type == "fallback" || type == "load-balance")) //remove unsupported types
