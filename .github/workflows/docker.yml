@@ -146,7 +146,7 @@ jobs:
 
   armv7_build:
     name: Build ARMv7 Image
-    runs-on: [self-hosted, linux, ARM64]
+    runs-on: [self-hosted, linux, ARM]
     steps:
       - name: Checkout base
         uses: actions/checkout@v3
