@@ -19,8 +19,8 @@ std::vector<std::string> split(const std::string &s, const std::string &seperato
         while(i != s.size() && flag == 0)
         {
             flag = 1;
-            for(string_size x = 0; x < seperator.size(); ++x)
-                if(s[i] == seperator[x])
+            for(char x : seperator)
+                if(s[i] == x)
                 {
                     ++i;
                     flag = 0;
@@ -32,8 +32,8 @@ std::vector<std::string> split(const std::string &s, const std::string &seperato
         string_size j = i;
         while(j != s.size() && flag == 0)
         {
-            for(string_size x = 0; x < seperator.size(); ++x)
-                if(s[j] == seperator[x])
+            for(char x : seperator)
+                if(s[j] == x)
                 {
                     flag = 1;
                     break;

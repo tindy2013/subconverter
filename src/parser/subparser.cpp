@@ -14,6 +14,7 @@
 #include "subparser.h"
 
 using namespace rapidjson;
+using namespace rapidjson_ext;
 using namespace YAML;
 
 string_array ss_ciphers = {"rc4-md5", "aes-128-gcm", "aes-192-gcm", "aes-256-gcm", "aes-128-cfb", "aes-192-cfb", "aes-256-cfb", "aes-128-ctr", "aes-192-ctr", "aes-256-ctr", "camellia-128-cfb", "camellia-192-cfb", "camellia-256-cfb", "bf-cfb", "chacha20-ietf-poly1305", "xchacha20-ietf-poly1305", "salsa20", "chacha20", "chacha20-ietf"};
@@ -2140,7 +2141,7 @@ void explodeNetchConf(std::string netch, std::vector<Proxy> &nodes)
     for(uint32_t i = 0; i < json["Server"].Size(); i++)
     {
         Proxy node;
-        explodeNetch("Netch://" + base64Encode(SerializeObject(json["Server"][i])), node);
+        explodeNetch("Netch://" + base64Encode(json["Server"][i] | SerializeObject()), node);
 
         node.Id = index;
         nodes.emplace_back(std::move(node));

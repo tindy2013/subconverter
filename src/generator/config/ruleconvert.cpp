@@ -457,18 +457,25 @@ void rulesetToSurge(INIReader &base_rule, std::vector<RulesetContent> &ruleset_c
     }
 }
 
-static rapidjson::Value transformRuleToSingBox(const std::string& rule, rapidjson::MemoryPoolAllocator<>& allocator)
+static rapidjson::Value transformRuleToSingBox(const std::string& rule, const std::string &group, rapidjson::MemoryPoolAllocator<>& allocator)
 {
-    std::string type, value, group, option;
+    auto args = split(rule, ",");
+    if (args.size() < 2) return rapidjson::Value(rapidjson::kObjectType);
+    auto type = toLower(std::string(args[0]));
+    auto value = args[1];
+//    std::string_view option;
+//    if (args.size() >= 3) option = args[2];
 
-    regGetMatch(rule, "^(.*?),(.*?)(?:,(.*?))?(,.*)?$", 5, nullptr, &type, &value, &group, &option);
     rapidjson::Value rule_obj(rapidjson::kObjectType);
     type = replaceAllDistinct(toLower(type), "-", "_");
     type = replaceAllDistinct(type, "ip_cidr6", "ip_cidr");
-    if (type == "match" || type == "final") {
-        rule_obj.AddMember("outbound", rapidjson::Value(value.c_str(), allocator), allocator);
-    } else {
-        rule_obj.AddMember(rapidjson::Value(type.c_str(), allocator), rapidjson::Value(value.c_str(), allocator), allocator);
+    if (type == "match" || type == "final")
+    {
+        rule_obj.AddMember("outbound", rapidjson::Value(value.data(), value.size(), allocator), allocator);
+    }
+    else
+    {
+        rule_obj.AddMember(rapidjson::Value(type.c_str(), allocator), rapidjson::Value(value.data(), value.size(), allocator), allocator);
         rule_obj.AddMember("outbound", rapidjson::Value(group.c_str(), allocator), allocator);
     }
     return rule_obj;
@@ -476,6 +483,7 @@ static rapidjson::Value transformRuleToSingBox(const std::string& rule, rapidjso
 
 void rulesetToSingBox(rapidjson::Document &base_rule, std::vector<RulesetContent> &ruleset_content_array, bool overwrite_original_rules)
 {
+    using namespace rapidjson_ext;
     std::string rule_group, retrieved_rules, strLine, final;
     std::stringstream strStrm;
     size_t total_rules = 0;
@@ -507,10 +515,7 @@ void rulesetToSingBox(rapidjson::Document &base_rule, std::vector<RulesetContent
                 final = rule_group;
                 continue;
             }
-            strLine += "," + rule_group;
-            if(count_least(strLine, ',', 3))
-                strLine = regReplace(strLine, "^(.*?,.*?)(,.*)(,.*)$", "$1$3$2");
-            rules.PushBack(transformRuleToSingBox(strLine, allocator), allocator);
+            rules.PushBack(transformRuleToSingBox(strLine, rule_group, allocator), allocator);
             total_rules++;
             continue;
         }
@@ -535,21 +540,15 @@ void rulesetToSingBox(rapidjson::Document &base_rule, std::vector<RulesetContent
                 strLine.erase(strLine.find("//"));
                 strLine = trimWhitespace(strLine);
             }
-            strLine += "," + rule_group;
-            if(count_least(strLine, ',', 3))
-                strLine = regReplace(strLine, "^(.*?,.*?)(,.*)(,.*)$", "$1$3$2");
-            rules.PushBack(transformRuleToSingBox(strLine, allocator), allocator);
+            rules.PushBack(transformRuleToSingBox(strLine, rule_group, allocator), allocator);
         }
     }
 
     if (!base_rule.HasMember("route"))
         base_rule.AddMember("route", rapidjson::Value(rapidjson::kObjectType), allocator);
-    if (!base_rule["route"].HasMember("rules"))
-        base_rule["route"].AddMember("rules", rapidjson::Value(rapidjson::kArrayType), allocator);
-    base_rule["route"]["rules"].Swap(rules);
 
-    if (!base_rule["route"].HasMember("final"))
-        base_rule["route"].AddMember("final", rapidjson::Value(final.c_str(), allocator), allocator);
-    else
-        base_rule["route"]["final"].SetString(final.c_str(), allocator);
+    auto finalValue = rapidjson::Value(final.c_str(), allocator);
+    base_rule["route"]
+    | AddMemberOrReplace("rules", rules, allocator)
+    | AddMemberOrReplace("final", finalValue, allocator);
 }

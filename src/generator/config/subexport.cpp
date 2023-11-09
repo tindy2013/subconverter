@@ -998,35 +998,19 @@ std::string proxyToSingle(std::vector<Proxy> &nodes, int types, extra_settings &
 
 std::string proxyToSSSub(std::string base_conf, std::vector<Proxy> &nodes, extra_settings &ext)
 {
-    rapidjson::Document json, base;
-    std::string output_content;
+    using namespace rapidjson_ext;
+    rapidjson::Document base;
 
-    auto &alloc = json.GetAllocator();
-    json.SetObject();
-    json.AddMember("remarks", "", alloc);
-    json.AddMember("server", "", alloc);
-    json.AddMember("server_port", 0, alloc);
-    json.AddMember("method", "", alloc);
-    json.AddMember("password", "", alloc);
-    json.AddMember("plugin", "", alloc);
-    json.AddMember("plugin_opts", "", alloc);
+    auto &alloc = base.GetAllocator();
 
     base_conf = trimWhitespace(base_conf);
     if(base_conf.empty())
         base_conf = "{}";
     rapidjson::ParseResult result = base.Parse(base_conf.data());
-    if(result)
-    {
-        for(auto iter = base.MemberBegin(); iter != base.MemberEnd(); iter++)
-            json.AddMember(iter->name, iter->value, alloc);
-    }
-    else
+    if (!result)
         writeLog(0, std::string("SIP008 base loader failed with error: ") + rapidjson::GetParseError_En(result.Code()) + " (" + std::to_string(result.Offset()) + ")", LOG_LEVEL_ERROR);
 
-    rapidjson::Value jsondata;
-    jsondata = json.Move();
-
-    output_content = "[";
+    rapidjson::Value proxies(rapidjson::kArrayType);
     for(Proxy &x : nodes)
     {
         std::string &remark = x.Remark;
@@ -1051,19 +1035,18 @@ std::string proxyToSSSub(std::string base_conf, std::vector<Proxy> &nodes, extra
         default:
             continue;
         }
-        jsondata["remarks"].SetString(rapidjson::StringRef(remark.c_str(), remark.size()));
-        jsondata["server"].SetString(rapidjson::StringRef(hostname.c_str(), hostname.size()));
-        jsondata["server_port"] = x.Port;
-        jsondata["password"].SetString(rapidjson::StringRef(password.c_str(), password.size()));
-        jsondata["method"].SetString(rapidjson::StringRef(method.c_str(), method.size()));
-        jsondata["plugin"].SetString(rapidjson::StringRef(plugin.c_str(), plugin.size()));
-        jsondata["plugin_opts"].SetString(rapidjson::StringRef(pluginopts.c_str(), pluginopts.size()));
-        output_content += SerializeObject(jsondata) + ",";
+        rapidjson::Value proxy(rapidjson::kObjectType);
+        proxy.CopyFrom(base, alloc)
+        | AddMemberOrReplace("remarks", rapidjson::Value(remark.c_str(), remark.size()), alloc)
+        | AddMemberOrReplace("server", rapidjson::Value(hostname.c_str(), hostname.size()), alloc)
+        | AddMemberOrReplace("server_port", rapidjson::Value(x.Port), alloc)
+        | AddMemberOrReplace("method", rapidjson::Value(method.c_str(), method.size()), alloc)
+        | AddMemberOrReplace("password", rapidjson::Value(password.c_str(), password.size()), alloc)
+        | AddMemberOrReplace("plugin", rapidjson::Value(plugin.c_str(), plugin.size()), alloc)
+        | AddMemberOrReplace("plugin_opts", rapidjson::Value(pluginopts.c_str(), pluginopts.size()), alloc);
+        proxies.PushBack(proxy, alloc);
     }
-    if(output_content.size() > 1)
-        output_content.erase(output_content.size() - 1);
-    output_content += "]";
-    return output_content;
+    return proxies | SerializeObject();
 }
 
 std::string proxyToQuan(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext)
@@ -2101,6 +2084,7 @@ static rapidjson::Value buildV2RayTransport(const Proxy& proxy, rapidjson::Memor
 }
 
 void proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext) {
+    using namespace rapidjson_ext;
     rapidjson::Document::AllocatorType &allocator = json.GetAllocator();
     rapidjson::Value outbounds(rapidjson::kArrayType), route(rapidjson::kArrayType);
     std::vector<Proxy> nodelist;
@@ -2231,11 +2215,8 @@ void proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::v
                 proxy.AddMember("tag", rapidjson::StringRef(x.Remark.c_str()), allocator);
                 proxy.AddMember("server", rapidjson::StringRef(x.Hostname.c_str()), allocator);
                 proxy.AddMember("server_port", x.Port, allocator);
-                if (x.TLSSecure)
-                {
-                    proxy.AddMember("username", rapidjson::StringRef(x.Username.c_str()), allocator);
-                    proxy.AddMember("password", rapidjson::StringRef(x.Password.c_str()), allocator);
-                }
+                proxy.AddMember("username", rapidjson::StringRef(x.Username.c_str()), allocator);
+                proxy.AddMember("password", rapidjson::StringRef(x.Password.c_str()), allocator);
                 break;
             }
             case ProxyType::SOCKS5:
@@ -2272,7 +2253,7 @@ void proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::v
         nodelist.push_back(x);
         outbounds.PushBack(proxy, allocator);
     }
-    for (const ProxyGroupConfig& x: extra_proxy_group)
+    for (const ProxyGroupConfig &x: extra_proxy_group)
     {
         string_array filtered_nodelist;
         std::string type;
@@ -2318,16 +2299,14 @@ void proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::v
             if (x.Tolerance > 0)
                 group.AddMember("tolerance", x.Tolerance, allocator);
         }
-
         outbounds.PushBack(group, allocator);
     }
-    if (json.HasMember("outbounds"))
-        json.RemoveMember("outbounds");
-    json.AddMember("outbounds", outbounds, allocator);
+    json | AddMemberOrReplace("outbounds", outbounds, allocator);
 }
 
 std::string proxyToSingBox(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext)
 {
+    using namespace rapidjson_ext;
     rapidjson::Document json;
     json.Parse(base_conf.data());
     if(json.HasParseError())
@@ -2339,5 +2318,5 @@ std::string proxyToSingBox(std::vector<Proxy> &nodes, const std::string &base_co
     proxyToSingBox(nodes, json, ruleset_content_array, extra_proxy_group, ext);
     rulesetToSingBox(json, ruleset_content_array, ext.overwrite_original_rules);
 
-    return SerializeObject(json);
+    return json | SerializeObject();
 }
