@@ -7,6 +7,7 @@
 #include <time.h>
 
 #include "string.h"
+#include "map_extra.h"
 
 std::vector<std::string> split(const std::string &s, const std::string &seperator)
 {
@@ -295,6 +296,14 @@ std::string getUrlArg(const std::string &url, const std::string &request)
             break;
         pos--;
     }
+    return "";
+}
+
+std::string getUrlArg(const string_multimap &url, const std::string &request)
+{
+    auto it = url.find(request);
+    if(it != url.end())
+        return it->second;
     return "";
 }
 

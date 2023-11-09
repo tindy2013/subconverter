@@ -14,7 +14,7 @@ struct Request
 {
     std::string method;
     std::string url;
-    std::string argument;
+    string_multimap argument;
     string_icase_map headers;
     std::string postdata;
 };
@@ -45,7 +45,7 @@ struct responseRoute
     std::string method;
     std::string path;
     std::string content_type;
-    response_callback rc;
+    response_callback rc {};
 };
 
 class WebServer
@@ -62,12 +62,30 @@ public:
     bool require_auth = false;
     std::string auth_user, auth_password, auth_realm = "Please enter username and password:";
 
-    void append_response(const std::string &method, const std::string &uri, const std::string &content_type, response_callback response);
-    void append_redirect(const std::string &uri, const std::string &target);
-    void reset_redirect();
-    int start_web_server(void *argv);
-    int start_web_server_multi(void *argv);
     void stop_web_server();
+
+    void append_response(const std::string &method, const std::string &uri, const std::string &content_type, response_callback response)
+    {
+        responseRoute rr;
+        rr.method = method;
+        rr.path = uri;
+        rr.content_type = content_type;
+        rr.rc = response;
+        responses.emplace_back(std::move(rr));
+    }
+
+    void append_redirect(const std::string &uri, const std::string &target)
+    {
+        redirect_map[uri] = target;
+    }
+
+    void reset_redirect()
+    {
+        std::map<std::string, std::string>().swap(redirect_map);
+    }
+
+    int start_web_server(listener_args *args);
+    int start_web_server_multi(listener_args *args);
 
     std::vector<responseRoute> responses;
     string_map redirect_map;

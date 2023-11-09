@@ -69,3 +69,17 @@ std::string urlDecode(const std::string& str)
     }
     return strTemp;
 }
+
+std::string joinArguments(const string_multimap &args)
+{
+    std::string strTemp;
+    for (auto &p: args)
+    {
+        strTemp += p.first + "=" + urlEncode(p.second) + "&";
+    }
+    if (!strTemp.empty())
+    {
+        strTemp.pop_back();
+    }
+    return strTemp;
+}

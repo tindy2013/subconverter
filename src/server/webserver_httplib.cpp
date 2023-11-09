@@ -2,6 +2,7 @@
 #ifdef MALLOC_TRIM
 #include <malloc.h>
 #endif // MALLOC_TRIM
+#define CPPHTTPLIB_REQUEST_URI_MAX_LENGTH 16384
 #include "httplib.h"
 
 #include "../utils/base64/base64.h"
@@ -10,11 +11,6 @@
 #include "../utils/stl_extra.h"
 #include "../utils/urlencode.h"
 #include "webserver.h"
-
-int WebServer::start_web_server(void *argv)
-{
-    return start_web_server_multi(argv);
-}
 
 void WebServer::stop_web_server()
 {
@@ -33,11 +29,7 @@ static httplib::Server::Handler makeHandler(const responseRoute &rr)
         {
             req.headers[h.first] = h.second;
         }
-        for (auto &p: request.params)
-        {
-            req.argument += p.first + "=" + p.second + "&";
-        }
-        req.argument.pop_back();
+        req.argument = request.params;
         req.postdata = request.body;
         if (request.get_header_value("Content-Type") == "application/x-www-form-urlencoded")
         {
@@ -57,10 +49,9 @@ static httplib::Server::Handler makeHandler(const responseRoute &rr)
     };
 }
 
-int WebServer::start_web_server_multi(void *argv)
+int WebServer::start_web_server_multi(listener_args *args)
 {
     httplib::Server server;
-    auto *args = (listener_args *)argv;
     for (auto &x : responses)
     {
         switch (hash_(x.method))
@@ -104,7 +95,7 @@ int WebServer::start_web_server_multi(void *argv)
         std::string params;
         for (auto &p: req.params)
         {
-            params += p.first + "=" + p.second + "&";
+            params += p.first + "=" + urlEncode(p.second) + "&";
         }
         if (!params.empty())
         {
@@ -201,23 +192,7 @@ int WebServer::start_web_server_multi(void *argv)
     return 0;
 }
 
-void WebServer::append_response(const std::string &method, const std::string &uri, const std::string &content_type, response_callback response)
+int WebServer::start_web_server(listener_args *args)
 {
-    responseRoute rr;
-    rr.method = method;
-    rr.path = uri;
-    rr.content_type = content_type;
-    rr.rc = response;
-    responses.emplace_back(std::move(rr));
+    return start_web_server_multi(args);
 }
-
-void WebServer::append_redirect(const std::string &uri, const std::string &target)
-{
-    redirect_map[uri] = target;
-}
-
-void WebServer::reset_redirect()
-{
-    eraseElements(redirect_map);
-}
-

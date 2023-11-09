@@ -21,13 +21,12 @@ enum
     INIREADER_EXCEPTION_NONE
 };
 
-using ini_data_struct = std::map<std::string, std::multimap<std::string, std::string>>;
-using string_multimap = std::multimap<std::string, std::string>;
-using string_array = std::vector<std::string>;
-using string_size = std::string::size_type;
-
 class INIReader
 {
+    using ini_data_struct = std::map<std::string, std::multimap<std::string, std::string>>;
+    using string_multimap = std::multimap<std::string, std::string>;
+    using string_array = std::vector<std::string>;
+    using string_size = std::string::size_type;
     /**
     *  @brief A simple INI reader which utilize map and vector
     *  to store sections and items, allowing access in logarithmic time.

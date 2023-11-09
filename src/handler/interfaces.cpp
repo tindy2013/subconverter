@@ -37,8 +37,6 @@ extern WebServer webServer;
 
 string_array gRegexBlacklist = {"(.*)*"};
 
-void refreshRulesets(RulesetConfigs &ruleset_list, std::vector<RulesetContent> &ruleset_content_array);
-
 std::string parseProxy(const std::string &source)
 {
     std::string proxy = source;
@@ -136,19 +134,18 @@ void matchUserAgent(const std::string &user_agent, std::string &target, tribool 
             return;
         }
     }
-    return;
 }
 
 std::string getRuleset(RESPONSE_CALLBACK_ARGS)
 {
-    std::string &argument = request.argument;
+    auto &argument = request.argument;
     int *status_code = &response.status_code;
     /// type: 1 for Surge, 2 for Quantumult X, 3 for Clash domain rule-provider, 4 for Clash ipcidr rule-provider, 5 for Surge DOMAIN-SET, 6 for Clash classical ruleset
     std::string url = urlSafeBase64Decode(getUrlArg(argument, "url")), type = getUrlArg(argument, "type"), group = urlSafeBase64Decode(getUrlArg(argument, "group"));
     std::string output_content, dummy;
     int type_int = to_int(type, 0);
 
-    if(!url.size() || !type.size() || (type_int == 2 && !group.size()) || (type_int < 1 || type_int > 6))
+    if(url.empty() || type.empty() || (type_int == 2 && group.empty()) || (type_int < 1 || type_int > 6))
     {
         *status_code = 400;
         return "Invalid request!";
@@ -167,7 +164,7 @@ std::string getRuleset(RESPONSE_CALLBACK_ARGS)
         output_content += convertRuleset(content, x.rule_type);
     }
 
-    if(!output_content.size())
+    if(output_content.empty())
     {
         *status_code = 400;
         return "Invalid request!";
@@ -184,11 +181,11 @@ std::string getRuleset(RESPONSE_CALLBACK_ARGS)
     {
         posb = 0;
         pose = strLine.find(',');
-        if(pose == strLine.npos)
+        if(pose == std::string::npos)
             return 1;
         posb = pose + 1;
         pose = strLine.find(',', posb);
-        if(pose == strLine.npos)
+        if(pose == std::string::npos)
         {
             pose = strLine.size();
             if(strLine[pose - 1] == '\r')
@@ -215,11 +212,11 @@ std::string getRuleset(RESPONSE_CALLBACK_ARGS)
         switch(type_int)
         {
         case 2:
-            if(!std::any_of(QuanXRuleTypes.begin(), QuanXRuleTypes.end(), [&strLine](std::string type){return startsWith(strLine, type);}))
+            if(!std::any_of(QuanXRuleTypes.begin(), QuanXRuleTypes.end(), [&strLine](const std::string& type){return startsWith(strLine, type);}))
                 continue;
             break;
         case 1:
-            if(!std::any_of(SurgeRuleTypes.begin(), SurgeRuleTypes.end(), [&strLine](std::string type){return startsWith(strLine, type);}))
+            if(!std::any_of(SurgeRuleTypes.begin(), SurgeRuleTypes.end(), [&strLine](const std::string& type){return startsWith(strLine, type);}))
                 continue;
             break;
         case 3:
@@ -251,7 +248,7 @@ std::string getRuleset(RESPONSE_CALLBACK_ARGS)
             output_content += '\n';
             continue;
         case 6:
-            if(!std::any_of(ClashRuleTypes.begin(), ClashRuleTypes.end(), [&strLine](std::string type){return startsWith(strLine, type);}))
+            if(!std::any_of(ClashRuleTypes.begin(), ClashRuleTypes.end(), [&strLine](const std::string& type){return startsWith(strLine, type);}))
                 continue;
             output_content += "  - ";
         }
@@ -303,12 +300,12 @@ void checkExternalBase(const std::string &path, std::string &dest)
 
 std::string subconverter(RESPONSE_CALLBACK_ARGS)
 {
-    std::string &argument = request.argument;
+    auto &argument = request.argument;
     int *status_code = &response.status_code;
 
     std::string argTarget = getUrlArg(argument, "target"), argSurgeVer = getUrlArg(argument, "ver");
     tribool argClashNewField = getUrlArg(argument, "new_name");
-    int intSurgeVer = argSurgeVer.size() ? to_int(argSurgeVer, 3) : 3;
+    int intSurgeVer = !argSurgeVer.empty() ? to_int(argSurgeVer, 3) : 3;
     if(argTarget == "auto")
         matchUserAgent(request.headers["User-Agent"], argTarget, argClashNewField, intSurgeVer);
 
@@ -352,8 +349,8 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     std::vector<RulesetContent> lRulesetContent;
     extra_settings ext;
     std::string subInfo, dummy;
-    int interval = argUpdateInterval.size() ? to_int(argUpdateInterval, global.updateInterval) : global.updateInterval;
-    bool authorized = !global.APIMode || getUrlArg(argument, "token") == global.accessToken, strict = argUpdateStrict.size() ? argUpdateStrict == "true" : global.updateStrict;
+    int interval = !argUpdateInterval.empty() ? to_int(argUpdateInterval, global.updateInterval) : global.updateInterval;
+    bool authorized = !global.APIMode || getUrlArg(argument, "token") == global.accessToken, strict = !argUpdateStrict.empty() ? argUpdateStrict == "true" : global.updateStrict;
 
     if(std::find(gRegexBlacklist.cbegin(), gRegexBlacklist.cend(), argIncludeRemark) != gRegexBlacklist.cend() || std::find(gRegexBlacklist.cbegin(), gRegexBlacklist.cend(), argExcludeRemark) != gRegexBlacklist.cend())
         return "Invalid request!";
@@ -365,28 +362,35 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
 
     /// validate urls
     argEnableInsert.define(global.enableInsert);
-    if(!argUrl.size() && (!global.APIMode || authorized))
+    if(argUrl.empty() && (!global.APIMode || authorized))
         argUrl = global.defaultUrls;
-    if((!argUrl.size() && !(global.insertUrls.size() && argEnableInsert)) || !argTarget.size())
+    if((argUrl.empty() && !(!global.insertUrls.empty() && argEnableInsert)) || argTarget.empty())
     {
         *status_code = 400;
         return "Invalid request!";
     }
 
     /// load request arguments as template variables
-    string_array req_args = split(argument, "&");
+//    string_array req_args = split(argument, "&");
+//    string_map req_arg_map;
+//    for(std::string &x : req_args)
+//    {
+//        string_size pos = x.find("=");
+//        if(pos == x.npos)
+//        {
+//            req_arg_map[x] = "";
+//            continue;
+//        }
+//        if(x.substr(0, pos) == "token")
+//            continue;
+//        req_arg_map[x.substr(0, pos)] = x.substr(pos + 1);
+//    }
     string_map req_arg_map;
-    for(std::string &x : req_args)
+    for (auto &x : argument)
     {
-        string_size pos = x.find("=");
-        if(pos == x.npos)
-        {
-            req_arg_map[x] = "";
+        if(x.first == "token")
             continue;
-        }
-        if(x.substr(0, pos) == "token")
-            continue;
-        req_arg_map[x.substr(0, pos)] = x.substr(pos + 1);
+        req_arg_map[x.first] = x.second;
     }
     req_arg_map["target"] = argTarget;
     req_arg_map["ver"] = std::to_string(intSurgeVer);
@@ -414,7 +418,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     ext.tls13.define(argTLS13).define(global.TLS13Flag);
 
     ext.sort_flag = argSort.get(global.enableSort);
-    argUseSortScript.define(global.sortScript.size() != 0);
+    argUseSortScript.define(!global.sortScript.empty());
     if(ext.sort_flag && argUseSortScript)
         ext.sort_script = global.sortScript;
     ext.filter_deprecated = argFilterDeprecated.get(global.filterDeprecated);
@@ -428,7 +432,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
 
     ext.nodelist = argGenNodeList;
     ext.surge_ssr_path = global.surgeSSRPath;
-    ext.quanx_dev_id = argDeviceID.size() ? argDeviceID : global.quanXDevID;
+    ext.quanx_dev_id = !argDeviceID.empty() ? argDeviceID : global.quanXDevID;
     ext.enable_rule_generator = global.enableRuleGen;
     ext.overwrite_original_rules = global.overwriteOriginalRules;
     if(!argExpandRulesets)
@@ -437,7 +441,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     /// load external configuration
     if(argExternalConfig.empty())
         argExternalConfig = global.defaultExtConfig;
-    if(argExternalConfig.size())
+    if(!argExternalConfig.empty())
     {
         //std::cerr<<"External configuration file provided. Loading...\n";
         writeLog(0, "External configuration file provided. Loading...", LOG_LEVEL_INFO);
@@ -459,21 +463,21 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
                     checkExternalBase(extconf.loon_rule_base, lLoonBase);
                     checkExternalBase(extconf.singbox_rule_base, lSingBoxBase);
 
-                    if(extconf.surge_ruleset.size())
+                    if(!extconf.surge_ruleset.empty())
                         lCustomRulesets = extconf.surge_ruleset;
-                    if(extconf.custom_proxy_group.size())
+                    if(!extconf.custom_proxy_group.empty())
                         lCustomProxyGroups = extconf.custom_proxy_group;
                     ext.enable_rule_generator = extconf.enable_rule_generator;
                     ext.overwrite_original_rules = extconf.overwrite_original_rules;
                 }
             }
-            if(extconf.rename.size())
+            if(!extconf.rename.empty())
                 ext.rename_array = extconf.rename;
-            if(extconf.emoji.size())
+            if(!extconf.emoji.empty())
                 ext.emoji_array = extconf.emoji;
-            if(extconf.include.size())
+            if(!extconf.include.empty())
                 lIncludeRemarks = extconf.include;
-            if(extconf.exclude.size())
+            if(!extconf.exclude.empty())
                 lExcludeRemarks = extconf.exclude;
             argAddEmoji.define(extconf.add_emoji);
             argRemoveEmoji.define(extconf.remove_old_emoji);
@@ -484,14 +488,14 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         if(!lSimpleSubscription)
         {
             /// loading custom groups
-            if(argCustomGroups.size() && !ext.nodelist)
+            if(!argCustomGroups.empty() && !ext.nodelist)
             {
                 string_array vArray = split(argCustomGroups, "@");
                 lCustomProxyGroups = INIBinding::from<ProxyGroupConfig>::from_ini(vArray);
             }
 
             /// loading custom rulesets
-            if(argCustomRulesets.size() && !ext.nodelist)
+            if(!argCustomRulesets.empty() && !ext.nodelist)
             {
                 string_array vArray = split(argCustomRulesets, "@");
                 lCustomRulesets = INIBinding::from<RulesetConfig>::from_ini(vArray);
@@ -519,15 +523,15 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     ext.remove_emoji = argRemoveEmoji.get(global.removeEmoji);
     if(ext.add_emoji && ext.emoji_array.empty())
         ext.emoji_array = safe_get_emojis();
-    if(argRenames.size())
+    if(!argRenames.empty())
         ext.rename_array = INIBinding::from<RegexMatchConfig>::from_ini(split(argRenames, "`"), "@");
     else if(ext.rename_array.empty())
         ext.rename_array = safe_get_renames();
 
     /// check custom include/exclude settings
-    if(argIncludeRemark.size() && regValid(argIncludeRemark))
+    if(!argIncludeRemark.empty() && regValid(argIncludeRemark))
         lIncludeRemarks = string_array{argIncludeRemark};
-    if(argExcludeRemark.size() && regValid(argExcludeRemark))
+    if(!argExcludeRemark.empty() && regValid(argExcludeRemark))
         lExcludeRemarks = string_array{argExcludeRemark};
 
     /// initialize script runtime
@@ -559,7 +563,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     parse_set.js_runtime = ext.js_runtime;
     parse_set.js_context = ext.js_context;
 
-    if(global.insertUrls.size() && argEnableInsert)
+    if(!global.insertUrls.empty() && argEnableInsert)
     {
         groupID = -1;
         urls = split(global.insertUrls, "|");
@@ -602,12 +606,12 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         groupID++;
     }
     //exit if found nothing
-    if(!nodes.size() && !insert_nodes.size())
+    if(nodes.empty() && insert_nodes.empty())
     {
         *status_code = 400;
         return "No nodes were found!";
     }
-    if(subInfo.size() && argAppendUserinfo.get(global.appendUserinfo))
+    if(!subInfo.empty() && argAppendUserinfo.get(global.appendUserinfo))
         response.headers.emplace("Subscription-UserInfo", subInfo);
 
     if(request.method == "HEAD")
@@ -627,7 +631,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     std::string filterScript = global.filterScript;
     if(authorized && !argFilterScript.empty())
         filterScript = argFilterScript;
-    if(filterScript.size())
+    if(!filterScript.empty())
     {
         if(startsWith(filterScript, "path:"))
             filterScript = fileGet(filterScript.substr(5), false);
@@ -670,7 +674,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     }
 
     //check custom group name
-    if(argGroupName.size())
+    if(!argGroupName.empty())
         for(Proxy &x : nodes)
             x.Group = argGroupName;
 
@@ -695,7 +699,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     std::vector<RulesetContent> dummy_ruleset;
     std::string managed_url = base64Decode(urlDecode(getUrlArg(argument, "profile_data")));
     if(managed_url.empty())
-        managed_url = global.managedConfigPrefix + "/sub?" + argument;
+        managed_url = global.managedConfigPrefix + "/sub?" + joinArguments(argument);
 
     //std::cerr<<"Generate target: ";
     proxy = parseProxy(global.proxyConfig);
@@ -747,7 +751,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
             if(argUpload)
                 uploadGist("surge" + argSurgeVer, argUploadPath, output_content, true);
 
-            if(global.writeManagedConfig && global.managedConfigPrefix.size())
+            if(global.writeManagedConfig && !global.managedConfigPrefix.empty())
                 output_content = "#!MANAGED-CONFIG " + managed_url + (interval ? " interval=" + std::to_string(interval) : "") \
                  + " strict=" + std::string(strict ? "true" : "false") + "\n\n" + output_content;
         }
@@ -764,7 +768,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         if(argUpload)
             uploadGist("surfboard", argUploadPath, output_content, true);
 
-        if(global.writeManagedConfig && global.managedConfigPrefix.size())
+        if(global.writeManagedConfig && !global.managedConfigPrefix.empty())
             output_content = "#!MANAGED-CONFIG " + managed_url + (interval ? " interval=" + std::to_string(interval) : "") \
                  + " strict=" + std::string(strict ? "true" : "false") + "\n\n" + output_content;
         break;
@@ -899,18 +903,18 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         return "Unrecognized target";
     }
     writeLog(0, "Generate completed.", LOG_LEVEL_INFO);
-    if(argFilename.size())
+    if(!argFilename.empty())
         response.headers.emplace("Content-Disposition", "attachment; filename=\"" + argFilename + "\"; filename*=utf-8''" + urlEncode(argFilename));
     return output_content;
 }
 
 std::string simpleToClashR(RESPONSE_CALLBACK_ARGS)
 {
-    std::string &argument = request.argument;
+    auto argument = joinArguments(request.argument);
     int *status_code = &response.status_code;
 
     std::string url = argument.size() <= 8 ? "" : argument.substr(8);
-    if(!url.size() || argument.substr(0, 8) != "sublink=")
+    if(url.empty() || argument.substr(0, 8) != "sublink=")
     {
         *status_code = 400;
         return "Invalid request!";
@@ -920,13 +924,14 @@ std::string simpleToClashR(RESPONSE_CALLBACK_ARGS)
         *status_code = 400;
         return "Please insert your subscription link instead of clicking the default link.";
     }
-    request.argument = "target=clashr&url=" + urlEncode(url);
+    request.argument.emplace("target", "clashr");
+    request.argument.emplace("url", urlEncode(url));
     return subconverter(request, response);
 }
 
 std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
 {
-    std::string &argument = request.argument;
+    auto argument = joinArguments(request.argument);
     int *status_code = &response.status_code;
 
     INIReader ini;
@@ -937,9 +942,9 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
 
     ini.store_any_line = true;
 
-    if(!url.size())
+    if(url.empty())
         url = global.defaultUrls;
-    if(!url.size() || argument.substr(0, 5) != "link=")
+    if(url.empty() || argument.substr(0, 5) != "link=")
     {
         *status_code = 400;
         return "Invalid request!";
@@ -1008,11 +1013,11 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
         for(unsigned int i = 1; i < dummy_str_array.size(); i++)
         {
             if(startsWith(dummy_str_array[i], "url"))
-                singlegroup["url"] = trim(dummy_str_array[i].substr(dummy_str_array[i].find("=") + 1));
+                singlegroup["url"] = trim(dummy_str_array[i].substr(dummy_str_array[i].find('=') + 1));
             else if(startsWith(dummy_str_array[i], "interval"))
-                singlegroup["interval"] = trim(dummy_str_array[i].substr(dummy_str_array[i].find("=") + 1));
+                singlegroup["interval"] = trim(dummy_str_array[i].substr(dummy_str_array[i].find('=') + 1));
             else if(startsWith(dummy_str_array[i], "policy-path"))
-                links.emplace_back(trim(dummy_str_array[i].substr(dummy_str_array[i].find("=") + 1)));
+                links.emplace_back(trim(dummy_str_array[i].substr(dummy_str_array[i].find('=') + 1)));
             else
                 singlegroup["proxies"].push_back(trim(dummy_str_array[i]));
         }
@@ -1048,7 +1053,7 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
     }
 
     //exit if found nothing
-    if(!nodes.size())
+    if(nodes.empty())
     {
         *status_code = 400;
         return "No nodes were found!";
@@ -1075,7 +1080,7 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
         name = x.first;
         content = x.second;
         dummy_str_array = split(content, ",");
-        if(!dummy_str_array.size())
+        if(dummy_str_array.empty())
             continue;
         content = trim(dummy_str_array[0]);
         switch(hash_(content))
@@ -1112,7 +1117,7 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
             if(strArray.size() != 3)
                 continue;
             content = webGet(strArray[1], proxy, global.cacheRuleset);
-            if(!content.size())
+            if(content.empty())
                 continue;
 
             ss << content;
@@ -1125,7 +1130,7 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
                     strLine.erase(--lineSize);
                 if(!lineSize || strLine[0] == ';' || strLine[0] == '#' || (lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')) //empty lines and comments are ignored
                     continue;
-                else if(!std::any_of(ClashRuleTypes.begin(), ClashRuleTypes.end(), [&strLine](std::string type){return startsWith(strLine, type);})) //remove unsupported types
+                else if(!std::any_of(ClashRuleTypes.begin(), ClashRuleTypes.end(), [&strLine](const std::string& type){return startsWith(strLine, type);})) //remove unsupported types
                     continue;
                 strLine += strArray[2];
                 if(count_least(strLine, ',', 3))
@@ -1135,7 +1140,7 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
             ss.clear();
             continue;
         }
-        else if(!std::any_of(ClashRuleTypes.begin(), ClashRuleTypes.end(), [&strLine](std::string type){return startsWith(strLine, type);}))
+        else if(!std::any_of(ClashRuleTypes.begin(), ClashRuleTypes.end(), [&strLine](const std::string& type){return startsWith(strLine, type);}))
             continue;
         rule.push_back(x);
     }
@@ -1148,7 +1153,7 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
 
 std::string getProfile(RESPONSE_CALLBACK_ARGS)
 {
-    std::string &argument = request.argument;
+    auto &argument = request.argument;
     int *status_code = &response.status_code;
 
     std::string name = urlDecode(getUrlArg(argument, "name")), token = urlDecode(getUrlArg(argument, "token"));
@@ -1164,7 +1169,8 @@ std::string getProfile(RESPONSE_CALLBACK_ARGS)
     {
         profile_content = vfs::vfs_get(name);
     }
-    else */if(fileExist(name))
+    else */
+    if(fileExist(name))
     {
         profile_content = fileGet(name, true);
     }
@@ -1187,7 +1193,7 @@ std::string getProfile(RESPONSE_CALLBACK_ARGS)
     writeLog(0, "Trying to parse profile '" + name + "'.", LOG_LEVEL_INFO);
     string_multimap contents;
     ini.get_items("Profile", contents);
-    if(!contents.size())
+    if(contents.empty())
     {
         //std::cerr<<"Load profile failed! Reason: Empty Profile section\n";
         writeLog(0, "Load profile failed! Reason: Empty Profile section", LOG_LEVEL_ERROR);
@@ -1234,7 +1240,7 @@ std::string getProfile(RESPONSE_CALLBACK_ARGS)
                 continue;
             }
             url = ini.get("Profile", "url");
-            if(url.size())
+            if(!url.empty())
             {
                 all_urls += "|" + url;
                 writeLog(0, "Profile url from '" + name + "' added.", LOG_LEVEL_INFO);
@@ -1248,10 +1254,8 @@ std::string getProfile(RESPONSE_CALLBACK_ARGS)
     }
 
     contents.emplace("token", token);
-    contents.emplace("profile_data", base64Encode(global.managedConfigPrefix + "/getprofile?" + argument));
-    std::string query = std::accumulate(contents.begin(), contents.end(), std::string(), [](const std::string &x, auto y){ return x + y.first + "=" + urlEncode(y.second) + "&"; });
-    query += argument;
-    request.argument = query;
+    contents.emplace("profile_data", base64Encode(global.managedConfigPrefix + "/getprofile?" + joinArguments(argument)));
+    request.argument = argument;
     return subconverter(request, response);
 }
 
@@ -1276,7 +1280,7 @@ inline std::string intToStream(unsigned long long stream)
         streamval /= 1024.0;
     }
     snprintf(chrs, 15, "%.2f %cB", streamval, units[level]);
-    return std::string(chrs);
+    return {chrs};
 }
 
 std::string subInfoToMessage(std::string subinfo)
@@ -1286,7 +1290,7 @@ std::string subInfoToMessage(std::string subinfo)
     std::string retdata, useddata = "N/A", totaldata = "N/A", expirydata = "N/A";
     std::string upload = getUrlArg(subinfo, "upload"), download = getUrlArg(subinfo, "download"), total = getUrlArg(subinfo, "total"), expire = getUrlArg(subinfo, "expire");
     ull used = to_number<ull>(upload, 0) + to_number<ull>(download, 0), tot = to_number<ull>(total, 0);
-    time_t expiry = to_number<time_t>(expire, 0);
+    auto expiry = to_number<time_t>(expire, 0);
     if(used != 0)
         useddata = intToStream(used);
     if(tot != 0)
@@ -1309,7 +1313,7 @@ int simpleGenerator()
 {
     //std::cerr<<"\nReading generator configuration...\n";
     writeLog(0, "Reading generator configuration...", LOG_LEVEL_INFO);
-    std::string config = fileGet("generate.ini"), path, profile, arguments, content;
+    std::string config = fileGet("generate.ini"), path, profile, content;
     if(config.empty())
     {
         //std::cerr<<"Generator configuration not found or empty!\n";
@@ -1328,7 +1332,7 @@ int simpleGenerator()
     writeLog(0, "Read generator configuration completed.\n", LOG_LEVEL_INFO);
 
     string_array sections = ini.get_section_names();
-    if(global.generateProfiles.size())
+    if(!global.generateProfiles.empty())
     {
         //std::cerr<<"Generating with specific artifacts: \""<<gen_profile<<"\"...\n";
         writeLog(0, "Generating with specific artifacts: \"" + global.generateProfiles + "\"...", LOG_LEVEL_INFO);
@@ -1358,7 +1362,6 @@ int simpleGenerator()
     Response response;
     for(std::string &x : sections)
     {
-        arguments.clear();
         response.status_code = 200;
         //std::cerr<<"Generating artifact '"<<x<<"'...\n";
         writeLog(0, "Generating artifact '" + x + "'...", LOG_LEVEL_INFO);
@@ -1374,12 +1377,14 @@ int simpleGenerator()
         if(ini.item_exist("profile"))
         {
             profile = ini.get("profile");
-            request.argument = "name=" + urlEncode(profile) + "&token=" + global.accessToken + "&expand=true";
+            request.argument.emplace("name", urlEncode(profile));
+            request.argument.emplace("token", global.accessToken);
+            request.argument.emplace("expand", "true");
             content = getProfile(request, response);
         }
         else
         {
-            if(ini.get_bool("direct") == true)
+            if(ini.get_bool("direct"))
             {
                 std::string url = ini.get("url");
                 content = fetchFile(url, proxy, global.cacheSubscription);
@@ -1400,10 +1405,8 @@ int simpleGenerator()
             {
                 if(y.first == "path")
                     continue;
-                arguments += y.first + "=" + urlEncode(y.second) + "&";
+                request.argument.emplace(y.first, y.second);
             }
-            arguments.erase(arguments.size() - 1);
-            request.argument = arguments;
             content = subconverter(request, response);
         }
         if(response.status_code != 200)
@@ -1429,7 +1432,7 @@ int simpleGenerator()
 
 std::string renderTemplate(RESPONSE_CALLBACK_ARGS)
 {
-    std::string &argument = request.argument;
+    auto &argument = request.argument;
     int *status_code = &response.status_code;
 
     std::string path = urlDecode(getUrlArg(argument, "path"));
@@ -1450,16 +1453,10 @@ std::string renderTemplate(RESPONSE_CALLBACK_ARGS)
     tpl_args.global_vars = global.templateVars;
 
     //load request arguments as template variables
-    string_array req_args = split(argument, "&");
-    string_size pos;
     string_map req_arg_map;
-    for(std::string &x : req_args)
+    for (auto &x : argument)
     {
-        pos = x.find("=");
-        if(pos == x.npos)
-            req_arg_map[x] = "";
-        else
-            req_arg_map[x.substr(0, pos)] = x.substr(pos + 1);
+        req_arg_map[x.first] = x.second;
     }
     tpl_args.request_params = req_arg_map;
 

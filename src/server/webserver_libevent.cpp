@@ -112,14 +112,22 @@ static inline void buffer_cleanup(struct evbuffer *eb)
 #endif // MALLOC_TRIM
 }
 
-inline int process_request(WebServer *server, Request &request, Response &response, std::string &return_data)
+static int process_request(WebServer *server, Request &request, Response &response, std::string &return_data)
 {
     writeLog(0, "handle_cmd:    " + request.method + " handle_uri:    " + request.url, LOG_LEVEL_VERBOSE);
 
     string_size pos = request.url.find('?');
     if(pos != std::string::npos)
     {
-        request.argument = request.url.substr(pos + 1);
+        auto argument = split(request.url.substr(pos + 1), "&");
+        for(auto &x : argument)
+        {
+            string_size pos2 = x.find('=');
+            if(pos2 != std::string::npos)
+                request.argument.emplace(x.substr(0, pos2), x.substr(pos2 + 1));
+            else
+                request.argument.emplace(x, "");
+        }
         request.url.erase(pos);
     }
 
@@ -143,7 +151,7 @@ inline int process_request(WebServer *server, Request &request, Response &respon
             }
             catch(std::exception &e)
             {
-                return_data = "Internal server error while processing request path '" + request.url + "' with arguments '" + request.argument + "'!";
+                return_data = "Internal server error while processing request path '" + request.url + "' with arguments '" + joinArguments(request.argument) + "'!";
                 return_data += "\n  exception: ";
                 return_data += type(e);
                 return_data += "\n  what(): ";
@@ -163,9 +171,9 @@ inline int process_request(WebServer *server, Request &request, Response &respon
         if(!request.argument.empty())
         {
             if(return_data.find('?') != std::string::npos)
-                return_data += "&" + request.argument;
+                return_data += "&" + joinArguments(request.argument);
             else
-                return_data += "?" + request.argument;
+                return_data += "?" + joinArguments(request.argument);
         }
         return 2;
     }
@@ -179,7 +187,7 @@ inline int process_request(WebServer *server, Request &request, Response &respon
     return -1;
 }
 
-void on_request(evhttp_request *req, void *args)
+static void on_request(evhttp_request *req, void *args)
 {
     auto server = (WebServer*) args;
     static std::string auth_token = "Basic " + base64Encode(server->auth_user + ":" + server->auth_password);
@@ -293,9 +301,8 @@ void on_request(evhttp_request *req, void *args)
     buffer_cleanup(output_buffer);
 }
 
-int WebServer::start_web_server(void *argv)
+int WebServer::start_web_server(listener_args *args)
 {
-    auto *args = reinterpret_cast<listener_args*>(argv);
     std::string listen_address = args->listen_address;
     int port = args->port;
     if (!event_init())
@@ -314,10 +321,8 @@ int WebServer::start_web_server(void *argv)
         return -1;
     }
 
-    auto call_on_request = [&](evhttp_request *req, void *args) { on_request(req, args); };
-
     evhttp_set_allowed_methods(server.get(), EVHTTP_REQ_GET | EVHTTP_REQ_POST | EVHTTP_REQ_OPTIONS | EVHTTP_REQ_PUT | EVHTTP_REQ_PATCH | EVHTTP_REQ_DELETE | EVHTTP_REQ_HEAD);
-    evhttp_set_gencb(server.get(), wrap(call_on_request), this);
+    evhttp_set_gencb(server.get(), on_request, this);
     evhttp_set_timeout(server.get(), 30);
     if (event_dispatch() == -1)
     {
@@ -329,14 +334,14 @@ int WebServer::start_web_server(void *argv)
     return 0;
 }
 
-void* httpserver_dispatch(void *arg)
+static void* httpserver_dispatch(void *arg)
 {
     event_base_dispatch(reinterpret_cast<event_base*>(arg));
     event_base_free(reinterpret_cast<event_base*>(arg)); //free resources
     return nullptr;
 }
 
-int httpserver_bindsocket(std::string listen_address, int listen_port, int backlog)
+static int httpserver_bindsocket(std::string listen_address, int listen_port, int backlog)
 {
     SOCKET nfd;
     nfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -375,9 +380,8 @@ int httpserver_bindsocket(std::string listen_address, int listen_port, int backl
     return nfd;
 }
 
-int WebServer::start_web_server_multi(void *argv)
+int WebServer::start_web_server_multi(listener_args *args)
 {
-    auto *args = reinterpret_cast<listener_args*>(argv);
     std::string listen_address = args->listen_address;
     int port = args->port, nthreads = args->max_workers, max_conn = args->max_conn;
 
@@ -425,24 +429,4 @@ int WebServer::start_web_server_multi(void *argv)
 void WebServer::stop_web_server()
 {
     SERVER_EXIT_FLAG = true;
-}
-
-void WebServer::append_response(const std::string &method, const std::string &uri, const std::string &content_type, response_callback response)
-{
-    responseRoute rr;
-    rr.method = method;
-    rr.path = uri;
-    rr.content_type = content_type;
-    rr.rc = response;
-    responses.emplace_back(std::move(rr));
-}
-
-void WebServer::append_redirect(const std::string &uri, const std::string &target)
-{
-    redirect_map[uri] = target;
-}
-
-void WebServer::reset_redirect()
-{
-    eraseElements(redirect_map);
 }
