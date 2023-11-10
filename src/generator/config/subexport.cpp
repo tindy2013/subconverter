@@ -2043,7 +2043,7 @@ static std::string formatSingBoxInterval(Integer interval)
     return result;
 }
 
-static rapidjson::Value buildV2RayTransport(const Proxy& proxy, rapidjson::MemoryPoolAllocator<>& allocator)
+static rapidjson::Value buildSingBoxTransport(const Proxy& proxy, rapidjson::MemoryPoolAllocator<>& allocator)
 {
     rapidjson::Value transport(rapidjson::kObjectType);
     switch (hash_(proxy.TransferProtocol))
@@ -2083,6 +2083,14 @@ static rapidjson::Value buildV2RayTransport(const Proxy& proxy, rapidjson::Memor
     return transport;
 }
 
+void addSingBoxCommonMembers(rapidjson::Value &proxy, const Proxy &x, const rapidjson::GenericStringRef<rapidjson::Value::Ch> &type, rapidjson::MemoryPoolAllocator<> &allocator)
+{
+    proxy.AddMember("type", type, allocator);
+    proxy.AddMember("tag", rapidjson::StringRef(x.Remark.c_str()), allocator);
+    proxy.AddMember("server", rapidjson::StringRef(x.Hostname.c_str()), allocator);
+    proxy.AddMember("server_port", x.Port, allocator);
+}
+
 void proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext) {
     using namespace rapidjson_ext;
     rapidjson::Document::AllocatorType &allocator = json.GetAllocator();
@@ -2110,10 +2118,7 @@ void proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::v
         {
             case ProxyType::Shadowsocks:
             {
-                proxy.AddMember("type", "shadowsocks", allocator);
-                proxy.AddMember("tag", rapidjson::StringRef(x.Remark.c_str()), allocator);
-                proxy.AddMember("server", rapidjson::StringRef(x.Hostname.c_str()), allocator);
-                proxy.AddMember("server_port", x.Port, allocator);
+                addSingBoxCommonMembers(proxy, x, "ss", allocator);
                 proxy.AddMember("method", rapidjson::StringRef(x.EncryptMethod.c_str()), allocator);
                 proxy.AddMember("password", rapidjson::StringRef(x.Password.c_str()), allocator);
                 if(!x.Plugin.empty() && !x.PluginOption.empty())
@@ -2125,10 +2130,7 @@ void proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::v
             }
             case ProxyType::ShadowsocksR:
             {
-                proxy.AddMember("type", "shadowsocksr", allocator);
-                proxy.AddMember("tag", rapidjson::StringRef(x.Remark.c_str()), allocator);
-                proxy.AddMember("server", rapidjson::StringRef(x.Hostname.c_str()), allocator);
-                proxy.AddMember("server_port", x.Port, allocator);
+                addSingBoxCommonMembers(proxy, x, "shadowsocksr", allocator);
                 proxy.AddMember("method", rapidjson::StringRef(x.EncryptMethod.c_str()), allocator);
                 proxy.AddMember("password", rapidjson::StringRef(x.Password.c_str()), allocator);
                 proxy.AddMember("protocol", rapidjson::StringRef(x.Protocol.c_str()), allocator);
@@ -2139,28 +2141,24 @@ void proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::v
             }
             case ProxyType::VMess:
             {
-                proxy.AddMember("type", "vmess", allocator);
-                proxy.AddMember("tag", rapidjson::StringRef(x.Remark.c_str()), allocator);
-                proxy.AddMember("server", rapidjson::StringRef(x.Hostname.c_str()), allocator);
-                proxy.AddMember("server_port", x.Port, allocator);
+                addSingBoxCommonMembers(proxy, x, "vmess", allocator);
                 proxy.AddMember("uuid", rapidjson::StringRef(x.UserId.c_str()), allocator);
                 proxy.AddMember("alter_id", x.AlterId, allocator);
-                proxy.AddMember("cipher", rapidjson::StringRef(x.EncryptMethod.c_str()), allocator);
+                proxy.AddMember("security", rapidjson::StringRef(x.EncryptMethod.c_str()), allocator);
 
-                auto transport = buildV2RayTransport(x, allocator);
-                proxy.AddMember("transport", transport, allocator);
+                auto transport = buildSingBoxTransport(x, allocator);
+                if (!transport.ObjectEmpty())
+                    proxy.AddMember("transport", transport, allocator);
                 break;
             }
             case ProxyType::Trojan:
             {
-                proxy.AddMember("type", "trojan", allocator);
-                proxy.AddMember("tag", rapidjson::StringRef(x.Remark.c_str()), allocator);
-                proxy.AddMember("server", rapidjson::StringRef(x.Hostname.c_str()), allocator);
-                proxy.AddMember("server_port", x.Port, allocator);
+                addSingBoxCommonMembers(proxy, x, "trojan", allocator);
                 proxy.AddMember("password", rapidjson::StringRef(x.Password.c_str()), allocator);
 
-                auto transport = buildV2RayTransport(x, allocator);
-                proxy.AddMember("transport", transport, allocator);
+                auto transport = buildSingBoxTransport(x, allocator);
+                if (!transport.ObjectEmpty())
+                    proxy.AddMember("transport", transport, allocator);
                 break;
             }
             case ProxyType::WireGuard:
@@ -2211,21 +2209,15 @@ void proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::v
             case ProxyType::HTTP:
             case ProxyType::HTTPS:
             {
-                proxy.AddMember("type", "http", allocator);
-                proxy.AddMember("tag", rapidjson::StringRef(x.Remark.c_str()), allocator);
-                proxy.AddMember("server", rapidjson::StringRef(x.Hostname.c_str()), allocator);
-                proxy.AddMember("server_port", x.Port, allocator);
+                addSingBoxCommonMembers(proxy, x, "http", allocator);
                 proxy.AddMember("username", rapidjson::StringRef(x.Username.c_str()), allocator);
                 proxy.AddMember("password", rapidjson::StringRef(x.Password.c_str()), allocator);
                 break;
             }
             case ProxyType::SOCKS5:
             {
-                proxy.AddMember("type", "socks", allocator);
-                proxy.AddMember("tag", rapidjson::StringRef(x.Remark.c_str()), allocator);
-                proxy.AddMember("server", rapidjson::StringRef(x.Hostname.c_str()), allocator);
-                proxy.AddMember("port", x.Port, allocator);
-                proxy.AddMember("version", 5, allocator);
+                addSingBoxCommonMembers(proxy, x, "socks", allocator);
+                proxy.AddMember("version", "5", allocator);
                 proxy.AddMember("username", rapidjson::StringRef(x.Username.c_str()), allocator);
                 proxy.AddMember("password", rapidjson::StringRef(x.Password.c_str()), allocator);
                 break;
@@ -2236,7 +2228,7 @@ void proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::v
         if (x.TLSSecure)
         {
             rapidjson::Value tls(rapidjson::kObjectType);
-            tls.AddMember("enable", true, allocator);
+            tls.AddMember("enabled", true, allocator);
             if (!x.ServerName.empty())
                 tls.AddMember("server_name", rapidjson::StringRef(x.ServerName.c_str()), allocator);
             tls.AddMember("insecure", buildBooleanValue(scv), allocator);
