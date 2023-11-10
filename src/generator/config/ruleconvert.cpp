@@ -462,12 +462,12 @@ static rapidjson::Value transformRuleToSingBox(const std::string& rule, const st
     auto args = split(rule, ",");
     if (args.size() < 2) return rapidjson::Value(rapidjson::kObjectType);
     auto type = toLower(std::string(args[0]));
-    auto value = args[1];
+    auto value = toLower(args[1]);
 //    std::string_view option;
 //    if (args.size() >= 3) option = args[2];
 
     rapidjson::Value rule_obj(rapidjson::kObjectType);
-    type = replaceAllDistinct(toLower(type), "-", "_");
+    type = replaceAllDistinct(type, "-", "_");
     type = replaceAllDistinct(type, "ip_cidr6", "ip_cidr");
     if (type == "match" || type == "final")
     {
