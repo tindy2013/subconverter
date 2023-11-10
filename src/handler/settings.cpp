@@ -376,6 +376,7 @@ void readYAMLConf(YAML::Node &node)
         section["append_sub_userinfo"] >> global.appendUserinfo;
         section["clash_use_new_field_name"] >> global.clashUseNewField;
         section["clash_proxies_style"] >> global.clashProxiesStyle;
+        section["singbox_add_clash_modes"] >> global.singBoxAddClashModes;
     }
 
     if(section["rename_node"].IsSequence())
@@ -634,7 +635,8 @@ void readTOMLConf(toml::value &root)
                   "filter_deprecated_nodes", global.filterDeprecated,
                   "append_sub_userinfo", global.appendUserinfo,
                   "clash_use_new_field_name", global.clashUseNewField,
-                  "clash_proxies_style", global.clashProxiesStyle
+                  "clash_proxies_style", global.clashProxiesStyle,
+                  "singbox_add_clash_modes", global.singBoxAddClashModes
     );
 
     auto renameconfs = toml::find_or<std::vector<toml::value>>(section_node_pref, "rename_node", {});
@@ -878,6 +880,7 @@ void readConf()
         ini.get_bool_if_exist("append_sub_userinfo", global.appendUserinfo);
         ini.get_bool_if_exist("clash_use_new_field_name", global.clashUseNewField);
         ini.get_if_exist("clash_proxies_style", global.clashProxiesStyle);
+        ini.get_bool_if_exist("singbox_add_clash_modes", global.singBoxAddClashModes);
         if(ini.item_prefix_exist("rename_node"))
         {
             ini.get_all("rename_node", tempArray);

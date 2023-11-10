@@ -140,6 +140,9 @@ clash_use_new_field_name = true
 #         key: value
 clash_proxies_style = "flow"
 
+# add Clash mode to sing-box rules, and add a GLOBAL group to end of outbounds
+singbox_add_clash_modes = true
+
 [[node_pref.rename_node]]
 match = '\(?((x|X)?(\d+)(\.?\d+)?)((\s?倍率?)|(x|X))\)?'
 replace = "$1x"
@@ -236,6 +239,14 @@ value = "true"
 [[template.globals]]
 key = "clash.log_level"
 value = "info"
+
+[[template.globals]]
+key = "singbox.allow_lan"
+value = "true"
+
+[[template.globals]]
+key = "singbox.mixed_port"
+value = "2080"
 
 [[aliases]]
 uri = "/clash"

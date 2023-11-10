@@ -155,29 +155,29 @@ bool applyMatcher(const std::string &rule, std::string &real_rule, const Proxy &
     return true;
 }
 
-void processRemark(std::string &oldremark, std::string &newremark, string_array &remarks_list, bool proc_comma = true)
+void processRemark(std::string &remark, string_array &remarks_list, bool proc_comma = true)
 {
     // Replace every '=' with '-' in the remark string to avoid parse errors from the clients.
     //     Surge is tested to yield an error when handling '=' in the remark string, 
     //     not sure if other clients have the same problem.
-    std::replace(oldremark.begin(), oldremark.end(), '=', '-');
+    std::replace(remark.begin(), remark.end(), '=', '-');
 
     if(proc_comma)
     {
-        if(oldremark.find(',') != std::string::npos)
+        if(remark.find(',') != std::string::npos)
         {
-            oldremark.insert(0, "\"");
-            oldremark.append("\"");
+            remark.insert(0, "\"");
+            remark.append("\"");
         }
     }
-    newremark = oldremark;
+    std::string tempRemark = remark;
     int cnt = 2;
-    while(std::find(remarks_list.begin(), remarks_list.end(), newremark) != remarks_list.end())
+    while(std::find(remarks_list.begin(), remarks_list.end(), tempRemark) != remarks_list.end())
     {
-        newremark = oldremark + " " + std::to_string(cnt);
+        tempRemark = remark + " " + std::to_string(cnt);
         cnt++;
     }
-    oldremark = newremark;
+    remark = tempRemark;
 }
 
 void groupGenerate(const std::string &rule, std::vector<Proxy> &nodelist, string_array &filtered_nodelist, bool add_direct, extra_settings &ext)
@@ -241,18 +241,18 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
         YAML::Node singleproxy;
 
         std::string type = getProxyTypeName(x.Type);
-        std::string remark, pluginopts = replaceAllDistinct(x.PluginOption, ";", "&");
+        std::string pluginopts = replaceAllDistinct(x.PluginOption, ";", "&");
         if(ext.append_proxy_type)
             x.Remark = "[" + type + "] " + x.Remark;
 
-        processRemark(x.Remark, remark, remarks_list, false);
+        processRemark(x.Remark, remarks_list, false);
 
         tribool udp = ext.udp;
         tribool scv = ext.skip_cert_verify;
         udp.define(x.UDP);
         scv.define(x.AllowInsecure);
 
-        singleproxy["name"] = remark;
+        singleproxy["name"] = x.Remark;
         singleproxy["server"] = x.Hostname;
         singleproxy["port"] = x.Port;
 
@@ -471,7 +471,7 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
         else
             singleproxy.SetStyle(YAML::EmitterStyle::Flow);
         proxies.push_back(singleproxy);
-        remarks_list.emplace_back(std::move(remark));
+        remarks_list.emplace_back(x.Remark);
         nodelist.emplace_back(x);
     }
 
@@ -657,14 +657,13 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
 
     for(Proxy &x : nodes)
     {
-        std::string remark;
         if(ext.append_proxy_type)
         {
             std::string type = getProxyTypeName(x.Type);
             x.Remark = "[" + type + "] " + x.Remark;
         }
 
-        processRemark(x.Remark, remark, remarks_list);
+        processRemark(x.Remark, remarks_list);
 
         std::string &hostname = x.Hostname, &username = x.Username, &password = x.Password, &method = x.EncryptMethod, &id = x.UserId, &transproto = x.TransferProtocol, &host = x.Host, &edge = x.Edge, &path = x.Path, &protocol = x.Protocol, &protoparam = x.ProtocolParam, &obfs = x.OBFS, &obfsparam = x.OBFSParam, &plugin = x.Plugin, &pluginopts = x.PluginOption;
         std::string port = std::to_string(x.Port);
@@ -834,13 +833,13 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
             proxy += ", udp-relay=" + udp.get_str();
 
         if(ext.nodelist)
-            output_nodelist += remark + " = " + proxy + "\n";
+            output_nodelist += x.Remark + " = " + proxy + "\n";
         else
         {
-            ini.set("{NONAME}", remark + " = " + proxy);
+            ini.set("{NONAME}", x.Remark + " = " + proxy);
             nodelist.emplace_back(x);
         }
-        remarks_list.emplace_back(std::move(remark));
+        remarks_list.emplace_back(x.Remark);
     }
 
     if(ext.nodelist)
@@ -1083,15 +1082,13 @@ void proxyToQuan(std::vector<Proxy> &nodes, INIReader &ini, std::vector<RulesetC
     ini.erase_section();
     for(Proxy &x : nodes)
     {
-        std::string remark = x.Remark;
-
         if(ext.append_proxy_type)
         {
             std::string type = getProxyTypeName(x.Type);
             x.Remark = "[" + type + "] " + x.Remark;
         }
 
-        processRemark(x.Remark, remark, remarks_list);
+        processRemark(x.Remark, remarks_list);
 
         std::string &hostname = x.Hostname, &method = x.EncryptMethod, &password = x.Password, &id = x.UserId, &transproto = x.TransferProtocol, &host = x.Host, &path = x.Path, &edge = x.Edge, &protocol = x.Protocol, &protoparam = x.ProtocolParam, &obfs = x.OBFS, &obfsparam = x.OBFSParam, &plugin = x.Plugin, &pluginopts = x.PluginOption, &username = x.Username;
         std::string port = std::to_string(x.Port);
@@ -1106,7 +1103,7 @@ void proxyToQuan(std::vector<Proxy> &nodes, INIReader &ini, std::vector<RulesetC
 
             if(method == "auto")
                 method = "chacha20-ietf-poly1305";
-            proxyStr = remark + " = vmess, " + hostname + ", " + port + ", " + method + ", \"" + id + "\", group=" + x.Group;
+            proxyStr = x.Remark + " = vmess, " + hostname + ", " + port + ", " + method + ", \"" + id + "\", group=" + x.Group;
             if(tlssecure)
             {
                 proxyStr += ", over-tls=true, tls-host=" + host;
@@ -1128,12 +1125,12 @@ void proxyToQuan(std::vector<Proxy> &nodes, INIReader &ini, std::vector<RulesetC
             if(ext.nodelist)
             {
                 proxyStr = "ssr://" + urlSafeBase64Encode(hostname + ":" + port + ":" + protocol + ":" + method + ":" + obfs + ":" + urlSafeBase64Encode(password) \
-                           + "/?group=" + urlSafeBase64Encode(x.Group) + "&remarks=" + urlSafeBase64Encode(remark) \
+                           + "/?group=" + urlSafeBase64Encode(x.Group) + "&remarks=" + urlSafeBase64Encode(x.Remark) \
                            + "&obfsparam=" + urlSafeBase64Encode(obfsparam) + "&protoparam=" + urlSafeBase64Encode(protoparam));
             }
             else
             {
-                proxyStr = remark + " = shadowsocksr, " + hostname + ", " + port + ", " + method + ", \"" + password + "\", group=" + x.Group + ", protocol=" + protocol + ", obfs=" + obfs;
+                proxyStr = x.Remark + " = shadowsocksr, " + hostname + ", " + port + ", " + method + ", \"" + password + "\", group=" + x.Group + ", protocol=" + protocol + ", obfs=" + obfs;
                 if(!protoparam.empty())
                     proxyStr += ", protocol_param=" + protoparam;
                 if(!obfsparam.empty())
@@ -1148,11 +1145,11 @@ void proxyToQuan(std::vector<Proxy> &nodes, INIReader &ini, std::vector<RulesetC
                 {
                     proxyStr += "/?plugin=" + urlEncode(plugin + ";" + pluginopts);
                 }
-                proxyStr += "&group=" + urlSafeBase64Encode(x.Group) + "#" + urlEncode(remark);
+                proxyStr += "&group=" + urlSafeBase64Encode(x.Group) + "#" + urlEncode(x.Remark);
             }
             else
             {
-                proxyStr = remark + " = shadowsocks, " + hostname + ", " + port + ", " + method + ", \"" + password + "\", group=" + x.Group;
+                proxyStr = x.Remark + " = shadowsocks, " + hostname + ", " + port + ", " + method + ", \"" + password + "\", group=" + x.Group;
                 if(plugin == "obfs-local" && !pluginopts.empty())
                 {
                     proxyStr += ", " + replaceAllDistinct(pluginopts, ";", ", ");
@@ -1161,7 +1158,7 @@ void proxyToQuan(std::vector<Proxy> &nodes, INIReader &ini, std::vector<RulesetC
             break;
         case ProxyType::HTTP:
         case ProxyType::HTTPS:
-            proxyStr = remark + " = http, upstream-proxy-address=" + hostname + ", upstream-proxy-port=" + port + ", group=" + x.Group;
+            proxyStr = x.Remark + " = http, upstream-proxy-address=" + hostname + ", upstream-proxy-port=" + port + ", group=" + x.Group;
             if(!username.empty() && !password.empty())
                 proxyStr += ", upstream-proxy-auth=true, upstream-proxy-username=" + username + ", upstream-proxy-password=" + password;
             else
@@ -1180,7 +1177,7 @@ void proxyToQuan(std::vector<Proxy> &nodes, INIReader &ini, std::vector<RulesetC
                 proxyStr = "http://" + urlSafeBase64Encode(proxyStr);
             break;
         case ProxyType::SOCKS5:
-            proxyStr = remark + " = socks, upstream-proxy-address=" + hostname + ", upstream-proxy-port=" + port + ", group=" + x.Group;
+            proxyStr = x.Remark + " = socks, upstream-proxy-address=" + hostname + ", upstream-proxy-port=" + port + ", group=" + x.Group;
             if(!username.empty() && !password.empty())
                 proxyStr += ", upstream-proxy-auth=true, upstream-proxy-username=" + username + ", upstream-proxy-password=" + password;
             else
@@ -1203,7 +1200,7 @@ void proxyToQuan(std::vector<Proxy> &nodes, INIReader &ini, std::vector<RulesetC
         }
 
         ini.set("{NONAME}", proxyStr);
-        remarks_list.emplace_back(std::move(remark));
+        remarks_list.emplace_back(x.Remark);
         nodelist.emplace_back(x);
     }
 
@@ -1311,7 +1308,6 @@ std::string proxyToQuanX(std::vector<Proxy> &nodes, const std::string &base_conf
 void proxyToQuanX(std::vector<Proxy> &nodes, INIReader &ini, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext)
 {
     std::string type;
-    std::string remark;
     std::string proxyStr;
     tribool udp, tfo, scv, tls13;
     std::vector<Proxy> nodelist;
@@ -1324,7 +1320,7 @@ void proxyToQuanX(std::vector<Proxy> &nodes, INIReader &ini, std::vector<Ruleset
         if(ext.append_proxy_type)
             x.Remark = "[" + type + "] " + x.Remark;
 
-        processRemark(x.Remark, remark, remarks_list);
+        processRemark(x.Remark, remarks_list);
 
         std::string &hostname = x.Hostname, &method = x.EncryptMethod, &id = x.UserId, &transproto = x.TransferProtocol, &host = x.Host, &path = x.Path, &password = x.Password, &plugin = x.Plugin, &pluginopts = x.PluginOption, &protocol = x.Protocol, &protoparam = x.ProtocolParam, &obfs = x.OBFS, &obfsparam = x.OBFSParam, &username = x.Username;
         std::string port = std::to_string(x.Port);
@@ -1455,10 +1451,10 @@ void proxyToQuanX(std::vector<Proxy> &nodes, INIReader &ini, std::vector<Ruleset
             proxyStr += ", udp-relay=" + udp.get_str();
         if(tlssecure && !scv.is_undef() && (x.Type != ProxyType::Shadowsocks && x.Type != ProxyType::ShadowsocksR))
             proxyStr += ", tls-verification=" + scv.reverse().get_str();
-        proxyStr += ", tag=" + remark;
+        proxyStr += ", tag=" + x.Remark;
 
         ini.set("{NONAME}", proxyStr);
-        remarks_list.emplace_back(std::move(remark));
+        remarks_list.emplace_back(x.Remark);
         nodelist.emplace_back(x);
     }
 
@@ -1661,7 +1657,7 @@ std::string proxyToMellow(std::vector<Proxy> &nodes, const std::string &base_con
 void proxyToMellow(std::vector<Proxy> &nodes, INIReader &ini, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext)
 {
     std::string proxy;
-    std::string remark, username, password, method;
+    std::string username, password, method;
     std::string plugin, pluginopts;
     std::string id, aid, transproto, faketype, host, path, quicsecure, quicsecret, tlssecure;
     std::string url;
@@ -1679,7 +1675,7 @@ void proxyToMellow(std::vector<Proxy> &nodes, INIReader &ini, std::vector<Rulese
             x.Remark = "[" + type + "] " + x.Remark;
         }
 
-        processRemark(x.Remark, remark, remarks_list);
+        processRemark(x.Remark, remarks_list);
 
         std::string &hostname = x.Hostname, port = std::to_string(x.Port);
 
@@ -1693,10 +1689,10 @@ void proxyToMellow(std::vector<Proxy> &nodes, INIReader &ini, std::vector<Rulese
         case ProxyType::Shadowsocks:
             if(!x.Plugin.empty())
                 continue;
-            proxy = remark + ", ss, ss://" + urlSafeBase64Encode(method + ":" + password) + "@" + hostname + ":" + port;
+            proxy = x.Remark + ", ss, ss://" + urlSafeBase64Encode(method + ":" + password) + "@" + hostname + ":" + port;
             break;
         case ProxyType::VMess:
-            proxy = remark + ", vmess1, vmess1://" + id + "@" + hostname + ":" + port;
+            proxy = x.Remark + ", vmess1, vmess1://" + id + "@" + hostname + ":" + port;
             if(!path.empty())
                 proxy += path;
             proxy += "?network=" + transproto;
@@ -1729,17 +1725,17 @@ void proxyToMellow(std::vector<Proxy> &nodes, INIReader &ini, std::vector<Rulese
                 proxy += "&sockopt.tcpfastopen=" + tfo.get_str();
             break;
         case ProxyType::SOCKS5:
-            proxy = remark + ", builtin, socks, address=" + hostname + ", port=" + port + ", user=" + username + ", pass=" + password;
+            proxy = x.Remark + ", builtin, socks, address=" + hostname + ", port=" + port + ", user=" + username + ", pass=" + password;
             break;
         case ProxyType::HTTP:
-            proxy = remark + ", builtin, http, address=" + hostname + ", port=" + port + ", user=" + username + ", pass=" + password;
+            proxy = x.Remark + ", builtin, http, address=" + hostname + ", port=" + port + ", user=" + username + ", pass=" + password;
             break;
         default:
             continue;
         }
 
         ini.set("{NONAME}", proxy);
-        remarks_list.emplace_back(std::move(remark));
+        remarks_list.emplace_back(x.Remark);
         nodelist.emplace_back(x);
     }
 
@@ -1824,8 +1820,7 @@ std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf,
             std::string type = getProxyTypeName(x.Type);
             x.Remark = "[" + type + "] " + x.Remark;
         }
-        std::string remark = x.Remark;
-        processRemark(x.Remark, remark, remarks_list);
+        processRemark(x.Remark, remarks_list);
 
         std::string &hostname = x.Hostname, &username = x.Username, &password = x.Password, &method = x.EncryptMethod, &plugin = x.Plugin, &pluginopts = x.PluginOption, &id = x.UserId, &transproto = x.TransferProtocol, &host = x.Host, &path = x.Path, &protocol = x.Protocol, &protoparam = x.ProtocolParam, &obfs = x.OBFS, &obfsparam = x.OBFSParam;
         std::string port = std::to_string(x.Port), aid = std::to_string(x.AlterId);
@@ -1931,12 +1926,12 @@ std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf,
 
 
         if(ext.nodelist)
-            output_nodelist += remark + " = " + proxy + "\n";
+            output_nodelist += x.Remark + " = " + proxy + "\n";
         else
         {
-            ini.set("{NONAME}", remark + " = " + proxy);
+            ini.set("{NONAME}", x.Remark + " = " + proxy);
             nodelist.emplace_back(x);
-            remarks_list.emplace_back(std::move(remark));
+            remarks_list.emplace_back(x.Remark);
         }
     }
 
@@ -2096,6 +2091,7 @@ void proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::v
     rapidjson::Document::AllocatorType &allocator = json.GetAllocator();
     rapidjson::Value outbounds(rapidjson::kArrayType), route(rapidjson::kArrayType);
     std::vector<Proxy> nodelist;
+    string_array remarks_list;
 
     auto direct = buildObject(allocator, "type", "direct", "tag", "DIRECT");
     outbounds.PushBack(direct, allocator);
@@ -2108,6 +2104,8 @@ void proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::v
         if (ext.append_proxy_type)
             x.Remark = "[" + type + "] " + x.Remark;
 
+        processRemark(x.Remark, remarks_list, false);
+
         tribool udp = ext.udp, tfo = ext.tfo, scv = ext.skip_cert_verify;
         udp.define(x.UDP);
         tfo.define(x.TCPFastOpen);
@@ -2118,7 +2116,7 @@ void proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::v
         {
             case ProxyType::Shadowsocks:
             {
-                addSingBoxCommonMembers(proxy, x, "ss", allocator);
+                addSingBoxCommonMembers(proxy, x, "shadowsocks", allocator);
                 proxy.AddMember("method", rapidjson::StringRef(x.EncryptMethod.c_str()), allocator);
                 proxy.AddMember("password", rapidjson::StringRef(x.Password.c_str()), allocator);
                 if(!x.Plugin.empty() && !x.PluginOption.empty())
@@ -2243,6 +2241,7 @@ void proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::v
             proxy.AddMember("tcp_fast_open", buildBooleanValue(tfo), allocator);
         }
         nodelist.push_back(x);
+        remarks_list.emplace_back(x.Remark);
         outbounds.PushBack(proxy, allocator);
     }
     for (const ProxyGroupConfig &x: extra_proxy_group)
@@ -2293,6 +2292,21 @@ void proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::v
         }
         outbounds.PushBack(group, allocator);
     }
+
+    if (global.singBoxAddClashModes)
+    {
+        auto global_group = rapidjson::Value(rapidjson::kObjectType);
+        global_group.AddMember("type", "selector", allocator);
+        global_group.AddMember("tag", "GLOBAL", allocator);
+        global_group.AddMember("outbounds", rapidjson::Value(rapidjson::kArrayType), allocator);
+        global_group["outbounds"].PushBack("DIRECT", allocator);
+        for (auto &x: remarks_list)
+        {
+            global_group["outbounds"].PushBack(rapidjson::Value(x.c_str(), allocator), allocator);
+        }
+        outbounds.PushBack(global_group, allocator);
+    }
+
     json | AddMemberOrReplace("outbounds", outbounds, allocator);
 }
 

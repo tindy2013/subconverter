@@ -487,13 +487,21 @@ void rulesetToSingBox(rapidjson::Document &base_rule, std::vector<RulesetContent
     std::string rule_group, retrieved_rules, strLine, final;
     std::stringstream strStrm;
     size_t total_rules = 0;
-    rapidjson::MemoryPoolAllocator<>& allocator = base_rule.GetAllocator();
+    auto &allocator = base_rule.GetAllocator();
 
     rapidjson::Value rules(rapidjson::kArrayType);
     if (!overwrite_original_rules)
     {
         if (base_rule.HasMember("route") && base_rule["route"].HasMember("rules") && base_rule["route"]["rules"].IsArray())
             rules.Swap(base_rule["route"]["rules"]);
+    }
+
+    if (global.singBoxAddClashModes)
+    {
+        auto global_object = buildObject(allocator, "clash_mode", "Global", "outbound", "GLOBAL");
+        auto direct_object = buildObject(allocator, "clash_mode", "Direct", "outbound", "DIRECT");
+        rules.PushBack(global_object, allocator);
+        rules.PushBack(direct_object, allocator);
     }
 
     for(RulesetContent &x : ruleset_content_array)
