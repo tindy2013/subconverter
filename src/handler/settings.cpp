@@ -331,6 +331,7 @@ void readYAMLConf(YAML::Node &node)
     section["quanx_rule_base"] >> global.quanXBase;
     section["loon_rule_base"] >> global.loonBase;
     section["sssub_rule_base"] >> global.SSSubBase;
+    section["singbox_rule_base"] >> global.singBoxBase;
 
     section["default_external_config"] >> global.defaultExtConfig;
     section["append_proxy_type"] >> global.appendType;
@@ -573,14 +574,14 @@ void operate_toml_kv_table(const std::vector<toml::table> &arr, const toml::key 
 {
     for(const toml::table &table : arr)
     {
-        const auto &key = table.at(key_name), value = table.at(value_name);
+        const auto &key = table.at(key_name), &value = table.at(value_name);
         binary_op(key, value);
     }
 }
 
 void readTOMLConf(toml::value &root)
 {
-    const auto &section_common = toml::find(root, "common");
+    auto section_common = toml::find(root, "common");
     string_array default_url, insert_url;
 
     find_if_exist(section_common, "default_url", default_url, "insert_url", insert_url);
@@ -605,6 +606,8 @@ void readTOMLConf(toml::value &root)
                   "quan_rule_base", global.quanBase,
                   "quanx_rule_base", global.quanXBase,
                   "loon_rule_base", global.loonBase,
+                  "sssub_rule_base", global.SSSubBase,
+                  "singbox_rule_base", global.singBoxBase,
                   "proxy_config", global.proxyConfig,
                   "proxy_ruleset", global.proxyRuleset,
                   "proxy_subscription", global.proxySubscription,
@@ -619,7 +622,7 @@ void readTOMLConf(toml::value &root)
     safe_set_streams(toml::find_or<RegexMatchConfigs>(root, "userinfo", "stream_rule", RegexMatchConfigs{}));
     safe_set_times(toml::find_or<RegexMatchConfigs>(root, "userinfo", "time_rule", RegexMatchConfigs{}));
 
-    const auto &section_node_pref = toml::find(root, "node_pref");
+    auto section_node_pref = toml::find(root, "node_pref");
 
     find_if_exist(section_node_pref,
                   "udp_flag", global.UDPFlag,
@@ -638,7 +641,7 @@ void readTOMLConf(toml::value &root)
     importItems(renameconfs, "rename_node", false);
     safe_set_renames(toml::get<RegexMatchConfigs>(toml::value(renameconfs)));
 
-    const auto &section_managed = toml::find(root, "managed_config");
+    auto section_managed = toml::find(root, "managed_config");
 
     find_if_exist(section_managed,
                   "write_managed_config", global.writeManagedConfig,
@@ -648,13 +651,13 @@ void readTOMLConf(toml::value &root)
                   "quanx_device_id", global.quanXDevID
     );
 
-    const auto &section_surge_external = toml::find(root, "surge_external_proxy");
+    auto section_surge_external = toml::find(root, "surge_external_proxy");
     find_if_exist(section_surge_external,
                   "surge_ssr_path", global.surgeSSRPath,
                   "resolve_hostname", global.surgeResolveHostname
     );
 
-    const auto &section_emojis = toml::find(root, "emojis");
+    auto section_emojis = toml::find(root, "emojis");
 
     find_if_exist(section_emojis,
                   "add_emoji", global.addEmoji,
@@ -669,7 +672,7 @@ void readTOMLConf(toml::value &root)
     importItems(groups, "custom_groups", false);
     global.customProxyGroups = toml::get<ProxyGroupConfigs>(toml::value(groups));
 
-    const auto &section_ruleset = toml::find(root, "ruleset");
+    auto section_ruleset = toml::find(root, "ruleset");
 
     find_if_exist(section_ruleset,
                   "enabled", global.enableRuleGen,
@@ -681,7 +684,7 @@ void readTOMLConf(toml::value &root)
     importItems(rulesets, "rulesets", false);
     global.customRulesets = toml::get<RulesetConfigs>(toml::value(rulesets));
 
-    const auto &section_template = toml::find(root, "template");
+    auto section_template = toml::find(root, "template");
 
     global.templatePath = toml::find_or(section_template, "template_path", "template");
 
@@ -702,7 +705,7 @@ void readTOMLConf(toml::value &root)
     global.cronTasks = toml::get<CronTaskConfigs>(toml::value(tasks));
     refresh_schedule();
 
-    const auto &section_server = toml::find(root, "server");
+    auto section_server = toml::find(root, "server");
 
     find_if_exist(section_server,
                   "listen", global.listenAddress,
@@ -711,7 +714,7 @@ void readTOMLConf(toml::value &root)
     );
     webServer.serve_file = !webServer.serve_file_root.empty();
 
-    const auto &section_advanced = toml::find(root, "advanced");
+    auto section_advanced = toml::find(root, "advanced");
 
     std::string log_level;
     bool enable_cache = true;
@@ -842,6 +845,8 @@ void readConf()
     ini.get_if_exist("quan_rule_base", global.quanBase);
     ini.get_if_exist("quanx_rule_base", global.quanXBase);
     ini.get_if_exist("loon_rule_base", global.loonBase);
+    ini.get_if_exist("sssub_rule_base", global.SSSubBase);
+    ini.get_if_exist("singbox_rule_base", global.singBoxBase);
     ini.get_if_exist("default_external_config", global.defaultExtConfig);
     ini.get_bool_if_exist("append_proxy_type", global.appendType);
     ini.get_if_exist("proxy_config", global.proxyConfig);
@@ -1074,6 +1079,7 @@ int loadExternalYAML(YAML::Node &node, ExternalConfig &ext)
     section["quanx_rule_base"] >> ext.quanx_rule_base;
     section["loon_rule_base"] >> ext.loon_rule_base;
     section["sssub_rule_base"] >> ext.sssub_rule_base;
+    section["singbox_rule_base"] >> ext.singbox_rule_base;
 
     section["enable_rule_generator"] >> ext.enable_rule_generator;
     section["overwrite_original_rules"] >> ext.overwrite_original_rules;
@@ -1135,7 +1141,7 @@ int loadExternalYAML(YAML::Node &node, ExternalConfig &ext)
 
 int loadExternalTOML(toml::value &root, ExternalConfig &ext)
 {
-    const auto &section = toml::find(root, "custom");
+    auto section = toml::find(root, "custom");
 
     find_if_exist(section,
                   "enable_rule_generator", ext.enable_rule_generator,
@@ -1146,7 +1152,9 @@ int loadExternalTOML(toml::value &root, ExternalConfig &ext)
                   "mellow_rule_base", ext.mellow_rule_base,
                   "quan_rule_base", ext.quan_rule_base,
                   "quanx_rule_base", ext.quanx_rule_base,
+                  "loon_rule_base", ext.loon_rule_base,
                   "sssub_rule_base", ext.sssub_rule_base,
+                  "singbox_rule_base", ext.singbox_rule_base,
                   "add_emoji", ext.add_emoji,
                   "remove_old_emoji", ext.remove_old_emoji,
                   "include_remarks", ext.include,
@@ -1248,6 +1256,7 @@ int loadExternalConfig(std::string &path, ExternalConfig &ext)
     ini.get_if_exist("quanx_rule_base", ext.quanx_rule_base);
     ini.get_if_exist("loon_rule_base", ext.loon_rule_base);
     ini.get_if_exist("sssub_rule_base", ext.sssub_rule_base);
+    ini.get_if_exist("singbox_rule_base", ext.singbox_rule_base);
 
     ini.get_bool_if_exist("overwrite_original_rules", ext.overwrite_original_rules);
     ini.get_bool_if_exist("enable_rule_generator", ext.enable_rule_generator);

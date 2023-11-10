@@ -495,6 +495,7 @@ T unwrap_free(JSContext * ctx, JSValue val)
 template <class Tuple, std::size_t... I>
 Tuple unwrap_args_impl(JSContext * ctx, JSValueConst * argv, std::index_sequence<I...>)
 {
+    (void)ctx;
     return Tuple{js_traits<std::decay_t<std::tuple_element_t<I, Tuple>>>::unwrap(ctx, argv[I])...};
 }
 
@@ -1207,12 +1208,12 @@ public:
 
         JSModuleDef * m;
         JSContext * ctx;
-        const char * name;
+        /*const char * name;*/
 
         using nvp = std::pair<const char *, Value>;
         std::vector<nvp> exports;
     public:
-        Module(JSContext * ctx, const char * name) : ctx(ctx), name(name)
+        Module(JSContext * ctx, const char * name) : ctx(ctx)/*, name(name)*/
         {
             m = JS_NewCModule(ctx, name, [](JSContext * ctx, JSModuleDef * m) noexcept {
                 auto& context = Context::get(ctx);

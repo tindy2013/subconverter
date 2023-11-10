@@ -30,7 +30,7 @@ jobs:
 
       - name: Get commit SHA
         id: vars
-        run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       - name: Build and export
         id: build
@@ -97,7 +97,7 @@ jobs:
 
       - name: Get commit SHA
         id: vars
-        run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       - name: Build and export
         id: build
@@ -146,15 +146,12 @@ jobs:
 
   armv7_build:
     name: Build ARMv7 Image
-    runs-on: [self-hosted, linux, ARM64]
+    runs-on: [self-hosted, linux, ARM]
     steps:
       - name: Checkout base
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -167,7 +164,7 @@ jobs:
 
       - name: Get commit SHA
         id: vars
-        run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       - name: Build and export
         id: build
@@ -179,7 +176,7 @@ jobs:
           tags: tindy2013/subconverter:latest
           build-args: |
             SHA=${{ steps.vars.outputs.sha_short }}
-            THREADS=2
+            THREADS=4
           outputs: type=image,push=true
 
       - name: Replace tag without `v`
@@ -200,7 +197,7 @@ jobs:
           context: scripts/
           tags: tindy2013/subconverter:${{steps.version.outputs.result}}
           build-args: |
-            THREADS=2
+            THREADS=4
           outputs: type=image,push=true
 
       - name: Save digest
@@ -226,9 +223,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
@@ -240,7 +234,7 @@ jobs:
 
       - name: Get commit SHA
         id: vars
-        run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       - name: Build and export
         id: build
@@ -252,7 +246,7 @@ jobs:
           tags: tindy2013/subconverter:latest
           build-args: |
             SHA=${{ steps.vars.outputs.sha_short }}
-            THREADS=2
+            THREADS=4
           outputs: type=image,push=true
 
       - name: Replace tag without `v`
@@ -273,7 +267,7 @@ jobs:
           context: scripts/
           tags: tindy2013/subconverter:${{steps.version.outputs.result}}
           build-args: |
-            THREADS=2
+            THREADS=4
           outputs: type=image,push=true
 
       - name: Save digest
@@ -317,37 +311,11 @@ jobs:
         with:
           path: /tmp/images/
 
-#      - name: Load image
-#        if: github.ref == 'refs/heads/master'
-#        run: |
-#          docker load --input /tmp/image_amd64/image_amd64.tar
-#          docker load --input /tmp/image_386/image_386.tar
-#          docker load --input /tmp/image_armv7/image_armv7.tar
-#          docker load --input /tmp/image_arm64/image_arm64.tar
-#          docker image ls -a
-
       - name: Docker login
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-
-#      - name: Get commit SHA
-#        id: vars
-#        run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
-
-#      - name: Docker buildx image and push on master branch
-#        if: github.ref == 'refs/heads/master'
-#        uses: docker/build-push-action@v3
-#        with:
-#          platforms: linux/amd64,linux/arm/v7,linux/arm64,linux/386
-#          context: scripts/
-#          tags: tindy2013/subconverter:latest
-#          build-args: |
-#            SHA=${{ steps.vars.outputs.sha_short }}
-#            THREADS=1
-#          outputs: |
-#            type=image,push=true
 
       - name: Replace tag without `v`
         if: startsWith(github.ref, 'refs/tags/')
@@ -357,25 +325,6 @@ jobs:
           script: |
             return context.payload.ref.replace(/\/?refs\/tags\/v/, '')
           result-encoding: string
-
-#      - name: Load release image
-#        if: startsWith(github.ref, 'refs/tags/')
-#        run: |
-#          docker load --input /tmp/image_amd64/image_amd64_release.tar
-#          docker load --input /tmp/image_386/image_386_release.tar
-#          docker load --input /tmp/image_armv7/image_armv7_release.tar
-#          docker load --input /tmp/image_arm64/image_arm64_release.tar
-#          docker image ls -a
-
-#      - name: Docker buildx image and push on release
-#        if: startsWith(github.ref, 'refs/tags/')
-#        uses: docker/build-push-action@v3
-#        with:
-#          platforms: linux/amd64,linux/arm/v7,linux/arm64,linux/386
-#          context: scripts/
-#          tags: tindy2013/subconverter:${{steps.version.outputs.result}}
-#          build-args: THREADS=1
-#          outputs: type=image,push=true
 
       - name: Merge and push manifest on master branch
         if: github.ref == 'refs/heads/master'

@@ -1,6 +1,5 @@
 #include <memory>
 #include <cstdint>
-#include <iostream>
 #include <evhttp.h>
 #include <atomic>
 #ifdef MALLOC_TRIM
@@ -8,13 +7,11 @@
 #endif // MALLOC_TRIM
 
 #include <string>
-#include <vector>
 #include <map>
 #include <algorithm>
-#include <string.h>
+#include <cstring>
 #include <pthread.h>
 #include <thread>
-#include <functional>
 
 #include "../utils/base64/base64.h"
 #include "../utils/file_extra.h"
@@ -65,7 +62,7 @@ bool matchSpaceSeparatedList(const std::string& source, const std::string &targe
     while(pos_begin < total)
     {
         pos_end = source.find(' ', pos_begin);
-        if(pos_end == source.npos)
+        if(pos_end == std::string::npos)
             pos_end = total;
         if(source.compare(pos_begin, pos_end - pos_begin, target) == 0)
             return true;
@@ -76,12 +73,12 @@ bool matchSpaceSeparatedList(const std::string& source, const std::string &targe
 
 std::string checkMIMEType(const std::string &filename)
 {
-    string_size name_begin = 0, name_end = 0;
+    string_size name_begin, name_end;
     name_begin = filename.rfind('/');
-    if(name_begin == filename.npos)
+    if(name_begin == std::string::npos)
         name_begin = 0;
     name_end = filename.rfind('.');
-    if(name_end == filename.npos || name_end < name_begin || name_end == filename.size() - 1)
+    if(name_end == std::string::npos || name_end < name_begin || name_end == filename.size() - 1)
         return "application/octet-stream";
     std::string extension = filename.substr(name_end + 1);
     for(MIME_type &x : mime_types)
@@ -90,10 +87,10 @@ std::string checkMIMEType(const std::string &filename)
     return "application/octet-stream";
 }
 
-int WebServer::serveFile(const std::string &filename, std::string &content_type, std::string &return_data)
+int serveFile(WebServer *server, const std::string &filename, std::string &content_type, std::string &return_data)
 {
-    std::string realname = serve_file_root + filename;
-    if(filename.compare("/") == 0)
+    std::string realname = server->serve_file_root + filename;
+    if(filename == "/")
         realname += "index.html";
     if(!fileExist(realname))
         return 1;
@@ -115,26 +112,34 @@ static inline void buffer_cleanup(struct evbuffer *eb)
 #endif // MALLOC_TRIM
 }
 
-inline int WebServer::process_request(Request &request, Response &response, std::string &return_data)
+static int process_request(WebServer *server, Request &request, Response &response, std::string &return_data)
 {
     writeLog(0, "handle_cmd:    " + request.method + " handle_uri:    " + request.url, LOG_LEVEL_VERBOSE);
 
-    string_size pos = request.url.find("?");
-    if(pos != request.url.npos)
+    string_size pos = request.url.find('?');
+    if(pos != std::string::npos)
     {
-        request.argument = request.url.substr(pos + 1);
+        auto argument = split(request.url.substr(pos + 1), "&");
+        for(auto &x : argument)
+        {
+            string_size pos2 = x.find('=');
+            if(pos2 != std::string::npos)
+                request.argument.emplace(x.substr(0, pos2), x.substr(pos2 + 1));
+            else
+                request.argument.emplace(x, "");
+        }
         request.url.erase(pos);
     }
 
     if(request.method == "OPTIONS")
     {
-        for(responseRoute &x : responses)
+        for(responseRoute &x : server->responses)
             if(matchSpaceSeparatedList(replaceAllDistinct(request.postdata, ",", ""), x.method) && x.path == request.url)
                 return 1;
         return -1;
     }
 
-    for(responseRoute &x : responses)
+    for(responseRoute &x : server->responses)
     {
         if(x.method == request.method && x.path == request.url)
         {
@@ -146,7 +151,7 @@ inline int WebServer::process_request(Request &request, Response &response, std:
             }
             catch(std::exception &e)
             {
-                return_data = "Internal server error while processing request path '" + request.url + "' with arguments '" + request.argument + "'!";
+                return_data = "Internal server error while processing request path '" + request.url + "' with arguments '" + joinArguments(request.argument) + "'!";
                 return_data += "\n  exception: ";
                 return_data += type(e);
                 return_data += "\n  what(): ";
@@ -159,33 +164,33 @@ inline int WebServer::process_request(Request &request, Response &response, std:
         }
     }
 
-    auto iter = redirect_map.find(request.url);
-    if(iter != redirect_map.end())
+    auto iter = server->redirect_map.find(request.url);
+    if(iter != server->redirect_map.end())
     {
         return_data = iter->second;
-        if(request.argument.size())
+        if(!request.argument.empty())
         {
-            if(return_data.find("?") != return_data.npos)
-                return_data += "&" + request.argument;
+            if(return_data.find('?') != std::string::npos)
+                return_data += "&" + joinArguments(request.argument);
             else
-                return_data += "?" + request.argument;
+                return_data += "?" + joinArguments(request.argument);
         }
         return 2;
     }
 
-    if(serve_file)
+    if(server->serve_file)
     {
-        if(request.method.compare("GET") == 0 && serveFile(request.url, response.content_type, return_data) == 0)
+        if(request.method == "GET" && serveFile(server, request.url, response.content_type, return_data) == 0)
             return 0;
     }
 
     return -1;
 }
 
-void WebServer::on_request(evhttp_request *req, void *args)
+static void on_request(evhttp_request *req, void *args)
 {
-    (void)args;
-    static std::string auth_token = "Basic " + base64Encode(auth_user + ":" + auth_password);
+    auto server = (WebServer*) args;
+    static std::string auth_token = "Basic " + base64Encode(server->auth_user + ":" + server->auth_password);
     const char *req_content_type = evhttp_find_header(req->input_headers, "Content-Type"), *req_ac_method = evhttp_find_header(req->input_headers, "Access-Control-Request-Method");
     const char *uri = req->uri, *internal_flag = evhttp_find_header(req->input_headers, "SubConverter-Request");
 
@@ -201,12 +206,12 @@ void WebServer::on_request(evhttp_request *req, void *args)
         return;
     }
 
-    if (require_auth)
+    if (server->require_auth)
     {
         const char *auth = evhttp_find_header(req->input_headers, "Authorization");
         if (auth == nullptr || auth_token != auth)
         {
-            evhttp_add_header(req->output_headers, "WWW-Authenticate", ("Basic realm=\"" + auth_realm + "\"").data());
+            evhttp_add_header(req->output_headers, "WWW-Authenticate", ("Basic realm=\"" + server->auth_realm + "\"").data());
             auto buffer = evhttp_request_get_output_buffer(req);
             evbuffer_add_printf(buffer, "Unauthorized");
             evhttp_send_reply(req, 401, nullptr, buffer);
@@ -252,7 +257,7 @@ void WebServer::on_request(evhttp_request *req, void *args)
     request.headers.emplace("X-Client-IP", client_ip);
 
     std::string return_data;
-    int retVal = process_request(request, response, return_data);
+    int retVal = process_request(server, request, response, return_data);
     std::string &content_type = response.content_type;
 
     auto *output_buffer = evhttp_request_get_output_buffer(req);
@@ -277,7 +282,7 @@ void WebServer::on_request(evhttp_request *req, void *args)
         evhttp_send_reply(req, HTTP_MOVETEMP, nullptr, nullptr);
         break;
     case 0: //found normal
-        if (content_type.size())
+        if (!content_type.empty())
             evhttp_add_header(req->output_headers, "Content-Type", content_type.c_str());
         evhttp_add_header(req->output_headers, "Access-Control-Allow-Origin", "*");
         evhttp_add_header(req->output_headers, "Connection", "close");
@@ -296,9 +301,8 @@ void WebServer::on_request(evhttp_request *req, void *args)
     buffer_cleanup(output_buffer);
 }
 
-int WebServer::start_web_server(void *argv)
+int WebServer::start_web_server(listener_args *args)
 {
-    struct listener_args *args = reinterpret_cast<listener_args*>(argv);
     std::string listen_address = args->listen_address;
     int port = args->port;
     if (!event_init())
@@ -317,10 +321,8 @@ int WebServer::start_web_server(void *argv)
         return -1;
     }
 
-    auto call_on_request = [&](evhttp_request *req, void *args) { on_request(req, args); };
-
     evhttp_set_allowed_methods(server.get(), EVHTTP_REQ_GET | EVHTTP_REQ_POST | EVHTTP_REQ_OPTIONS | EVHTTP_REQ_PUT | EVHTTP_REQ_PATCH | EVHTTP_REQ_DELETE | EVHTTP_REQ_HEAD);
-    evhttp_set_gencb(server.get(), wrap(call_on_request), nullptr);
+    evhttp_set_gencb(server.get(), on_request, this);
     evhttp_set_timeout(server.get(), 30);
     if (event_dispatch() == -1)
     {
@@ -332,14 +334,14 @@ int WebServer::start_web_server(void *argv)
     return 0;
 }
 
-void* httpserver_dispatch(void *arg)
+static void* httpserver_dispatch(void *arg)
 {
     event_base_dispatch(reinterpret_cast<event_base*>(arg));
     event_base_free(reinterpret_cast<event_base*>(arg)); //free resources
     return nullptr;
 }
 
-int httpserver_bindsocket(std::string listen_address, int listen_port, int backlog)
+static int httpserver_bindsocket(std::string listen_address, int listen_port, int backlog)
 {
     SOCKET nfd;
     nfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -360,7 +362,7 @@ int httpserver_bindsocket(std::string listen_address, int listen_port, int backl
     }
 #endif
 
-    struct sockaddr_in addr;
+    struct sockaddr_in addr {};
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = inet_addr(listen_address.data());
@@ -378,9 +380,8 @@ int httpserver_bindsocket(std::string listen_address, int listen_port, int backl
     return nfd;
 }
 
-int WebServer::start_web_server_multi(void *argv)
+int WebServer::start_web_server_multi(listener_args *args)
 {
-    struct listener_args *args = reinterpret_cast<listener_args*>(argv);
     std::string listen_address = args->listen_address;
     int port = args->port, nthreads = args->max_workers, max_conn = args->max_conn;
 
@@ -404,7 +405,7 @@ int WebServer::start_web_server_multi(void *argv)
             return -1;
 
         evhttp_set_allowed_methods(httpd, EVHTTP_REQ_GET | EVHTTP_REQ_POST | EVHTTP_REQ_OPTIONS | EVHTTP_REQ_PUT | EVHTTP_REQ_PATCH | EVHTTP_REQ_DELETE | EVHTTP_REQ_HEAD);
-        evhttp_set_gencb(httpd, wrap(call_on_request), nullptr);
+        evhttp_set_gencb(httpd, wrap(call_on_request), this);
         evhttp_set_timeout(httpd, 30);
         if (pthread_create(&ths[i], nullptr, httpserver_dispatch, base[i]) != 0)
             return -1;
@@ -428,24 +429,4 @@ int WebServer::start_web_server_multi(void *argv)
 void WebServer::stop_web_server()
 {
     SERVER_EXIT_FLAG = true;
-}
-
-void WebServer::append_response(const std::string &method, const std::string &uri, const std::string &content_type, response_callback response)
-{
-    responseRoute rr;
-    rr.method = method;
-    rr.path = uri;
-    rr.content_type = content_type;
-    rr.rc = response;
-    responses.emplace_back(std::move(rr));
-}
-
-void WebServer::append_redirect(const std::string &uri, const std::string &target)
-{
-    redirect_map[uri] = target;
-}
-
-void WebServer::reset_redirect()
-{
-    eraseElements(redirect_map);
 }

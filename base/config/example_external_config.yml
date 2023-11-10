@@ -14,6 +14,9 @@ custom:
 #  mellow_rule_base: base/mellow.conf
 #  quan_rule_base: base/quan.conf
 #  quanx_rule_base: base/quanx.conf
+#  loon_rule_base: base/loon.conf
+#  sssub_rule_base: base/shadowsocks_base.json
+#  singbox_rule_base: base/singbox.json
 
 #  rename_node:
 #  - {import: snippet/rename.txt}

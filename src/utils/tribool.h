@@ -8,105 +8,102 @@
 
 class tribool
 {
-private:
-
-    char _M_VALUE = 0;
-
 public:
+    tribool() : value_(indeterminate) {}
+    tribool(bool value) : value_(value ? true_value : false_value) {}
+    tribool(const std::string& str) { set(str); }
 
-    tribool() { clear(); }
+    tribool(const tribool& other) = default;
+    tribool& operator=(const tribool& other) = default;
 
-    template <typename T> tribool(const T &value) { set(value); }
-
-    tribool(const tribool &value) { _M_VALUE = value._M_VALUE; }
-
-    ~tribool() = default;
-
-    tribool& operator=(const tribool &src)
+    tribool& operator=(bool value)
     {
-        _M_VALUE = src._M_VALUE;
+        value_ = value ? true_value : false_value;
         return *this;
     }
 
-    template <typename T> tribool& operator=(const T &value)
+    bool operator==(const tribool& other) const { return value_ == other.value_; }
+
+    operator bool() const { return value_ == true_value; }
+
+    bool is_undef() const { return value_ == indeterminate; }
+
+    template <typename T> tribool& define(const T& value)
     {
-        set(value);
-        return *this;
-    }
-
-    inline bool operator==(const tribool& rhs){ return _M_VALUE == rhs._M_VALUE; }
-
-    operator bool() const { return _M_VALUE == 3; }
-
-    bool is_undef() const { return _M_VALUE <= 1; }
-
-    template <typename T> tribool& define(const T &value)
-    {
-        if(_M_VALUE <= 1)
+        if (is_undef())
             *this = value;
         return *this;
     }
 
-    template <typename T> tribool& parse(const T &value)
+    template <typename T> tribool& parse(const T& value)
     {
         return define(value);
     }
 
     tribool reverse()
     {
-        if(_M_VALUE > 1)
-            _M_VALUE = _M_VALUE > 2 ? 2 : 3;
+        if (value_ == false_value)
+            value_ = true_value;
+        else if (value_ == true_value)
+            value_ = false_value;
         return *this;
     }
 
-    bool get(const bool &def_value = false) const
+    bool get(const bool& def_value = false) const
     {
-        if(_M_VALUE <= 1)
+        if (is_undef())
             return def_value;
-        return _M_VALUE == 3;
+        return value_ == true_value;
     }
 
     std::string get_str() const
     {
-        switch(_M_VALUE)
+        switch (value_)
         {
-        case 2:
-            return "false";
-        case 3:
-            return "true";
+            case indeterminate:
+                return "undef";
+            case false_value:
+                return "false";
+            case true_value:
+                return "true";
+            default:
+                return "";
         }
-        return "undef";
     }
 
-    template <typename T> bool set(const T &value)
+    template <typename T> bool set(const T& value)
     {
-        _M_VALUE = (bool)value + 2;
-        return _M_VALUE > 2;
+        value_ = (bool)value ? true_value : false_value;
+        return value_;
     }
 
-    bool set(const std::string &str)
+    bool set(const std::string& str)
     {
-        switch(hash_(str))
+        switch (hash_(str))
         {
-        case "true"_hash:
-        case "1"_hash:
-            _M_VALUE = 3;
-            break;
-        case "false"_hash:
-        case "0"_hash:
-            _M_VALUE = 2;
-            break;
-        default:
-            if(to_int(str, 0) > 1)
-                _M_VALUE = 3;
-            else
-                _M_VALUE = 0;
-            break;
+            case "true"_hash:
+            case "1"_hash:
+                value_ = true_value;
+                break;
+            case "false"_hash:
+            case "0"_hash:
+                value_ = false_value;
+                break;
+            default:
+                if (to_int(str, 0) > 1)
+                    value_ = true_value;
+                else
+                    value_ = indeterminate;
+                break;
         }
-        return _M_VALUE;
+        return !is_undef();
     }
 
-    void clear() { _M_VALUE = 0; }
+    void clear() { value_ = indeterminate; }
+
+private:
+    enum value_type : char { indeterminate = 0, false_value = 1, true_value = 2 };
+    value_type value_;
 };
 
 #endif // TRIBOOL_H_INCLUDED

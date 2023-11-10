@@ -7,6 +7,7 @@
 #include <time.h>
 
 #include "string.h"
+#include "map_extra.h"
 
 std::vector<std::string> split(const std::string &s, const std::string &seperator)
 {
@@ -19,8 +20,8 @@ std::vector<std::string> split(const std::string &s, const std::string &seperato
         while(i != s.size() && flag == 0)
         {
             flag = 1;
-            for(string_size x = 0; x < seperator.size(); ++x)
-                if(s[i] == seperator[x])
+            for(char x : seperator)
+                if(s[i] == x)
                 {
                     ++i;
                     flag = 0;
@@ -32,8 +33,8 @@ std::vector<std::string> split(const std::string &s, const std::string &seperato
         string_size j = i;
         while(j != s.size() && flag == 0)
         {
-            for(string_size x = 0; x < seperator.size(); ++x)
-                if(s[j] == seperator[x])
+            for(char x : seperator)
+                if(s[j] == x)
                 {
                     flag = 1;
                     break;
@@ -298,6 +299,14 @@ std::string getUrlArg(const std::string &url, const std::string &request)
     return "";
 }
 
+std::string getUrlArg(const string_multimap &url, const std::string &request)
+{
+    auto it = url.find(request);
+    if(it != url.end())
+        return it->second;
+    return "";
+}
+
 std::string replaceAllDistinct(std::string str, const std::string &old_value, const std::string &new_value)
 {
     for(std::string::size_type pos(0); pos != std::string::npos; pos += new_value.length())
@@ -354,7 +363,7 @@ bool isStrUTF8(const std::string &data)
     return true;
 }
 
-std::string randomStr(const int len)
+std::string randomStr(int len)
 {
     std::string retData;
     srand(time(NULL));

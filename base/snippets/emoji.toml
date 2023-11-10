@@ -15,6 +15,10 @@ match = "(?i:\\bSG[P]?\\b|Singapore|新加坡|狮城|[^-]新)"
 emoji = "🇸🇬"
 
 [[emoji]]
+match = "(尼日利亚|Nigeria)"
+emoji = "🇳🇬"
+
+[[emoji]]
 match = "(?i:\\bJP[N]?\\b|Japan|Tokyo|Osaka|Saitama|日本|东京|大阪|埼玉|[^-]日)"
 emoji = "🇯🇵"
 
@@ -244,10 +248,6 @@ match = "(Malaysia|马来|MY)"
 emoji = "🇲🇾"
 
 [[emoji]]
-match = "(尼日利亚|Nigeria)"
-emoji = "🇳🇬"
-
-[[emoji]]
 match = "(?i:\\bNL[D]?\\b|Netherlands|荷兰|阿姆斯特丹)"
 emoji = "🇳🇱"
 
@@ -351,11 +351,6 @@ emoji = "🇪🇨"
 [[emoji]]
 match = "(Morocco|摩洛哥)"
 emoji = "🇲🇦"
-
-
-[[emoji]]
-match = "(Nigeria|尼日利亚)"
-emoji = "🇳🇬"
 
 
 [[emoji]]

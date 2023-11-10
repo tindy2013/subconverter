@@ -73,7 +73,7 @@ void refresh_schedule()
 
 std::string list_cron_schedule(RESPONSE_CALLBACK_ARGS)
 {
-    std::string &argument = request.argument;
+    auto &argument = request.argument;
     std::string token = getUrlArg(argument, "token");
     rapidjson::StringBuffer sb;
     rapidjson::Writer<rapidjson::StringBuffer> writer(sb);

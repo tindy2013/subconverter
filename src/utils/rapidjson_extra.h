@@ -19,7 +19,7 @@ template <typename T> void exception_thrower(T e, const std::string &cond, const
 #include <rapidjson/error/en.h>
 #include <string>
 
-inline void operator >> (const rapidjson::Value& value, std::string& i)
+inline void operator >> (const rapidjson::Value &value, std::string &i)
 {
     if(value.IsNull())
         i = "";
@@ -35,7 +35,7 @@ inline void operator >> (const rapidjson::Value& value, std::string& i)
         i = "";
 }
 
-inline void operator >> (const rapidjson::Value& value, int& i)
+inline void operator >> (const rapidjson::Value &value, int &i)
 {
     if(value.IsNull())
         i = 0;
@@ -49,7 +49,7 @@ inline void operator >> (const rapidjson::Value& value, int& i)
         i = 0;
 }
 
-inline std::string GetMember(const rapidjson::Value& value, const std::string &member)
+inline std::string GetMember(const rapidjson::Value &value, const std::string &member)
 {
     std::string retStr;
     if(value.IsObject() && value.HasMember(member.data()))
@@ -57,19 +57,84 @@ inline std::string GetMember(const rapidjson::Value& value, const std::string &m
     return retStr;
 }
 
-inline void GetMember(const rapidjson::Value& value, const std::string &member, std::string& target)
+inline void GetMember(const rapidjson::Value &value, const std::string &member, std::string &target)
 {
     std::string retStr = GetMember(value, member);
-    if(retStr.size())
+    if(!retStr.empty())
         target.assign(retStr);
 }
 
-inline std::string SerializeObject(const rapidjson::Value& value)
+template <typename ...Args>
+inline rapidjson::Value buildObject(rapidjson::MemoryPoolAllocator<> &allocator, Args... kvs)
 {
-    rapidjson::StringBuffer sb;
-    rapidjson::Writer<rapidjson::StringBuffer> writer_json(sb);
-    value.Accept(writer_json);
-    return sb.GetString();
+    static_assert(sizeof...(kvs) % 2 == 0, "buildObject requires an even number of arguments");
+    static_assert((std::is_same<Args, const char*>::value && ...), "buildObject requires all arguments to be const char*");
+    rapidjson::Value ret(rapidjson::kObjectType);
+    auto args = {kvs...};
+    auto it = args.begin();
+    while (it != args.end())
+    {
+        const char *key = *it++, *value = *it++;
+        ret.AddMember(rapidjson::StringRef(key), rapidjson::StringRef(value), allocator);
+    }
+    return ret;
+}
+
+inline rapidjson::Value buildBooleanValue(bool value)
+{
+    return value ? rapidjson::Value(rapidjson::kTrueType) : rapidjson::Value(rapidjson::kFalseType);
+}
+
+namespace rapidjson_ext {
+    template <typename ReturnType>
+    struct ExtensionFunction {
+        virtual ReturnType operator() (rapidjson::Value &root) const = 0;
+        virtual ReturnType operator() (rapidjson::Value &&root) const
+        {
+            return (*this)(root);
+        };
+    };
+
+    struct AddMemberOrReplace : public ExtensionFunction<rapidjson::Value &> {
+        rapidjson::Value &member;
+        const rapidjson::Value::Ch *name;
+        rapidjson::MemoryPoolAllocator<> &allocator;
+        AddMemberOrReplace(const rapidjson::Value::Ch *name, rapidjson::Value &value,
+                           rapidjson::MemoryPoolAllocator<> &allocator) : member(value), name(name), allocator(allocator) {}
+        AddMemberOrReplace(const rapidjson::Value::Ch *name, rapidjson::Value &&value,
+                           rapidjson::MemoryPoolAllocator<> &allocator) : member(value), name(name), allocator(allocator) {}
+
+        inline rapidjson::Value & operator() (rapidjson::Value &root) const override
+        {
+            if (root.HasMember(name))
+                root[name] = member;
+            else
+                root.AddMember(rapidjson::StringRef(name), member, allocator);
+            return root;
+        }
+    };
+
+    struct SerializeObject : public ExtensionFunction<std::string> {
+        inline std::string operator() (rapidjson::Value &root) const override
+        {
+            rapidjson::StringBuffer buffer;
+            rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+            root.Accept(writer);
+            return buffer.GetString();
+        }
+    };
+
+    template <typename ReturnType>
+    inline ReturnType operator| (rapidjson::Value &root, const ExtensionFunction<ReturnType> &func)
+    {
+        return func(root);
+    }
+
+    template <typename ReturnType>
+    inline ReturnType operator| (rapidjson::Value &&root, const ExtensionFunction<ReturnType> &func)
+    {
+        return func(root);
+    }
 }
 
 

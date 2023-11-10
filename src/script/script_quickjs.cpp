@@ -377,6 +377,11 @@ static qjs_fetch_Response qjs_fetch(qjs_fetch_Request request)
     return response;
 }
 
+static std::string qjs_getUrlArg(const std::string &url, const std::string &request)
+{
+    return getUrlArg(url, request);
+}
+
 std::string getGeoIP(const std::string &address, const std::string &proxy)
 {
     return fetchFile("https://api.ip.sb/geoip/" + address, parseProxy(proxy), global.cacheConfig);
@@ -506,7 +511,7 @@ int script_context_init(qjs::Context &context)
             .add<&currentTime>("time")
             .add<&sleepMs>("sleep")
             .add<&ShowMsgbox>("msgbox")
-            .add<&getUrlArg>("getUrlArg")
+            .add<&qjs_getUrlArg>("getUrlArg")
             .add<&fileGet>("fileGet")
             .add<&fileWrite>("fileWrite");
         context.eval(R"(

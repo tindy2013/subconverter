@@ -1,12 +1,13 @@
-FROM alpine:3.16
-LABEL maintainer "tindy.it@gmail.com"
+FROM alpine:3.16 AS builder
+LABEL maintainer="tindy.it@gmail.com"
 ARG THREADS="4"
 ARG SHA=""
 
 # build minimized
 WORKDIR /
-RUN apk add --no-cache --virtual .build-tools git g++ build-base linux-headers cmake python3 && \
-    apk add --no-cache --virtual .build-deps curl-dev rapidjson-dev libevent-dev pcre2-dev yaml-cpp-dev && \
+RUN set -xe && \
+    apk add --no-cache --virtual .build-tools git g++ build-base linux-headers cmake python3 && \
+    apk add --no-cache --virtual .build-deps curl-dev rapidjson-dev pcre2-dev yaml-cpp-dev && \
     git clone https://github.com/ftk/quickjspp --depth=1 && \
     cd quickjspp && \
     git submodule update --init && \
@@ -29,7 +30,7 @@ RUN apk add --no-cache --virtual .build-tools git g++ build-base linux-headers c
     install -d /usr/include/date/ && \
     install -m644 libcron/externals/date/include/date/* /usr/include/date/ && \
     cd .. && \
-    git clone https://github.com/ToruNiina/toml11 --depth=1 && \
+    git clone https://github.com/ToruNiina/toml11 --branch="v3.7.1" --depth=1 && \
     cd toml11 && \
     cmake -DCMAKE_CXX_STANDARD=11 . && \
     make install -j $THREADS && \
@@ -41,14 +42,19 @@ RUN apk add --no-cache --virtual .build-tools git g++ build-base linux-headers c
     python3 -m pip install gitpython && \
     python3 scripts/update_rules.py -c scripts/rules_config.conf && \
     cmake -DCMAKE_BUILD_TYPE=Release . && \
-    make -j $THREADS && \
-    mv subconverter /usr/bin && \
-    mv base ../ && \
-    cd .. && \
-    rm -rf subconverter quickjspp libcron toml11 /usr/lib/lib*.a /usr/include/* /usr/local/include/lib*.a /usr/local/include/* && \
-    apk add --no-cache --virtual subconverter-deps pcre2 libcurl yaml-cpp libevent && \
-    apk del .build-tools .build-deps
+    make -j $THREADS
+
+# build final image
+FROM alpine:3.16
+LABEL maintainer="tindy.it@gmail.com"
+
+RUN apk add --no-cache --virtual subconverter-deps pcre2 libcurl yaml-cpp
+
+COPY --from=builder /subconverter/subconverter /usr/bin/
+COPY --from=builder /subconverter/base /base/
 
 # set entry
 WORKDIR /base
 CMD subconverter
+
+EXPOSE 25500/tcp
