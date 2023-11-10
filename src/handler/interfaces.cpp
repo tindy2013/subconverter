@@ -1255,7 +1255,8 @@ std::string getProfile(RESPONSE_CALLBACK_ARGS)
 
     contents.emplace("token", token);
     contents.emplace("profile_data", base64Encode(global.managedConfigPrefix + "/getprofile?" + joinArguments(argument)));
-    request.argument = argument;
+    std::copy(argument.cbegin(), argument.cend(), std::inserter(contents, contents.end()));
+    request.argument = contents;
     return subconverter(request, response);
 }
 
