@@ -2097,6 +2097,8 @@ void proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::v
     outbounds.PushBack(direct, allocator);
     auto reject = buildObject(allocator, "type", "block", "tag", "REJECT");
     outbounds.PushBack(reject, allocator);
+    auto dns = buildObject(allocator, "type", "dns", "tag", "dns-out");
+    outbounds.PushBack(dns, allocator);
 
     for (Proxy &x : nodes)
     {

@@ -447,7 +447,6 @@ int script_context_init(qjs::Context &context)
             .fun<&qjs_fetch_Headers::parse_from_string>("parse");
         module.class_<qjs_fetch_Request>("Request")
             .constructor<>()
-            .constructor<const std::string&>("Request")
             .fun<&qjs_fetch_Request::method>("method")
             .fun<&qjs_fetch_Request::url>("url")
             .fun<&qjs_fetch_Request::proxy>("proxy")

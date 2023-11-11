@@ -96,20 +96,53 @@ namespace rapidjson_ext {
     };
 
     struct AddMemberOrReplace : public ExtensionFunction<rapidjson::Value &> {
-        rapidjson::Value &member;
+        rapidjson::Value &value;
         const rapidjson::Value::Ch *name;
         rapidjson::MemoryPoolAllocator<> &allocator;
         AddMemberOrReplace(const rapidjson::Value::Ch *name, rapidjson::Value &value,
-                           rapidjson::MemoryPoolAllocator<> &allocator) : member(value), name(name), allocator(allocator) {}
+                           rapidjson::MemoryPoolAllocator<> &allocator) : value(value), name(name), allocator(allocator) {}
         AddMemberOrReplace(const rapidjson::Value::Ch *name, rapidjson::Value &&value,
-                           rapidjson::MemoryPoolAllocator<> &allocator) : member(value), name(name), allocator(allocator) {}
+                           rapidjson::MemoryPoolAllocator<> &allocator) : value(value), name(name), allocator(allocator) {}
 
         inline rapidjson::Value & operator() (rapidjson::Value &root) const override
         {
             if (root.HasMember(name))
-                root[name] = member;
+                root[name] = value;
             else
-                root.AddMember(rapidjson::StringRef(name), member, allocator);
+                root.AddMember(rapidjson::Value(name, allocator), value, allocator);
+            return root;
+        }
+    };
+
+    struct AppendToArray : public ExtensionFunction<rapidjson::Value &>
+    {
+        rapidjson::Value &value;
+        const rapidjson::Value::Ch *name;
+        rapidjson::MemoryPoolAllocator<> &allocator;
+
+        AppendToArray(const rapidjson::Value::Ch *name, rapidjson::Value &value,
+                      rapidjson::MemoryPoolAllocator<> &allocator): value(value), name(name), allocator(allocator) {}
+
+        AppendToArray(const rapidjson::Value::Ch *name, rapidjson::Value &&value,
+                      rapidjson::MemoryPoolAllocator<> &allocator): value(value), name(name), allocator(allocator) {}
+
+        inline rapidjson::Value &operator()(rapidjson::Value &root) const override
+        {
+            if (root.HasMember(name))
+            {
+                if (root[name].IsArray())
+                {
+                    root[name].PushBack(value, allocator);
+                }
+                else
+                {
+                    root[name] = rapidjson::Value(rapidjson::kArrayType).PushBack(value, allocator);
+                }
+            }
+            else
+            {
+                root.AddMember(rapidjson::Value(name, allocator), rapidjson::Value(rapidjson::kArrayType).PushBack(value, allocator), allocator);
+            }
             return root;
         }
     };
