@@ -14,7 +14,8 @@ using string_map = std::map<std::string, std::string>;
 using string_multimap = std::multimap<std::string, std::string>;
 using string_pair_array = std::vector<std::pair<std::string, std::string>>;
 
-std::vector<std::string> split(const std::string &s, const std::string &seperator);
+std::vector<std::string> split(const std::string &s, const std::string &separator);
+std::vector<std::string_view> split(std::string_view s, char separator);
 std::string join(const string_array &arr, const std::string &delimiter);
 
 template <typename InputIt>

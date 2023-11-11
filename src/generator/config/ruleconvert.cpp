@@ -486,17 +486,21 @@ static rapidjson::Value transformRuleToSingBox(const std::string& rule, const st
 static void appendSingBoxRule(rapidjson::Value &rules, const std::string& rule, rapidjson::MemoryPoolAllocator<>& allocator)
 {
     using namespace rapidjson_ext;
-    auto args = split(rule, ",");
+    auto args = split(rule, ',');
     if (args.size() < 2) return;
-    auto type = toLower(std::string(args[0]));
-    auto value = toLower(args[1]);
+    auto type = args[0];
 //    std::string_view option;
 //    if (args.size() >= 3) option = args[2];
 
-    type = replaceAllDistinct(type, "-", "_");
-    type = replaceAllDistinct(type, "ip_cidr6", "ip_cidr");
+    if (none_of(SingBoxRuleTypes, [&](const std::string& t){ return type == t; }))
+        return;
 
-    rules | AppendToArray(type.c_str(), rapidjson::Value(value.c_str(), allocator), allocator);
+    auto realType = toLower(std::string(type));
+    auto value = toLower(std::string(args[1]));
+    realType = replaceAllDistinct(realType, "-", "_");
+    realType = replaceAllDistinct(realType, "ip_cidr6", "ip_cidr");
+
+    rules | AppendToArray(realType.c_str(), rapidjson::Value(value.c_str(), value.size(), allocator), allocator);
 }
 
 void rulesetToSingBox(rapidjson::Document &base_rule, std::vector<RulesetContent> &ruleset_content_array, bool overwrite_original_rules)
@@ -564,8 +568,6 @@ void rulesetToSingBox(rapidjson::Document &base_rule, std::vector<RulesetContent
             strLine = trimWhitespace(strLine, true, true); //remove whitespaces
             lineSize = strLine.size();
             if(!lineSize || strLine[0] == ';' || strLine[0] == '#' || (lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')) //empty lines and comments are ignored
-                continue;
-            if(std::none_of(SingBoxRuleTypes.begin(), SingBoxRuleTypes.end(), [strLine](const std::string& type){return startsWith(strLine, type);}))
                 continue;
             if(strFind(strLine, "//"))
             {

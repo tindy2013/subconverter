@@ -117,14 +117,23 @@ namespace rapidjson_ext {
     struct AppendToArray : public ExtensionFunction<rapidjson::Value &>
     {
         rapidjson::Value &value;
-        const rapidjson::Value::Ch *name;
+        rapidjson::GenericValue<rapidjson::UTF8<>> name;
         rapidjson::MemoryPoolAllocator<> &allocator;
 
         AppendToArray(const rapidjson::Value::Ch *name, rapidjson::Value &value,
-                      rapidjson::MemoryPoolAllocator<> &allocator): value(value), name(name), allocator(allocator) {}
+                      rapidjson::MemoryPoolAllocator<> &allocator): value(value), name(rapidjson::Value(name, allocator)), allocator(allocator) {}
 
         AppendToArray(const rapidjson::Value::Ch *name, rapidjson::Value &&value,
-                      rapidjson::MemoryPoolAllocator<> &allocator): value(value), name(name), allocator(allocator) {}
+                      rapidjson::MemoryPoolAllocator<> &allocator): value(value), name(rapidjson::Value(name, allocator)), allocator(allocator) {}
+
+        AppendToArray(const rapidjson::Value::Ch *name, std::size_t length, rapidjson::Value &value,
+                      rapidjson::MemoryPoolAllocator<> &allocator): value(value), name(rapidjson::Value(name, length, allocator)), allocator(allocator) {}
+
+        AppendToArray(const rapidjson::Value::Ch *name, std::size_t length, rapidjson::Value &&value,
+                      rapidjson::MemoryPoolAllocator<> &allocator): value(value), name(rapidjson::Value(name, length, allocator)), allocator(allocator) {}
+
+        AppendToArray(rapidjson::Value &&name, rapidjson::Value &value,
+                      rapidjson::MemoryPoolAllocator<> &allocator): value(value), allocator(allocator) { this->name.Swap(name); }
 
         inline rapidjson::Value &operator()(rapidjson::Value &root) const override
         {
