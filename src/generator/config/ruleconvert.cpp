@@ -15,6 +15,7 @@ string_array Surge2RuleTypes = {basic_types, "IP-CIDR6", "USER-AGENT", "URL-REGE
 string_array SurgeRuleTypes = {basic_types, "IP-CIDR6", "USER-AGENT", "URL-REGEX", "AND", "OR", "NOT", "PROCESS-NAME", "IN-PORT", "DEST-PORT", "SRC-IP"};
 string_array QuanXRuleTypes = {basic_types, "USER-AGENT", "HOST", "HOST-SUFFIX", "HOST-KEYWORD"};
 string_array SurfRuleTypes = {basic_types, "IP-CIDR6", "PROCESS-NAME", "IN-PORT", "DEST-PORT", "SRC-IP"};
+string_array SingBoxRuleTypes = {basic_types, "IP-VERSION", "INBOUND", "PROTOCOL", "NETWORK", "GEOSITE", "SRC-GEOIP", "DOMAIN-REGEX", "PROCESS-NAME", "PROCESS-PATH", "PACKAGE-NAME", "PORT", "PORT-RANGE", "SRC-PORT", "SRC-PORT-RANGE", "USER", "USER-ID"};
 
 std::string convertRuleset(const std::string &content, int type)
 {
@@ -469,6 +470,7 @@ static rapidjson::Value transformRuleToSingBox(const std::string& rule, const st
     rapidjson::Value rule_obj(rapidjson::kObjectType);
     type = replaceAllDistinct(type, "-", "_");
     type = replaceAllDistinct(type, "ip_cidr6", "ip_cidr");
+    type = replaceAllDistinct(type, "src_", "source_");
     if (type == "match" || type == "final")
     {
         rule_obj.AddMember("outbound", rapidjson::Value(value.data(), value.size(), allocator), allocator);
@@ -563,7 +565,7 @@ void rulesetToSingBox(rapidjson::Document &base_rule, std::vector<RulesetContent
             lineSize = strLine.size();
             if(!lineSize || strLine[0] == ';' || strLine[0] == '#' || (lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')) //empty lines and comments are ignored
                 continue;
-            if(std::none_of(ClashRuleTypes.begin(), ClashRuleTypes.end(), [strLine](const std::string& type){return startsWith(strLine, type);}))
+            if(std::none_of(SingBoxRuleTypes.begin(), SingBoxRuleTypes.end(), [strLine](const std::string& type){return startsWith(strLine, type);}))
                 continue;
             if(strFind(strLine, "//"))
             {
