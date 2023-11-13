@@ -116,7 +116,7 @@ bool applyMatcher(const std::string &rule, std::string &real_rule, const Proxy &
     std::string target, ret_real_rule;
     static const std::string groupid_regex = R"(^!!(?:GROUPID|INSERT)=([\d\-+!,]+)(?:!!(.*))?$)", group_regex = R"(^!!(?:GROUP)=(.+?)(?:!!(.*))?$)";
     static const std::string type_regex = R"(^!!(?:TYPE)=(.+?)(?:!!(.*))?$)", port_regex = R"(^!!(?:PORT)=(.+?)(?:!!(.*))?$)", server_regex = R"(^!!(?:SERVER)=(.+?)(?:!!(.*))?$)";
-    static const string_array types = {"", "SS", "SSR", "VMESS", "TROJAN", "SNELL", "HTTP", "HTTPS", "SOCKS5"};
+    static const string_array types = {"", "SS", "SSR", "VMESS", "TROJAN", "SNELL", "HTTP", "HTTPS", "SOCKS5", "WIREGUARD"};
     if(startsWith(rule, "!!GROUP="))
     {
         regGetMatch(rule, group_regex, 3, 0, &target, &ret_real_rule);
@@ -155,7 +155,7 @@ bool applyMatcher(const std::string &rule, std::string &real_rule, const Proxy &
     return true;
 }
 
-void processRemark(std::string &remark, string_array &remarks_list, bool proc_comma = true)
+void processRemark(std::string &remark, const string_array &remarks_list, bool proc_comma = true)
 {
     // Replace every '=' with '-' in the remark string to avoid parse errors from the clients.
     //     Surge is tested to yield an error when handling '=' in the remark string, 
@@ -172,7 +172,7 @@ void processRemark(std::string &remark, string_array &remarks_list, bool proc_co
     }
     std::string tempRemark = remark;
     int cnt = 2;
-    while(std::find(remarks_list.begin(), remarks_list.end(), tempRemark) != remarks_list.end())
+    while(std::find(remarks_list.cbegin(), remarks_list.cend(), tempRemark) != remarks_list.cbegin())
     {
         tempRemark = remark + " " + std::to_string(cnt);
         cnt++;
