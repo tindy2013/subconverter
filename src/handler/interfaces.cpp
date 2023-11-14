@@ -244,6 +244,8 @@ std::string getRuleset(RESPONSE_CALLBACK_ARGS)
                 continue;
             if(filterLine())
                 continue;
+            if(strLine[posb - 2] == 'X')
+                output_content += ".";
             output_content += strLine.substr(posb, pose);
             output_content += '\n';
             continue;
