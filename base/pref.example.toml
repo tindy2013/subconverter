@@ -79,6 +79,9 @@ proxy_subscription = "NONE"
 # Append a proxy type string ([SS] [SSR] [VMess]) to node remark.
 append_proxy_type = false
 
+# When requesting /sub, reload this config file first.
+reload_conf_on_request = false
+
 [[userinfo.stream_rule]]
 # Rules to extract stream data from node
 # Format: full_match_regex|new_format_regex

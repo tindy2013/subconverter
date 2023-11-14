@@ -42,6 +42,7 @@ struct Settings
     std::string generateProfiles;
 
     //preferences
+    bool reloadConfOnRequest = false;
     RegexMatchConfigs renames, emojis;
     bool addEmoji = false, removeEmoji = false, appendType = false, filterDeprecated = true;
     tribool UDPFlag, TFOFlag, skipCertVerify, TLS13Flag, enableInsert;

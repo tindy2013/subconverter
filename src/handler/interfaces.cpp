@@ -323,7 +323,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         return "Invalid target!";
     }
     //check if we need to read configuration
-    if((!global.APIMode || global.CFWChildProcess) && !global.generatorMode)
+    if(global.reloadConfOnRequest && (!global.APIMode || global.CFWChildProcess) && !global.generatorMode)
         readConf();
 
     /// string values
