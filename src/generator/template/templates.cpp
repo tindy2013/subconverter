@@ -96,7 +96,7 @@ int render_template(const std::string &content, const template_args &vars, std::
     for(auto &x : vars.request_params)
     {
         all_args += x.first;
-        if(x.second.size())
+        if(!x.second.empty())
         {
             parse_json_pointer(data["request"], x.first, x.second);
             all_args += "=" + x.second;
@@ -295,19 +295,19 @@ const std::string clash_script_keyword_template = R"(  keywords = [{{ rule.keywo
 std::string findFileName(const std::string &path)
 {
     string_size pos = path.rfind('/');
-    if(pos == path.npos)
+    if(pos == std::string::npos)
     {
         pos = path.rfind('\\');
-        if(pos == path.npos)
+        if(pos == std::string::npos)
             pos = 0;
     }
     string_size pos2 = path.rfind('.');
-    if(pos2 < pos || pos2 == path.npos)
+    if(pos2 < pos || pos2 == std::string::npos)
         pos2 = path.size();
     return path.substr(pos + 1, pos2 - pos - 1);
 }
 
-int renderClashScript(YAML::Node &base_rule, std::vector<RulesetContent> &ruleset_content_array, std::string remote_path_prefix, bool script, bool overwrite_original_rules, bool clash_classical_ruleset)
+int renderClashScript(YAML::Node &base_rule, std::vector<RulesetContent> &ruleset_content_array, const std::string &remote_path_prefix, bool script, bool overwrite_original_rules, bool clash_classical_ruleset)
 {
     nlohmann::json data;
     std::string match_group, geoips, retrieved_rules;
@@ -381,7 +381,7 @@ int renderClashScript(YAML::Node &base_rule, std::vector<RulesetContent> &rulese
                 groups.emplace_back(std::move(rule_name));
                 continue;
             }
-            if(remote_path_prefix.size())
+            if(!remote_path_prefix.empty())
             {
                 if(fileExist(rule_path, true) || isLink(rule_path))
                 {
@@ -524,7 +524,7 @@ int renderClashScript(YAML::Node &base_rule, std::vector<RulesetContent> &rulese
     }
     if(script)
     {
-        if(geoips.size())
+        if(!geoips.empty())
             parse_json_pointer(data, "geoips", geoips.erase(geoips.size() - 1));
 
         parse_json_pointer(data, "match_group", match_group);

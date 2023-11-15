@@ -18,18 +18,7 @@ inline JSValue JS_NewString(JSContext *ctx, const std::string& str)
     return JS_NewStringLen(ctx, str.c_str(), str.size());
 }
 
-inline std::string JS_GetPropertyToString(JSContext *ctx, JSValue v, const char* prop)
-{
-    auto val = JS_GetPropertyStr(ctx, v, prop);
-    size_t len;
-    const char *str = JS_ToCStringLen(ctx, &len, val);
-    std::string result(str, len);
-    JS_FreeCString(ctx, str);
-    JS_FreeValue(ctx, val);
-    return result;
-}
-
-inline std::string JS_GetPropertyToString(JSContext *ctx, JSValueConst obj, uint32_t index) {
+inline std::string JS_GetPropertyIndexToString(JSContext *ctx, JSValueConst obj, uint32_t index) {
     JSValue val = JS_GetPropertyUint32(ctx, obj, index);
     size_t len;
     const char *str = JS_ToCStringLen(ctx, &len, val);
@@ -39,38 +28,17 @@ inline std::string JS_GetPropertyToString(JSContext *ctx, JSValueConst obj, uint
     return result;
 }
 
-inline int JS_GetPropertyToInt32(JSContext *ctx, JSValue v, const char* prop, int32_t def_value = 0)
-{
-    int32_t result = def_value;
-    auto val = JS_GetPropertyStr(ctx, v, prop);
-    int32_t ret = JS_ToInt32(ctx, &result, val);
-    JS_FreeValue(ctx, val);
-    if(ret != 0) return def_value;
-    return result;
-}
-
-inline uint32_t JS_GetPropertyToUInt32(JSContext *ctx, JSValue v, const char* prop, uint32_t def_value = 0)
-{
-    uint32_t result = def_value;
-    auto val = JS_GetPropertyStr(ctx, v, prop);
-    int ret = JS_ToUint32(ctx, &result, val);
-    JS_FreeValue(ctx, val);
-    if(ret != 0) return def_value;
-    return result;
-}
-
-inline bool JS_GetPropertyToBool(JSContext *ctx, JSValue v, const char* prop, bool def_value = false)
-{
-    bool result = def_value;
-    auto val = JS_GetPropertyStr(ctx, v, prop);
-    int ret = JS_ToBool(ctx, val);
-    JS_FreeValue(ctx, val);
-    if(ret != 0) return def_value;
-    return result;
-}
-
 namespace qjs
 {
+    template<typename T>
+    static T unwrap_free(JSContext *ctx, JSValue v, const char* key) noexcept
+    {
+        auto obj = JS_GetPropertyStr(ctx, v, key);
+        T t = js_traits<T>::unwrap(ctx, obj);
+        JS_FreeValue(ctx, obj);
+        return t;
+    }
+
     template<>
     struct js_traits<tribool>
     {
@@ -81,33 +49,28 @@ namespace qjs
             JS_SetPropertyStr(ctx, obj, "isDefined", JS_NewBool(ctx, !t.is_undef()));
             return obj;
         }
+
         static tribool unwrap(JSContext *ctx, JSValueConst v)
         {
             tribool t;
-            bool defined = JS_GetPropertyToBool(ctx, v, "isDefined");
+            bool defined = unwrap_free<bool>(ctx, v, "isDefined");
             if(defined)
             {
-                bool value = JS_GetPropertyToBool(ctx, v, "value");
+                bool value = unwrap_free<bool>(ctx, v, "value");
                 t.set(value);
             }
             return t;
         }
-        static tribool JS_GetPropertyToTriBool(JSContext *ctx, JSValue v, const char* prop)
-        {
-            auto obj = JS_GetPropertyStr(ctx, v, prop);
-            auto tb = unwrap(ctx, obj);
-            JS_FreeValue(ctx, obj);
-            return tb;
-        }
     };
 
     template<>
-    struct js_traits<StringArray> {
+    struct js_traits<StringArray>
+    {
         static StringArray unwrap(JSContext *ctx, JSValueConst v) {
             StringArray arr;
-            uint32_t length = JS_GetPropertyToUInt32(ctx, v, "length");
+            uint32_t length = unwrap_free<uint32_t>(ctx, v, "length");
             for (uint32_t i = 0; i < length; i++) {
-                arr.push_back(JS_GetPropertyToString(ctx, v, i));
+                arr.push_back(JS_GetPropertyIndexToString(ctx, v, i));
             }
             return arr;
         }
@@ -131,7 +94,7 @@ namespace qjs
                 return obj;
             }
 
-            JS_DefinePropertyValueStr(ctx, obj, "Type", JS_NewInt32(ctx, n.Type), JS_PROP_C_W_E);
+            JS_DefinePropertyValueStr(ctx, obj, "Type", js_traits<ProxyType>::wrap(ctx, n.Type), JS_PROP_C_W_E);
             JS_DefinePropertyValueStr(ctx, obj, "Id", JS_NewUint32(ctx, n.Id), JS_PROP_C_W_E);
             JS_DefinePropertyValueStr(ctx, obj, "GroupId", JS_NewUint32(ctx, n.GroupId), JS_PROP_C_W_E);
             JS_DefinePropertyValueStr(ctx, obj, "Group", JS_NewString(ctx, n.Group), JS_PROP_C_W_E);
@@ -187,55 +150,55 @@ namespace qjs
         static Proxy unwrap(JSContext *ctx, JSValueConst v)
         {
             Proxy node;
-            node.Type = JS_GetPropertyToInt32(ctx, v, "Type");
-            node.Id = JS_GetPropertyToInt32(ctx, v, "Id");
-            node.GroupId = JS_GetPropertyToInt32(ctx, v, "GroupId");
-            node.Group = JS_GetPropertyToString(ctx, v, "Group");
-            node.Remark = JS_GetPropertyToString(ctx, v, "Remark");
-            node.Hostname = JS_GetPropertyToString(ctx, v, "Server");
-            node.Port = JS_GetPropertyToUInt32(ctx, v, "Port");
+            node.Type = unwrap_free<ProxyType>(ctx, v, "Type");
+            node.Id = unwrap_free<int32_t>(ctx, v, "Id");
+            node.GroupId = unwrap_free<int32_t>(ctx, v, "GroupId");
+            node.Group = unwrap_free<std::string>(ctx, v, "Group");
+            node.Remark = unwrap_free<std::string>(ctx, v, "Remark");
+            node.Hostname = unwrap_free<std::string>(ctx, v, "Server");
+            node.Port = unwrap_free<uint32_t>(ctx, v, "Port");
 
-            node.Username = JS_GetPropertyToString(ctx, v, "Username");
-            node.Password = JS_GetPropertyToString(ctx, v, "Password");
-            node.EncryptMethod = JS_GetPropertyToString(ctx, v, "EncryptMethod");
-            node.Plugin = JS_GetPropertyToString(ctx, v, "Plugin");
-            node.PluginOption = JS_GetPropertyToString(ctx, v, "PluginOption");
-            node.Protocol = JS_GetPropertyToString(ctx, v, "Protocol");
-            node.ProtocolParam = JS_GetPropertyToString(ctx, v, "ProtocolParam");
-            node.OBFS = JS_GetPropertyToString(ctx, v, "OBFS");
-            node.OBFSParam = JS_GetPropertyToString(ctx, v, "OBFSParam");
-            node.UserId = JS_GetPropertyToString(ctx, v, "UserId");
-            node.AlterId = JS_GetPropertyToUInt32(ctx, v, "AlterId");
-            node.TransferProtocol = JS_GetPropertyToString(ctx, v, "TransferProtocol");
-            node.FakeType = JS_GetPropertyToString(ctx, v, "FakeType");
-            node.TLSSecure = JS_GetPropertyToBool(ctx, v, "TLSSecure");
+            node.Username = unwrap_free<std::string>(ctx, v, "Username");
+            node.Password = unwrap_free<std::string>(ctx, v, "Password");
+            node.EncryptMethod = unwrap_free<std::string>(ctx, v, "EncryptMethod");
+            node.Plugin = unwrap_free<std::string>(ctx, v, "Plugin");
+            node.PluginOption = unwrap_free<std::string>(ctx, v, "PluginOption");
+            node.Protocol = unwrap_free<std::string>(ctx, v, "Protocol");
+            node.ProtocolParam = unwrap_free<std::string>(ctx, v, "ProtocolParam");
+            node.OBFS = unwrap_free<std::string>(ctx, v, "OBFS");
+            node.OBFSParam = unwrap_free<std::string>(ctx, v, "OBFSParam");
+            node.UserId = unwrap_free<std::string>(ctx, v, "UserId");
+            node.AlterId = unwrap_free<uint32_t>(ctx, v, "AlterId");
+            node.TransferProtocol = unwrap_free<std::string>(ctx, v, "TransferProtocol");
+            node.FakeType = unwrap_free<std::string>(ctx, v, "FakeType");
+            node.TLSSecure = unwrap_free<bool>(ctx, v, "TLSSecure");
 
-            node.Host = JS_GetPropertyToString(ctx, v, "Host");
-            node.Path = JS_GetPropertyToString(ctx, v, "Path");
-            node.Edge = JS_GetPropertyToString(ctx, v, "Edge");
+            node.Host = unwrap_free<std::string>(ctx, v, "Host");
+            node.Path = unwrap_free<std::string>(ctx, v, "Path");
+            node.Edge = unwrap_free<std::string>(ctx, v, "Edge");
 
-            node.QUICSecure = JS_GetPropertyToString(ctx, v, "QUICSecure");
-            node.QUICSecret = JS_GetPropertyToString(ctx, v, "QUICSecret");
+            node.QUICSecure = unwrap_free<std::string>(ctx, v, "QUICSecure");
+            node.QUICSecret = unwrap_free<std::string>(ctx, v, "QUICSecret");
 
-            node.UDP = js_traits<tribool>::JS_GetPropertyToTriBool(ctx, v, "UDP");
-            node.TCPFastOpen = js_traits<tribool>::JS_GetPropertyToTriBool(ctx, v, "TCPFastOpen");
-            node.AllowInsecure = js_traits<tribool>::JS_GetPropertyToTriBool(ctx, v, "AllowInsecure");
-            node.TLS13 = js_traits<tribool>::JS_GetPropertyToTriBool(ctx, v, "TLS13");
+            node.UDP = unwrap_free<tribool>(ctx, v, "UDP");
+            node.TCPFastOpen = unwrap_free<tribool>(ctx, v, "TCPFastOpen");
+            node.AllowInsecure = unwrap_free<tribool>(ctx, v, "AllowInsecure");
+            node.TLS13 = unwrap_free<tribool>(ctx, v, "TLS13");
 
-            node.SnellVersion = JS_GetPropertyToInt32(ctx, v, "SnellVersion");
-            node.ServerName = JS_GetPropertyToString(ctx, v, "ServerName");
+            node.SnellVersion = unwrap_free<int32_t>(ctx, v, "SnellVersion");
+            node.ServerName = unwrap_free<std::string>(ctx, v, "ServerName");
 
-            node.SelfIP = JS_GetPropertyToString(ctx, v, "SelfIP");
-            node.SelfIPv6 = JS_GetPropertyToString(ctx, v, "SelfIPv6");
-            node.PublicKey = JS_GetPropertyToString(ctx, v, "PublicKey");
-            node.PrivateKey = JS_GetPropertyToString(ctx, v, "PrivateKey");
-            node.PreSharedKey = JS_GetPropertyToString(ctx, v, "PreSharedKey");
-            node.DnsServers = js_traits<StringArray>::unwrap(ctx, JS_GetPropertyStr(ctx, v, "DnsServers"));
-            node.Mtu = JS_GetPropertyToUInt32(ctx, v, "Mtu");
-            node.AllowedIPs = JS_GetPropertyToString(ctx, v, "AllowedIPs");
-            node.KeepAlive = JS_GetPropertyToUInt32(ctx, v, "KeepAlive");
-            node.TestUrl = JS_GetPropertyToString(ctx, v, "TestUrl");
-            node.ClientId = JS_GetPropertyToString(ctx, v, "ClientId");
+            node.SelfIP = unwrap_free<std::string>(ctx, v, "SelfIP");
+            node.SelfIPv6 = unwrap_free<std::string>(ctx, v, "SelfIPv6");
+            node.PublicKey = unwrap_free<std::string>(ctx, v, "PublicKey");
+            node.PrivateKey = unwrap_free<std::string>(ctx, v, "PrivateKey");
+            node.PreSharedKey = unwrap_free<std::string>(ctx, v, "PreSharedKey");
+            node.DnsServers = unwrap_free<StringArray>(ctx, v, "DnsServers");
+            node.Mtu = unwrap_free<uint32_t>(ctx, v, "Mtu");
+            node.AllowedIPs = unwrap_free<std::string>(ctx, v, "AllowedIPs");
+            node.KeepAlive = unwrap_free<uint32_t>(ctx, v, "KeepAlive");
+            node.TestUrl = unwrap_free<std::string>(ctx, v, "TestUrl");
+            node.ClientId = unwrap_free<std::string>(ctx, v, "ClientId");
             
             return node;
         }

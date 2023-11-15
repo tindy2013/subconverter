@@ -116,7 +116,15 @@ bool applyMatcher(const std::string &rule, std::string &real_rule, const Proxy &
     std::string target, ret_real_rule;
     static const std::string groupid_regex = R"(^!!(?:GROUPID|INSERT)=([\d\-+!,]+)(?:!!(.*))?$)", group_regex = R"(^!!(?:GROUP)=(.+?)(?:!!(.*))?$)";
     static const std::string type_regex = R"(^!!(?:TYPE)=(.+?)(?:!!(.*))?$)", port_regex = R"(^!!(?:PORT)=(.+?)(?:!!(.*))?$)", server_regex = R"(^!!(?:SERVER)=(.+?)(?:!!(.*))?$)";
-    static const string_array types = {"", "SS", "SSR", "VMESS", "TROJAN", "SNELL", "HTTP", "HTTPS", "SOCKS5", "WIREGUARD"};
+    static const std::map<ProxyType, const char *> types = {{ProxyType::Shadowsocks,  "SS"},
+                                                            {ProxyType::ShadowsocksR, "SSR"},
+                                                            {ProxyType::VMess,        "VMESS"},
+                                                            {ProxyType::Trojan,       "TROJAN"},
+                                                            {ProxyType::Snell,        "SNELL"},
+                                                            {ProxyType::HTTP,         "HTTP"},
+                                                            {ProxyType::HTTPS,        "HTTPS"},
+                                                            {ProxyType::SOCKS5,       "SOCKS5"},
+                                                            {ProxyType::WireGuard,    "WIREGUARD"}};
     if(startsWith(rule, "!!GROUP="))
     {
         regGetMatch(rule, group_regex, 3, 0, &target, &ret_real_rule);
@@ -134,9 +142,9 @@ bool applyMatcher(const std::string &rule, std::string &real_rule, const Proxy &
     {
         regGetMatch(rule, type_regex, 3, 0, &target, &ret_real_rule);
         real_rule = ret_real_rule;
-        if(node.Type == ProxyType::Unknow)
+        if(node.Type == ProxyType::Unknown)
             return false;
-        return regMatch(types[node.Type], target);
+        return regMatch(types.at(node.Type), target);
     }
     else if(startsWith(rule, "!!PORT="))
     {

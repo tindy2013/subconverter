@@ -9,9 +9,9 @@
 using String = std::string;
 using StringArray = std::vector<String>;
 
-enum ProxyType
+enum class ProxyType
 {
-    Unknow,
+    Unknown,
     Shadowsocks,
     ShadowsocksR,
     VMess,
@@ -23,7 +23,7 @@ enum ProxyType
     WireGuard
 };
 
-inline String getProxyTypeName(int type)
+inline String getProxyTypeName(ProxyType type)
 {
     switch(type)
     {
@@ -50,7 +50,7 @@ inline String getProxyTypeName(int type)
 
 struct Proxy
 {
-    int Type = ProxyType::Unknow;
+    ProxyType Type = ProxyType::Unknown;
     uint32_t Id = 0;
     uint32_t GroupId = 0;
     String Group;

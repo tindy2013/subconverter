@@ -743,15 +743,15 @@ void explodeTrojan(std::string trojan, Proxy &node)
     std::string server, port, psk, addition, group, remark, host, path, network;
     tribool tfo, scv;
     trojan.erase(0, 9);
-    string_size pos = trojan.rfind("#");
+    string_size pos = trojan.rfind('#');
 
-    if(pos != trojan.npos)
+    if(pos != std::string::npos)
     {
         remark = urlDecode(trojan.substr(pos + 1));
         trojan.erase(pos);
     }
-    pos = trojan.find("?");
-    if(pos != trojan.npos)
+    pos = trojan.find('?');
+    if(pos != std::string::npos)
     {
         addition = trojan.substr(pos + 1);
         trojan.erase(pos);
@@ -1242,7 +1242,7 @@ void explodeShadowrocket(std::string rocket, Proxy &node)
     std::string addition;
     rocket = rocket.substr(8);
 
-    string_size pos = rocket.find("?");
+    string_size pos = rocket.find('?');
     addition = rocket.substr(pos + 1);
     rocket.erase(pos);
 
@@ -2274,7 +2274,7 @@ void explodeSub(std::string sub, std::vector<Proxy> &nodes)
             if(strLink.rfind("\r") != strLink.npos)
                 strLink.erase(strLink.size() - 1);
             explode(strLink, node);
-            if(strLink.empty() || node.Type == ProxyType::Unknow)
+            if(strLink.empty() || node.Type == ProxyType::Unknown)
             {
                 continue;
             }
