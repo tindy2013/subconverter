@@ -17,9 +17,9 @@
 
 namespace inja
 {
-    void convert_dot_to_json_pointer(nonstd::string_view dot, std::string& out)
+    void convert_dot_to_json_pointer(std::string_view dot, std::string& out)
     {
-        out = JsonNode::convert_dot_to_json_ptr(dot);
+        out = DataNode::convert_dot_to_ptr(dot);
     }
 }
 
