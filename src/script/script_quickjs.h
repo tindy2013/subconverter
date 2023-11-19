@@ -68,7 +68,7 @@ namespace qjs
     {
         static StringArray unwrap(JSContext *ctx, JSValueConst v) {
             StringArray arr;
-            uint32_t length = unwrap_free<uint32_t>(ctx, v, "length");
+            auto length = unwrap_free<uint32_t>(ctx, v, "length");
             for (uint32_t i = 0; i < length; i++) {
                 arr.push_back(JS_GetPropertyIndexToString(ctx, v, i));
             }

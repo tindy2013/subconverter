@@ -255,7 +255,7 @@ namespace qjs
             string_icase_map res;
             JSPropertyEnum *props = nullptr, *props_begin;
             uint32_t len = 0;
-            JS_GetOwnPropertyNames(ctx, &props, &len, v, 1);
+            JS_GetOwnPropertyNames(ctx, &props, &len, v, JS_GPN_STRING_MASK | JS_GPN_ENUM_ONLY);
             props_begin = props;
             while(len > 0)
             {

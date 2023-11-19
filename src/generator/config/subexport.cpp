@@ -2140,6 +2140,8 @@ void proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::v
                 proxy.AddMember("password", rapidjson::StringRef(x.Password.c_str()), allocator);
                 if(!x.Plugin.empty() && !x.PluginOption.empty())
                 {
+                    if (x.Plugin == "simple-obfs")
+                        x.Plugin = "obfs-local";
                     proxy.AddMember("plugin", rapidjson::StringRef(x.Plugin.c_str()), allocator);
                     proxy.AddMember("plugin_opts", rapidjson::StringRef(x.PluginOption.c_str()), allocator);
                 }
