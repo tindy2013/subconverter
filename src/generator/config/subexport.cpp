@@ -722,7 +722,10 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
             case "tcp"_hash:
                 break;
             case "ws"_hash:
-                proxy += ", ws=true, ws-path=" + path + ", sni=" + hostname;
+                if(host.empty())
+                    proxy += ", ws=true, ws-path=" + path + ", sni=" + hostname;
+                else
+                    proxy += ", ws=true, ws-path=" + path + ", sni=" + host;
                 if(!host.empty())
                     headers.push_back("Host:" + host);
                 if(!edge.empty())
