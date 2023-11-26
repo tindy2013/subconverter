@@ -50,24 +50,40 @@ int parseCommaKeyValue(const std::string &input, const std::string &separator, s
 
 inline bool strFind(const std::string &str, const std::string &target)
 {
-    return str.find(target) != str.npos;
+    return str.find(target) != std::string::npos;
 }
+
+#if __cpp_lib_starts_ends_with >= 201711L
 
 inline bool startsWith(const std::string &hay, const std::string &needle)
 {
-    return hay.substr(0, needle.length()) == needle;
+    return hay.starts_with(needle);
 }
 
 inline bool endsWith(const std::string &hay, const std::string &needle)
 {
-    std::string::size_type hl = hay.length(), nl = needle.length();
-    return hl >= nl && hay.substr(hl - nl, nl) == needle;
+    return hay.ends_with(needle);
 }
+
+#else
+
+inline bool startsWith(const std::string &hay, const std::string &needle)
+{
+    return hay.find(needle) == 0;
+}
+
+inline bool endsWith(const std::string &hay, const std::string &needle)
+{
+    auto hay_size = hay.size(), needle_size = needle.size();
+    return hay_size >= needle_size && hay.rfind(needle) == hay_size - needle_size;
+}
+
+#endif
 
 inline bool count_least(const std::string &hay, const char needle, size_t cnt)
 {
     string_size pos = hay.find(needle);
-    while(pos != hay.npos)
+    while(pos != std::string::npos)
     {
         cnt--;
         if(!cnt)
@@ -82,15 +98,18 @@ inline char getLineBreak(const std::string &str)
     return count_least(str, '\n', 1) ? '\n' : '\r';
 }
 
-template <typename T, typename U> static inline T to_number(const U &value, T def_value = T())
+template <typename T>
+concept Arithmetic = std::is_arithmetic_v<T>;
+
+template <typename OutType, typename InType>
+requires Arithmetic<OutType>
+inline OutType to_number(const InType &value, OutType def_value = 0)
 {
-    T retval = 0.0;
+    OutType retval = 0;
     char c;
     std::stringstream ss;
     ss << value;
-    if(!(ss >> retval))
-        return def_value;
-    else if(ss >> c)
+    if(!(ss >> retval) || ss >> c)
         return def_value;
     else
         return retval;

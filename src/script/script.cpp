@@ -255,7 +255,7 @@ int duktape_get_res_int(duk_context *ctx)
 std::string duktape_get_res_str(duk_context *ctx)
 {
     if(duk_is_null_or_undefined(ctx, -1))
-        return std::string();
+        return "";
     std::string retstr = duk_safe_to_string(ctx, -1);
     duk_pop(ctx);
     return retstr;

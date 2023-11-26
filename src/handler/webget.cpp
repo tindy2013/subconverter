@@ -29,7 +29,7 @@ std::mutex cache_rw_lock;
 
 class RWLock
 {
-#define WRITE_LOCK_STATUS -1
+#define WRITE_LOCK_STATUS (-1)
 #define FREE_STATUS 0
 private:
     const std::thread::id NULL_THREAD;

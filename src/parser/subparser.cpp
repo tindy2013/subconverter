@@ -346,7 +346,6 @@ void explodeVmessConf(std::string content, std::vector<Proxy> &nodes)
         nodes.emplace_back(std::move(node));
         index++;
     }
-    return;
 }
 
 void explodeSS(std::string ss, Proxy &node)
@@ -356,20 +355,22 @@ void explodeSS(std::string ss, Proxy &node)
     ss = replaceAllDistinct(ss.substr(5), "/?", "?");
     if(strFind(ss, "#"))
     {
-        ps = urlDecode(ss.substr(ss.find("#") + 1));
-        ss.erase(ss.find("#"));
+        auto sspos = ss.find('#');
+        ps = urlDecode(ss.substr(sspos + 1));
+        ss.erase(sspos);
     }
 
     if(strFind(ss, "?"))
     {
-        addition = ss.substr(ss.find("?") + 1);
+        addition = ss.substr(ss.find('?') + 1);
         plugins = urlDecode(getUrlArg(addition, "plugin"));
-        plugin = plugins.substr(0, plugins.find(";"));
-        pluginopts = plugins.substr(plugins.find(";") + 1);
+        auto pluginpos = plugins.find(';');
+        plugin = plugins.substr(0, pluginpos);
+        pluginopts = plugins.substr(pluginpos + 1);
         group = getUrlArg(addition, "group");
         if(!group.empty())
             group = urlSafeBase64Decode(group);
-        ss.erase(ss.find("?"));
+        ss.erase(ss.find('?'));
     }
     if(strFind(ss, "@"))
     {
@@ -465,7 +466,6 @@ void explodeSSD(std::string link, std::vector<Proxy> &nodes)
         nodes.emplace_back(std::move(node));
         index++;
     }
-    return;
 }
 
 void explodeSSAndroid(std::string ss, std::vector<Proxy> &nodes)
@@ -474,7 +474,7 @@ void explodeSSAndroid(std::string ss, std::vector<Proxy> &nodes)
     std::string plugin, pluginopts;
 
     Document json;
-    int index = nodes.size();
+    auto index = nodes.size();
     //first add some extra data before parsing
     ss = "{\"nodes\":" + ss + "}";
     json.Parse(ss.data());
@@ -509,7 +509,7 @@ void explodeSSConf(std::string content, std::vector<Proxy> &nodes)
 {
     Document json;
     std::string ps, password, method, server, port, plugin, pluginopts, group = SS_DEFAULT_GROUP;
-    int index = nodes.size();
+    auto index = nodes.size();
 
     json.Parse(content.data());
     if(json.HasParseError() || !json.IsObject())
@@ -540,7 +540,6 @@ void explodeSSConf(std::string content, std::vector<Proxy> &nodes)
         nodes.emplace_back(std::move(node));
         index++;
     }
-    return;
 }
 
 void explodeSSR(std::string ssr, Proxy &node)
@@ -584,7 +583,7 @@ void explodeSSRConf(std::string content, std::vector<Proxy> &nodes)
 {
     Document json;
     std::string remarks, group, server, port, method, password, protocol, protoparam, obfs, obfsparam, plugin, pluginopts;
-    int index = nodes.size();
+    auto index = nodes.size();
 
     json.Parse(content.data());
     if(json.HasParseError() || !json.IsObject())
@@ -642,7 +641,6 @@ void explodeSSRConf(std::string content, std::vector<Proxy> &nodes)
         nodes.emplace_back(std::move(node));
         index++;
     }
-    return;
 }
 
 void explodeSocks(std::string link, Proxy &node)
@@ -650,14 +648,26 @@ void explodeSocks(std::string link, Proxy &node)
     std::string group, remarks, server, port, username, password;
     if(strFind(link, "socks://")) //v2rayn socks link
     {
-        std::vector<std::string> arguments;
         if(strFind(link, "#"))
         {
-            remarks = urlDecode(link.substr(link.find("#") + 1));
-            link.erase(link.find("#"));
+            auto pos = link.find('#');
+            remarks = urlDecode(link.substr(pos + 1));
+            link.erase(pos);
         }
         link = urlSafeBase64Decode(link.substr(8));
-        arguments = split(link, ":");
+        if(strFind(link, "@"))
+        {
+            auto userinfo = split(link, '@');
+            if(userinfo.size() < 2)
+                return;
+            link = userinfo[1];
+            userinfo = split(userinfo[0], ':');
+            if(userinfo.size() < 2)
+                return;
+            username = userinfo[0];
+            password = userinfo[1];
+        }
+        auto arguments = split(link, ':');
         if(arguments.size() < 2)
             return;
         server = arguments[0];
@@ -707,8 +717,8 @@ void explodeHTTPSub(std::string link, Proxy &node)
     std::string group, remarks, server, port, username, password;
     std::string addition;
     bool tls = strFind(link, "https://");
-    string_size pos = link.find("?");
-    if(pos != link.npos)
+    auto pos = link.find('?');
+    if(pos != std::string::npos)
     {
         addition = link.substr(pos + 1);
         link.erase(pos);
@@ -1188,7 +1198,6 @@ void explodeClash(Node yamlnode, std::vector<Proxy> &nodes)
         nodes.emplace_back(std::move(node));
         index++;
     }
-    return;
 }
 
 void explodeStdVMess(std::string vmess, Proxy &node)
@@ -1198,8 +1207,8 @@ void explodeStdVMess(std::string vmess, Proxy &node)
     vmess = vmess.substr(8);
     string_size pos;
 
-    pos = vmess.rfind("#");
-    if(pos != vmess.npos)
+    pos = vmess.rfind('#');
+    if(pos != std::string::npos)
     {
         remarks = urlDecode(vmess.substr(pos + 1));
         vmess.erase(pos);
@@ -1232,7 +1241,6 @@ void explodeStdVMess(std::string vmess, Proxy &node)
         remarks = add + ":" + port;
 
     vmessConstruct(node, V2RAY_DEFAULT_GROUP, remarks, add, port, type, id, aid, net, "auto", path, host, "", tls, "");
-    return;
 }
 
 void explodeShadowrocket(std::string rocket, Proxy &node)
@@ -1286,21 +1294,21 @@ void explodeKitsunebi(std::string kit, Proxy &node)
     string_size pos;
     kit = kit.substr(9);
 
-    pos = kit.find("#");
-    if(pos != kit.npos)
+    pos = kit.find('#');
+    if(pos != std::string::npos)
     {
         remarks = kit.substr(pos + 1);
         kit = kit.substr(0, pos);
     }
 
-    pos = kit.find("?");
+    pos = kit.find('?');
     addition = kit.substr(pos + 1);
     kit = kit.substr(0, pos);
 
     if(regGetMatch(kit, "(.*?)@(.*):(.*)", 4, 0, &id, &add, &port))
         return;
-    pos = port.find("/");
-    if(pos != port.npos)
+    pos = port.find('/');
+    if(pos != std::string::npos)
     {
         path = port.substr(pos);
         port.erase(pos);
@@ -1958,8 +1966,8 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
                 vmessConstruct(node, V2RAY_DEFAULT_GROUP, remarks, server, port, "", id, aead, net, method, path, host, "", tls, "", udp, tfo, scv, tls13);
                 break;
             case "trojan"_hash: //quantumult x style trojan link
-                server = trim(configs[0].substr(0, configs[0].rfind(":")));
-                port = trim(configs[0].substr(configs[0].rfind(":") + 1));
+                server = trim(configs[0].substr(0, configs[0].rfind(':')));
+                port = trim(configs[0].substr(configs[0].rfind(':') + 1));
                 if(port == "0")
                     continue;
 
@@ -2006,8 +2014,8 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
                 trojanConstruct(node, TROJAN_DEFAULT_GROUP, remarks, server, port, password, "", host, "", tls == "true", udp, tfo, scv, tls13);
                 break;
             case "http"_hash: //quantumult x style http links
-                server = trim(configs[0].substr(0, configs[0].rfind(":")));
-                port = trim(configs[0].substr(configs[0].rfind(":") + 1));
+                server = trim(configs[0].substr(0, configs[0].rfind(':')));
+                port = trim(configs[0].substr(configs[0].rfind(':') + 1));
                 if(port == "0")
                     continue;
 
@@ -2113,7 +2121,7 @@ void explodeSSTap(std::string sstap, std::vector<Proxy> &nodes)
             {
                 json["configs"][i]["obfsparam"] >> obfsparam;
                 json["configs"][i]["protocolparam"] >> protoparam;
-                ssrConstruct(node, group, remarks, base64Encode(remarks), server, port, protocol, cipher, obfs, pass, obfsparam, protoparam);
+                ssrConstruct(node, group, remarks, server, port, protocol, cipher, obfs, pass, obfsparam, protoparam);
             }
             break;
         default:
@@ -2198,20 +2206,19 @@ int explodeConfContent(const std::string &content, std::vector<Proxy> &nodes)
 
 void explode(const std::string &link, Proxy &node)
 {
-    // TODO: replace strFind with startsWith if appropriate
-    if(strFind(link, "ssr://"))
+    if(startsWith(link, "ssr://"))
         explodeSSR(link, node);
-    else if(strFind(link, "vmess://") || strFind(link, "vmess1://"))
+    else if(startsWith(link, "vmess://") || startsWith(link, "vmess1://"))
         explodeVmess(link, node);
-    else if(strFind(link, "ss://"))
+    else if(startsWith(link, "ss://"))
         explodeSS(link, node);
-    else if(strFind(link, "socks://") || strFind(link, "https://t.me/socks") || strFind(link, "tg://socks"))
+    else if(startsWith(link, "socks://") || startsWith(link, "https://t.me/socks") || startsWith(link, "tg://socks"))
         explodeSocks(link, node);
-    else if(strFind(link, "https://t.me/http") || strFind(link, "tg://http")) //telegram style http link
+    else if(startsWith(link, "https://t.me/http") || startsWith(link, "tg://http")) //telegram style http link
         explodeHTTP(link, node);
-    else if(strFind(link, "Netch://"))
+    else if(startsWith(link, "Netch://"))
         explodeNetch(link, node);
-    else if(strFind(link, "trojan://"))
+    else if(startsWith(link, "trojan://"))
         explodeTrojan(link, node);
     else if(isLink(link))
         explodeHTTPSub(link, node);
@@ -2271,7 +2278,7 @@ void explodeSub(std::string sub, std::vector<Proxy> &nodes)
         while(getline(strstream, strLink, delimiter))
         {
             Proxy node;
-            if(strLink.rfind("\r") != strLink.npos)
+            if(strLink.rfind('\r') != std::string::npos)
                 strLink.erase(strLink.size() - 1);
             explode(strLink, node);
             if(strLink.empty() || node.Type == ProxyType::Unknown)
