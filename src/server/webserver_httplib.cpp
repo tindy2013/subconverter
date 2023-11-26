@@ -116,6 +116,10 @@ int WebServer::start_web_server_multi(listener_args *args)
             res.set_header("Access-Control-Allow-Origin", "*");
             res.set_header("Access-Control-Allow-Headers", "Content-Type,Authorization");
         }
+        else
+        {
+            res.status = 404;
+        }
     });
     server.set_pre_routing_handler([&](const httplib::Request &req, httplib::Response &res)
     {

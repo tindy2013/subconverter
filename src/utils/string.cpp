@@ -51,9 +51,8 @@ std::vector<std::string> split(const std::string &s, const std::string &separato
     return result;
 }
 
-std::vector<std::string_view> split(std::string_view s, char separator)
+void split(std::vector<std::string_view> &result, std::string_view s, char separator)
 {
-    std::vector<std::string_view> result;
     string_size i = 0;
 
     while (i != s.size())
@@ -87,6 +86,12 @@ std::vector<std::string_view> split(std::string_view s, char separator)
             i = j;
         }
     }
+}
+
+std::vector<std::string_view> split(std::string_view s, char separator)
+{
+    std::vector<std::string_view> result;
+    split(result, s, separator);
     return result;
 }
 

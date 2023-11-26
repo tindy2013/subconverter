@@ -244,6 +244,8 @@ std::string getRuleset(RESPONSE_CALLBACK_ARGS)
                 continue;
             if(filterLine())
                 continue;
+            if(strLine[posb - 2] == 'X')
+                output_content += '.';
             output_content += strLine.substr(posb, pose);
             output_content += '\n';
             continue;
@@ -251,6 +253,8 @@ std::string getRuleset(RESPONSE_CALLBACK_ARGS)
             if(!std::any_of(ClashRuleTypes.begin(), ClashRuleTypes.end(), [&strLine](const std::string& type){return startsWith(strLine, type);}))
                 continue;
             output_content += "  - ";
+        default:
+            break;
         }
 
         lineSize = strLine.size();

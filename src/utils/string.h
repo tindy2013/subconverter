@@ -16,6 +16,7 @@ using string_pair_array = std::vector<std::pair<std::string, std::string>>;
 
 std::vector<std::string> split(const std::string &s, const std::string &separator);
 std::vector<std::string_view> split(std::string_view s, char separator);
+void split(std::vector<std::string_view> &result, std::string_view s, char separator);
 std::string join(const string_array &arr, const std::string &delimiter);
 
 template <typename InputIt>
@@ -96,6 +97,36 @@ template <typename T, typename U> static inline T to_number(const U &value, T de
 }
 
 int to_int(const std::string &str, int def_value = 0);
+
+template <typename Type>
+concept StringConstructible = requires(Type a) {
+    { std::string(a) } -> std::same_as<std::string>;
+};
+
+template <typename Container, typename Element>
+concept Insertable = requires(Container a, Element b) {
+    { a.insert(b) } -> std::same_as<typename Container::iterator>;
+};
+
+template<typename Container, typename KeyType, typename ValueType>
+requires Insertable<Container, std::pair<std::string, ValueType>>
+void fillMap(Container& map, KeyType&& key, ValueType&& value) {
+    map.insert({std::string(std::forward<KeyType>(key)), std::forward<ValueType>(value)});
+}
+
+template<typename Container, typename KeyType, typename ValueType, typename... Args>
+requires Insertable<Container, std::pair<std::string, ValueType>>
+void fillMap(Container& map, KeyType&& key, ValueType&& value, Args&&... args) {
+    map.insert({std::string(std::forward<KeyType>(key)), std::forward<ValueType>(value)});
+    fillMap(map, std::forward<Args>(args)...);
+}
+
+template<typename KeyType, typename ValueType, typename... Args>
+std::multimap<std::string, ValueType> multiMapOf(KeyType&& key, ValueType&& value, Args&&... args) {
+    std::multimap<std::string, ValueType> result;
+    fillMap(result, std::forward<KeyType>(key), std::forward<ValueType>(value), std::forward<Args>(args)...);
+    return result;
+}
 
 #ifndef HAVE_TO_STRING
 namespace std

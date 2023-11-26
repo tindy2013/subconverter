@@ -385,8 +385,6 @@ int WebServer::start_web_server_multi(listener_args *args)
     std::string listen_address = args->listen_address;
     int port = args->port, nthreads = args->max_workers, max_conn = args->max_conn;
 
-    auto call_on_request = [&](evhttp_request *req, void *args) { on_request(req, args); };
-
     int nfd = httpserver_bindsocket(listen_address, port, max_conn);
     if (nfd < 0)
         return -1;
@@ -405,7 +403,7 @@ int WebServer::start_web_server_multi(listener_args *args)
             return -1;
 
         evhttp_set_allowed_methods(httpd, EVHTTP_REQ_GET | EVHTTP_REQ_POST | EVHTTP_REQ_OPTIONS | EVHTTP_REQ_PUT | EVHTTP_REQ_PATCH | EVHTTP_REQ_DELETE | EVHTTP_REQ_HEAD);
-        evhttp_set_gencb(httpd, wrap(call_on_request), this);
+        evhttp_set_gencb(httpd, on_request, this);
         evhttp_set_timeout(httpd, 30);
         if (pthread_create(&ths[i], nullptr, httpserver_dispatch, base[i]) != 0)
             return -1;
