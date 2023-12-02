@@ -1318,7 +1318,6 @@ std::string proxyToQuanX(std::vector<Proxy> &nodes, const std::string &base_conf
 
 void proxyToQuanX(std::vector<Proxy> &nodes, INIReader &ini, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext)
 {
-    std::string type;
     std::string proxyStr;
     tribool udp, tfo, scv, tls13;
     std::vector<Proxy> nodelist;
@@ -1329,7 +1328,10 @@ void proxyToQuanX(std::vector<Proxy> &nodes, INIReader &ini, std::vector<Ruleset
     for(Proxy &x : nodes)
     {
         if(ext.append_proxy_type)
+        {
+            std::string type = getProxyTypeName(x.Type);
             x.Remark = "[" + type + "] " + x.Remark;
+        }
 
         processRemark(x.Remark, remarks_list);
 
@@ -1479,6 +1481,7 @@ void proxyToQuanX(std::vector<Proxy> &nodes, INIReader &ini, std::vector<Ruleset
 
     for(const ProxyGroupConfig &x : extra_proxy_group)
     {
+        std::string type;
         string_array filtered_nodelist;
 
         switch(x.Type)
