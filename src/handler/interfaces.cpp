@@ -1162,13 +1162,13 @@ std::string getProfile(RESPONSE_CALLBACK_ARGS)
 
     std::string name = urlDecode(getUrlArg(argument, "name")), token = urlDecode(getUrlArg(argument, "token"));
     string_array profiles = split(name, "|");
-    name = profiles[0];
-    if(token.empty() || name.empty())
+    if(token.empty() || profiles.empty())
     {
         *status_code = 403;
         return "Forbidden";
     }
     std::string profile_content;
+    name = profiles[0];
     /*if(vfs::vfs_exist(name))
     {
         profile_content = vfs::vfs_get(name);

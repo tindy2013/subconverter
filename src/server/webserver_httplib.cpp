@@ -155,7 +155,19 @@ int WebServer::start_web_server_multi(listener_args *args)
     for (auto &x : redirect_map)
     {
         server.Get(x.first, [x](const httplib::Request &req, httplib::Response &res) {
-            res.set_redirect(x.second);
+            auto arguments = req.params;
+            auto query = x.second;
+            auto pos = query.find('?');
+            query += pos == std::string::npos ? '?' : '&';
+            for (auto &p: arguments)
+            {
+                query += p.first + "=" + urlEncode(p.second) + "&";
+            }
+            if (!query.empty())
+            {
+                query.pop_back();
+            }
+            res.set_redirect(query);
         });
     }
     server.set_exception_handler([](const httplib::Request &req, httplib::Response &res, const std::exception_ptr &e)

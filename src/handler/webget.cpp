@@ -252,7 +252,7 @@ static int curlGet(const FetchArgument &argument, FetchResult &result)
     while(true)
     {
         retVal = curl_easy_perform(curl_handle);
-        if(retVal == CURLE_OK || max_fails >= fail_count)
+        if(retVal == CURLE_OK || max_fails <= fail_count)
             break;
         else
             fail_count++;
