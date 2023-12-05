@@ -10,6 +10,7 @@
 using string = std::string;
 using string_size = std::string::size_type;
 using string_array = std::vector<std::string>;
+using string_view_array = std::vector<std::string_view>;
 using string_map = std::map<std::string, std::string>;
 using string_multimap = std::multimap<std::string, std::string>;
 using string_pair_array = std::vector<std::pair<std::string, std::string>>;

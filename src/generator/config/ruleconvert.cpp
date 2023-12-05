@@ -95,6 +95,32 @@ std::string convertRuleset(const std::string &content, int type)
     }
 }
 
+static std::string transformRuleToCommon(string_view_array &temp, const std::string &input, const std::string &group, bool no_resolve_only = false)
+{
+    temp.clear();
+    std::string strLine;
+    split(temp, input, ',');
+    if(temp.size() < 2)
+    {
+        strLine = temp[0];
+        strLine += ",";
+        strLine += group;
+    }
+    else
+    {
+        strLine = temp[0];
+        strLine += ",";
+        strLine += temp[1];
+        strLine += ",";
+        strLine += group;
+        if(temp.size() > 2 && (!no_resolve_only || temp[2] == "no-resolve"))
+        {
+            strLine += ",";
+            strLine += temp[2];
+        }
+    }
+    return strLine;
+}
 
 void rulesetToClash(YAML::Node &base_rule, std::vector<RulesetContent> &ruleset_content_array, bool overwrite_original_rules, bool new_field_name)
 {
@@ -108,6 +134,7 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<RulesetContent> &ruleset_
     if(!overwrite_original_rules && base_rule[field_name].IsDefined())
         rules = base_rule[field_name];
 
+    std::vector<std::string_view> temp(4);
     for(RulesetContent &x : ruleset_content_array)
     {
         if(global.maxAllowedRules && total_rules > global.maxAllowedRules)
@@ -124,10 +151,8 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<RulesetContent> &ruleset_
             strLine = retrieved_rules.substr(2);
             if(startsWith(strLine, "FINAL"))
                 strLine.replace(0, 5, "MATCH");
-            strLine += "," + rule_group;
-            if(count_least(strLine, ',', 3))
-                strLine = regReplace(strLine, "^(.*?,.*?)(,.*)(,.*)$", "$1$3$2");
-            allRules.emplace_back(std::move(strLine));
+            strLine = transformRuleToCommon(temp, strLine, rule_group);
+            allRules.emplace_back(strLine);
             total_rules++;
             continue;
         }
@@ -152,11 +177,8 @@ void rulesetToClash(YAML::Node &base_rule, std::vector<RulesetContent> &ruleset_
                 strLine.erase(strLine.find("//"));
                 strLine = trimWhitespace(strLine);
             }
-            strLine += "," + rule_group;
-            if(count_least(strLine, ',', 3))
-                strLine = regReplace(strLine, "^(.*?,.*?)(,.*)(,.*)$", "$1$3$2");
-            allRules.emplace_back(std::move(strLine));
-            //rules.push_back(strLine);
+            strLine = transformRuleToCommon(temp, strLine, rule_group);
+            allRules.emplace_back(strLine);
         }
     }
 
@@ -183,6 +205,7 @@ std::string rulesetToClashStr(YAML::Node &base_rule, std::vector<RulesetContent>
     }
     base_rule.remove(field_name);
 
+    string_view_array temp(4);
     for(RulesetContent &x : ruleset_content_array)
     {
         if(global.maxAllowedRules && total_rules > global.maxAllowedRules)
@@ -199,9 +222,7 @@ std::string rulesetToClashStr(YAML::Node &base_rule, std::vector<RulesetContent>
             strLine = retrieved_rules.substr(2);
             if(startsWith(strLine, "FINAL"))
                 strLine.replace(0, 5, "MATCH");
-            strLine += "," + rule_group;
-            if(count_least(strLine, ',', 3))
-                strLine = regReplace(strLine, "^(.*?,.*?)(,.*)(,.*)$", "$1$3$2");
+            strLine = transformRuleToCommon(temp, strLine, rule_group);
             output_content += "  - " + strLine + "\n";
             total_rules++;
             continue;
@@ -227,9 +248,7 @@ std::string rulesetToClashStr(YAML::Node &base_rule, std::vector<RulesetContent>
                 strLine.erase(strLine.find("//"));
                 strLine = trimWhitespace(strLine);
             }
-            strLine += "," + rule_group;
-            if(count_least(strLine, ',', 3))
-                strLine = regReplace(strLine, "^(.*?,.*?)(,.*)(,.*)$", "$1$3$2");
+            strLine = transformRuleToCommon(temp, strLine, rule_group);
             output_content += "  - " + strLine + "\n";
             total_rules++;
         }
@@ -277,6 +296,7 @@ void rulesetToSurge(INIReader &base_rule, std::vector<RulesetContent> &ruleset_c
 
     const std::string rule_match_regex = "^(.*?,.*?)(,.*)(,.*)$";
 
+    string_view_array temp(4);
     for(RulesetContent &x : ruleset_content_array)
     {
         if(global.maxAllowedRules && total_rules > global.maxAllowedRules)
@@ -289,21 +309,17 @@ void rulesetToSurge(INIReader &base_rule, std::vector<RulesetContent> &ruleset_c
             strLine = x.rule_content.get().substr(2);
             if(strLine == "MATCH")
                 strLine = "FINAL";
-            strLine += "," + rule_group;
             if(surge_ver == -1 || surge_ver == -2)
             {
-                if(count_least(strLine, ',', 3) && regReplace(strLine, rule_match_regex, "$2") == ",no-resolve")
-                    strLine = regReplace(strLine, rule_match_regex, "$1$3$2");
-                else
-                    strLine = regReplace(strLine, rule_match_regex, "$1$3");
+                strLine = transformRuleToCommon(temp, strLine, rule_group, true);
             }
             else
             {
-                if(!startsWith(strLine, "AND") && !startsWith(strLine, "OR") && !startsWith(strLine, "NOT") && count_least(strLine, ',', 3))
-                    strLine = regReplace(strLine, rule_match_regex, "$1$3$2");
+                if(!startsWith(strLine, "AND") && !startsWith(strLine, "OR") && !startsWith(strLine, "NOT"))
+                    strLine = transformRuleToCommon(temp, strLine, rule_group);
             }
             strLine = replaceAllDistinct(strLine, ",,", ",");
-            allRules.emplace_back(std::move(strLine));
+            allRules.emplace_back(strLine);
             total_rules++;
             continue;
         }
@@ -436,15 +452,12 @@ void rulesetToSurge(INIReader &base_rule, std::vector<RulesetContent> &ruleset_c
                 {
                     if(startsWith(strLine, "IP-CIDR6"))
                         strLine.replace(0, 8, "IP6-CIDR");
-                    if(count_least(strLine, ',', 3) && regReplace(strLine, rule_match_regex, "$2") == ",no-resolve")
-                        strLine = regReplace(strLine, rule_match_regex, "$1$3$2");
-                    else
-                        strLine = regReplace(strLine, rule_match_regex, "$1$3");
+                    strLine = transformRuleToCommon(temp, strLine, rule_group, true);
                 }
                 else
                 {
-                    if(!startsWith(strLine, "AND") && !startsWith(strLine, "OR") && !startsWith(strLine, "NOT") && count_least(strLine, ',', 3))
-                        strLine = regReplace(strLine, rule_match_regex, "$1$3$2");
+                    if(!startsWith(strLine, "AND") && !startsWith(strLine, "OR") && !startsWith(strLine, "NOT"))
+                        strLine = transformRuleToCommon(temp, strLine, rule_group);
                 }
                 allRules.emplace_back(std::move(strLine));
                 total_rules++;

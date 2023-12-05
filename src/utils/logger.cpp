@@ -13,10 +13,10 @@ std::string getTime(int type)
     time_t lt;
     char tmpbuf[32], cMillis[7];
     std::string format;
-    timeval tv;
-    gettimeofday(&tv, NULL);
+    timeval tv = {};
+    gettimeofday(&tv, nullptr);
     snprintf(cMillis, 7, "%.6ld", (long)tv.tv_usec);
-    lt = time(NULL);
+    lt = time(nullptr);
     struct tm *local = localtime(&lt);
     switch(type)
     {
@@ -27,19 +27,30 @@ std::string getTime(int type)
         format = "%Y/%m/%d %a %H:%M:%S." + std::string(cMillis);
         break;
     case 3:
+    default:
         format = "%Y-%m-%d %H:%M:%S";
         break;
     }
     strftime(tmpbuf, 32, format.data(), local);
-    return std::string(tmpbuf);
+    return {tmpbuf};
 }
+
+static std::string get_thread_name()
+{
+    static std::atomic_int counter = 0;
+    thread_local static std::string name = "Thread-" + std::to_string(counter++);
+    return name;
+}
+
+std::mutex log_mutex;
 
 void writeLog(int type, const std::string &content, int level)
 {
     if(level > global.logLevel)
         return;
+    std::lock_guard<std::mutex> lock(log_mutex);
     const char *levels[] = {"[FATL]", "[ERRO]", "[WARN]", "[INFO]", "[DEBG]", "[VERB]"};
-    std::cerr<<getTime(2)<<" ["<<getpid()<<" "<<std::this_thread::get_id()<<"]"<<levels[level % 6];
+    std::cerr<<getTime(2)<<" ["<<getpid()<<" "<<get_thread_name()<<"]"<<levels[level % 6];
     std::cerr<<" "<<content<<"\n";
 }
 
@@ -53,7 +64,7 @@ std::string demangle(const char* name)
 {
     int status = -4;
     std::unique_ptr<char, void(*)(void*)> res {
-        abi::__cxa_demangle(name, NULL, NULL, &status),
+        abi::__cxa_demangle(name, nullptr, nullptr, &status),
         std::free
     };
     return (status == 0) ? res.get() : name;

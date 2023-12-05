@@ -378,7 +378,7 @@ int renderClashScript(YAML::Node &base_rule, std::vector<RulesetContent> &rulese
                 }
                 if(!script)
                     rules.emplace_back("RULE-SET," + rule_name + "," + rule_group);
-                groups.emplace_back(std::move(rule_name));
+                groups.emplace_back(rule_name);
                 continue;
             }
             if(!remote_path_prefix.empty())
@@ -398,7 +398,7 @@ int renderClashScript(YAML::Node &base_rule, std::vector<RulesetContent> &rulese
                     {
                         if(!script)
                             rules.emplace_back("RULE-SET," + rule_name + "," + rule_group);
-                        groups.emplace_back(std::move(rule_name));
+                        groups.emplace_back(rule_name);
                         continue;
                     }
                 }
@@ -419,6 +419,7 @@ int renderClashScript(YAML::Node &base_rule, std::vector<RulesetContent> &rulese
             strStrm.clear();
             strStrm<<retrieved_rules;
             std::string::size_type lineSize;
+            bool has_no_resolve = false;
             while(getline(strStrm, strLine, delimiter))
             {
                 lineSize = strLine.size();
@@ -441,23 +442,40 @@ int renderClashScript(YAML::Node &base_rule, std::vector<RulesetContent> &rulese
                     }
                     else
                     {
-                        strLine += "," + rule_group;
-                        if(count_least(strLine, ',', 3))
-                            strLine = regReplace(strLine, "^(.*?,.*?)(,.*)(,.*)$", "$1$3$2");
-                        rules.emplace_back(std::move(strLine));
+                        vArray = split(strLine, ",");
+                        if(vArray.size() < 2)
+                        {
+                            strLine = vArray[0] + "," + rule_group;
+                        }
+                        else
+                        {
+                            strLine = vArray[0] + "," + vArray[1] + "," + rule_group;
+                            if(vArray.size() > 2)
+                                strLine += "," + vArray[2];
+                        }
+                        rules.emplace_back(strLine);
                     }
                 }
                 else if(!has_domain[rule_name] && (startsWith(strLine, "DOMAIN,") || startsWith(strLine, "DOMAIN-SUFFIX,")))
                     has_domain[rule_name] = true;
                 else if(!has_ipcidr[rule_name] && (startsWith(strLine, "IP-CIDR,") || startsWith(strLine, "IP-CIDR6,")))
+                {
                     has_ipcidr[rule_name] = true;
+                    if(strLine.find(",no-resolve") != std::string::npos)
+                        has_no_resolve = true;
+                }
             }
             if(has_domain[rule_name] && !script)
                 rules.emplace_back("RULE-SET," + rule_name + "_domain," + rule_group);
             if(has_ipcidr[rule_name] && !script)
-                rules.emplace_back("RULE-SET," + rule_name + "_ipcidr," + rule_group);
+            {
+                if(has_no_resolve)
+                    rules.emplace_back("RULE-SET," + rule_name + "_ipcidr," + rule_group + ",no-resolve");
+                else
+                    rules.emplace_back("RULE-SET," + rule_name + "_ipcidr," + rule_group);
+            }
             if(std::find(groups.begin(), groups.end(), rule_name) == groups.end())
-                groups.emplace_back(std::move(rule_name));
+                groups.emplace_back(rule_name);
         }
     }
     for(std::string &x : groups)
