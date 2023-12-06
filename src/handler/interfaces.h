@@ -5,9 +5,9 @@
 #include <map>
 #include <inja.hpp>
 
-#include "../config/ruleset.h"
-#include "../generator/config/subexport.h"
-#include "../server/webserver.h"
+#include "config/ruleset.h"
+#include "generator/config/subexport.h"
+#include "server/webserver.h"
 
 std::string parseProxy(const std::string &source);
 

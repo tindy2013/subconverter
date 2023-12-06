@@ -7,12 +7,12 @@
 #include <quickjspp.hpp>
 #endif // NO_JS_RUNTIME
 
-#include "../../config/proxygroup.h"
-#include "../../config/regmatch.h"
-#include "../../parser/config/proxy.h"
-#include "../../utils/ini_reader/ini_reader.h"
-#include "../../utils/string.h"
-#include "../../utils/yamlcpp_extra.h"
+#include "config/proxygroup.h"
+#include "config/regmatch.h"
+#include "parser/config/proxy.h"
+#include "utils/ini_reader/ini_reader.h"
+#include "utils/string.h"
+#include "utils/yamlcpp_extra.h"
 #include "ruleconvert.h"
 
 struct extra_settings

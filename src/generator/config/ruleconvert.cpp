@@ -1,11 +1,11 @@
 #include <string>
 
-#include "../../handler/settings.h"
-#include "../../utils/logger.h"
-#include "../../utils/network.h"
-#include "../../utils/regexp.h"
-#include "../../utils/string.h"
-#include "../../utils/rapidjson_extra.h"
+#include "handler/settings.h"
+#include "utils/logger.h"
+#include "utils/network.h"
+#include "utils/regexp.h"
+#include "utils/string.h"
+#include "utils/rapidjson_extra.h"
 #include "subexport.h"
 
 /// rule type lists
@@ -338,7 +338,7 @@ void rulesetToSurge(INIReader &base_rule, std::vector<RulesetContent> &ruleset_c
                     strLine = "RULE-SET," + remote_path_prefix + "/getruleset?type=1&url=" + urlSafeBase64Encode(rule_path_typed) + "," + rule_group;
                     if(x.update_interval)
                         strLine += ",update-interval=" + std::to_string(x.update_interval);
-                    allRules.emplace_back(std::move(strLine));
+                    allRules.emplace_back(strLine);
                     continue;
                 }
                 else if(surge_ver == -1 && !remote_path_prefix.empty())
@@ -372,7 +372,7 @@ void rulesetToSurge(INIReader &base_rule, std::vector<RulesetContent> &ruleset_c
                     if(x.update_interval)
                         strLine += ",update-interval=" + std::to_string(x.update_interval);
 
-                    allRules.emplace_back(std::move(strLine));
+                    allRules.emplace_back(strLine);
                     continue;
                 }
                 else if(surge_ver == -1 && !remote_path_prefix.empty())
@@ -447,7 +447,6 @@ void rulesetToSurge(INIReader &base_rule, std::vector<RulesetContent> &ruleset_c
                     strLine = trimWhitespace(strLine);
                 }
 
-                strLine += "," + rule_group;
                 if(surge_ver == -1 || surge_ver == -2)
                 {
                     if(startsWith(strLine, "IP-CIDR6"))
@@ -459,7 +458,7 @@ void rulesetToSurge(INIReader &base_rule, std::vector<RulesetContent> &ruleset_c
                     if(!startsWith(strLine, "AND") && !startsWith(strLine, "OR") && !startsWith(strLine, "NOT"))
                         strLine = transformRuleToCommon(temp, strLine, rule_group);
                 }
-                allRules.emplace_back(std::move(strLine));
+                allRules.emplace_back(strLine);
                 total_rules++;
             }
         }

@@ -8,12 +8,12 @@
 #include <windows.h>
 #endif // _WIN32
 
-#include "../handler/multithread.h"
-#include "../handler/webget.h"
-#include "../handler/settings.h"
-#include "../parser/config/proxy.h"
-#include "../utils/map_extra.h"
-#include "../utils/system.h"
+#include "handler/multithread.h"
+#include "handler/webget.h"
+#include "handler/settings.h"
+#include "parser/config/proxy.h"
+#include "utils/map_extra.h"
+#include "utils/system.h"
 #include "script_quickjs.h"
 
 std::string parseProxy(const std::string &source);

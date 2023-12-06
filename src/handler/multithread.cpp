@@ -1,8 +1,8 @@
 #include <future>
 #include <thread>
 
-#include "../handler/settings.h"
-#include "../utils/network.h"
+#include "handler/settings.h"
+#include "utils/network.h"
 #include "webget.h"
 #include "multithread.h"
 //#include "vfs.h"

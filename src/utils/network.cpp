@@ -2,7 +2,7 @@
 #include <vector>
 #include <sstream>
 
-#include "../server/socket.h"
+#include "server/socket.h"
 #include "string.h"
 #include "regexp.h"
 

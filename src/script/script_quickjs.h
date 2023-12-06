@@ -1,8 +1,8 @@
 #ifndef SCRIPT_QUICKJS_H_INCLUDED
 #define SCRIPT_QUICKJS_H_INCLUDED
 
-#include "../parser/config/proxy.h"
-#include "../utils/defer.h"
+#include "parser/config/proxy.h"
+#include "utils/defer.h"
 
 #ifndef NO_JS_RUNTIME
 

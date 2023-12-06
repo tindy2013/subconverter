@@ -2,14 +2,14 @@
 #include <iostream>
 #include <libcron/Cron.h>
 
-#include "../config/crontask.h"
-#include "../handler/interfaces.h"
-#include "../handler/multithread.h"
-#include "../handler/settings.h"
-#include "../server/webserver.h"
-#include "../utils/logger.h"
-#include "../utils/rapidjson_extra.h"
-#include "../utils/system.h"
+#include "config/crontask.h"
+#include "handler/interfaces.h"
+#include "handler/multithread.h"
+#include "handler/settings.h"
+#include "server/webserver.h"
+#include "utils/logger.h"
+#include "utils/rapidjson_extra.h"
+#include "utils/system.h"
 #include "script_quickjs.h"
 
 libcron::Cron cron;

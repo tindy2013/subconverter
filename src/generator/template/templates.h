@@ -4,8 +4,8 @@
 #include <string>
 #include <map>
 
-#include "../../generator/config/subexport.h"
-#include "../../utils/string.h"
+#include "generator/config/subexport.h"
+#include "utils/string.h"
 
 struct template_args
 {

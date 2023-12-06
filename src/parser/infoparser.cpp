@@ -3,12 +3,12 @@
 #include <cmath>
 #include <ctime>
 
-#include "../config/regmatch.h"
-#include "../parser/config/proxy.h"
-#include "../utils/base64/base64.h"
-#include "../utils/rapidjson_extra.h"
-#include "../utils/regexp.h"
-#include "../utils/string.h"
+#include "config/regmatch.h"
+#include "parser/config/proxy.h"
+#include "utils/base64/base64.h"
+#include "utils/rapidjson_extra.h"
+#include "utils/regexp.h"
+#include "utils/string.h"
 
 unsigned long long streamToInt(const std::string &stream)
 {

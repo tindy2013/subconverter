@@ -7,9 +7,9 @@
 #include <numeric>
 #include <algorithm>
 
-#include "../codepage.h"
-#include "../file_extra.h"
-#include "../string.h"
+#include "utils/codepage.h"
+#include "utils/file_extra.h"
+#include "utils/string.h"
 
 enum
 {

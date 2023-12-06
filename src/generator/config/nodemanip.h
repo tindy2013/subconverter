@@ -9,10 +9,10 @@
 #include <quickjspp.hpp>
 #endif // NO_JS_RUNTIME
 
-#include "../../config/regmatch.h"
-#include "../../parser/config/proxy.h"
-#include "../../utils/map_extra.h"
-#include "../../utils/string.h"
+#include "config/regmatch.h"
+#include "parser/config/proxy.h"
+#include "utils/map_extra.h"
+#include "utils/string.h"
 
 struct parse_settings
 {

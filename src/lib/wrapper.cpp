@@ -1,4 +1,4 @@
-#include "../handler/settings.h"
+#include "handler/settings.h"
 #include <string>
 
 Settings global;

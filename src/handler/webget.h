@@ -4,8 +4,8 @@
 #include <string>
 #include <map>
 
-#include "../utils/map_extra.h"
-#include "../utils/string.h"
+#include "utils/map_extra.h"
+#include "utils/string.h"
 
 enum http_method
 {

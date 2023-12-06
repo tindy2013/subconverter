@@ -6,8 +6,8 @@
 #include <tuple>
 #include <cstdint>
 
-#include "../utils/string.h"
-#include "../utils/tribool.h"
+#include "utils/string.h"
+#include "utils/tribool.h"
 
 using String = std::string;
 using Integer = int32_t;

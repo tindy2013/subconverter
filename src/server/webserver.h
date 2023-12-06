@@ -6,9 +6,9 @@
 #include <atomic>
 #include <curl/curlver.h>
 
-#include "../utils/map_extra.h"
-#include "../utils/string.h"
-#include "../version.h"
+#include "utils/map_extra.h"
+#include "utils/string.h"
+#include "version.h"
 
 struct Request
 {

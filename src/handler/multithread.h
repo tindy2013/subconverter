@@ -6,9 +6,9 @@
 
 #include <yaml-cpp/yaml.h>
 
-#include "../config/regmatch.h"
-#include "../utils/ini_reader/ini_reader.h"
-#include "../utils/string.h"
+#include "config/regmatch.h"
+#include "utils/ini_reader/ini_reader.h"
+#include "utils/string.h"
 
 using guarded_mutex = std::lock_guard<std::mutex>;
 

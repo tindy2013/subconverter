@@ -1,6 +1,6 @@
 #include <string>
 
-#include "../string.h"
+#include "utils/string.h"
 
 static const std::string base64_chars =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ"

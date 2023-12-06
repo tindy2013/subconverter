@@ -5,8 +5,8 @@
 #include <jinja2cpp/template.h>
 #include <nlohmann/json.hpp>
 
-#include "../../handler/interfaces.h"
-#include "../../utils/regexp.h"
+#include "handler/interfaces.h"
+#include "utils/regexp.h"
 #include "templates.h"
 
 static inline void parse_json_pointer(nlohmann::json &json, const std::string &path, const std::string &value)

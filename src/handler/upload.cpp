@@ -1,9 +1,9 @@
 #include <string>
 
-#include "../utils/ini_reader/ini_reader.h"
-#include "../utils/logger.h"
-#include "../utils/rapidjson_extra.h"
-#include "../utils/system.h"
+#include "utils/ini_reader/ini_reader.h"
+#include "utils/logger.h"
+#include "utils/rapidjson_extra.h"
+#include "utils/system.h"
 #include "webget.h"
 
 std::string buildGistData(std::string name, std::string content)

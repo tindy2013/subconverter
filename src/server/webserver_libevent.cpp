@@ -13,12 +13,12 @@
 #include <pthread.h>
 #include <thread>
 
-#include "../utils/base64/base64.h"
-#include "../utils/file_extra.h"
-#include "../utils/logger.h"
-#include "../utils/stl_extra.h"
-#include "../utils/string.h"
-#include "../utils/urlencode.h"
+#include "utils/base64/base64.h"
+#include "utils/file_extra.h"
+#include "utils/logger.h"
+#include "utils/stl_extra.h"
+#include "utils/string.h"
+#include "utils/urlencode.h"
 #include "socket.h"
 #include "webserver.h"
 

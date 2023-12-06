@@ -3,16 +3,16 @@
 
 #include <string>
 
-#include "../config/crontask.h"
-#include "../config/regmatch.h"
-#include "../config/proxygroup.h"
-#include "../config/ruleset.h"
-#include "../generator/config/ruleconvert.h"
-#include "../generator/template/templates.h"
-#include "../utils/logger.h"
-#include "../utils/string.h"
-#include "../utils/stl_extra.h"
-#include "../utils/tribool.h"
+#include "config/crontask.h"
+#include "config/regmatch.h"
+#include "config/proxygroup.h"
+#include "config/ruleset.h"
+#include "generator/config/ruleconvert.h"
+#include "generator/template/templates.h"
+#include "utils/logger.h"
+#include "utils/string.h"
+#include "utils/stl_extra.h"
+#include "utils/tribool.h"
 
 struct Settings
 {

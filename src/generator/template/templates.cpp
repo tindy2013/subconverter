@@ -5,14 +5,14 @@
 #include <inja.hpp>
 #include <nlohmann/json.hpp>
 
-#include "../../handler/interfaces.h"
-#include "../../handler/settings.h"
-#include "../../handler/webget.h"
-#include "../../utils/logger.h"
-#include "../../utils/network.h"
-#include "../../utils/regexp.h"
-#include "../../utils/urlencode.h"
-#include "../../utils/yamlcpp_extra.h"
+#include "handler/interfaces.h"
+#include "handler/settings.h"
+#include "handler/webget.h"
+#include "utils/logger.h"
+#include "utils/network.h"
+#include "utils/regexp.h"
+#include "utils/urlencode.h"
+#include "utils/yamlcpp_extra.h"
 #include "templates.h"
 
 namespace inja

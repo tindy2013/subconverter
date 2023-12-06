@@ -5,11 +5,11 @@
 #define CPPHTTPLIB_REQUEST_URI_MAX_LENGTH 16384
 #include "httplib.h"
 
-#include "../utils/base64/base64.h"
-#include "../utils/logger.h"
-#include "../utils/string_hash.h"
-#include "../utils/stl_extra.h"
-#include "../utils/urlencode.h"
+#include "utils/base64/base64.h"
+#include "utils/logger.h"
+#include "utils/string_hash.h"
+#include "utils/stl_extra.h"
+#include "utils/urlencode.h"
 #include "webserver.h"
 
 static const char *request_header_blacklist[] = {"host", "accept", "accept-encoding"};
@@ -73,6 +73,18 @@ static httplib::Server::Handler makeHandler(const responseRoute &rr)
     };
 }
 
+static std::string dump(const httplib::Headers &headers)
+{
+    std::string s;
+    for (auto &x: headers)
+    {
+        if (startsWith(x.first, "LOCAL_") || startsWith(x.first, "REMOTE_"))
+            continue;
+        s += x.first + ": " + x.second + "|";
+    }
+    return s;
+}
+
 int WebServer::start_web_server_multi(listener_args *args)
 {
     httplib::Server server;
@@ -125,6 +137,7 @@ int WebServer::start_web_server_multi(listener_args *args)
     {
         writeLog(0, "Accept connection from client " + req.remote_addr + ":" + std::to_string(req.remote_port), LOG_LEVEL_DEBUG);
         writeLog(0, "handle_cmd:    " + req.method + " handle_uri:    " + req.target, LOG_LEVEL_VERBOSE);
+        writeLog(0, "handle_header: " + dump(req.headers), LOG_LEVEL_VERBOSE);
 
         if (req.has_header("SubConverter-Request"))
         {

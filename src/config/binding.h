@@ -3,7 +3,7 @@
 
 #include <toml.hpp>
 
-#include "../handler/settings.h"
+#include "handler/settings.h"
 #include "crontask.h"
 #include "proxygroup.h"
 #include "regmatch.h"

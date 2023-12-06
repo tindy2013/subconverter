@@ -8,7 +8,7 @@
 #include <yaml-cpp/yaml.h>
 #include <rapidjson/document.h>
 
-#include "../../utils/ini_reader/ini_reader.h"
+#include "utils/ini_reader/ini_reader.h"
 
 enum ruleset_type
 {

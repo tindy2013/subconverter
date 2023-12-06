@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "../../utils/tribool.h"
+#include "utils/tribool.h"
 
 using String = std::string;
 using StringArray = std::vector<String>;
