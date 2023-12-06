@@ -52,7 +52,7 @@ static httplib::Server::Handler makeHandler(const responseRoute &rr)
         req.argument = request.params;
         if (request.get_header_value("Content-Type") == "application/x-www-form-urlencoded")
         {
-            req.postdata = urlDecode(req.postdata);
+            req.postdata = urlDecode(request.body);
         }
         else
         {

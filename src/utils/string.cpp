@@ -343,10 +343,10 @@ std::string getUrlArg(const std::string &url, const std::string &request)
     return "";
 }
 
-std::string getUrlArg(const string_multimap &url, const std::string &request)
+std::string getUrlArg(const string_multimap &args, const std::string &request)
 {
-    auto it = url.find(request);
-    if(it != url.end())
+    auto it = args.find(request);
+    if(it != args.end())
         return it->second;
     return "";
 }
