@@ -15,7 +15,7 @@ includes("xmake/curl-static.lua")
 add_requires("libcron", {system = false})
 add_requires("yaml-cpp-static", {system = false})
 add_requires("quickjspp", {system = false})
-if not is_plat("macosx") and has_config("static") then
+if not is_plat("macosx") and get_config("static") == true then
     add_requires("curl-static", {system = false})
 else
     add_requires("libcurl")
@@ -33,10 +33,10 @@ target("subconverter")
     add_includedirs("src")
     add_includedirs("include")
     add_packages("pcre2", "rapidjson", "toml11", "libcron", "quickjspp")
-    if is_plat("macosx") then
-        add_packages("libcurl")
-    else
+    if not is_plat("macosx") and get_config("static") == true then
         add_packages("curl-static")
+    else
+        add_packages("libcurl")
     end
     if has_config("static") then
         add_packages("yaml-cpp-static")
