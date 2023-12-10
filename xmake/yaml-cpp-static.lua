@@ -1,0 +1,11 @@
+package("yaml-cpp-static")
+    add_deps("cmake")
+    add_versions("0.8.0-SNAPSHOT", "eaf72053724814be3b99d38e292fca5797a57b7b")
+    set_urls("https://github.com/jbeder/yaml-cpp.git")
+    on_install(function (package)
+                local configs = {}
+                table.insert(configs, "-DCMAKE_BUILD_TYPE=" .. (package:debug() and "Debug" or "Release"))
+                table.insert(configs, "-DBUILD_SHARED_LIBS=" .. (package:config("shared") and "ON" or "OFF"))
+                import("package.tools.cmake").install(package, configs)
+            end)
+package_end()
