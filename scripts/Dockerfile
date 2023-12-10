@@ -42,9 +42,10 @@ RUN set -xe && \
 #    [ -n "$SHA" ] && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h;\
 #    cmake -DCMAKE_BUILD_TYPE=Release -DUSE_EXTERNAL_CURL=ON -DUSE_EXTERNAL_RAPIDJSON=ON -DUSE_EXTERNAL_YAML_CPP=ON . && \
 #    make -j $THREADS && \
+    ls -alh && \
     source "$HOME/.xmake/profile" && \
-    xmake f --root --static=false -m release && \
-    xmake --root subconverter --build release && \
+    xmake f --root --static=false -m release -y -v && \
+    xmake --root -v subconverter && \
     python3 -m ensurepip && \
     python3 -m pip install gitpython && \
     python3 scripts/update_rules.py -c scripts/rules_config.conf

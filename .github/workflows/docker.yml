@@ -39,7 +39,8 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           platforms: linux/amd64
-          context: scripts/
+          context: .
+          file: scripts/Dockerfile
           tags: tindy2013/subconverter:latest
           build-args: |
             SHA=${{ steps.vars.outputs.sha_short }}
@@ -60,7 +61,8 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           platforms: linux/amd64
-          context: scripts/
+          context: .
+          file: scripts/Dockerfile
           tags: tindy2013/subconverter:${{steps.version.outputs.result}}
           outputs: type=image,push=true
 
@@ -106,7 +108,8 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           platforms: linux/386
-          context: scripts/
+          context: .
+          file: scripts/Dockerfile
           tags: tindy2013/subconverter:latest
           build-args: |
             SHA=${{ steps.vars.outputs.sha_short }}
@@ -127,7 +130,8 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           platforms: linux/386
-          context: scripts/
+          context: .
+          file: scripts/Dockerfile
           tags: tindy2013/subconverter:${{steps.version.outputs.result}}
           outputs: type=image,push=true
 
@@ -173,7 +177,8 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           platforms: linux/arm/v7
-          context: scripts/
+          context: .
+          file: scripts/Dockerfile
           tags: tindy2013/subconverter:latest
           build-args: |
             SHA=${{ steps.vars.outputs.sha_short }}
@@ -195,7 +200,8 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           platforms: linux/arm/v7
-          context: scripts/
+          context: .
+          file: scripts/Dockerfile
           tags: tindy2013/subconverter:${{steps.version.outputs.result}}
           build-args: |
             THREADS=4
@@ -243,7 +249,8 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           platforms: linux/arm64
-          context: scripts/
+          context: .
+          file: scripts/Dockerfile
           tags: tindy2013/subconverter:latest
           build-args: |
             SHA=${{ steps.vars.outputs.sha_short }}
@@ -265,7 +272,8 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           platforms: linux/arm64
-          context: scripts/
+          context: .
+          file: scripts/Dockerfile
           tags: tindy2013/subconverter:${{steps.version.outputs.result}}
           build-args: |
             THREADS=4
