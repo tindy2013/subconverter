@@ -51,8 +51,8 @@ set -xe
 ## shellcheck disable=SC2046
 #g++ $(find CMakeFiles/subconverter.dir/src -name "*.obj") curl/lib/libcurl.a -o base/subconverter.exe -static -lpcre2-8 -l:quickjs/libquickjs.a -llibcron -lyaml-cpp -lbrotlidec -lbrotlicommon -lzstd -lz -liphlpapi -lsecur32 -lcrypt32 -lbcrypt -lws2_32 -lwsock32 -s
 
-xmake f --root --static=true -m release -y
-xmake --root subconverter
+xmake f --root --static=true -m release -y -v
+xmake --root -v subconverter
 cp "$(find build -name subconverter -type f)" base/subconverter
 
 python -m ensurepip
