@@ -18,7 +18,7 @@ package("quickjspp")
         add_syslinks("pthread", "dl", "m")
     end
 
-    on_install("linux", "macosx", "windows", function (package)
+    on_install("linux", "macosx", "mingw", function (package)
         local configs = {"-DBUILD_TESTING=OFF"}
         -- TODO, disable lto, maybe we need do it better
         io.replace("CMakeLists.txt", "set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)", "", {plain = true})

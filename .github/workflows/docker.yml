@@ -35,7 +35,7 @@ jobs:
 
       - name: Build and export
         id: build
-        if: github.ref == 'refs/heads/master'
+        if: startsWith(github.ref, 'refs/heads/')
         uses: docker/build-push-action@v3
         with:
           platforms: linux/amd64
@@ -65,7 +65,7 @@ jobs:
           outputs: type=image,push=true
 
       - name: Save digest
-        if: github.ref == 'refs/heads/master'
+        if: startsWith(github.ref, 'refs/heads/')
         run: echo ${{ steps.build.outputs.digest }} > /tmp/digest.txt
 
       - name: Save release digest
@@ -102,7 +102,7 @@ jobs:
 
       - name: Build and export
         id: build
-        if: github.ref == 'refs/heads/master'
+        if: startsWith(github.ref, 'refs/heads/')
         uses: docker/build-push-action@v3
         with:
           platforms: linux/386
@@ -132,7 +132,7 @@ jobs:
           outputs: type=image,push=true
 
       - name: Save digest
-        if: github.ref == 'refs/heads/master'
+        if: startsWith(github.ref, 'refs/heads/')
         run: echo ${{ steps.build.outputs.digest }} > /tmp/digest.txt
 
       - name: Save release digest
@@ -169,7 +169,7 @@ jobs:
 
       - name: Build and export
         id: build
-        if: github.ref == 'refs/heads/master'
+        if: startsWith(github.ref, 'refs/heads/')
         uses: docker/build-push-action@v3
         with:
           platforms: linux/arm/v7
@@ -202,7 +202,7 @@ jobs:
           outputs: type=image,push=true
 
       - name: Save digest
-        if: github.ref == 'refs/heads/master'
+        if: startsWith(github.ref, 'refs/heads/')
         run: echo ${{ steps.build.outputs.digest }} > /tmp/digest.txt
 
       - name: Save release digest
@@ -239,7 +239,7 @@ jobs:
 
       - name: Build and export
         id: build
-        if: github.ref == 'refs/heads/master'
+        if: startsWith(github.ref, 'refs/heads/')
         uses: docker/build-push-action@v3
         with:
           platforms: linux/arm64
@@ -272,7 +272,7 @@ jobs:
           outputs: type=image,push=true
 
       - name: Save digest
-        if: github.ref == 'refs/heads/master'
+        if: startsWith(github.ref, 'refs/heads/')
         run: echo ${{ steps.build.outputs.digest }} > /tmp/digest.txt
 
       - name: Save release digest
@@ -327,8 +327,8 @@ jobs:
             return context.payload.ref.replace(/\/?refs\/tags\/v/, '')
           result-encoding: string
 
-      - name: Merge and push manifest on master branch
-        if: github.ref == 'refs/heads/master'
+      - name: Merge and push manifest on push
+        if: startsWith(github.ref, 'refs/heads/')
         run: python scripts/merge_manifest.py
 
       - name: Merge and push manifest on release
