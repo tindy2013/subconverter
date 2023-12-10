@@ -1,0 +1,11 @@
+package("libcron")
+    add_deps("cmake")
+    add_versions("1.3.1", "41f238ceb09d4179e7346d78584a0c978e5d0059")
+    set_urls("https://github.com/PerMalmberg/libcron.git")
+    on_install(function (package)
+            local configs = {}
+            table.insert(configs, "-DCMAKE_BUILD_TYPE=" .. (package:debug() and "Debug" or "Release"))
+            table.insert(configs, "-DBUILD_SHARED_LIBS=" .. (package:config("shared") and "ON" or "OFF"))
+            import("package.tools.cmake").install(package, configs)
+        end)
+package_end()
