@@ -1,7 +1,8 @@
 name: GitHub CI
 on: 
   push:
-    branches: [ master ]
+    branches:
+      - '**'
     tags:
       - '**'
   workflow_dispatch:
