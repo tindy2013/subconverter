@@ -5,6 +5,7 @@ package("libcron")
     on_install(function (package)
             local configs = {}
             io.replace("CMakeLists.txt", "add_subdirectory(test)", "", {plain = true})
+            io.replace("CMakeLists.txt", "add_dependencies(cron_test libcron)", "", {plain = true})
             table.insert(configs, "-DCMAKE_BUILD_TYPE=" .. (package:debug() and "Debug" or "Release"))
             table.insert(configs, "-DBUILD_SHARED_LIBS=" .. (package:config("shared") and "ON" or "OFF"))
             import("package.tools.cmake").install(package, configs)
