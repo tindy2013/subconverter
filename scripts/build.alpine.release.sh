@@ -47,13 +47,13 @@ set -xe
 ## shellcheck disable=SC2046
 #g++ -o base/subconverter $(find CMakeFiles/subconverter.dir/src/ -name "*.o")  -static -lpcre2-8 -lyaml-cpp -L/usr/lib64 -lcurl -lmbedtls -lmbedcrypto -lmbedx509 -lz -l:quickjs/libquickjs.a -llibcron -O3 -s
 
-apk add git g++ build-base linux-headers cmake python3 curl unzip p7zip
+apk add git g++ build-base linux-headers cmake python3 curl unzip p7zip perl
 apk add lua5.4-dev luajit-dev mbedtls-dev mbedtls-static zlib-dev
 curl -fsSL https://xmake.io/shget.text | bash
 source "$HOME/.xmake/profile"
 
-xmake f --root --static=true -m release -y
-xmake --root subconverter
+xmake f --root --static=true -m release -y -v
+xmake --root -v subconverter
 cp "$(find build -name subconverter -type f)" base/subconverter
 
 python3 -m ensurepip
