@@ -42,6 +42,7 @@ RUN set -xe && \
 #    [ -n "$SHA" ] && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h;\
 #    cmake -DCMAKE_BUILD_TYPE=Release -DUSE_EXTERNAL_CURL=ON -DUSE_EXTERNAL_RAPIDJSON=ON -DUSE_EXTERNAL_YAML_CPP=ON . && \
 #    make -j $THREADS && \
+    source "$HOME/.xmake/profile" && \
     xmake f --root --static=false -m release && \
     xmake --root subconverter --build release && \
     python3 -m ensurepip && \
