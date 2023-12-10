@@ -7,7 +7,9 @@ option("static")
     set_description("Build static binary.")
 option_end()
 
-add_requires("libcurl >=8.4.0", "pcre2", "yaml-cpp", "rapidjson", "toml11")
+add_requires("pcre2", "yaml-cpp", "rapidjson", "toml11")
+add_requires("libcurl >=8.4.0")
+add_requires("xmake::libcurl >=8.4.0", {configs = {shared = not has_config("static"), mbedtls = is_plat("linux"), openssl = false}})
 includes("xmake/libcron.lua")
 includes("xmake/yaml-cpp-static.lua")
 includes("xmake/quickjspp.lua")
@@ -26,7 +28,12 @@ target("subconverter")
     add_files("src/**.cpp|lib/wrapper.cpp|server/webserver_libevent.cpp|script/script.cpp|generator/template/template_jinja2.cpp")
     add_includedirs("src")
     add_includedirs("include")
-    add_packages("libcurl", "pcre2", "rapidjson", "toml11", "libcron", "quickjspp")
+    add_packages("pcre2", "rapidjson", "toml11", "libcron", "quickjspp")
+    if is_plat("macosx") then
+        add_packages("libcurl")
+    else
+        add_packages("xmake::libcurl")
+    end
     if has_config("static") then
         add_packages("yaml-cpp-static")
     else

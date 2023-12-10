@@ -7,7 +7,7 @@ ARG SHA=""
 WORKDIR /subconverter
 COPY . /subconverter/
 RUN set -xe && \
-    apk add --no-cache --virtual .build-tools git g++ build-base linux-headers cmake python3 curl unzip p7zip && \
+    apk add --no-cache --virtual .build-tools git g++ build-base linux-headers cmake python3 curl unzip p7zip bash && \
     apk add --no-cache --virtual .build-deps curl-dev rapidjson-dev pcre2-dev yaml-cpp-dev lua5.4-dev luajit-dev && \
     curl -fsSL https://xmake.io/shget.text | bash && \
 #    git clone https://github.com/ftk/quickjspp --depth=1 && \
