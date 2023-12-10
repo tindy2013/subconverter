@@ -50,7 +50,7 @@ set -xe
 apk add git g++ build-base linux-headers cmake python3 curl unzip p7zip xmake
 apk add mbedtls-dev mbedtls-static zlib-dev zlib-static rapidjson-dev pcre2-dev pcre2-static brotli-dev brotli-static zstd-dev zstd-static libpsl-dev libpsl-static
 
-xmake f --root --static=true -m release
+xmake f --root --static=true -m release -y
 xmake --root subconverter
 cp "$(find build -name subconverter -type f)" base/subconverter
 

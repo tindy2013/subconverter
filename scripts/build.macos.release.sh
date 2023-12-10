@@ -49,7 +49,7 @@ set -xe
 
 brew reinstall xmake rapidjson pkgconfig
 
-xmake f --root -m release
+xmake f --root -m release -y
 xmake --root subconverter
 cp "$(find build -name subconverter -type f)" base/subconverter
 
