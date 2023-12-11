@@ -46,6 +46,7 @@ RUN set -xe && \
     source "$HOME/.xmake/profile" && \
     xmake f --root --static=false -m release -y -v && \
     xmake --root -v subconverter && \
+    cp "$(find build -type f -name subconverter)" . && \
     python3 -m ensurepip && \
     python3 -m pip install gitpython && \
     python3 scripts/update_rules.py -c scripts/rules_config.conf
