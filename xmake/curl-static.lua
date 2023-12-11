@@ -9,9 +9,9 @@ package("curl-static")
         add_deps("mbedtls")
         add_syslinks("pthread")
     elseif is_plat("windows", "mingw") then
-        add_deps("zlib")
         add_syslinks("advapi32", "crypt32", "wldap32", "winmm", "ws2_32", "user32", "bcrypt")
     end
+    add_deps("zlib")
 
     on_install(function (package)
                 local configs = {}

@@ -53,7 +53,7 @@ set -xe
 
 xmake f --root --static=true -m release -y -v
 xmake --root -v subconverter
-cp "$(find build -name subconverter -type f)" base/subconverter
+cp "$(find build -name subconverter.exe -type f)" base/subconverter.exe
 
 python -m ensurepip
 python -m pip install gitpython
