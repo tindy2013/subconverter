@@ -48,7 +48,7 @@ set -xe
 #g++ -o base/subconverter $(find CMakeFiles/subconverter.dir/src/ -name "*.o")  -static -lpcre2-8 -lyaml-cpp -L/usr/lib64 -lcurl -lmbedtls -lmbedcrypto -lmbedx509 -lz -l:quickjs/libquickjs.a -llibcron -O3 -s
 
 apk add git g++ build-base linux-headers cmake python3 curl unzip p7zip perl pkgconfig
-apk add lua5.4-dev luajit-dev zlib-dev curl-dev curl-static mbedtls-dev mbedtls-static
+apk add lua5.4-dev luajit-dev zlib-dev zlib-static mbedtls-dev mbedtls-static
 curl -fsSL https://xmake.io/shget.text | bash
 source "$HOME/.xmake/profile"
 
