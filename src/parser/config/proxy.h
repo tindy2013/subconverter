@@ -9,8 +9,7 @@
 using String = std::string;
 using StringArray = std::vector<String>;
 
-enum class ProxyType
-{
+enum class ProxyType {
     Unknown,
     Shadowsocks,
     ShadowsocksR,
@@ -20,36 +19,44 @@ enum class ProxyType
     HTTP,
     HTTPS,
     SOCKS5,
-    WireGuard
+    WireGuard,
+    VLESS,
+    Hysteria,
+    Hysteria2
 };
 
-inline String getProxyTypeName(ProxyType type)
-{
-    switch(type)
-    {
-    case ProxyType::Shadowsocks:
-        return "SS";
-    case ProxyType::ShadowsocksR:
-        return "SSR";
-    case ProxyType::VMess:
-        return "VMess";
-    case ProxyType::Trojan:
-        return "Trojan";
-    case ProxyType::Snell:
-        return "Snell";
-    case ProxyType::HTTP:
-        return "HTTP";
-    case ProxyType::HTTPS:
-        return "HTTPS";
-    case ProxyType::SOCKS5:
-        return "SOCKS5";
-    default:
-        return "Unknown";
+inline String getProxyTypeName(ProxyType type) {
+    switch (type) {
+        case ProxyType::Shadowsocks:
+            return "SS";
+        case ProxyType::ShadowsocksR:
+            return "SSR";
+        case ProxyType::VMess:
+            return "VMess";
+        case ProxyType::Trojan:
+            return "Trojan";
+        case ProxyType::Snell:
+            return "Snell";
+        case ProxyType::HTTP:
+            return "HTTP";
+        case ProxyType::HTTPS:
+            return "HTTPS";
+        case ProxyType::SOCKS5:
+            return "SOCKS5";
+        case ProxyType::WireGuard:
+            return "WireGuard";
+        case ProxyType::VLESS:
+            return "Vless";
+        case ProxyType::Hysteria:
+            return "Hysteria";
+        case ProxyType::Hysteria2:
+            return "Hysteria2";
+        default:
+            return "Unknown";
     }
 }
 
-struct Proxy
-{
+struct Proxy {
     ProxyType Type = ProxyType::Unknown;
     uint32_t Id = 0;
     uint32_t GroupId = 0;
@@ -81,6 +88,7 @@ struct Proxy
     String QUICSecret;
 
     tribool UDP;
+    tribool XUDP;
     tribool TCPFastOpen;
     tribool AllowInsecure;
     tribool TLS13;
@@ -99,6 +107,19 @@ struct Proxy
     uint16_t KeepAlive = 0;
     String TestUrl;
     String ClientId;
+
+    String Auth;
+    String Alpn;
+    String UpMbps;
+    String DownMbps;
+    String Insecure;
+    String Fingerprint;
+    String OBFSPassword;
+    String GRPCServiceName;
+    String GRPCMode;
+    String ShortId;
+    String Flow;
+    bool FlowShow = false;
 };
 
 #define SS_DEFAULT_GROUP "SSProvider"
@@ -109,5 +130,8 @@ struct Proxy
 #define TROJAN_DEFAULT_GROUP "TrojanProvider"
 #define SNELL_DEFAULT_GROUP "SnellProvider"
 #define WG_DEFAULT_GROUP "WireGuardProvider"
+#define XRAY_DEFAULT_GROUP "XRayProvider"
+#define HYSTERIA_DEFAULT_GROUP "HysteriaProvider"
+#define HYSTERIA2_DEFAULT_GROUP "Hysteria2Provider"
 
 #endif // PROXY_H_INCLUDED

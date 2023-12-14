@@ -34,6 +34,7 @@ struct extra_settings
     std::string quanx_dev_id;
     tribool udp = tribool();
     tribool tfo = tribool();
+    tribool xudp = tribool();
     tribool skip_cert_verify = tribool();
     tribool tls13 = tribool();
     bool clash_classical_ruleset = false;
