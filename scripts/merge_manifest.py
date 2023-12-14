@@ -1,7 +1,7 @@
 import glob
 import os, sys
 
-MAIN_IMAGE_NAME="tindy2013/subconverter"
+MAIN_IMAGE_NAME="asdlokj1qpi23/subconverter"
 TARGET_TAG="latest" if len(sys.argv) < 2 else sys.argv[1]
 
 args=["docker manifest create {}:{}".format(MAIN_IMAGE_NAME, TARGET_TAG)]
