@@ -1,0 +1,31 @@
+diff --git a/quickjs/quickjs.c b/quickjs/quickjs.c
+index 48aeffc62..8afc4caa1 100644
+--- a/quickjs/quickjs.c
++++ b/quickjs/quickjs.c
+@@ -54034,3 +54034,14 @@ void JS_AddIntrinsicTypedArrays(JSContext *ctx)
+     JS_AddIntrinsicAtomics(ctx);
+ #endif
+ }
++
++JSClassID JS_GetClassID(JSValue v)
++{
++    JSObject *p;
++
++    if (JS_VALUE_GET_TAG(v) != JS_TAG_OBJECT)
++        return 0;
++    p = JS_VALUE_GET_OBJ(v);
++    assert(p != 0);
++    return p->class_id;
++}
+diff --git a/quickjs/quickjs.h b/quickjs/quickjs.h
+index d4a5cd311..054019147 100644
+--- a/quickjs/quickjs.h
++++ b/quickjs/quickjs.h
+@@ -497,6 +497,7 @@ typedef struct JSClassDef {
+ } JSClassDef;
+ 
+ JSClassID JS_NewClassID(JSClassID *pclass_id);
++JSClassID JS_GetClassID(JSValueConst v);
+ int JS_NewClass(JSRuntime *rt, JSClassID class_id, const JSClassDef *class_def);
+ int JS_IsRegisteredClass(JSRuntime *rt, JSClassID class_id);
+ 
