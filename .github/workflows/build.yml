@@ -18,11 +18,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Add commit id into version
-      if: ${{ !startsWith(github.ref, 'refs/tags/') }}
-      run: SHA=$(git rev-parse --short HEAD) && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h
     - name: Build
-      run: docker run --rm -v $GITHUB_WORKSPACE:/root/workdir multiarch/alpine:x86-latest-stable /bin/sh -c "apk add bash git nodejs npm && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
+      env:
+        ADD_COMMIT_HASH: ${{ !startsWith(github.ref, 'refs/tags/') }}
+      run: docker run --rm -v $GITHUB_WORKSPACE:/root/workdir -e ADD_COMMIT_HASH multiarch/alpine:x86-latest-stable /bin/sh -c "apk add bash git nodejs npm && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
     - name: Upload
       uses: actions/upload-artifact@v3
       with:
@@ -43,11 +42,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Add commit id into version
-      if: ${{ !startsWith(github.ref, 'refs/tags/') }}
-      run: SHA=$(git rev-parse --short HEAD) && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h
     - name: Build
-      run: docker run --rm -v $GITHUB_WORKSPACE:/root/workdir multiarch/alpine:amd64-latest-stable /bin/sh -c "apk add bash git nodejs npm && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
+      env:
+        ADD_COMMIT_HASH: ${{ !startsWith(github.ref, 'refs/tags/') }}
+      run: docker run --rm -v $GITHUB_WORKSPACE:/root/workdir -e ADD_COMMIT_HASH multiarch/alpine:amd64-latest-stable /bin/sh -c "apk add bash git nodejs npm && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
     - name: Upload
       uses: actions/upload-artifact@v3
       with:
@@ -68,11 +66,10 @@ jobs:
     runs-on: [self-hosted, linux, ARM]
     steps:
     - uses: actions/checkout@v3
-    - name: Add commit id into version
-      if: ${{ !startsWith(github.ref, 'refs/tags/') }}
-      run: SHA=$(git rev-parse --short HEAD) && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h
     - name: Build
-      run: docker run --rm -v $GITHUB_WORKSPACE:/root/workdir multiarch/alpine:armv7-latest-stable /bin/sh -c "apk add bash git nodejs npm && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
+      env:
+        ADD_COMMIT_HASH: ${{ !startsWith(github.ref, 'refs/tags/') }}
+      run: docker run --rm -v $GITHUB_WORKSPACE:/root/workdir -e ADD_COMMIT_HASH multiarch/alpine:armv7-latest-stable /bin/sh -c "apk add bash git nodejs npm && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
     - name: Upload
       uses: actions/upload-artifact@v3
       with:
@@ -93,11 +90,10 @@ jobs:
     runs-on: [self-hosted, linux, ARM64]
     steps:
     - uses: actions/checkout@v3
-    - name: Add commit id into version
-      if: ${{ !startsWith(github.ref, 'refs/tags/') }}
-      run: SHA=$(git rev-parse --short HEAD) && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h
     - name: Build
-      run: docker run --rm -v $GITHUB_WORKSPACE:/root/workdir multiarch/alpine:aarch64-latest-stable /bin/sh -c "apk add bash git nodejs npm && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
+      env:
+        ADD_COMMIT_HASH: ${{ !startsWith(github.ref, 'refs/tags/') }}
+      run: docker run --rm -v $GITHUB_WORKSPACE:/root/workdir -e ADD_COMMIT_HASH multiarch/alpine:aarch64-latest-stable /bin/sh -c "apk add bash git nodejs npm && cd /root/workdir && chmod +x scripts/build.alpine.release.sh && bash scripts/build.alpine.release.sh"
     - name: Upload
       uses: actions/upload-artifact@v3
       with:
@@ -121,10 +117,9 @@ jobs:
     - uses: actions/setup-python@v4
       with:
         python-version: '3.11'
-    - name: Add commit id into version
-      if: ${{ !startsWith(github.ref, 'refs/tags/') }}
-      run: SHA=$(git rev-parse --short HEAD) && sed -i -e 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h
     - name: Build
+      env:
+        ADD_COMMIT_HASH: ${{ !startsWith(github.ref, 'refs/tags/') }}
       run: bash scripts/build.macos.release.sh
     - name: Upload
       uses: actions/upload-artifact@v3
@@ -161,10 +156,9 @@ jobs:
         install: base-devel git mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-pcre2 patch mingw-w64-x86_64-xmake
         msystem: MINGW64
         path-type: inherit
-    - name: Add commit id into version
-      if: ${{ !startsWith(github.ref, 'refs/tags/') }}
-      run: SHA=$(git rev-parse --short HEAD) && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h
     - name: Build
+      env:
+        ADD_COMMIT_HASH: ${{ !startsWith(github.ref, 'refs/tags/') }}
       run: bash scripts/build.windows.release.sh
     - name: Upload
       uses: actions/upload-artifact@v3
@@ -201,10 +195,9 @@ jobs:
         install: base-devel git mingw-w64-i686-gcc mingw-w64-i686-cmake mingw-w64-i686-pcre2 patch mingw-w64-i686-xmake
         msystem: MINGW32
         path-type: inherit
-    - name: Add commit id into version
-      if: ${{ !startsWith(github.ref, 'refs/tags/') }}
-      run: SHA=$(git rev-parse --short HEAD) && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h
     - name: Build
+      env:
+        ADD_COMMIT_HASH: ${{ !startsWith(github.ref, 'refs/tags/') }}
       run: bash scripts/build.windows.release.sh
     - name: Upload
       uses: actions/upload-artifact@v3

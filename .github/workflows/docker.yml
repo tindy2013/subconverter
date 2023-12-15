@@ -1,12 +1,12 @@
 name: Publish Docker Image
-on: 
+on:
   push:
     branches:
       - '**'
     tags:
       - '**'
 
-concurrency: 
+concurrency:
   group: ${{ github.ref }}-${{ github.workflow }}
   cancel-in-progress: true
 
@@ -29,10 +29,6 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Get commit SHA
-        id: vars
-        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-
       - name: Build and export
         id: build
         if: startsWith(github.ref, 'refs/heads/')
@@ -43,7 +39,7 @@ jobs:
           file: scripts/Dockerfile
           tags: tindy2013/subconverter:latest
           build-args: |
-            SHA=${{ steps.vars.outputs.sha_short }}
+            ADD_COMMIT_HASH=true
           outputs: type=image,push=true
 
       - name: Replace tag without `v`
@@ -64,6 +60,8 @@ jobs:
           context: .
           file: scripts/Dockerfile
           tags: tindy2013/subconverter:${{steps.version.outputs.result}}
+          build-args: |
+            ADD_COMMIT_HASH=false
           outputs: type=image,push=true
 
       - name: Save digest
@@ -98,10 +96,6 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Get commit SHA
-        id: vars
-        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-
       - name: Build and export
         id: build
         if: startsWith(github.ref, 'refs/heads/')
@@ -112,7 +106,7 @@ jobs:
           file: scripts/Dockerfile
           tags: tindy2013/subconverter:latest
           build-args: |
-            SHA=${{ steps.vars.outputs.sha_short }}
+            ADD_COMMIT_HASH=true
           outputs: type=image,push=true
 
       - name: Replace tag without `v`
@@ -133,6 +127,8 @@ jobs:
           context: .
           file: scripts/Dockerfile
           tags: tindy2013/subconverter:${{steps.version.outputs.result}}
+          build-args: |
+            ADD_COMMIT_HASH=false
           outputs: type=image,push=true
 
       - name: Save digest
@@ -151,7 +147,7 @@ jobs:
 
   armv7_build:
     name: Build ARMv7 Image
-    runs-on: [self-hosted, linux, ARM]
+    runs-on: [ self-hosted, linux, ARM ]
     steps:
       - name: Checkout base
         uses: actions/checkout@v3
@@ -167,10 +163,6 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Get commit SHA
-        id: vars
-        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-
       - name: Build and export
         id: build
         if: startsWith(github.ref, 'refs/heads/')
@@ -181,8 +173,7 @@ jobs:
           file: scripts/Dockerfile
           tags: tindy2013/subconverter:latest
           build-args: |
-            SHA=${{ steps.vars.outputs.sha_short }}
-            THREADS=4
+            ADD_COMMIT_HASH=true
           outputs: type=image,push=true
 
       - name: Replace tag without `v`
@@ -204,7 +195,7 @@ jobs:
           file: scripts/Dockerfile
           tags: tindy2013/subconverter:${{steps.version.outputs.result}}
           build-args: |
-            THREADS=4
+            ADD_COMMIT_HASH=false
           outputs: type=image,push=true
 
       - name: Save digest
@@ -223,7 +214,7 @@ jobs:
 
   arm64_build:
     name: Build ARM64 Image
-    runs-on: [self-hosted, linux, ARM64]
+    runs-on: [ self-hosted, linux, ARM64 ]
     steps:
       - name: Checkout base
         uses: actions/checkout@v3
@@ -239,10 +230,6 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Get commit SHA
-        id: vars
-        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-
       - name: Build and export
         id: build
         if: startsWith(github.ref, 'refs/heads/')
@@ -253,8 +240,7 @@ jobs:
           file: scripts/Dockerfile
           tags: tindy2013/subconverter:latest
           build-args: |
-            SHA=${{ steps.vars.outputs.sha_short }}
-            THREADS=4
+            ADD_COMMIT_HASH=true
           outputs: type=image,push=true
 
       - name: Replace tag without `v`
@@ -276,7 +262,7 @@ jobs:
           file: scripts/Dockerfile
           tags: tindy2013/subconverter:${{steps.version.outputs.result}}
           build-args: |
-            THREADS=4
+            ADD_COMMIT_HASH=false
           outputs: type=image,push=true
 
       - name: Save digest
@@ -295,7 +281,7 @@ jobs:
 
   build:
     name: Build
-    needs: [amd64_build, x86_build, armv7_build, arm64_build]
+    needs: [ amd64_build, x86_build, armv7_build, arm64_build ]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout base

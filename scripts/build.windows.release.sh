@@ -51,7 +51,7 @@ set -xe
 ## shellcheck disable=SC2046
 #g++ $(find CMakeFiles/subconverter.dir/src -name "*.obj") curl/lib/libcurl.a -o base/subconverter.exe -static -lbcrypt -lpcre2-8 -l:quickjs/libquickjs.a -llibcron -lyaml-cpp -liphlpapi -lcrypt32 -lws2_32 -lwsock32 -lz -s
 
-xmake f --root --static=true -m release -y -v
+xmake f --root --static=true -m release -y -v --add-commit-hash="${ADD_COMMIT_HASH:-true}"
 xmake --root -v subconverter
 cp "$(find build -name subconverter.exe -type f)" base/subconverter.exe
 

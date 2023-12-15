@@ -1,7 +1,8 @@
 FROM alpine:3.16 AS builder
 LABEL maintainer="tindy.it@gmail.com"
-ARG THREADS="4"
-ARG SHA=""
+#ARG THREADS="4"
+#ARG SHA=""
+ARG ADD_COMMIT_HASH="true"
 
 # build minimized
 WORKDIR /subconverter
@@ -44,7 +45,7 @@ RUN set -xe && \
 #    make -j $THREADS && \
     ls -alh && \
     source "$HOME/.xmake/profile" && \
-    xmake f --root --static=false -m release -y -v && \
+    xmake f --root --static=false -m release -y -v --add-commit-hash="${ADD_COMMIT_HASH:-true}" && \
     xmake --root -v subconverter && \
     cp "$(find build -type f -name subconverter)" . && \
     python3 -m ensurepip && \

@@ -52,7 +52,7 @@ apk add lua5.4-dev luajit-dev zlib-dev zlib-static mbedtls-dev mbedtls-static
 curl -fsSL https://xmake.io/shget.text | bash
 source "$HOME/.xmake/profile"
 
-xmake f --root --static=true -m release -y -v
+xmake f --root --static=true -m release -y -v --add-commit-hash="${ADD_COMMIT_HASH:-true}"
 xmake --root -v subconverter
 cp "$(find build -name subconverter -type f)" base/subconverter
 

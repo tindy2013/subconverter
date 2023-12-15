@@ -7,6 +7,13 @@ option("static")
     set_description("Build static binary.")
 option_end()
 
+option("add-commit-hash")
+    set_default(false)
+    set_showmenu(true)
+    set_category("option")
+    set_description("Add git commit hash to version.")
+option_end()
+
 add_requires("pcre2", "yaml-cpp", "rapidjson", "toml11")
 includes("xmake/libcron.lua")
 includes("xmake/yaml-cpp-static.lua")
@@ -47,6 +54,13 @@ target("subconverter")
     add_defines("PCRE2_STATIC")
     add_defines("YAML_CPP_STATIC_DEFINE")
     add_cxxflags("-std=c++20")
+    if get_config("add-commit-hash") == true then
+        before_build(function (target)
+                local git_commit = string.trim(os.iorun("git rev-parse --short HEAD"))
+                print("git commit: " .. git_commit)
+                io.gsub("src/version.h", "\"(v[0-9].[0-9].[0-9])\"", "\"%1-" .. git_commit .. "\"")
+            end)
+    end
 
 target("subconverter_lib")
     set_basename("subconverter")

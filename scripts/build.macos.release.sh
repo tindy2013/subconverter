@@ -57,7 +57,7 @@ set -xe
 
 brew reinstall xmake rapidjson pkgconfig
 
-xmake f --root -m release -y -v
+xmake f --root -m release -y -v --add-commit-hash="${ADD_COMMIT_HASH:-true}"
 xmake --root -v subconverter
 cp "$(find build -name subconverter -type f)" base/subconverter
 
