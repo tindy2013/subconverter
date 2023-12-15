@@ -14,7 +14,7 @@ option("add-commit-hash")
     set_description("Add git commit hash to version.")
 option_end()
 
-add_requires("pcre2", "yaml-cpp", "rapidjson", "toml11")
+add_requires("pcre2", "rapidjson", "toml11")
 includes("xmake/libcron.lua")
 includes("xmake/yaml-cpp-static.lua")
 includes("xmake/quickjspp.lua")
@@ -22,6 +22,11 @@ includes("xmake/curl-static.lua")
 add_requires("libcron", {system = false})
 add_requires("yaml-cpp-static", {system = false})
 add_requires("quickjspp", {system = false})
+if get_config("static") == true then
+    add_requires("yaml-cpp-static", {system = false})
+else
+    add_requires("yaml-cpp")
+end
 if not is_plat("macosx") and get_config("static") == true then
     add_requires("curl-static", {system = false})
 else
@@ -45,7 +50,7 @@ target("subconverter")
     else
         add_packages("libcurl")
     end
-    if has_config("static") then
+    if get_config("static") == true then
         add_packages("yaml-cpp-static")
     else
         add_packages("yaml-cpp")
