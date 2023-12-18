@@ -21,24 +21,24 @@ Utility to convert between various proxy subscription formats.
 
 ## Supported Types
 
-| Type         | As Source  | As Target    | Target Name |
-| ------------ | :--------: | :----------: | ----------- |
-| Clash        |     ✓      |      ✓       | clash       |
-| ClashR       |     ✓      |      ✓       | clashr      |
-| Quantumult   |     ✓      |      ✓       | quan        |
-| Quantumult X |     ✓      |      ✓       | quanx       |
-| Loon         |     ✓      |      ✓       | loon        |
-| SS (SIP002)  |     ✓      |      ✓       | ss          |
-| SS Android   |     ✓      |      ✓       | sssub       |
-| SSD          |     ✓      |      ✓       | ssd         |
-| SSR          |     ✓      |      ✓       | ssr         |
-| Surfboard    |     ✓      |      ✓       | surfboard   |
-| Surge 2      |     ✓      |      ✓       | surge&ver=2 |
-| Surge 3      |     ✓      |      ✓       | surge&ver=3 |
-| Surge 4      |     ✓      |      ✓       | surge&ver=4 |
-| V2Ray        |     ✓      |      ✓       | v2ray       |
-| Telegram-liked HTTP/Socks 5 links |     ✓      |      ×       | Only as source |
-
+| Type                              | As Source | As Target    | Target Name    |
+|-----------------------------------|:---------:| :----------: |----------------|
+| Clash                             |     ✓     |      ✓       | clash          |
+| ClashR                            |     ✓     |      ✓       | clashr         |
+| Quantumult                        |     ✓     |      ✓       | quan           |
+| Quantumult X                      |     ✓     |      ✓       | quanx          |
+| Loon                              |     ✓     |      ✓       | loon           |
+| SS (SIP002)                       |     ✓     |      ✓       | ss             |
+| SS Android                        |     ✓     |      ✓       | sssub          |
+| SSD                               |     ✓     |      ✓       | ssd            |
+| SSR                               |     ✓     |      ✓       | ssr            |
+| Surfboard                         |     ✓     |      ✓       | surfboard      |
+| Surge 2                           |     ✓     |      ✓       | surge&ver=2    |
+| Surge 3                           |     ✓     |      ✓       | surge&ver=3    |
+| Surge 4                           |     ✓     |      ✓       | surge&ver=4    |
+| V2Ray                             |     ✓     |      ✓       | v2ray          |
+| Telegram-liked HTTP/Socks 5 links |     ✓     |      ×       | Only as source |
+| Singbox                           |     ×      |      ✓       | singbox        |
 Notice:
 
 1. Shadowrocket users should use `ss`, `ssr` or `v2ray` as target.
