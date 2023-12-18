@@ -666,13 +666,21 @@ std::string proxyToClash(std::vector<Proxy> &nodes, const std::string &base_conf
 
     std::string output_content = rulesetToClashStr(yamlnode, ruleset_content_array, ext.overwrite_original_rules,
                                                    ext.clash_new_field_name);
-    output_content.insert(0, YAML::Dump(yamlnode));
+    std::string yamlnode_str = YAML::Dump(yamlnode);
+    output_content.insert(0, yamlnode_str);
     //rulesetToClash(yamlnode, ruleset_content_array, ext.overwrite_original_rules, ext.clash_new_field_name);
     //std::string output_content = YAML::Dump(yamlnode);
-
+    replaceAll(output_content,"!<str> ","");
     return output_content;
 }
 
+void replaceAll(std::string& input, const std::string& search, const std::string& replace) {
+    size_t pos = 0;
+    while ((pos = input.find(search, pos)) != std::string::npos) {
+        input.replace(pos, search.length(), replace);
+        pos += replace.length();
+    }
+}
 // peer = (public-key = bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=, allowed-ips = "0.0.0.0/0, ::/0", endpoint = engage.cloudflareclient.com:2408, client-id = 139/184/125),(public-key = bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=, endpoint = engage.cloudflareclient.com:2408)
 std::string generatePeer(Proxy &node, bool client_id_as_reserved = false) {
     std::string result;

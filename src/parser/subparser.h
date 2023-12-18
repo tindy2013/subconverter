@@ -43,6 +43,7 @@ void explodeKitsunebi(std::string kit, Proxy &node);
 void explodeVless(std::string vless, Proxy &node);
 void explodeHysteria(std::string hysteria, Proxy &node);
 void explodeHysteria2(std::string hysteria2, Proxy &node);
+
 /// Parse a link
 void explode(const std::string &link, Proxy &node);
 void explodeSSD(std::string link, std::vector<Proxy> &nodes);

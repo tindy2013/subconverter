@@ -72,5 +72,5 @@ std::string proxyToQuan(std::vector<Proxy> &nodes, const std::string &base_conf,
 void proxyToQuan(std::vector<Proxy> &nodes, INIReader &ini, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext);
 std::string proxyToSSD(std::vector<Proxy> &nodes, std::string &group, std::string &userinfo, extra_settings &ext);
 std::string proxyToSingBox(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext);
-
+void replaceAll(std::string& input, const std::string& search, const std::string& replace);
 #endif // SUBEXPORT_H_INCLUDED
