@@ -106,7 +106,7 @@ jobs:
         with:
           platforms: linux/386
           context: scripts/
-          tags: asdlokj1qpi23/subconverter:latest
+          tags: asdlokj1qpi23/subconverter:latest-x86
           build-args: |
             SHA=${{ steps.vars.outputs.sha_short }}
           outputs: type=image,push=true
@@ -127,7 +127,7 @@ jobs:
         with:
           platforms: linux/386
           context: scripts/
-          tags: asdlokj1qpi23/subconverter:${{steps.version.outputs.result}}
+          tags: asdlokj1qpi23/subconverter:${{steps.version.outputs.result}}-x86
           outputs: type=image,push=true
 
       - name: Save digest
@@ -173,7 +173,7 @@ jobs:
         with:
           platforms: linux/arm/v7
           context: scripts/
-          tags: asdlokj1qpi23/subconverter:latest
+          tags: asdlokj1qpi23/subconverter:latest-armv7
           build-args: |
             SHA=${{ steps.vars.outputs.sha_short }}
             THREADS=4
@@ -195,7 +195,7 @@ jobs:
         with:
           platforms: linux/arm/v7
           context: scripts/
-          tags: asdlokj1qpi23/subconverter:${{steps.version.outputs.result}}
+          tags: asdlokj1qpi23/subconverter:${{steps.version.outputs.result}}-armv7
           build-args: |
             THREADS=4
           outputs: type=image,push=true
@@ -243,7 +243,7 @@ jobs:
         with:
           platforms: linux/arm64
           context: scripts/
-          tags: asdlokj1qpi23/subconverter:latest
+          tags: asdlokj1qpi23/subconverter:latest-arm64
           build-args: |
             SHA=${{ steps.vars.outputs.sha_short }}
             THREADS=4
@@ -265,7 +265,7 @@ jobs:
         with:
           platforms: linux/arm64
           context: scripts/
-          tags: asdlokj1qpi23/subconverter:${{steps.version.outputs.result}}
+          tags: asdlokj1qpi23/subconverter:${{steps.version.outputs.result}}-arm64
           build-args: |
             THREADS=4
           outputs: type=image,push=true
