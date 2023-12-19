@@ -486,6 +486,12 @@ proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGroupCo
                     singleproxy["flow"] = x.Flow;
                 if (!scv.is_undef())
                     singleproxy["skip-cert-verify"] = scv.get();
+                if (!x.PublicKey.empty()) {
+                    singleproxy["reality-opts"]["public-key"] = x.PublicKey;
+                }
+                if (!x.ShortId.empty()) {
+                    singleproxy["reality-opts"]["short-id"] = x.ShortId;
+                }
                 switch (hash_(x.TransferProtocol)) {
                     case "tcp"_hash:
                         break;
@@ -670,17 +676,18 @@ std::string proxyToClash(std::vector<Proxy> &nodes, const std::string &base_conf
     output_content.insert(0, yamlnode_str);
     //rulesetToClash(yamlnode, ruleset_content_array, ext.overwrite_original_rules, ext.clash_new_field_name);
     //std::string output_content = YAML::Dump(yamlnode);
-    replaceAll(output_content,"!<str> ","");
+    replaceAll(output_content, "!<str> ", "");
     return output_content;
 }
 
-void replaceAll(std::string& input, const std::string& search, const std::string& replace) {
+void replaceAll(std::string &input, const std::string &search, const std::string &replace) {
     size_t pos = 0;
     while ((pos = input.find(search, pos)) != std::string::npos) {
         input.replace(pos, search.length(), replace);
         pos += replace.length();
     }
 }
+
 // peer = (public-key = bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=, allowed-ips = "0.0.0.0/0, ::/0", endpoint = engage.cloudflareclient.com:2408, client-id = 139/184/125),(public-key = bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=, endpoint = engage.cloudflareclient.com:2408)
 std::string generatePeer(Proxy &node, bool client_id_as_reserved = false) {
     std::string result;
@@ -2330,6 +2337,19 @@ proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::vector
             if (!x.Alpn.empty())
                 tls.AddMember("alpn", rapidjson::StringRef(("[" + x.Alpn + "]").c_str()), allocator);
             tls.AddMember("insecure", buildBooleanValue(scv), allocator);
+            if (x.Type == ProxyType::VLESS) {
+                rapidjson::Value reality(rapidjson::kObjectType);
+                if (!x.PublicKey.empty() || !x.ShortId.empty()) {
+                    reality.AddMember("enabled", rapidjson::StringRef("false"), allocator);
+                    if (!x.PublicKey.empty()) {
+                        reality.AddMember("public_key", rapidjson::StringRef("false"), allocator);
+                    }
+                    if (!x.ShortId.empty()) {
+                        reality.AddMember("short_id", rapidjson::StringRef(("[" + x.ShortId + "]").c_str()), allocator);
+                    }
+                    tls.AddMember("reality", reality, allocator);
+                }
+            }
             proxy.AddMember("tls", tls, allocator);
         }
         if (!udp.is_undef() && !udp) {
