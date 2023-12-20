@@ -2175,7 +2175,6 @@ proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::vector
                     proxy.AddMember("transport", transport, allocator);
                 break;
             }
-                // TODO VLESS后续支持
             case ProxyType::VLESS: {
                 addSingBoxCommonMembers(proxy, x, "vmess", allocator);
                 proxy.AddMember("uuid", rapidjson::StringRef(x.UserId.c_str()), allocator);
@@ -2185,39 +2184,46 @@ proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::vector
                     proxy.AddMember("server", rapidjson::StringRef(x.Host.c_str()), allocator);
                 if (!x.Flow.empty())
                     proxy.AddMember("flow", rapidjson::StringRef(x.Flow.c_str()), allocator);
-                rapidjson::Value transport(rapidjson::kObjectType);
+                rapidjson::Value vlesstransport(rapidjson::kObjectType);
+                rapidjson::Value vlessheaders(rapidjson::kObjectType);
                 switch (hash_(x.TransferProtocol)) {
                     case "tcp"_hash:
-                        proxy.AddMember("network", rapidjson::StringRef("ws"), allocator);
                         break;
                     case "ws"_hash:
-                        transport.AddMember("type", rapidjson::StringRef("ws"), allocator);
-                        transport.AddMember("host", rapidjson::StringRef(x.Host.c_str()), allocator);
-                        transport.AddMember("path", rapidjson::StringRef(x.Path.c_str()), allocator);
-                        addHeaders(transport, x, allocator);
-                        proxy.AddMember("transport", transport, allocator);
+                        if (x.Path.empty())
+                            vlesstransport.AddMember("path", "/", allocator);
+                        else
+                            vlesstransport.AddMember("path", rapidjson::StringRef(x.Path.c_str()), allocator);
+                        if (!x.Host.empty())
+                            vlessheaders.AddMember("Host", rapidjson::StringRef(x.Host.c_str()), allocator);
+                        if (!x.Edge.empty())
+                            vlessheaders.AddMember("Edge", rapidjson::StringRef(x.Edge.c_str()), allocator);
+                        vlesstransport.AddMember("type", rapidjson::StringRef("ws"), allocator);
+                        vlesstransport.AddMember("path", rapidjson::StringRef(x.Path.c_str()), allocator);
+                        addHeaders(vlesstransport, x, allocator);
+                        proxy.AddMember("transport", vlesstransport, allocator);
                         break;
                     case "http"_hash:
-                        transport.AddMember("type", rapidjson::StringRef("http"), allocator);
-                        transport.AddMember("host", rapidjson::StringRef(x.Host.c_str()), allocator);
-                        transport.AddMember("method", rapidjson::StringRef("GET"), allocator);
-                        transport.AddMember("path", rapidjson::StringRef(x.Path.c_str()), allocator);
-                        addHeaders(transport, x, allocator);
-                        proxy.AddMember("transport", transport, allocator);
+                        vlesstransport.AddMember("type", rapidjson::StringRef("http"), allocator);
+                        vlesstransport.AddMember("host", rapidjson::StringRef(x.Host.c_str()), allocator);
+                        vlesstransport.AddMember("method", rapidjson::StringRef("GET"), allocator);
+                        vlesstransport.AddMember("path", rapidjson::StringRef(x.Path.c_str()), allocator);
+                        addHeaders(vlesstransport, x, allocator);
+                        proxy.AddMember("transport", vlesstransport, allocator);
                         break;
                     case "h2"_hash:
-                        transport.AddMember("type", rapidjson::StringRef("httpupgrade"), allocator);
-                        transport.AddMember("host", rapidjson::StringRef(x.Host.c_str()), allocator);
-                        transport.AddMember("path", rapidjson::StringRef(x.Path.c_str()), allocator);
-                        proxy.AddMember("transport", transport, allocator);
+                        vlesstransport.AddMember("type", rapidjson::StringRef("httpupgrade"), allocator);
+                        vlesstransport.AddMember("host", rapidjson::StringRef(x.Host.c_str()), allocator);
+                        vlesstransport.AddMember("path", rapidjson::StringRef(x.Path.c_str()), allocator);
+                        proxy.AddMember("transport", vlesstransport, allocator);
                         break;
                     case "grpc"_hash:
-                        transport.AddMember("type", rapidjson::StringRef("grpc"), allocator);
-                        transport.AddMember("service_name", rapidjson::StringRef(x.GRPCServiceName.c_str()), allocator);
+                        vlesstransport.AddMember("type", rapidjson::StringRef("grpc"), allocator);
+                        vlesstransport.AddMember("service_name", rapidjson::StringRef(x.GRPCServiceName.c_str()), allocator);
                         if (!x.GRPCMode.empty()) {
-                            transport.AddMember("permit_without_stream", rapidjson::StringRef("true"), allocator);
+                            vlesstransport.AddMember("permit_without_stream", rapidjson::StringRef("true"), allocator);
                         }
-                        proxy.AddMember("transport", transport, allocator);
+                        proxy.AddMember("transport", vlesstransport, allocator);
                         break;
                     default:
                         continue;
