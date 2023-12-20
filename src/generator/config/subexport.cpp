@@ -2176,7 +2176,7 @@ proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::vector
                 break;
             }
             case ProxyType::VLESS: {
-                addSingBoxCommonMembers(proxy, x, "vmess", allocator);
+                addSingBoxCommonMembers(proxy, x, "vless", allocator);
                 proxy.AddMember("uuid", rapidjson::StringRef(x.UserId.c_str()), allocator);
                 if (xudp && udp)
                     proxy.AddMember("packet_encoding", rapidjson::StringRef("xudp"), allocator);
