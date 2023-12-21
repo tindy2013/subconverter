@@ -1039,7 +1039,7 @@ void explodeNetch(std::string netch, Proxy &node) {
 }
 
 void explodeClash(Node yamlnode, std::vector<Proxy> &nodes) {
-    std::string proxytype, ps, server, port, cipher, group, password, tempPassword; //common
+    std::string proxytype, ps, server, port, cipher, group, password = "", tempPassword; //common
     std::string type = "none", id, aid = "0", net = "tcp", path, host, edge, tls, sni; //vmess
     std::string fp = "chrome", pbk, sid; //vless
     std::string plugin, pluginopts, pluginopts_mode, pluginopts_host, pluginopts_mux; //ss
@@ -1318,7 +1318,8 @@ void explodeClash(Node yamlnode, std::vector<Proxy> &nodes) {
             case "hysteria2"_hash:
                 group = HYSTERIA2_DEFAULT_GROUP;
                 singleproxy["password"] >>= password;
-                singleproxy["auth"] >>= password;
+                if (password.empty())
+                    singleproxy["auth"] >>= password;
                 singleproxy["up"] >>= up;
                 singleproxy["down"] >>= down;
                 singleproxy["obfs"] >>= obfsParam;
