@@ -492,6 +492,9 @@ proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGroupCo
                 if (!x.ShortId.empty()) {
                     singleproxy["reality-opts"]["short-id"] = x.ShortId;
                 }
+                if (!x.PublicKey.empty() || x.Flow == "xtls-rprx-vision") {
+                    singleproxy["client-fingerprint"] = "chrome";
+                }
                 switch (hash_(x.TransferProtocol)) {
                     case "tcp"_hash:
                         break;
@@ -2180,8 +2183,6 @@ proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::vector
                 proxy.AddMember("uuid", rapidjson::StringRef(x.UserId.c_str()), allocator);
                 if (xudp && udp)
                     proxy.AddMember("packet_encoding", rapidjson::StringRef("xudp"), allocator);
-                if (!x.Host.empty())
-                    proxy.AddMember("server", rapidjson::StringRef(x.Host.c_str()), allocator);
                 if (!x.Flow.empty())
                     proxy.AddMember("flow", rapidjson::StringRef(x.Flow.c_str()), allocator);
                 rapidjson::Value vlesstransport(rapidjson::kObjectType);
@@ -2219,10 +2220,8 @@ proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::vector
                         break;
                     case "grpc"_hash:
                         vlesstransport.AddMember("type", rapidjson::StringRef("grpc"), allocator);
-                        vlesstransport.AddMember("service_name", rapidjson::StringRef(x.GRPCServiceName.c_str()), allocator);
-                        if (!x.GRPCMode.empty()) {
-                            vlesstransport.AddMember("permit_without_stream", rapidjson::StringRef("true"), allocator);
-                        }
+                        vlesstransport.AddMember("service_name", rapidjson::StringRef(x.GRPCServiceName.c_str()),
+                                                 allocator);
                         proxy.AddMember("transport", vlesstransport, allocator);
                         break;
                     default:
@@ -2295,8 +2294,7 @@ proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::vector
                 tls.AddMember("enabled", true, allocator);
                 proxy.AddMember("tls", tls, allocator);
                 if (!tfo.is_undef())
-                    proxy.AddMember("tcp_fast_open",
-                                    rapidjson::StringRef(std::string(tfo.get() ? "true" : "false").c_str()), allocator);
+                    proxy.AddMember("tcp_fast_open", tfo.get(), allocator);
                 if (!x.FakeType.empty())
                     proxy.AddMember("network", rapidjson::StringRef(x.FakeType.c_str()), allocator);
                 if (!x.Alpn.empty())
@@ -2309,16 +2307,19 @@ proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::vector
             case ProxyType::Hysteria2: {
                 addSingBoxCommonMembers(proxy, x, "hysteria2", allocator);
                 proxy.AddMember("password", rapidjson::StringRef(x.Password.c_str()), allocator);
-                rapidjson::Value tls(rapidjson::kObjectType);
-                tls.AddMember("enabled", true, allocator);
-                proxy.AddMember("tls", tls, allocator);
+                if(!x.TLSSecure) {
+                    rapidjson::Value tls(rapidjson::kObjectType);
+                    tls.AddMember("enabled", true, allocator);
+                    if (!x.Alpn.empty()){
+                        auto  alpns = stringArrayToJsonArray(x.Alpn, ",", allocator);
+                        tls.AddMember("alpn", alpns, allocator);
+                    }
+                    proxy.AddMember("tls", tls, allocator);
+                }
                 if (!x.UpMbps.empty())
                     proxy.AddMember("up_mbps", rapidjson::StringRef(x.UpMbps.c_str()), allocator);
                 if (!x.DownMbps.empty())
                     proxy.AddMember("down_mbps", rapidjson::StringRef(x.DownMbps.c_str()), allocator);
-                if (!x.Alpn.empty())
-                    proxy.AddMember("tls", rapidjson::StringRef(
-                            std::string(R"({ "enabled": true,"alpn": [)" + x.Alpn + "],}").c_str()), allocator);
                 if (!x.OBFSParam.empty()) {
                     if (!x.OBFSPassword.empty()) {
                         proxy.AddMember("obfs", rapidjson::StringRef(std::string(
@@ -2340,19 +2341,28 @@ proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::vector
             tls.AddMember("enabled", true, allocator);
             if (!x.ServerName.empty())
                 tls.AddMember("server_name", rapidjson::StringRef(x.ServerName.c_str()), allocator);
-            if (!x.Alpn.empty())
-                tls.AddMember("alpn", rapidjson::StringRef(("[" + x.Alpn + "]").c_str()), allocator);
+            if (!x.Alpn.empty()){
+                auto  alpns = stringArrayToJsonArray(x.Alpn, ",", allocator);
+                tls.AddMember("alpn", alpns, allocator);
+            }
             tls.AddMember("insecure", buildBooleanValue(scv), allocator);
             if (x.Type == ProxyType::VLESS) {
                 rapidjson::Value reality(rapidjson::kObjectType);
                 if (!x.PublicKey.empty() || !x.ShortId.empty()) {
-                    reality.AddMember("enabled", rapidjson::StringRef("false"), allocator);
+                    if (!x.Host.empty()) {
+                        tls.EraseMember("server_name");
+                        tls.AddMember("server_name", rapidjson::StringRef(x.Host.c_str()), allocator);
+                    }
+                    rapidjson::Value utls(rapidjson::kObjectType);
+                    utls.AddMember("enabled", true, allocator);
+                    utls.AddMember("fingerprint", rapidjson::StringRef("chrome"), allocator);
+                    tls.AddMember("utls", utls, allocator);
+                    reality.AddMember("enabled", true, allocator);
                     if (!x.PublicKey.empty()) {
-                        reality.AddMember("public_key", rapidjson::StringRef("false"), allocator);
+                        reality.AddMember("public_key", rapidjson::StringRef(x.PublicKey.c_str()), allocator);
                     }
-                    if (!x.ShortId.empty()) {
-                        reality.AddMember("short_id", rapidjson::StringRef(("[" + x.ShortId + "]").c_str()), allocator);
-                    }
+                    auto   shortIds= stringArrayToJsonArray(x.Alpn, ",", allocator);
+                    reality.AddMember("short_id", shortIds, allocator);
                     tls.AddMember("reality", reality, allocator);
                 }
             }
