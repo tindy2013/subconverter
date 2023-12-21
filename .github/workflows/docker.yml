@@ -144,145 +144,145 @@ jobs:
           name: digest_386
           path: /tmp/digest.txt
 
-  armv7_build:
-    name: Build ARMv7 Image
-    runs-on: [self-hosted, linux, ARM]
-    steps:
-      - name: Checkout base
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Docker login
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Get commit SHA
-        id: vars
-        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-
-      - name: Build and export
-        id: build
-        if: github.ref == 'refs/heads/master'
-        uses: docker/build-push-action@v3
-        with:
-          platforms: linux/arm/v7
-          context: scripts/
-          tags: asdlokj1qpi23/subconverter:latest-armv7
-          build-args: |
-            SHA=${{ steps.vars.outputs.sha_short }}
-            THREADS=4
-          outputs: type=image,push=true
-
-      - name: Replace tag without `v`
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: actions/github-script@v6
-        id: version
-        with:
-          script: |
-            return context.payload.ref.replace(/\/?refs\/tags\/v/, '')
-          result-encoding: string
-
-      - name: Build release and export
-        id: build_rel
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: docker/build-push-action@v3
-        with:
-          platforms: linux/arm/v7
-          context: scripts/
-          tags: asdlokj1qpi23/subconverter:${{steps.version.outputs.result}}-armv7
-          build-args: |
-            THREADS=4
-          outputs: type=image,push=true
-
-      - name: Save digest
-        if: github.ref == 'refs/heads/master'
-        run: echo ${{ steps.build.outputs.digest }} > /tmp/digest.txt
-
-      - name: Save release digest
-        if: startsWith(github.ref, 'refs/tags/')
-        run: echo ${{ steps.build_rel.outputs.digest }} > /tmp/digest.txt
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: digest_armv7
-          path: /tmp/digest.txt
-
-  arm64_build:
-    name: Build ARM64 Image
-    runs-on: [self-hosted, linux, ARM64]
-    steps:
-      - name: Checkout base
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Docker login
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Get commit SHA
-        id: vars
-        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-
-      - name: Build and export
-        id: build
-        if: github.ref == 'refs/heads/master'
-        uses: docker/build-push-action@v3
-        with:
-          platforms: linux/arm64
-          context: scripts/
-          tags: asdlokj1qpi23/subconverter:latest-arm64
-          build-args: |
-            SHA=${{ steps.vars.outputs.sha_short }}
-            THREADS=4
-          outputs: type=image,push=true
-
-      - name: Replace tag without `v`
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: actions/github-script@v6
-        id: version
-        with:
-          script: |
-            return context.payload.ref.replace(/\/?refs\/tags\/v/, '')
-          result-encoding: string
-
-      - name: Build release and export
-        id: build_rel
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: docker/build-push-action@v3
-        with:
-          platforms: linux/arm64
-          context: scripts/
-          tags: asdlokj1qpi23/subconverter:${{steps.version.outputs.result}}-arm64
-          build-args: |
-            THREADS=4
-          outputs: type=image,push=true
-
-      - name: Save digest
-        if: github.ref == 'refs/heads/master'
-        run: echo ${{ steps.build.outputs.digest }} > /tmp/digest.txt
-
-      - name: Save release digest
-        if: startsWith(github.ref, 'refs/tags/')
-        run: echo ${{ steps.build_rel.outputs.digest }} > /tmp/digest.txt
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: digest_arm64
-          path: /tmp/digest.txt
+#  armv7_build:
+#    name: Build ARMv7 Image
+#    runs-on: [self-hosted, linux, ARM]
+#    steps:
+#      - name: Checkout base
+#        uses: actions/checkout@v3
+#        with:
+#          fetch-depth: 0
+#
+#      - name: Set up Docker Buildx
+#        uses: docker/setup-buildx-action@v2
+#
+#      - name: Docker login
+#        uses: docker/login-action@v2
+#        with:
+#          username: ${{ secrets.DOCKER_USERNAME }}
+#          password: ${{ secrets.DOCKER_PASSWORD }}
+#
+#      - name: Get commit SHA
+#        id: vars
+#        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+#
+#      - name: Build and export
+#        id: build
+#        if: github.ref == 'refs/heads/master'
+#        uses: docker/build-push-action@v3
+#        with:
+#          platforms: linux/arm/v7
+#          context: scripts/
+#          tags: asdlokj1qpi23/subconverter:latest-armv7
+#          build-args: |
+#            SHA=${{ steps.vars.outputs.sha_short }}
+#            THREADS=4
+#          outputs: type=image,push=true
+#
+#      - name: Replace tag without `v`
+#        if: startsWith(github.ref, 'refs/tags/')
+#        uses: actions/github-script@v6
+#        id: version
+#        with:
+#          script: |
+#            return context.payload.ref.replace(/\/?refs\/tags\/v/, '')
+#          result-encoding: string
+#
+#      - name: Build release and export
+#        id: build_rel
+#        if: startsWith(github.ref, 'refs/tags/')
+#        uses: docker/build-push-action@v3
+#        with:
+#          platforms: linux/arm/v7
+#          context: scripts/
+#          tags: asdlokj1qpi23/subconverter:${{steps.version.outputs.result}}-armv7
+#          build-args: |
+#            THREADS=4
+#          outputs: type=image,push=true
+#
+#      - name: Save digest
+#        if: github.ref == 'refs/heads/master'
+#        run: echo ${{ steps.build.outputs.digest }} > /tmp/digest.txt
+#
+#      - name: Save release digest
+#        if: startsWith(github.ref, 'refs/tags/')
+#        run: echo ${{ steps.build_rel.outputs.digest }} > /tmp/digest.txt
+#
+#      - name: Upload artifact
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: digest_armv7
+#          path: /tmp/digest.txt
+#
+#  arm64_build:
+#    name: Build ARM64 Image
+#    runs-on: [self-hosted, linux, ARM64]
+#    steps:
+#      - name: Checkout base
+#        uses: actions/checkout@v3
+#        with:
+#          fetch-depth: 0
+#
+#      - name: Set up Docker Buildx
+#        uses: docker/setup-buildx-action@v2
+#
+#      - name: Docker login
+#        uses: docker/login-action@v2
+#        with:
+#          username: ${{ secrets.DOCKER_USERNAME }}
+#          password: ${{ secrets.DOCKER_PASSWORD }}
+#
+#      - name: Get commit SHA
+#        id: vars
+#        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+#
+#      - name: Build and export
+#        id: build
+#        if: github.ref == 'refs/heads/master'
+#        uses: docker/build-push-action@v3
+#        with:
+#          platforms: linux/arm64
+#          context: scripts/
+#          tags: asdlokj1qpi23/subconverter:latest-arm64
+#          build-args: |
+#            SHA=${{ steps.vars.outputs.sha_short }}
+#            THREADS=4
+#          outputs: type=image,push=true
+#
+#      - name: Replace tag without `v`
+#        if: startsWith(github.ref, 'refs/tags/')
+#        uses: actions/github-script@v6
+#        id: version
+#        with:
+#          script: |
+#            return context.payload.ref.replace(/\/?refs\/tags\/v/, '')
+#          result-encoding: string
+#
+#      - name: Build release and export
+#        id: build_rel
+#        if: startsWith(github.ref, 'refs/tags/')
+#        uses: docker/build-push-action@v3
+#        with:
+#          platforms: linux/arm64
+#          context: scripts/
+#          tags: asdlokj1qpi23/subconverter:${{steps.version.outputs.result}}-arm64
+#          build-args: |
+#            THREADS=4
+#          outputs: type=image,push=true
+#
+#      - name: Save digest
+#        if: github.ref == 'refs/heads/master'
+#        run: echo ${{ steps.build.outputs.digest }} > /tmp/digest.txt
+#
+#      - name: Save release digest
+#        if: startsWith(github.ref, 'refs/tags/')
+#        run: echo ${{ steps.build_rel.outputs.digest }} > /tmp/digest.txt
+#
+#      - name: Upload artifact
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: digest_arm64
+#          path: /tmp/digest.txt
 
   build:
     name: Build

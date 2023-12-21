@@ -1,11 +1,9 @@
 # subconverter-docker
 
-This is a minimized image to run https://github.com/tindy2013/subconverter.
-
 For running this docker, simply use the following commands:
 ```bash
 # run the container detached, forward internal port 25500 to host port 25500
-docker run -d --restart=always -p 25500:25500 tindy2013/subconverter:latest
+docker run -d --restart=always -p 25500:25500 asdlokj1qpi23/subconverter:latest
 # then check its status
 curl http://localhost:25500/version
 # if you see `subconverter vx.x.x backend` then the container is up and running
@@ -16,7 +14,7 @@ Or run in docker-compose:
 version: '3'
 services:
   subconverter:
-    image: tindy2013/subconverter:latest
+    image: asdlokj1qpi23/subconverter:latest
     container_name: subconverter
     ports:
       - "15051:25500"

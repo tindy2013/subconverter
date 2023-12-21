@@ -2,23 +2,46 @@
 
 Utility to convert between various proxy subscription formats.
 
-[![Build Status](https://github.com/tindy2013/subconverter/actions/workflows/build.yml/badge.svg)](https://github.com/tindy2013/subconverter/actions)
-[![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/tindy2013/subconverter.svg)](https://github.com/tindy2013/subconverter/tags)
-[![GitHub release](https://img.shields.io/github/release/tindy2013/subconverter.svg)](https://github.com/tindy2013/subconverter/releases)
-[![GitHub license](https://img.shields.io/github/license/tindy2013/subconverter.svg)](https://github.com/tindy2013/subconverter/blob/master/LICENSE)
+[![Build Status](https://github.com/asdlokj1qpi23/subconverter/actions/workflows/build.yml/badge.svg)](https://github.com/tindy2013/subconverter/actions)
+[![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/asdlokj1qpi23/subconverter.svg)](https://github.com/asdlokj1qpi23/subconverter/tags)
+[![GitHub release](https://img.shields.io/github/release/asdlokj1qpi23/subconverter.svg)](https://github.com/asdlokj1qpi23/subconverter/releases)
+[![GitHub license](https://img.shields.io/github/license/asdlokj1qpi23/subconverter.svg)](https://github.com/tindy2013/subconverter/blob/master/LICENSE)
 
-[Docker README](https://github.com/tindy2013/subconverter/blob/master/README-docker.md)
+[Docker README](https://github.com/asdlokj1qpi23/subconverter/blob/master/README-docker.md)
 
-[中文文档](https://github.com/tindy2013/subconverter/blob/master/README-cn.md)
+[中文文档](https://github.com/asdlokj1qpi23/subconverter/blob/master/README-cn.md)
 
 - [subconverter](#subconverter)
+  - [Docker](#docker)
   - [Supported Types](#supported-types)
   - [Quick Usage](#quick-usage)
     - [Access Interface](#access-interface)
     - [Description](#description)
   - [Advanced Usage](#advanced-usage)
   - [Auto Upload](#auto-upload)
+  
+## Docker
 
+For running this docker, simply use the following commands:
+```bash
+# run the container detached, forward internal port 25500 to host port 25500
+docker run -d --restart=always -p 25500:25500 asdlokj1qpi23/subconverter:latest
+# then check its status
+curl http://localhost:25500/version
+# if you see `subconverter vx.x.x backend` then the container is up and running
+```
+Or run in docker-compose:
+```yaml
+---
+version: '3'
+services:
+  subconverter:
+    image: asdlokj1qpi23/subconverter:latest
+    container_name: subconverter
+    ports:
+      - "15051:25500"
+    restart: always
+```
 ## Supported Types
 
 | Type                              | As Source | As Target    | Target Name    |
@@ -95,7 +118,7 @@ Finally subscribe this link in Clash and you are done!
 
 ## Advanced Usage
 
-Please refer to [中文文档](https://github.com/tindy2013/subconverter/blob/master/README-cn.md#%E8%BF%9B%E9%98%B6%E7%94%A8%E6%B3%95).
+Please refer to [中文文档](https://github.com/asdlokj1qpi23/subconverter/blob/master/README-cn.md#%E8%BF%9B%E9%98%B6%E7%94%A8%E6%B3%95).
 
 ## Auto Upload
 
@@ -110,3 +133,6 @@ Example:
 ;uncomment the following line and enter your token to enable upload function
 token = xxxxxxxxxxxxxxxxxxxxxxxx(Your Personal Access Token)
 ```
+## Thanks
+[tindy2013](https://github.com/tindy2013)
+[https://github.com/tindy2013/subconverter](https://github.com/tindy2013/subconverter)
