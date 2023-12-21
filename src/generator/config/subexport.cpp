@@ -2154,16 +2154,16 @@ proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::vector
                 }
                 break;
             }
-            case ProxyType::ShadowsocksR: {
-                addSingBoxCommonMembers(proxy, x, "shadowsocksr", allocator);
-                proxy.AddMember("method", rapidjson::StringRef(x.EncryptMethod.c_str()), allocator);
-                proxy.AddMember("password", rapidjson::StringRef(x.Password.c_str()), allocator);
-                proxy.AddMember("protocol", rapidjson::StringRef(x.Protocol.c_str()), allocator);
-                proxy.AddMember("protocol_param", rapidjson::StringRef(x.ProtocolParam.c_str()), allocator);
-                proxy.AddMember("obfs", rapidjson::StringRef(x.OBFS.c_str()), allocator);
-                proxy.AddMember("obfs_param", rapidjson::StringRef(x.OBFSParam.c_str()), allocator);
-                break;
-            }
+//            case ProxyType::ShadowsocksR: {
+//                addSingBoxCommonMembers(proxy, x, "shadowsocksr", allocator);
+//                proxy.AddMember("method", rapidjson::StringRef(x.EncryptMethod.c_str()), allocator);
+//                proxy.AddMember("password", rapidjson::StringRef(x.Password.c_str()), allocator);
+//                proxy.AddMember("protocol", rapidjson::StringRef(x.Protocol.c_str()), allocator);
+//                proxy.AddMember("protocol_param", rapidjson::StringRef(x.ProtocolParam.c_str()), allocator);
+//                proxy.AddMember("obfs", rapidjson::StringRef(x.OBFS.c_str()), allocator);
+//                proxy.AddMember("obfs_param", rapidjson::StringRef(x.OBFSParam.c_str()), allocator);
+//                break;
+//            }
             case ProxyType::VMess: {
                 addSingBoxCommonMembers(proxy, x, "vmess", allocator);
                 proxy.AddMember("uuid", rapidjson::StringRef(x.UserId.c_str()), allocator);
