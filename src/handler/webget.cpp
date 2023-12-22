@@ -87,11 +87,13 @@ static int logger(CURL *handle, curl_infotype type, char *data, size_t size, voi
     switch(type)
     {
     case CURLINFO_TEXT:
-        prefix = "CURL_INFO";
+        prefix = "CURL_INFO: ";
         break;
     case CURLINFO_HEADER_IN:
+        prefix = "CURL_HEADER: < ";
+        break;
     case CURLINFO_HEADER_OUT:
-        prefix = "CURL_HEADER";
+        prefix = "CURL_HEADER: > ";
         break;
     case CURLINFO_DATA_IN:
     case CURLINFO_DATA_OUT:
@@ -105,7 +107,6 @@ static int logger(CURL *handle, curl_infotype type, char *data, size_t size, voi
         for(auto &x : lines)
         {
             std::string log_content = prefix;
-            log_content += ": ";
             log_content += x;
             writeLog(0, log_content, LOG_LEVEL_VERBOSE);
         }
@@ -113,7 +114,6 @@ static int logger(CURL *handle, curl_infotype type, char *data, size_t size, voi
     else
     {
         std::string log_content = prefix;
-        log_content += ": ";
         log_content += trimWhitespace(content);
         writeLog(0, log_content, LOG_LEVEL_VERBOSE);
     }
@@ -172,7 +172,8 @@ static int curlGet(const FetchArgument &argument, FetchResult &result)
     {
         for(auto &x : *argument.request_headers)
         {
-            header_list = curl_slist_append(header_list, (x.first + ": " + x.second).data());
+            auto header = x.first + ": " + x.second;
+            header_list = curl_slist_append(header_list, header.data());
         }
         if(!argument.request_headers->contains("User-Agent"))
             curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, user_agent_str);
@@ -233,7 +234,7 @@ static int curlGet(const FetchArgument &argument, FetchResult &result)
     while(true)
     {
         retVal = curl_easy_perform(curl_handle);
-        if(retVal == CURLE_OK || max_fails <= fail_count)
+        if(retVal == CURLE_OK || max_fails <= fail_count || global.APIMode)
             break;
         else
             fail_count++;
