@@ -495,7 +495,17 @@ int renderClashScript(YAML::Node &base_rule, std::vector<RulesetContent> &rulese
                 base_rule["rule-providers"][yaml_key]["url"] = url.substr(1);
             else
                 base_rule["rule-providers"][yaml_key]["url"] = remote_path_prefix + "/getruleset?type=3&url=" + urlSafeBase64Encode(url);
-            base_rule["rule-providers"][yaml_key]["path"] = "./providers/rule-provider_" + yaml_key + ".yaml";
+            if (url.ends_with(".list") || url.ends_with(".txt")) {
+                base_rule["rule-providers"][yaml_key]["format"] = "text";
+                base_rule["rule-providers"][yaml_key]["path"] = "./providers/rule-provider_" + yaml_key + ".list";
+            }
+            else if (url.ends_with(".yaml") || url.ends_with(".yml")) {
+                base_rule["rule-providers"][yaml_key]["format"] = "yaml";
+                base_rule["rule-providers"][yaml_key]["path"] = "./providers/rule-provider_" + yaml_key + ".yaml";
+            }
+            else {
+                base_rule["rule-providers"][yaml_key]["path"] = "./providers/rule-provider_" + yaml_key + ".yaml";
+            }
             if(interval)
                 base_rule["rule-providers"][yaml_key]["interval"] = interval;
         }
@@ -510,7 +520,17 @@ int renderClashScript(YAML::Node &base_rule, std::vector<RulesetContent> &rulese
                 base_rule["rule-providers"][yaml_key]["url"] = url.substr(1);
             else
                 base_rule["rule-providers"][yaml_key]["url"] = remote_path_prefix + "/getruleset?type=4&url=" + urlSafeBase64Encode(url);
-            base_rule["rule-providers"][yaml_key]["path"] = "./providers/rule-provider_" + yaml_key + ".yaml";
+            if (url.ends_with(".list") || url.ends_with(".txt")) {
+                base_rule["rule-providers"][yaml_key]["format"] = "text";
+                base_rule["rule-providers"][yaml_key]["path"] = "./providers/rule-provider_" + yaml_key + ".list";
+            }
+            else if (url.ends_with(".yaml") || url.ends_with(".yml")) {
+                base_rule["rule-providers"][yaml_key]["format"] = "yaml";
+                base_rule["rule-providers"][yaml_key]["path"] = "./providers/rule-provider_" + yaml_key + ".yaml";
+            }
+            else {
+                base_rule["rule-providers"][yaml_key]["path"] = "./providers/rule-provider_" + yaml_key + ".yaml";
+            }
             if(interval)
                 base_rule["rule-providers"][yaml_key]["interval"] = interval;
         }
@@ -523,7 +543,17 @@ int renderClashScript(YAML::Node &base_rule, std::vector<RulesetContent> &rulese
                 base_rule["rule-providers"][yaml_key]["url"] = url.substr(1);
             else
                 base_rule["rule-providers"][yaml_key]["url"] = remote_path_prefix + "/getruleset?type=6&url=" + urlSafeBase64Encode(url);
-            base_rule["rule-providers"][yaml_key]["path"] = "./providers/rule-provider_" + yaml_key + ".yaml";
+            if (url.ends_with(".list") || url.ends_with(".txt")) {
+                base_rule["rule-providers"][yaml_key]["format"] = "text";
+                base_rule["rule-providers"][yaml_key]["path"] = "./providers/rule-provider_" + yaml_key + ".list";
+            }
+            else if (url.ends_with(".yaml") || url.ends_with(".yml")) {
+                base_rule["rule-providers"][yaml_key]["format"] = "yaml";
+                base_rule["rule-providers"][yaml_key]["path"] = "./providers/rule-provider_" + yaml_key + ".yaml";
+            }
+            else {
+                base_rule["rule-providers"][yaml_key]["path"] = "./providers/rule-provider_" + yaml_key + ".yaml";
+            }
             if(interval)
                 base_rule["rule-providers"][yaml_key]["interval"] = interval;
         }
