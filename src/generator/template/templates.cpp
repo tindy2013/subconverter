@@ -474,6 +474,8 @@ int renderClashScript(YAML::Node &base_rule, std::vector<RulesetContent> &rulese
                 else
                     rules.emplace_back("RULE-SET," + rule_name + "_ipcidr," + rule_group);
             }
+            if(!has_domain[rule_name] && !has_ipcidr[rule_name] && !script)
+                rules.emplace_back("RULE-SET," + rule_name + "," + rule_group);
             if(std::find(groups.begin(), groups.end(), rule_name) == groups.end())
                 groups.emplace_back(rule_name);
         }
