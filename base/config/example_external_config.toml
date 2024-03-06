@@ -28,6 +28,6 @@ import = "snippets/groups_forcerule.toml"
 #[[rulesets]]
 #import = ""
 
-[[template_args]]
+[[custom.template_args]]
 key = "clash.dns.port"
 value = "5353"
