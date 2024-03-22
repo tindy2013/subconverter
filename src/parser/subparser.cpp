@@ -1270,7 +1270,9 @@ void explodeClash(Node yamlnode, std::vector<Proxy> &nodes)
             singleproxy["down"] >>= down;
             singleproxy["down-speed"] >>= down_speed;
             singleproxy["auth"] >>= auth;
-            singleproxy["auth_str"] >>= auth_str;
+            singleproxy["auth-str"] >>= auth_str;
+            if (auth_str.empty())
+                singleproxy["auth_str"] >>= auth_str;
             singleproxy["obfs"] >>= obfs;
             singleproxy["sni"] >>= sni;
             singleproxy["fingerprint"] >>= fingerprint;
@@ -1280,6 +1282,8 @@ void explodeClash(Node yamlnode, std::vector<Proxy> &nodes)
             singleproxy["recv-window-conn"] >>= recv_window_conn;
             singleproxy["recv-window"] >>= recv_window;
             singleproxy["disable-mtu-discovery"] >>= disable_mtu_discovery;
+            if (disable_mtu_discovery.empty())
+                singleproxy["disable_mtu_discovery"] >>= disable_mtu_discovery;
             singleproxy["hop-interval"] >>= hop_interval;
 
             hysteriaConstruct(node, group, ps, server, port, ports, protocol, obfs_protocol, up, up_speed, down, down_speed, auth, auth_str, obfs, sni, fingerprint, ca, ca_str, recv_window_conn, recv_window, disable_mtu_discovery, hop_interval, alpn, tfo, scv);
