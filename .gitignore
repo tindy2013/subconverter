@@ -3,3 +3,19 @@ subconverter.exe
 cmake-build-debug
 .idea
 base/cache
+
+# Build files
+/CmakeFiles
+/CMakeCache.txt
+/Makefile
+/cmake_install.cmake
+/tmp
+/subconverter
+
+# Dependencies for development
+/curl
+/libcron
+/quickjspp
+/toml11
+/yaml-cpp
+/rapidjson
