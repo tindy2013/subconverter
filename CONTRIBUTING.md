@@ -36,7 +36,7 @@ pacman -S base-devel git mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x
 
 2. run script to initialize the project for development:
 ```shell
-sh scripts/dev.windows.release.sh
+sh scripts/build.windows.dev.sh
 ```
 
 3. debug the project with GDB:
@@ -78,7 +78,7 @@ or use VSCode with the following configuration:
 make -j4 && cp subconverter.exe subconverter/subconverter.exe
 ```
 
-### Linux / macOS
+### macOS
 
 1. install the prerequisites:
 
@@ -88,10 +88,15 @@ You should install all the following prequisites via your package manager.
 - patch
 - python
 
-2. run the script to initialize the project for development:
+for macos run
+```shell
+brew reinstall rapidjson zlib pcre2 pkgconfig
+```
+
+1. run the script to initialize the project for development:
 
 ```shell
-sh scripts/build.macos.release.sh
+sh scripts/build.macos.dev.sh
 ```
 
 3. run the executable for test:

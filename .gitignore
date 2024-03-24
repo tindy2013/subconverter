@@ -11,6 +11,8 @@ base/cache
 /cmake_install.cmake
 /tmp
 /subconverter
+/base/subconverter
+/*.a
 
 # Dependencies for development
 /curl
