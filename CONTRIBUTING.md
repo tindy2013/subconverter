@@ -99,6 +99,12 @@ brew reinstall rapidjson zlib pcre2 pkgconfig
 sh scripts/build.macos.dev.sh
 ```
 
+2. increamental build during development:
+
+```shell
+make -j && cp subconverter subconverter/subconverter
+```
+
 3. run the executable for test:
 ```shell
 ./subconverter

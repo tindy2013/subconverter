@@ -68,6 +68,6 @@ cd base
 chmod +rx subconverter
 chmod +r ./*
 cd ..
-mv base subconverter
+cp base subconverter
 
 set +xe
