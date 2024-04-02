@@ -47,7 +47,7 @@ static httplib::Server::Handler makeHandler(const responseRoute &rr)
             {
                 continue;
             }
-            req.headers[h.first] = h.second;
+            req.headers.emplace(h.first.data(), h.second.data());
         }
         req.argument = request.params;
         if (request.get_header_value("Content-Type") == "application/x-www-form-urlencoded")
