@@ -187,7 +187,7 @@ int WebServer::start_web_server_multi(listener_args *args)
     {
         try
         {
-            std::rethrow_exception(e);
+            if (e) std::rethrow_exception(e);
         }
         catch (const httplib::Error &err)
         {
@@ -212,6 +212,9 @@ int WebServer::start_web_server_multi(listener_args *args)
     {
         server.set_mount_point("/", serve_file_root);
     }
+    server.new_task_queue = [args] {
+        return new httplib::ThreadPool(args->max_workers);
+    };
     server.bind_to_port(args->listen_address, args->port, 0);
 
     std::thread thread([&]()

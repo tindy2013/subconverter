@@ -1167,7 +1167,7 @@ int loadExternalTOML(toml::value &root, ExternalConfig &ext)
                   "exclude_remarks", ext.exclude
     );
 
-    if(ext.tpl_args != nullptr) operate_toml_kv_table(toml::find_or<std::vector<toml::table>>(section, "template_args", {}), "key", "value",
+    if(ext.tpl_args != nullptr) operate_toml_kv_table(toml::find_or<std::vector<toml::table>>(root, "template_args", {}), "key", "value",
                                                       [&](const toml::value &key, const toml::value &value)
     {
         std::string val = toml::format(value);
