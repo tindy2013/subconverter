@@ -203,7 +203,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: /tmp/digests
-          pattern: digests-*
+          pattern: digest-*
           merge-multiple: true
 
       - name: Set up Docker Buildx
