@@ -74,7 +74,7 @@ jobs:
 
       - name: Export digest
         run: |
-          rm -r /tmp/digests
+          rm -rf /tmp/digests
           mkdir -p /tmp/digests
           digest="${{ steps.build.outputs.digest }}"
           touch "/tmp/digests/${digest#sha256:}"
