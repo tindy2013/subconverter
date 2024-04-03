@@ -9,327 +9,226 @@ concurrency:
   group: ${{ github.ref }}-${{ github.workflow }}
   cancel-in-progress: true
 
+env:
+  REGISTRY_IMAGE: tindy2013/subconverter
+
 jobs:
-  amd64_build:
-    name: Build AMD64 Image
+  gh_builds:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: [linux/amd64, linux/386]
     steps:
+      - name: Prepare
+        run: |
+          platform=${{ matrix.platform }}
+          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV    
+               
       - name: Checkout base
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY_IMAGE }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Docker login
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Get commit SHA
+        if: github.ref == 'refs/heads/master'
         id: vars
         run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       - name: Build and export
         id: build
-        if: github.ref == 'refs/heads/master'
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v5
         with:
-          platforms: linux/amd64
+          platforms: ${{ matrix.platform }}
           context: scripts/
-          tags: tindy2013/subconverter:latest
+          labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             SHA=${{ steps.vars.outputs.sha_short }}
-          outputs: type=image,push=true
+          outputs: type=image,name=${{ env.REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
 
-      - name: Replace tag without `v`
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: actions/github-script@v6
-        id: version
-        with:
-          script: |
-            return context.payload.ref.replace(/\/?refs\/tags\/v/, '')
-          result-encoding: string
-
-      - name: Build release and export
-        id: build_rel
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: docker/build-push-action@v3
-        with:
-          platforms: linux/amd64
-          context: scripts/
-          tags: tindy2013/subconverter:${{steps.version.outputs.result}}
-          outputs: type=image,push=true
-
-      - name: Save digest
-        if: github.ref == 'refs/heads/master'
-        run: echo ${{ steps.build.outputs.digest }} > /tmp/digest.txt
-
-      - name: Save release digest
-        if: startsWith(github.ref, 'refs/tags/')
-        run: echo ${{ steps.build_rel.outputs.digest }} > /tmp/digest.txt
+      - name: Export digest
+        run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.build.outputs.digest }}"
+          touch "/tmp/digests/${digest#sha256:}"
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: digest_amd64
-          path: /tmp/digest.txt
-
-  x86_build:
-    name: Build x86 Image
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout base
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Docker login
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Get commit SHA
-        id: vars
-        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-
-      - name: Build and export
-        id: build
-        if: github.ref == 'refs/heads/master'
-        uses: docker/build-push-action@v3
-        with:
-          platforms: linux/386
-          context: scripts/
-          tags: tindy2013/subconverter:latest
-          build-args: |
-            SHA=${{ steps.vars.outputs.sha_short }}
-          outputs: type=image,push=true
-
-      - name: Replace tag without `v`
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: actions/github-script@v6
-        id: version
-        with:
-          script: |
-            return context.payload.ref.replace(/\/?refs\/tags\/v/, '')
-          result-encoding: string
-
-      - name: Build release and export
-        id: build_rel
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: docker/build-push-action@v3
-        with:
-          platforms: linux/386
-          context: scripts/
-          tags: tindy2013/subconverter:${{steps.version.outputs.result}}
-          outputs: type=image,push=true
-
-      - name: Save digest
-        if: github.ref == 'refs/heads/master'
-        run: echo ${{ steps.build.outputs.digest }} > /tmp/digest.txt
-
-      - name: Save release digest
-        if: startsWith(github.ref, 'refs/tags/')
-        run: echo ${{ steps.build_rel.outputs.digest }} > /tmp/digest.txt
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: digest_386
-          path: /tmp/digest.txt
+          name: digest-${{ env.PLATFORM_PAIR }}
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
 
   armv7_build:
     name: Build ARMv7 Image
     runs-on: [self-hosted, linux, ARM]
     steps:
       - name: Checkout base
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY_IMAGE }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Docker login
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Get commit SHA
+        if: github.ref == 'refs/heads/master'
         id: vars
         run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       - name: Build and export
         id: build
-        if: github.ref == 'refs/heads/master'
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v5
         with:
           platforms: linux/arm/v7
           context: scripts/
-          tags: tindy2013/subconverter:latest
+          labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             SHA=${{ steps.vars.outputs.sha_short }}
             THREADS=4
           outputs: type=image,push=true
 
-      - name: Replace tag without `v`
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: actions/github-script@v6
-        id: version
-        with:
-          script: |
-            return context.payload.ref.replace(/\/?refs\/tags\/v/, '')
-          result-encoding: string
-
-      - name: Build release and export
-        id: build_rel
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: docker/build-push-action@v3
-        with:
-          platforms: linux/arm/v7
-          context: scripts/
-          tags: tindy2013/subconverter:${{steps.version.outputs.result}}
-          build-args: |
-            THREADS=4
-          outputs: type=image,push=true
-
-      - name: Save digest
-        if: github.ref == 'refs/heads/master'
-        run: echo ${{ steps.build.outputs.digest }} > /tmp/digest.txt
-
-      - name: Save release digest
-        if: startsWith(github.ref, 'refs/tags/')
-        run: echo ${{ steps.build_rel.outputs.digest }} > /tmp/digest.txt
+      - name: Export digest
+        run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.build.outputs.digest }}"
+          touch "/tmp/digests/${digest#sha256:}"
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: digest_armv7
-          path: /tmp/digest.txt
+          name: digest-arm-v7
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
 
   arm64_build:
     name: Build ARM64 Image
     runs-on: [self-hosted, linux, ARM64]
     steps:
       - name: Checkout base
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY_IMAGE }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Docker login
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Get commit SHA
+        if: github.ref == 'refs/heads/master'
         id: vars
         run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       - name: Build and export
         id: build
-        if: github.ref == 'refs/heads/master'
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v5
         with:
           platforms: linux/arm64
           context: scripts/
-          tags: tindy2013/subconverter:latest
+          labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             SHA=${{ steps.vars.outputs.sha_short }}
             THREADS=4
           outputs: type=image,push=true
 
-      - name: Replace tag without `v`
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: actions/github-script@v6
-        id: version
-        with:
-          script: |
-            return context.payload.ref.replace(/\/?refs\/tags\/v/, '')
-          result-encoding: string
-
-      - name: Build release and export
-        id: build_rel
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: docker/build-push-action@v3
-        with:
-          platforms: linux/arm64
-          context: scripts/
-          tags: tindy2013/subconverter:${{steps.version.outputs.result}}
-          build-args: |
-            THREADS=4
-          outputs: type=image,push=true
-
-      - name: Save digest
-        if: github.ref == 'refs/heads/master'
-        run: echo ${{ steps.build.outputs.digest }} > /tmp/digest.txt
-
-      - name: Save release digest
-        if: startsWith(github.ref, 'refs/tags/')
-        run: echo ${{ steps.build_rel.outputs.digest }} > /tmp/digest.txt
+      - name: Export digest
+        run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.build.outputs.digest }}"
+          touch "/tmp/digests/${digest#sha256:}"
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: digest_arm64
-          path: /tmp/digest.txt
+          name: digest-arm64
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
 
   build:
     name: Build
-    needs: [amd64_build, x86_build, armv7_build, arm64_build]
+    needs: [gh_builds, armv7_build, arm64_build]
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout base
-        uses: actions/checkout@v3
+      - name: Download digests
+        uses: actions/download-artifact@v4
         with:
-          fetch-depth: 0
+          path: /tmp/digests
+          pattern: digests-*
+          merge-multiple: true
 
-      # https://github.com/docker/setup-qemu-action
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-
-      # https://github.com/docker/setup-buildx-action
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-        with:
-          config-inline: |
-            [worker.oci]
-              max-parallelism = 1
+        uses: docker/setup-buildx-action@v3
 
-      - name: Download artifact
-        uses: actions/download-artifact@v3
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
         with:
-          path: /tmp/images/
+          images: ${{ env.REGISTRY_IMAGE }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Docker login
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Replace tag without `v`
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: actions/github-script@v6
-        id: version
-        with:
-          script: |
-            return context.payload.ref.replace(/\/?refs\/tags\/v/, '')
-          result-encoding: string
-
-      - name: Merge and push manifest on master branch
-        if: github.ref == 'refs/heads/master'
-        run: python scripts/merge_manifest.py
-
-      - name: Merge and push manifest on release
-        if: startsWith(github.ref, 'refs/tags/')
-        run: python scripts/merge_manifest.py ${{steps.version.outputs.result}}
+      - name: Create manifest list and push
+        working-directory: /tmp/digests
+        run: |
+          docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+            $(printf '${{ env.REGISTRY_IMAGE }}@sha256:%s ' *)      
+    
+      - name: Inspect image
+        run: |
+          docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:${{ steps.meta.outputs.version }}
