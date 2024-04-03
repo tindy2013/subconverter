@@ -50,6 +50,7 @@ node_pref:
   append_sub_userinfo: true
   clash_use_new_field_name: true
   clash_proxies_style: flow
+  clash_proxy_groups_style: block
   singbox_add_clash_modes: true
   rename_node:
 #  - {match: "\\(?((x|X)?(\\d+)(\\.?\\d+)?)((\\s?倍率?)|(x|X))\\)?", replace: "$1x"}

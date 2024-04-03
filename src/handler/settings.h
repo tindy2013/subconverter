@@ -48,7 +48,7 @@ struct Settings
     tribool UDPFlag, TFOFlag, skipCertVerify, TLS13Flag, enableInsert;
     bool enableSort = false, updateStrict = false;
     bool clashUseNewField = false, singBoxAddClashModes = true;
-    std::string clashProxiesStyle = "flow";
+    std::string clashProxiesStyle = "flow", clashProxyGroupsStyle = "block";
     std::string proxyConfig, proxyRuleset, proxySubscription;
     int updateInterval = 0;
     std::string sortScript, filterScript;

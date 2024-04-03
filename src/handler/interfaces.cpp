@@ -415,6 +415,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
         argExpandRulesets.define(true);
 
     ext.clash_proxies_style = global.clashProxiesStyle;
+    ext.clash_proxy_groups_style = global.clashProxyGroupsStyle;
 
     /// read preference from argument, assign global var if not in argument
     ext.tfo.define(argTFO).define(global.TFOFlag);
@@ -1073,6 +1074,7 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
     ext.skip_cert_verify = global.skipCertVerify;
     ext.tls13 = global.TLS13Flag;
     ext.clash_proxies_style = global.clashProxiesStyle;
+    ext.clash_proxy_groups_style = global.clashProxyGroupsStyle;
 
     ProxyGroupConfigs dummy_groups;
     proxyToClash(nodes, clash, dummy_groups, false, ext);
