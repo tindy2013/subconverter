@@ -3,7 +3,6 @@
 #include <mutex>
 #include <numeric>
 
-#include <inja.hpp>
 #include <yaml-cpp/yaml.h>
 
 #include "config/binding.h"
@@ -11,7 +10,6 @@
 #include "generator/config/ruleconvert.h"
 #include "generator/config/subexport.h"
 #include "generator/template/templates.h"
-#include "script/cron.h"
 #include "script/script_quickjs.h"
 #include "server/webserver.h"
 #include "utils/base64/base64.h"
@@ -24,9 +22,7 @@
 #include "utils/string.h"
 #include "utils/string_hash.h"
 #include "utils/system.h"
-#include "utils/system.h"
 #include "utils/urlencode.h"
-#include "utils/yamlcpp_extra.h"
 #include "interfaces.h"
 #include "multithread.h"
 #include "settings.h"
@@ -931,7 +927,7 @@ std::string simpleToClashR(RESPONSE_CALLBACK_ARGS)
         return "Please insert your subscription link instead of clicking the default link.";
     }
     request.argument.emplace("target", "clashr");
-    request.argument.emplace("url", urlEncode(url));
+    request.argument.emplace("url", url);
     return subconverter(request, response);
 }
 
@@ -1385,7 +1381,7 @@ int simpleGenerator()
         if(ini.item_exist("profile"))
         {
             profile = ini.get("profile");
-            request.argument.emplace("name", urlEncode(profile));
+            request.argument.emplace("name", profile);
             request.argument.emplace("token", global.accessToken);
             request.argument.emplace("expand", "true");
             content = getProfile(request, response);
