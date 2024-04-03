@@ -18,6 +18,7 @@ jobs:
     strategy:
       matrix:
         platform: [linux/amd64, linux/386]
+    name: Build ${{ matrix.platform }} Image
     steps:
       - name: Prepare
         run: |
@@ -119,7 +120,7 @@ jobs:
           build-args: |
             SHA=${{ steps.vars.outputs.sha_short }}
             THREADS=4
-          outputs: type=image,push=true
+          outputs: type=image,name=${{ env.REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
 
       - name: Export digest
         run: |
@@ -177,7 +178,7 @@ jobs:
           build-args: |
             SHA=${{ steps.vars.outputs.sha_short }}
             THREADS=4
-          outputs: type=image,push=true
+          outputs: type=image,name=${{ env.REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
 
       - name: Export digest
         run: |
