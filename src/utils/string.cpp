@@ -3,8 +3,9 @@
 #include <sstream>
 #include <string>
 #include <vector>
-#include <stdlib.h>
-#include <time.h>
+#include <cstdlib>
+#include <ctime>
+#include <random>
 
 #include "string.h"
 #include "map_extra.h"
@@ -57,25 +58,20 @@ void split(std::vector<std::string_view> &result, std::string_view s, char separ
 
     while (i != s.size())
     {
-        int flag = 0;
-        while(i != s.size() && flag == 0)
+        while(i != s.size())
         {
-            flag = 1;
             if(s[i] == separator)
             {
                 ++i;
-                flag = 0;
                 break;
             }
         }
 
-        flag = 0;
         string_size j = i;
-        while(j != s.size() && flag == 0)
+        while(j != s.size())
         {
             if(s[j] == separator)
             {
-                flag = 1;
                 break;
             }
             ++j;
@@ -141,7 +137,7 @@ std::string toUpper(const std::string &str)
 void processEscapeChar(std::string &str)
 {
     string_size pos = str.find('\\');
-    while(pos != str.npos)
+    while(pos != std::string::npos)
     {
         if(pos == str.size())
             break;
@@ -191,7 +187,7 @@ void processEscapeCharReverse(std::string &str)
 
 int parseCommaKeyValue(const std::string &input, const std::string &separator, string_pair_array &result)
 {
-    string_size bpos = 0, epos = input.find(',');
+    string_size bpos = 0, epos = input.find(separator);
     std::string kv;
     while(bpos < input.size())
     {
@@ -200,9 +196,9 @@ int parseCommaKeyValue(const std::string &input, const std::string &separator, s
         else if(epos && input[epos - 1] == '\\')
         {
             kv += input.substr(bpos, epos - bpos - 1);
-            kv += ',';
+            kv += separator;
             bpos = epos + 1;
-            epos = input.find(',', bpos);
+            epos = input.find(separator, bpos);
             continue;
         }
         kv += input.substr(bpos, epos - bpos);
@@ -213,9 +209,9 @@ int parseCommaKeyValue(const std::string &input, const std::string &separator, s
             result.emplace_back(kv.substr(0, eqpos), kv.substr(eqpos + 1));
         kv.clear();
         bpos = epos + 1;
-        epos = input.find(',', bpos);
+        epos = input.find(separator, bpos);
     }
-    if(kv.size())
+    if(!kv.empty())
     {
         string_size eqpos = kv.find('=');
         if(eqpos == std::string::npos)
@@ -328,12 +324,12 @@ std::string getUrlArg(const std::string &url, const std::string &request)
     while(pos)
     {
         pos = url.rfind(pattern, pos);
-        if(pos != url.npos)
+        if(pos != std::string::npos)
         {
             if(pos == 0 || url[pos - 1] == '&' || url[pos - 1] == '?')
             {
                 pos += pattern.size();
-                return url.substr(pos, url.find("&", pos) - pos);
+                return url.substr(pos, url.find('&', pos) - pos);
             }
         }
         else
@@ -410,23 +406,24 @@ bool isStrUTF8(const std::string &data)
 std::string randomStr(int len)
 {
     std::string retData;
-    srand(time(NULL));
-    int cnt = 0;
-    while(cnt < len)
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(0, 61);
+    for(int i = 0; i < len; i++)
     {
-        switch((rand() % 3))
+        int r = dis(gen);
+        if (r < 26)
         {
-        case 1:
-            retData += ('A' + rand() % 26);
-            break;
-        case 2:
-            retData += ('a' + rand() % 26);
-            break;
-        default:
-            retData += ('0' + rand() % 10);
-            break;
+            retData.push_back('a' + r);
         }
-        cnt++;
+        else if (r < 52)
+        {
+            retData.push_back('A' + r - 26);
+        }
+        else
+        {
+            retData.push_back('0' + r - 52);
+        }
     }
     return retData;
 }
@@ -451,7 +448,7 @@ int to_int(const std::string &str, int def_value)
 
 std::string join(const string_array &arr, const std::string &delimiter)
 {
-    if(arr.size() == 0)
+    if(arr.empty())
         return "";
     if(arr.size() == 1)
         return arr[0];
