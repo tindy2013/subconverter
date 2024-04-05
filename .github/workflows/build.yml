@@ -18,13 +18,17 @@ jobs:
         include:
           - arch: x86
             artifact: subconverter_linux32
+            os: ubuntu-latest
           - arch: amd64
             artifact: subconverter_linux64
+            os: ubuntu-latest
           - arch: armv7
             artifact: subconverter_armv7
+            os: [self-hosted, linux, ARM]
           - arch: aarch64
             artifact: subconverter_aarch64
-    runs-on: ubuntu-latest
+            os: [self-hosted, linux, ARM64]
+    runs-on: ${{ matrix.os }}
     name: Linux ${{ matrix.arch }} Build
     steps:
     - name: Checkout base
