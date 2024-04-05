@@ -12,75 +12,29 @@
 
 std::vector<std::string> split(const std::string &s, const std::string &separator)
 {
+    string_size bpos = 0, epos = s.find(separator);
     std::vector<std::string> result;
-    string_size i = 0;
-
-    while(i != s.size())
+    while(bpos < s.size())
     {
-        int flag = 0;
-        while(i != s.size() && flag == 0)
-        {
-            flag = 1;
-            for(char x : separator)
-                if(s[i] == x)
-                {
-                    ++i;
-                    flag = 0;
-                    break;
-                }
-        }
-
-        flag = 0;
-        string_size j = i;
-        while(j != s.size() && flag == 0)
-        {
-            for(char x : separator)
-                if(s[j] == x)
-                {
-                    flag = 1;
-                    break;
-                }
-            if(flag == 0)
-                ++j;
-        }
-        if(i != j)
-        {
-            result.push_back(s.substr(i, j-i));
-            i = j;
-        }
+        if(epos == std::string::npos)
+            epos = s.size();
+        result.push_back(s.substr(bpos, epos - bpos));
+        bpos = epos + separator.size();
+        epos = s.find(separator, bpos);
     }
     return result;
 }
 
 void split(std::vector<std::string_view> &result, std::string_view s, char separator)
 {
-    string_size i = 0;
-
-    while (i != s.size())
+    string_size bpos = 0, epos = s.find(separator);
+    while(bpos < s.size())
     {
-        while(i != s.size())
-        {
-            if(s[i] == separator)
-            {
-                ++i;
-                break;
-            }
-        }
-
-        string_size j = i;
-        while(j != s.size())
-        {
-            if(s[j] == separator)
-            {
-                break;
-            }
-            ++j;
-        }
-        if (i != j)
-        {
-            result.push_back(s.substr(i, j-i));
-            i = j;
-        }
+        if(epos == std::string_view::npos)
+            epos = s.size();
+        result.push_back(s.substr(bpos, epos - bpos));
+        bpos = epos + 1;
+        epos = s.find(separator, bpos);
     }
 }
 
