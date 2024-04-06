@@ -3,7 +3,7 @@
 
 #include "def.h"
 
-enum RulesetType
+enum class RulesetType
 {
     SurgeRuleset,
     QuantumultX,

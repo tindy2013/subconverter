@@ -1559,7 +1559,7 @@ void proxyToQuanX(std::vector<Proxy> &nodes, INIReader &ini, std::vector<Ruleset
         std::string proxies = join(filtered_nodelist, ", ");
 
         std::string singlegroup = type + "=" + x.Name + ", " + proxies;
-        if(type != "static")
+        if(x.Type != ProxyGroupType::Select && x.Type != ProxyGroupType::SSID)
         {
             singlegroup += ", check-interval=" + std::to_string(x.Interval);
             if(x.Tolerance > 0)

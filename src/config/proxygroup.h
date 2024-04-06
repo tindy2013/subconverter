@@ -3,7 +3,7 @@
 
 #include "def.h"
 
-enum ProxyGroupType
+enum class ProxyGroupType
 {
     Select,
     URLTest,
@@ -13,7 +13,7 @@ enum ProxyGroupType
     SSID
 };
 
-enum BalanceStrategy
+enum class BalanceStrategy
 {
     ConsistentHashing,
     RoundRobin
