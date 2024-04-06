@@ -73,7 +73,7 @@ def main():
             r.git.checkout(commit)
         elif branch is not None:
             logging.info(f"checking out to branch {branch}")
-            r.branches[branch].checkout()
+            r.git.checkout(branch)
         else:
             logging.info(f"checking out to default branch")
             r.active_branch.checkout()
