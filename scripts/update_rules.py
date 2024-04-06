@@ -26,6 +26,9 @@ def update_rules(repo_path: str, save_path: str, matches: list[str], keep_tree: 
     os.makedirs(save_path, exist_ok=True)
     for pattern in matches:
         files = glob.glob(os.path.join(repo_path, pattern), recursive=True)
+        if len(files) == 0:
+            logging.warn(f"no files found for pattern {pattern}")
+            continue
         for file in files:
             if os.path.isdir(file):
                 continue
@@ -68,15 +71,19 @@ def main():
         else:
             logging.info(f"repo {repo_path} exists")
             
-        if commit is not None:
-            logging.info(f"checking out to commit {commit}")
-            r.git.checkout(commit)
-        elif branch is not None:
-            logging.info(f"checking out to branch {branch}")
-            r.git.checkout(branch)
-        else:
-            logging.info(f"checking out to default branch")
-            r.active_branch.checkout()
+        try:
+            if commit is not None:
+                logging.info(f"checking out to commit {commit}")
+                r.git.checkout(commit)
+            elif branch is not None:
+                logging.info(f"checking out to branch {branch}")
+                r.git.checkout(branch)
+            else:
+                logging.info(f"checking out to default branch")
+                r.active_branch.checkout()
+        except Exception as e:
+            logging.error(f"checkout failed {e}")
+            continue
 
         update_rules(repo_path, save_path, matches, keep_tree)
 
