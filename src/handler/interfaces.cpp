@@ -1362,10 +1362,10 @@ int simpleGenerator()
 
     string_multimap allItems;
     std::string proxy = parseProxy(global.proxySubscription);
-    Request request;
-    Response response;
     for(std::string &x : sections)
     {
+        Request request;
+        Response response;
         response.status_code = 200;
         //std::cerr<<"Generating artifact '"<<x<<"'...\n";
         writeLog(0, "Generating artifact '" + x + "'...", LOG_LEVEL_INFO);

@@ -50,13 +50,20 @@ static httplib::Server::Handler makeHandler(const responseRoute &rr)
             req.headers.emplace(h.first.data(), h.second.data());
         }
         req.argument = request.params;
-        if (request.get_header_value("Content-Type") == "application/x-www-form-urlencoded")
+        if (request.method == "POST" || request.method == "PUT" || request.method == "PATCH")
         {
-            req.postdata = urlDecode(request.body);
-        }
-        else
-        {
-            req.postdata = request.body;
+            if (request.is_multipart_form_data() && !request.files.empty())
+            {
+                req.postdata = request.files.begin()->second.content;
+            }
+            else if (request.get_header_value("Content-Type") == "application/x-www-form-urlencoded")
+            {
+                req.postdata = urlDecode(request.body);
+            }
+            else
+            {
+                req.postdata = request.body;
+            }
         }
         auto result = rr.rc(req, resp);
         response.status = resp.status_code;

@@ -233,10 +233,10 @@ int main(int argc, char *argv[])
             }
         }
         std::string type = getUrlArg(request.argument, "type");
-        if(type == "form")
-            fileWrite(global.prefPath, getFormData(request.postdata), true);
-        else if(type == "direct")
+        if(type == "form" || type == "direct")
+        {
             fileWrite(global.prefPath, request.postdata, true);
+        }
         else
         {
             response.status_code = 501;
