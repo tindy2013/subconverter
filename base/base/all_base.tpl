@@ -378,7 +378,16 @@ enhanced-mode-by-rule = true
         "rules": [],
         "auto_detect_interface": true
     },
-    "experimental": {}
+    "experimental": {
+        "cache_file": {
+            "enabled": true,
+            "store_fakeip": true
+        },
+        "clash_api": {
+            "external_controller": "127.0.0.1:9090",
+            "external_ui": "dashboard"
+        }
+    }
 }
 
 {% endif %}
