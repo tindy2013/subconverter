@@ -74,7 +74,6 @@ namespace toml
                 if(v.contains("evaluate-before-use"))
                     conf.EvaluateBeforeUse = toml::find_or(v, "evaluate-before-use", conf.EvaluateBeforeUse.get());
                 break;
-                break;
             default:
                 throw toml::syntax_error("Proxy Group has incorrect type, should be one of following:\n  select, url-test, load-balance, fallback, relay, ssid", v.at("type").location());
             }
