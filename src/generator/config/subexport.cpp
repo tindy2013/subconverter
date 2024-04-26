@@ -691,7 +691,7 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
 
         processRemark(x.Remark, remarks_list);
 
-        std::string &hostname = x.Hostname, &username = x.Username, &password = x.Password, &method = x.EncryptMethod, &id = x.UserId, &transproto = x.TransferProtocol, &host = x.Host, &edge = x.Edge, &path = x.Path, &protocol = x.Protocol, &protoparam = x.ProtocolParam, &obfs = x.OBFS, &obfsparam = x.OBFSParam, &plugin = x.Plugin, &pluginopts = x.PluginOption;
+        std::string &hostname = x.Hostname, &username = x.Username, &password = x.Password, &method = x.EncryptMethod, &id = x.UserId, &transproto = x.TransferProtocol, &host = x.Host, &edge = x.Edge, &path = x.Path, &protocol = x.Protocol, &protoparam = x.ProtocolParam, &obfs = x.OBFS, &obfsparam = x.OBFSParam, &plugin = x.Plugin, &pluginopts = x.PluginOption, &underlying_proxy = x.UnderlyingProxy;
         std::string port = std::to_string(x.Port);
         bool &tlssecure = x.TLSSecure;
 
@@ -704,7 +704,9 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
         std::string proxy, section, real_section;
         string_array args, headers;
 
-        switch(x.Type)
+        std::stringstream ss;
+
+        switch (x.Type)
         {
         case ProxyType::Shadowsocks:
             if(surge_ver >= 3 || surge_ver == -3)
@@ -833,7 +835,8 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
         case ProxyType::WireGuard:
             if(surge_ver < 4 && surge_ver != -3)
                 continue;
-            section = randomStr(5);
+            ss << std::hex << hash_(x.Remark);
+            section = ss.str().substr(0, 5);
             real_section = "WireGuard " + section;
             proxy = "wireguard, section-name=" + section;
             if(!x.TestUrl.empty())
@@ -861,7 +864,10 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
         if(!udp.is_undef())
             proxy += ", udp-relay=" + udp.get_str();
 
-        if(ext.nodelist)
+        if (underlying_proxy != "")
+            proxy += ", underlying-proxy=" + underlying_proxy;
+
+        if (ext.nodelist)
             output_nodelist += x.Remark + " = " + proxy + "\n";
         else
         {
