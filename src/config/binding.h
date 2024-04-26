@@ -64,6 +64,9 @@ namespace toml
             case "ssid"_hash:
                 conf.Type = ProxyGroupType::SSID;
                 break;
+            case "smart"_hash:
+                conf.Type = ProxyGroupType::Smart;
+                break;
             default:
                 throw toml::syntax_error("Proxy Group has incorrect type, should be one of following:\n  select, url-test, load-balance, fallback, relay, ssid", v.at("type").location());
             }
@@ -219,6 +222,9 @@ namespace INIBinding
                     break;
                 case "ssid"_hash:
                     conf.Type = ProxyGroupType::SSID;
+                    break;
+                case "smart"_hash:
+                    conf.Type = ProxyGroupType::Smart;
                     break;
                 default:
                     continue;

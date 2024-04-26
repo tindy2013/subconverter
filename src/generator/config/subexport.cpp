@@ -518,7 +518,10 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
         string_array filtered_nodelist;
 
         singlegroup["name"] = x.Name;
-        singlegroup["type"] = x.TypeStr();
+        if (x.Type == ProxyGroupType::Smart)
+            singlegroup["type"] = "url-test";
+        else
+            singlegroup["type"] = x.TypeStr();
 
         switch(x.Type)
         {
@@ -527,6 +530,8 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
             break;
         case ProxyGroupType::LoadBalance:
             singlegroup["strategy"] = x.StrategyStr();
+            [[fallthrough]];
+        case ProxyGroupType::Smart:
             [[fallthrough]];
         case ProxyGroupType::URLTest:
             if(!x.Lazy.is_undef())
@@ -890,6 +895,7 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
         switch(x.Type)
         {
         case ProxyGroupType::Select:
+        case ProxyGroupType::Smart:
         case ProxyGroupType::URLTest:
         case ProxyGroupType::Fallback:
             break;
