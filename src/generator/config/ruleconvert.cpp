@@ -28,7 +28,7 @@ std::string convertRuleset(const std::string &content, int type)
     if(type == RULESET_SURGE)
         return content;
 
-    if(regFind(content, "^payload:\\r?\\n")) /// Clash
+    if(regFind(content, "^payload:\\r?\\n") || (type == RULESET_CLASH_DOMAIN || type == RULESET_CLASH_IPCIDR)) /// Clash
     {
         output = regReplace(regReplace(content, "payload:\\r?\\n", "", true), R"(\s?^\s*-\s+('|"?)(.*)\1$)", "\n$2", true);
         if(type == RULESET_CLASH_CLASSICAL) /// classical type
