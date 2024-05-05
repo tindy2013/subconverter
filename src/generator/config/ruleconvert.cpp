@@ -28,7 +28,7 @@ std::string convertRuleset(const std::string &content, int type)
     if(type == RULESET_SURGE)
         return content;
 
-    if(regFind(content, "^payload:\\r?\\n")) /// Clash
+    if(regFind(content, "^payload:\\r?\\n") || (type == RULESET_CLASH_DOMAIN || type == RULESET_CLASH_IPCIDR)) /// Clash
     {
         output = regReplace(regReplace(content, "payload:\\r?\\n", "", true), R"(\s?^\s*-\s+('|"?)(.*)\1$)", "\n$2", true);
         if(type == RULESET_CLASH_CLASSICAL) /// classical type
@@ -53,15 +53,18 @@ std::string convertRuleset(const std::string &content, int type)
 
             if(!strLine.empty() && (strLine[0] != ';' && strLine[0] != '#' && !(lineSize >= 2 && strLine[0] == '/' && strLine[1] == '/')))
             {
-                pos = strLine.find('/');
-                if(pos != std::string::npos) /// ipcidr
+                if(type == RULESET_CLASH_IPCIDR)
                 {
-                    if(isIPv4(strLine.substr(0, pos)))
-                        output += "IP-CIDR,";
-                    else
-                        output += "IP-CIDR6,";
-                }
-                else
+                    pos = strLine.find('/');
+                    if(pos != std::string::npos) /// ipcidr
+                    {
+                        if(isIPv4(strLine.substr(0, pos)))
+                            output += "IP-CIDR,";
+                        else
+                            output += "IP-CIDR6,";
+                    }
+                } 
+                else if (type == RULESET_CLASH_DOMAIN)
                 {
                     if(strLine[0] == '.' || (lineSize >= 2 && strLine[0] == '+' && strLine[1] == '.')) /// suffix
                     {
@@ -81,6 +84,37 @@ std::string convertRuleset(const std::string &content, int type)
                     else
                         output += "DOMAIN,";
                 }
+                else
+                {
+                    pos = strLine.find('/');
+                    if(pos != std::string::npos) /// ipcidr
+                    {
+                        if(isIPv4(strLine.substr(0, pos)))
+                            output += "IP-CIDR,";
+                        else
+                            output += "IP-CIDR6,";
+                    }
+                    else
+                    {
+                        if(strLine[0] == '.' || (lineSize >= 2 && strLine[0] == '+' && strLine[1] == '.')) /// suffix
+                        {
+                            bool keyword_flag = false;
+                            while(endsWith(strLine, ".*"))
+                            {
+                                keyword_flag = true;
+                                strLine.erase(strLine.size() - 2);
+                            }
+                            output += "DOMAIN-";
+                            if(keyword_flag)
+                                output += "KEYWORD,";
+                            else
+                                output += "SUFFIX,";
+                            strLine.erase(0, 2 - (strLine[0] == '.'));
+                        }
+                        else
+                            output += "DOMAIN,";
+                    }
+                } 
             }
             output += strLine;
             output += '\n';
