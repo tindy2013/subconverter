@@ -245,6 +245,10 @@ key = "clash.log_level"
 value = "info"
 
 [[template.globals]]
+key = "clash.external_controller"
+value = "127.0.0.1:9090"
+
+[[template.globals]]
 key = "singbox.allow_lan"
 value = "true"
 
