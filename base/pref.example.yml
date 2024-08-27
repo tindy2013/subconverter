@@ -109,9 +109,10 @@ template:
   - {key: clash.socks_port, value: 7891}
   - {key: clash.allow_lan, value: true}
   - {key: clash.log_level, value: info}
+  - {key: clash.external_controller, value: '127.0.0.1:9090'}
   - {key: singbox.allow_lan, value: true}
   - {key: singbox.mixed_port, value: 2080}
-  
+
 aliases:
   - {uri: /v, target: /version}
   - {uri: /clash, target: "/sub?target=clash"}
