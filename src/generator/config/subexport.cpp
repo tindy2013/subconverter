@@ -514,7 +514,7 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
             if (!x.Alpn.empty())
                 singleproxy["alpn"] = x.Alpn;
             if (!x.Ca.empty())
-                singleproxy["ca-str"] = fileGet(x.Ca);
+                singleproxy["ca"] = x.Ca;
             if (!x.CaStr.empty())
                 singleproxy["ca-str"] = x.CaStr;
             if (x.RecvWindowConn)
@@ -547,7 +547,7 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
             if (!x.Alpn.empty())
                 singleproxy["alpn"] = x.Alpn;
             if (!x.Ca.empty())
-                singleproxy["ca-str"] = fileGet(x.Ca);
+                singleproxy["ca"] = x.Ca;
             if (!x.CaStr.empty())
                 singleproxy["ca-str"] = x.CaStr;
             if (x.CWND)
