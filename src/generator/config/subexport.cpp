@@ -2370,7 +2370,7 @@ void proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::v
                 if (!x.Ca.empty())
                 {
                     rapidjson::Value ca_str;
-                    ca_str.SetString(fileGet(x.Ca).c_str(), allocator);
+                    ca_str.SetString(x.Ca.c_str(), allocator);
                     tls.AddMember("certificate", ca_str, allocator);
                 }
                 if (!x.CaStr.empty())
@@ -2409,7 +2409,7 @@ void proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::v
                 if (!x.Ca.empty())
                 {
                     rapidjson::Value ca_str(rapidjson::kStringType);
-                    ca_str.SetString(fileGet(x.Ca).c_str(), allocator);
+                    ca_str.SetString(x.Ca.c_str(), allocator);
                     tls.AddMember("certificate", ca_str, allocator);
                 }
                 if (!x.CaStr.empty())
