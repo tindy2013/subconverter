@@ -64,6 +64,16 @@ namespace toml
             case "ssid"_hash:
                 conf.Type = ProxyGroupType::SSID;
                 break;
+            case "smart"_hash:
+                conf.Type = ProxyGroupType::Smart;
+                conf.Url = toml::find<String>(v, "url");
+                conf.Interval = toml::find<Integer>(v, "interval");
+                conf.Tolerance = toml::find_or<Integer>(v, "tolerance", 0);
+                if(v.contains("lazy"))
+                    conf.Lazy = toml::find_or<bool>(v, "lazy", false);
+                if(v.contains("evaluate-before-use"))
+                    conf.EvaluateBeforeUse = toml::find_or(v, "evaluate-before-use", conf.EvaluateBeforeUse.get());
+                break;
             default:
                 throw toml::syntax_error("Proxy Group has incorrect type, should be one of following:\n  select, url-test, load-balance, fallback, relay, ssid", v.at("type").location());
             }
@@ -219,6 +229,9 @@ namespace INIBinding
                     break;
                 case "ssid"_hash:
                     conf.Type = ProxyGroupType::SSID;
+                    break;
+                case "smart"_hash:
+                    conf.Type = ProxyGroupType::Smart;
                     break;
                 default:
                     continue;
