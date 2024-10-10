@@ -74,7 +74,7 @@ singbox_rule_base = "base/all_base.tpl"
 
 proxy_config = "SYSTEM"
 proxy_ruleset = "SYSTEM"
-proxy_subscription = "NONE"
+proxy_subscription = "SYSTEM"
 
 # Append a proxy type string ([SS] [SSR] [VMess]) to node remark.
 append_proxy_type = false
