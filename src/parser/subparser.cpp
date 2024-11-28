@@ -158,9 +158,10 @@ void hysteriaConstruct(
     const std::string &hop_interval,
     const std::string &alpn,
     tribool tfo,
-    tribool scv
+    tribool scv,
+    const std::string &underlying_proxy = ""
 ) {
-    commonConstruct(node, ProxyType::Hysteria, group, remarks, server, port, tribool(), tfo, scv, tribool());
+    commonConstruct(node, ProxyType::Hysteria, group, remarks, server, port, tribool(), tfo, scv, tribool(), underlying_proxy);
     node.Ports = ports;
     node.Protocol = protocol;
     node.OBFSParam = obfs_protocol;
@@ -207,8 +208,8 @@ void hysteriaConstruct(
     }
 }
 
-void hysteria2Construct(Proxy &node, const std::string &group, const std::string &remarks, const std::string &server, const std::string &port,const std::string &up, const std::string &down, const std::string &password, const std::string &obfs, const std::string &obfs_password, const std::string &sni, const std::string &fingerprint, const std::string &alpn, const std::string &ca, const std::string &ca_str, const std::string &cwnd, tribool tfo, tribool scv) {
-    commonConstruct(node, ProxyType::Hysteria2, group, remarks, server, port, tribool(), tfo, scv, tribool());
+void hysteria2Construct(Proxy &node, const std::string &group, const std::string &remarks, const std::string &server, const std::string &port,const std::string &up, const std::string &down, const std::string &password, const std::string &obfs, const std::string &obfs_password, const std::string &sni, const std::string &fingerprint, const std::string &alpn, const std::string &ca, const std::string &ca_str, const std::string &cwnd, tribool tfo, tribool scv, const std::string &underlying_proxy) {
+    commonConstruct(node, ProxyType::Hysteria2, group, remarks, server, port, tribool(), tfo, scv, tribool(), underlying_proxy);
     node.UpSpeed = to_int(up);
     node.DownSpeed = to_int(down);
     node.Password = password;
@@ -1319,7 +1320,7 @@ void explodeClash(Node yamlnode, std::vector<Proxy> &nodes)
                 singleproxy["disable_mtu_discovery"] >>= disable_mtu_discovery;
             singleproxy["hop-interval"] >>= hop_interval;
 
-            hysteriaConstruct(node, group, ps, server, port, ports, protocol, obfs_protocol, up, up_speed, down, down_speed, auth, auth_str, obfs, sni, fingerprint, ca, ca_str, recv_window_conn, recv_window, disable_mtu_discovery, hop_interval, alpn, tfo, scv);
+            hysteriaConstruct(node, group, ps, server, port, ports, protocol, obfs_protocol, up, up_speed, down, down_speed, auth, auth_str, obfs, sni, fingerprint, ca, ca_str, recv_window_conn, recv_window, disable_mtu_discovery, hop_interval, alpn, tfo, scv, underlying_proxy);
             break;
         case "hysteria2"_hash:
             group = HYSTERIA2_DEFAULT_GROUP;
@@ -1340,7 +1341,7 @@ void explodeClash(Node yamlnode, std::vector<Proxy> &nodes)
             singleproxy["ca-str"] >>= ca_str;
             singleproxy["cwnd"] >>= cwnd;
 
-            hysteria2Construct(node, group, ps, server, port, up, down, password, obfs, obfs_password, sni, fingerprint, alpn, ca, ca_str, cwnd, tfo, scv );
+            hysteria2Construct(node, group, ps, server, port, up, down, password, obfs, obfs_password, sni, fingerprint, alpn, ca, ca_str, cwnd, tfo, scv, underlying_proxy);
             break;
 
         default:
