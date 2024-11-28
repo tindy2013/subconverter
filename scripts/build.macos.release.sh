@@ -41,7 +41,7 @@ sudo install -d /usr/local/include/date/
 sudo install -m644 libcron/externals/date/include/date/* /usr/local/include/date/
 cd ..
 
-git clone https://github.com/ToruNiina/toml11 --depth=1
+git clone https://github.com/ToruNiina/toml11 --branch="v3.7.1" --depth=1
 cd toml11
 cmake -DCMAKE_CXX_STANDARD=11 .
 sudo make install -j6 > /dev/null

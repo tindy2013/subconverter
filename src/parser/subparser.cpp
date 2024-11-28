@@ -132,6 +132,101 @@ void wireguardConstruct(Proxy &node, const std::string &group, const std::string
     node.ClientId = clientId;
 }
 
+void hysteriaConstruct(
+    Proxy &node,
+    const std::string &group,
+    const std::string &remarks,
+    const std::string &server,
+    const std::string &port,
+    const std::string &ports,
+    const std::string &protocol,
+    const std::string &obfs_protocol,
+    const std::string &up,
+    const std::string &up_speed,
+    const std::string &down,
+    const std::string &down_speed,
+    const std::string &auth,
+    const std::string &auth_str,
+    const std::string &obfs,
+    const std::string &sni,
+    const std::string &fingerprint,
+    const std::string &ca,
+    const std::string &ca_str,
+    const std::string &recv_window_conn,
+    const std::string &recv_window,
+    const std::string &disable_mtu_discovery,
+    const std::string &hop_interval,
+    const std::string &alpn,
+    tribool tfo,
+    tribool scv,
+    const std::string &underlying_proxy = ""
+) {
+    commonConstruct(node, ProxyType::Hysteria, group, remarks, server, port, tribool(), tfo, scv, tribool(), underlying_proxy);
+    node.Ports = ports;
+    node.Protocol = protocol;
+    node.OBFSParam = obfs_protocol;
+    if (!up.empty())
+    {
+        if (up.length() > 4 && up.find("bps") == up.length() - 3)
+        
+            node.Up = up;
+        else if (to_int(up))
+        {
+            node.UpSpeed = to_int(up);
+            node.Up = up + " Mbps";
+        }
+    }
+    if (!up_speed.empty())
+        node.UpSpeed = to_int(up_speed);
+    if (!down.empty())
+    {
+        if (down.length() > 4 && down.find("bps") == down.length() - 3)
+            node.Down = down;
+        else if (to_int(down))
+        {
+            node.DownSpeed = to_int(down);
+            node.Down = down + " Mbps";
+        }
+    }
+    if (!down_speed.empty())
+        node.DownSpeed = to_int(down_speed);
+    node.AuthStr = auth_str;
+    if (!auth.empty())
+        node.AuthStr = base64Decode(auth);
+    node.OBFS = obfs;
+    node.SNI = sni;
+    node.Fingerprint = fingerprint;
+    node.Ca = ca;
+    node.CaStr = ca_str;
+    node.RecvWindowConn = to_int(recv_window_conn);
+    node.RecvWindow = to_int(recv_window);
+    node.DisableMtuDiscovery = disable_mtu_discovery;
+    node.HopInterval = to_int(hop_interval);
+    if (!alpn.empty())
+    {
+        node.Alpn = StringArray {alpn};
+    }
+}
+
+void hysteria2Construct(Proxy &node, const std::string &group, const std::string &remarks, const std::string &server, const std::string &port,const std::string &up, const std::string &down, const std::string &password, const std::string &obfs, const std::string &obfs_password, const std::string &sni, const std::string &fingerprint, const std::string &alpn, const std::string &ca, const std::string &ca_str, const std::string &cwnd, tribool tfo, tribool scv, const std::string &underlying_proxy) {
+    commonConstruct(node, ProxyType::Hysteria2, group, remarks, server, port, tribool(), tfo, scv, tribool(), underlying_proxy);
+    node.UpSpeed = to_int(up);
+    node.DownSpeed = to_int(down);
+    node.Password = password;
+    node.OBFS = obfs;
+    node.OBFSParam = obfs_password;
+    node.SNI = sni;
+    node.Fingerprint = fingerprint;
+    if (!alpn.empty())
+    {
+        node.Alpn = StringArray {alpn};
+    }
+    node.Ca = ca;
+    node.CaStr = ca_str;
+    node.CWND = to_int(cwnd);
+
+}
+
 void explodeVmess(std::string vmess, Proxy &node)
 {
     std::string version, ps, add, port, type, id, aid, net, path, host, tls, sni;
@@ -981,6 +1076,8 @@ void explodeClash(Node yamlnode, std::vector<Proxy> &nodes)
     std::string protocol, protoparam, obfs, obfsparam; //ssr
     std::string user; //socks
     std::string ip, ipv6, private_key, public_key, mtu; //wireguard
+    std::string ports, obfs_protocol, up, up_speed, down, down_speed, auth, auth_str,/* obfs, sni,*/ fingerprint, ca, ca_str, recv_window_conn, recv_window, disable_mtu_discovery, hop_interval, alpn; //hysteria
+    std::string obfs_password, cwnd; //hysteria2
     string_array dns_server;
     tribool udp, tfo, scv;
     Node singleproxy;
@@ -998,6 +1095,7 @@ void explodeClash(Node yamlnode, std::vector<Proxy> &nodes)
         if(port.empty() || port == "0")
             continue;
         udp = safe_as<std::string>(singleproxy["udp"]);
+        tfo = safe_as<std::string>(singleproxy["fast-open"]);
         scv = safe_as<std::string>(singleproxy["skip-cert-verify"]);
         switch(hash_(proxytype))
         {
@@ -1193,6 +1291,59 @@ void explodeClash(Node yamlnode, std::vector<Proxy> &nodes)
 
             wireguardConstruct(node, group, ps, server, port, ip, ipv6, private_key, public_key, password, dns_server, mtu, "0", "", "", udp, underlying_proxy);
             break;
+        case "hysteria"_hash:
+            group = HYSTERIA_DEFAULT_GROUP;
+            singleproxy["ports"] >>= ports;
+            singleproxy["protocol"] >>= protocol;
+            singleproxy["obfs-protocol"] >>= obfs_protocol;
+            singleproxy["up"] >>= up;
+            singleproxy["up-speed"] >>= up_speed;
+            singleproxy["down"] >>= down;
+            singleproxy["down-speed"] >>= down_speed;
+            singleproxy["auth"] >>= auth;
+            singleproxy["auth-str"] >>= auth_str;
+            if (auth_str.empty())
+                singleproxy["auth_str"] >>= auth_str;
+            singleproxy["obfs"] >>= obfs;
+            singleproxy["sni"] >>= sni;
+            singleproxy["fingerprint"] >>= fingerprint;
+            if (singleproxy["alpn"].IsSequence())
+                singleproxy["alpn"][0] >>= alpn;
+            else
+                singleproxy["alpn"] >>= alpn;
+            singleproxy["ca"] >>= ca;
+            singleproxy["ca-str"] >>= ca_str;
+            singleproxy["recv-window-conn"] >>= recv_window_conn;
+            singleproxy["recv-window"] >>= recv_window;
+            singleproxy["disable-mtu-discovery"] >>= disable_mtu_discovery;
+            if (disable_mtu_discovery.empty())
+                singleproxy["disable_mtu_discovery"] >>= disable_mtu_discovery;
+            singleproxy["hop-interval"] >>= hop_interval;
+
+            hysteriaConstruct(node, group, ps, server, port, ports, protocol, obfs_protocol, up, up_speed, down, down_speed, auth, auth_str, obfs, sni, fingerprint, ca, ca_str, recv_window_conn, recv_window, disable_mtu_discovery, hop_interval, alpn, tfo, scv, underlying_proxy);
+            break;
+        case "hysteria2"_hash:
+            group = HYSTERIA2_DEFAULT_GROUP;
+            singleproxy["up"] >>= up;
+            singleproxy["down"] >>= down;
+            singleproxy["password"] >>= password;
+            if (password.empty())
+                singleproxy["auth"] >>= password; 
+            singleproxy["obfs"] >>= obfs;
+            singleproxy["obfs-password"] >>= obfs_password;
+            singleproxy["sni"] >>= sni;
+            singleproxy["fingerprint"] >>= fingerprint;
+            if (singleproxy["alpn"].IsSequence())
+                singleproxy["alpn"][0] >>= alpn;
+            else
+                singleproxy["alpn"] >>= alpn;
+            singleproxy["ca"] >>= ca;
+            singleproxy["ca-str"] >>= ca_str;
+            singleproxy["cwnd"] >>= cwnd;
+
+            hysteria2Construct(node, group, ps, server, port, up, down, password, obfs, obfs_password, sni, fingerprint, alpn, ca, ca_str, cwnd, tfo, scv, underlying_proxy);
+            break;
+
         default:
             continue;
         }
@@ -1326,6 +1477,68 @@ void explodeKitsunebi(std::string kit, Proxy &node)
         remarks = add + ":" + port;
 
     vmessConstruct(node, V2RAY_DEFAULT_GROUP, remarks, add, port, type, id, aid, net, cipher, path, host, "", tls, "");
+}
+
+
+void explodeStdHysteria2(std::string hysteria2, Proxy &node) {
+    std::string add, port, password, host, insecure, up, down, alpn, obfs, obfs_password, remarks, sni, fingerprint;
+    std::string addition;
+    tribool scv;
+    hysteria2 = hysteria2.substr(12);
+    string_size pos;
+
+    pos = hysteria2.rfind("#");
+    if (pos != hysteria2.npos) {
+        remarks = urlDecode(hysteria2.substr(pos + 1));
+        hysteria2.erase(pos);
+    }
+
+    pos = hysteria2.rfind("?");
+    if (pos != hysteria2.npos) {
+        addition = hysteria2.substr(pos + 1);
+        hysteria2.erase(pos);
+    }
+
+    if (strFind(hysteria2, "@")) {
+        if (regGetMatch(hysteria2, R"(^(.*?)@(.*)[:](\d+)$)", 4, 0, &password, &add, &port))
+            return;
+    } else {
+        password = getUrlArg(addition, "password");
+        if (password.empty())
+            return;
+
+        if (!strFind(hysteria2, ":"))
+            return;
+
+        if (regGetMatch(hysteria2, R"(^(.*)[:](\d+)$)", 3, 0, &add, &port))
+            return;
+    }
+
+    scv = getUrlArg(addition, "insecure");
+    up = getUrlArg(addition, "up");
+    down = getUrlArg(addition, "down");
+    // the alpn is not supported officially yet
+    alpn = getUrlArg(addition, "alpn");
+    obfs = getUrlArg(addition, "obfs");
+    obfs_password = getUrlArg(addition, "obfs-password");
+    sni = getUrlArg(addition, "sni");
+    fingerprint = getUrlArg(addition, "pinSHA256");
+    if (remarks.empty())
+        remarks = add + ":" + port;
+
+    hysteria2Construct(node, HYSTERIA2_DEFAULT_GROUP, remarks, add, port, up, down, password, obfs, obfs_password, sni, fingerprint, "", "", "", "", tribool(), scv, "");
+    return;
+}
+
+void explodeHysteria2(std::string hysteria2, Proxy &node) {
+    hysteria2 = regReplace(hysteria2, "(hysteria2|hy2)://", "hysteria2://");
+
+    // replace /? with ?
+    hysteria2 = regReplace(hysteria2, "/\\?", "?", true, false);
+    if (regMatch(hysteria2, "hysteria2://(.*?)[:](.*)")) {
+        explodeStdHysteria2(hysteria2, node);
+        return;
+    }
 }
 
 // peer = (public-key = bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=, allowed-ips = "0.0.0.0/0, ::/0", endpoint = engage.cloudflareclient.com:2408, client-id = 139/184/125),(public-key = bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=, endpoint = engage.cloudflareclient.com:2408)
@@ -2223,6 +2436,8 @@ void explode(const std::string &link, Proxy &node)
         explodeNetch(link, node);
     else if(startsWith(link, "trojan://"))
         explodeTrojan(link, node);
+    else if (strFind(link, "hysteria2://") || strFind(link, "hy2://"))
+        explodeHysteria2(link, node);
     else if(isLink(link))
         explodeHTTPSub(link, node);
 }

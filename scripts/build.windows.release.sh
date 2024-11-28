@@ -1,7 +1,7 @@
 #!/bin/bash
 set -xe
 
-git clone https://github.com/curl/curl --depth=1 --branch curl-8_4_0
+git clone https://github.com/curl/curl --depth=1 --branch curl-8_6_0
 cd curl
 cmake -DCMAKE_BUILD_TYPE=Release -DCURL_USE_LIBSSH2=OFF -DHTTP_ONLY=ON -DCURL_USE_SCHANNEL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_CURL_EXE=OFF -DCMAKE_INSTALL_PREFIX="$MINGW_PREFIX" -G "Unix Makefiles" -DHAVE_LIBIDN2=OFF -DCURL_USE_LIBPSL=OFF .
 make install -j4
@@ -38,7 +38,7 @@ cmake -DRAPIDJSON_BUILD_DOC=OFF -DRAPIDJSON_BUILD_EXAMPLES=OFF -DRAPIDJSON_BUILD
 make install -j4
 cd ..
 
-git clone https://github.com/ToruNiina/toml11 --depth=1
+git clone https://github.com/ToruNiina/toml11 --branch v3.8.1 --depth=1
 cd toml11
 cmake -DCMAKE_INSTALL_PREFIX="$MINGW_PREFIX" -G "Unix Makefiles" -DCMAKE_CXX_STANDARD=11 .
 make install -j4
