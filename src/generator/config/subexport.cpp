@@ -271,9 +271,9 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
 
         processRemark(x.Remark, remarks_list, false);
 
-        tribool udp = ext.udp;
-        tribool scv = ext.skip_cert_verify;
+        tribool udp = ext.udp, tfo = ext.tfo, scv = ext.skip_cert_verify;
         udp.define(x.UDP);
+        tfo.define(x.TCPFastOpen);
         scv.define(x.AllowInsecure);
 
         singleproxy["name"] = x.Remark;
@@ -561,6 +561,8 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
         // sees in https://dreamacro.github.io/clash/configuration/outbound.html#snell
         if(udp && x.Type != ProxyType::Snell)
             singleproxy["udp"] = true;
+        if(!tfo.is_undef())
+            singleproxy["tfo"] = tfo.get();
         if(proxy_block)
             singleproxy.SetStyle(YAML::EmitterStyle::Block);
         else
