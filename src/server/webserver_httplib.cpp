@@ -170,6 +170,7 @@ int WebServer::start_web_server_multi(listener_args *args)
         {
             res.set_header("Access-Control-Allow-Headers", req.get_header_value("Access-Control-Request-Headers"));
         }
+        res.set_header("Access-Control-Allow-Origin", "*");
         return httplib::Server::HandlerResponse::Unhandled;
     });
     for (auto &x : redirect_map)
