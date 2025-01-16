@@ -34,7 +34,7 @@ cmake -DCMAKE_BUILD_TYPE=Release .
 make libcron install -j3
 cd ..
 
-git clone https://github.com/ToruNiina/toml11 --branch="v3.7.1" --depth=1
+git clone https://github.com/ToruNiina/toml11 --branch="v4.3.0" --depth=1
 cd toml11
 cmake -DCMAKE_CXX_STANDARD=11 .
 make install -j4
