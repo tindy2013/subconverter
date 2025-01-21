@@ -4,22 +4,3 @@ cmake-build-debug
 .idea
 base/cache
 build
-
-# Build files
-/CMakeFiles
-/CMakeCache.txt
-/Makefile
-/cmake_install.cmake
-/tmp
-/subconverter
-/base/subconverter
-/base
-/*.a
-
-# Dependencies for development
-/curl
-/libcron
-/quickjspp
-/toml11
-/yaml-cpp
-/rapidjson
