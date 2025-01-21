@@ -530,6 +530,8 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
             break;
         case ProxyType::Hysteria2:
             singleproxy["type"] = "hysteria2";
+            if (!x.Ports.empty())
+                singleproxy["ports"] = x.Ports;
             if (!x.Up.empty())
                 singleproxy["up"] = x.UpSpeed;
             if (!x.Down.empty())
@@ -552,6 +554,8 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
                 singleproxy["ca-str"] = x.CaStr;
             if (x.CWND)
                 singleproxy["cwnd"] = x.CWND;
+            if (x.HopInterval)
+                singleproxy["hop-interval"] = x.HopInterval;
             break;
         default:
             continue;
@@ -2395,6 +2399,8 @@ void proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::v
             case ProxyType::Hysteria2:
             {
                 addSingBoxCommonMembers(proxy, x, "hysteria2", allocator);
+                if (!x.Ports.empty())
+                    proxy.AddMember("server_ports", stringArrayToJsonArray(x.Ports, ",", allocator), allocator);
                 if (!x.Up.empty())
                     proxy.AddMember("up_mbps", x.UpSpeed, allocator);
                 if (!x.Down.empty())
@@ -2409,7 +2415,8 @@ void proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::v
                 }
                 if (!x.Password.empty())
                     proxy.AddMember("password", rapidjson::StringRef(x.Password.c_str()), allocator);
-                
+                if (x.HopInterval)
+                    proxy.AddMember("hop_interval", rapidjson::Value(formatSingBoxInterval(x.HopInterval).c_str(), allocator), allocator);
                 rapidjson::Value tls(rapidjson::kObjectType);
                 tls.AddMember("enabled", true, allocator);
                 if (!scv.is_undef())
