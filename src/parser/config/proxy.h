@@ -20,7 +20,9 @@ enum class ProxyType
     HTTP,
     HTTPS,
     SOCKS5,
-    WireGuard
+    WireGuard,
+    Hysteria,
+    Hysteria2
 };
 
 inline String getProxyTypeName(ProxyType type)
@@ -43,6 +45,12 @@ inline String getProxyTypeName(ProxyType type)
         return "HTTPS";
     case ProxyType::SOCKS5:
         return "SOCKS5";
+    case ProxyType::WireGuard:
+        return "WireGuard";
+    case ProxyType::Hysteria:
+        return "Hysteria";
+    case ProxyType::Hysteria2:
+        return "Hysteria2";
     default:
         return "Unknown";
     }
@@ -101,6 +109,24 @@ struct Proxy
     uint16_t KeepAlive = 0;
     String TestUrl;
     String ClientId;
+
+    String Ports;
+    String Up;
+    uint32_t UpSpeed;
+    String Down;
+    uint32_t DownSpeed;
+    String AuthStr;
+    String SNI;
+    String Fingerprint;
+    String Ca;
+    String CaStr;
+    uint32_t RecvWindowConn;
+    uint32_t RecvWindow;
+    tribool DisableMtuDiscovery;
+    uint32_t HopInterval;
+    StringArray Alpn;
+
+    uint32_t CWND = 0;
 };
 
 #define SS_DEFAULT_GROUP "SSProvider"
@@ -111,5 +137,7 @@ struct Proxy
 #define TROJAN_DEFAULT_GROUP "TrojanProvider"
 #define SNELL_DEFAULT_GROUP "SnellProvider"
 #define WG_DEFAULT_GROUP "WireGuardProvider"
+#define HYSTERIA_DEFAULT_GROUP "HysteriaProvider"
+#define HYSTERIA2_DEFAULT_GROUP "Hysteria2Provider"
 
 #endif // PROXY_H_INCLUDED
