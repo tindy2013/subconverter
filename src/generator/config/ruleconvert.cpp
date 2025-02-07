@@ -106,7 +106,7 @@ static std::string transformRuleToCommon(string_view_array &temp, const std::str
         strLine += ",";
         strLine += group;
     }
-    else
+    else if (temp.size() < 4)
     {
         strLine = temp[0];
         strLine += ",";
@@ -118,7 +118,7 @@ static std::string transformRuleToCommon(string_view_array &temp, const std::str
             strLine += ",";
             strLine += temp[2];
         }
-    }
+    } else strLine = input + "," + group;
     return strLine;
 }
 
