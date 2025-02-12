@@ -940,7 +940,7 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
         case ProxyType::Hysteria2:
             if(surge_ver < 4)
                 continue;
-            proxy = "hysteria, " + hostname + ", " + port + ", password=" + password;
+            proxy = "hysteria2, " + hostname + ", " + port + ", password=" + password;
             if(x.DownSpeed)
                 proxy += ", download-bandwidth=" + x.DownSpeed;
             
