@@ -723,6 +723,8 @@ std::string generatePeer(Proxy &node, bool client_id_as_reserved = false)
     std::string result;
     result += "public-key = " + node.PublicKey;
     result += ", endpoint = " + node.Hostname + ":" + std::to_string(node.Port);
+    if(!node.PreSharedKey.empty())
+        result += ", preshared-key = " + node.PreSharedKey;
     if(!node.AllowedIPs.empty())
         result += ", allowed-ips = \"" + node.AllowedIPs + "\"";
     if(!node.ClientId.empty())
@@ -927,8 +929,6 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
             ini.set(real_section, "self-ip", x.SelfIP);
             if(!x.SelfIPv6.empty())
                 ini.set(real_section, "self-ip-v6", x.SelfIPv6);
-            if(!x.PreSharedKey.empty())
-                ini.set(real_section, "preshared-key", x.PreSharedKey);
             if(!x.DnsServers.empty())
                 ini.set(real_section, "dns-server", join(x.DnsServers, ","));
             if(x.Mtu > 0)
