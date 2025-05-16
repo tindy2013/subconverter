@@ -174,13 +174,13 @@ int addNodes(std::string link, std::vector<Proxy> &allNodes, int groupID, parse_
                 if(!getSubInfoFromHeader(extra_headers, subInfo))
                     getSubInfoFromNodes(nodes, stream_rules, time_rules, subInfo);
             }
-            filterNodes(nodes, exclude_remarks, include_remarks, groupID);
             for(Proxy &x : nodes)
             {
                 x.GroupId = groupID;
                 if(custom_group.size())
                     x.Group = custom_group;
             }
+            filterNodes(nodes, exclude_remarks, include_remarks, groupID);
             copyNodes(nodes, allNodes);
         }
         else
@@ -206,13 +206,13 @@ int addNodes(std::string link, std::vector<Proxy> &allNodes, int groupID, parse_
         {
             getSubInfoFromNodes(nodes, stream_rules, time_rules, subInfo);
         }
-        filterNodes(nodes, exclude_remarks, include_remarks, groupID);
         for(Proxy &x : nodes)
         {
             x.GroupId = groupID;
             if(!custom_group.empty())
                 x.Group = custom_group;
         }
+        filterNodes(nodes, exclude_remarks, include_remarks, groupID);
         copyNodes(nodes, allNodes);
         break;
     default:
