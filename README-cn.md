@@ -114,6 +114,8 @@
 
             -   [调用地址 (规则转换)](#调用地址-规则转换)
             -   [调用说明 (规则转换)](#调用说明-规则转换)
+        
+        -   [屏蔽域名](#屏蔽域名)
 
 ## 支持类型
 
@@ -1443,3 +1445,17 @@ http://127.0.0.1:25500/getruleset?type=%TYPE%&url=%URL%&group=%GROUP%
 | group | type=2时必选 | mygroup | 规则对应的策略组名，生成Quantumult X类型（type=2）时必须提供                                                                                                                  |
 
 运行 subconverter 主程序后， 按照 [调用地址 (规则转换)](#调用地址-规则转换) 的对应内容替换即可得到指定类型的规则。
+
+### 屏蔽域名
+    
+在nginx配置文件中添加：
+
+    server {
+        ...
+        if ( $query_string ~* ^target=(.*)&url=htt(p|ps)%3A%2F%2F(raw.githubusercontent.com|cdn.jsdelivr.net).*$ ) { #在括号中添加你要屏蔽的域名
+            set $target $1;
+            set $url "ss://example#已屏蔽免费订阅池";  #可以做一个用来说明的节点
+            rewrite ^/(.*) https://your.backend.url/sub?target=${target}&url=${url}&config=https%3A%2F%2Fsubconverter.oss-ap-southeast-1.aliyuncs.com%2FRules%2FRemoteConfig%2Fspecial%2Fbasic.ini&filename=%E5%B7%B2%E5%B1%8F%E8%94%BD%E5%85%8D%E8%B4%B9%E8%8A%82%E7%82%B9%E6%B1%A0&emoji=true&list=false&tfo=false&scv=false&fdn=false&sort=false&expand=true&new_name=true? redirect; #将your.backend.url修改为你的后端域名，其中filename后的参数为订阅文件名
+        }
+        ...
+    }
