@@ -980,7 +980,9 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
     if(ext.nodelist)
         return output_nodelist;
 
+    string_multimap original_groups;
     ini.set_current_section("Proxy Group");
+    ini.get_items(original_groups);
     ini.erase_section();
     for(const ProxyGroupConfig &x : extra_proxy_group)
     {
@@ -1039,6 +1041,18 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
                 group += ",persistent=" + x.Persistent.get_str();
             if(!x.EvaluateBeforeUse.is_undef())
                 group += ",evaluate-before-use=" + x.EvaluateBeforeUse.get_str();
+        }
+
+        auto iter = original_groups.find(x.Name);
+        if(iter != original_groups.end())
+        {
+            string_array vArray = split(iter->second, ",");
+            if(vArray.size() > 1)
+            {
+                std::string content = trim(vArray[vArray.size() - 1]);
+                if(content.find("icon-url") == 0)
+                    group += content;
+            }
         }
 
         ini.set("{NONAME}", x.Name + " = " + group); //insert order
