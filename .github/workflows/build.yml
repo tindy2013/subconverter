@@ -24,10 +24,10 @@ jobs:
             os: ubuntu-latest
           - arch: armv7
             artifact: subconverter_armv7
-            os: [self-hosted, linux, ARM]
+            os: ubuntu-24.04-arm
           - arch: aarch64
             artifact: subconverter_aarch64
-            os: [self-hosted, linux, ARM64]
+            os: ubuntu-24.04-arm
     runs-on: ${{ matrix.os }}
     name: Linux ${{ matrix.arch }} Build
     steps:
