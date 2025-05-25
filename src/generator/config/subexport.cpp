@@ -1051,7 +1051,7 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
             {
                 std::string content = trim(vArray[vArray.size() - 1]);
                 if(content.find("icon-url") == 0)
-                    group += content;
+                    group += "," + content;
             }
         }
 
