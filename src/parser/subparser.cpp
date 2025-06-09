@@ -1114,7 +1114,14 @@ void explodeClash(Node yamlnode, std::vector<Proxy> &nodes)
         singleproxy["name"] >>= ps;
         singleproxy["server"] >>= server;
         singleproxy["port"] >>= port;
-        singleproxy["dialer-proxy"] >>= underlying_proxy;
+        
+        underlying_proxy.clear();
+        // Use 'dialer-proxy' or 'underlying-proxy' to set underlying proxy
+        if (singleproxy["dialer-proxy"].IsDefined())
+            singleproxy["dialer-proxy"] >>= underlying_proxy;
+        else if (singleproxy["underlying-proxy"].IsDefined())
+            singleproxy["underlying-proxy"] >>= underlying_proxy;
+
         if(port.empty() || port == "0")
             continue;
         udp = safe_as<std::string>(singleproxy["udp"]);
