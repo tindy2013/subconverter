@@ -168,7 +168,7 @@ void hysteriaConstruct(
     if (!up.empty())
     {
         if (up.length() > 4 && up.find("bps") == up.length() - 3)
-        
+
             node.Up = up;
         else if (to_int(up))
         {
@@ -209,13 +209,13 @@ void hysteriaConstruct(
 }
 
 void hysteria2Construct(
-    Proxy &node, 
+    Proxy &node,
     const std::string &group,
     const std::string &remarks,
-    const std::string &server, 
+    const std::string &server,
     const std::string &port,
     const std::string &ports,
-    const std::string &up, 
+    const std::string &up,
     const std::string &down,
     const std::string &password,
     const std::string &obfs,
@@ -226,9 +226,9 @@ void hysteria2Construct(
     const std::string &ca,
     const std::string &caStr,
     const std::string &cwnd,
-    const std::string &hop_interval, 
-    tribool tfo, 
-    tribool scv, 
+    const std::string &hop_interval,
+    tribool tfo,
+    tribool scv,
     const std::string &underlying_proxy
 ) {
     commonConstruct(node, ProxyType::Hysteria2, group, remarks, server, port, tribool(), tfo, scv, tribool(), underlying_proxy);
@@ -1352,7 +1352,7 @@ void explodeClash(Node yamlnode, std::vector<Proxy> &nodes)
             singleproxy["down"] >>= down;
             singleproxy["password"] >>= password;
             if (password.empty())
-                singleproxy["auth"] >>= password; 
+                singleproxy["auth"] >>= password;
             singleproxy["obfs"] >>= obfs;
             singleproxy["obfs-password"] >>= obfs_password;
             singleproxy["sni"] >>= sni;
@@ -1728,7 +1728,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
 
             for(i = 3; i < configs.size(); i++)
             {
-                vArray = split(configs[i], "=");
+                vArray = splitKeyValue(configs[i], "=");
                 if(vArray.size() < 2)
                     continue;
                 itemName = trim(vArray[0]);
@@ -1778,7 +1778,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
             }
             for(i = 5; i < configs.size(); i++)
             {
-                vArray = split(configs[i], "=");
+                vArray = splitKeyValue(configs[i], "=");
                 if(vArray.size() < 2)
                     continue;
                 itemName = trim(vArray[0]);
@@ -1810,7 +1810,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
 
             for(i = 3; i < configs.size(); i++)
             {
-                vArray = split(configs[i], "=");
+                vArray = splitKeyValue(configs[i], "=");
                 if(vArray.size() != 2)
                     continue;
                 itemName = trim(vArray[0]);
@@ -1873,7 +1873,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
                 continue;
             for(i = 3; i < configs.size(); i++)
             {
-                vArray = split(configs[i], "=");
+                vArray = splitKeyValue(configs[i], "=");
                 if(vArray.size() < 2)
                     continue;
                 itemName = trim(vArray[0]);
@@ -1903,7 +1903,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
 
             for(i = 3; i < configs.size(); i++)
             {
-                vArray = split(configs[i], "=");
+                vArray = splitKeyValue(configs[i], "=");
                 if(vArray.size() != 2)
                     continue;
                 itemName = trim(vArray[0]);
@@ -1940,7 +1940,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
 
             for(i = 3; i < configs.size(); i++)
             {
-                vArray = split(configs[i], "=");
+                vArray = splitKeyValue(configs[i], "=");
                 if(vArray.size() != 2)
                     continue;
                 itemName = trim(vArray[0]);
@@ -1978,7 +1978,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
         case "wireguard"_hash:
             for (i = 1; i < configs.size(); i++)
             {
-                vArray = split(trim(configs[i]), "=");
+                vArray = splitKeyValue(trim(configs[i]), "=");
                 if(vArray.size() != 2)
                     continue;
                 itemName = trim(vArray[0]);
@@ -2045,7 +2045,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
 
                 for(i = 1; i < configs.size(); i++)
                 {
-                    vArray = split(trim(configs[i]), "=");
+                    vArray = splitKeyValue(trim(configs[i]), "=");
                     if(vArray.size() != 2)
                         continue;
                     itemName = trim(vArray[0]);
@@ -2146,7 +2146,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
 
                 for(i = 1; i < configs.size(); i++)
                 {
-                    vArray = split(trim(configs[i]), "=");
+                    vArray = splitKeyValue(trim(configs[i]), "=");
                     if(vArray.size() != 2)
                         continue;
                     itemName = trim(vArray[0]);
@@ -2214,7 +2214,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
 
                 for(i = 1; i < configs.size(); i++)
                 {
-                    vArray = split(trim(configs[i]), "=");
+                    vArray = splitKeyValue(trim(configs[i]), "=");
                     if(vArray.size() != 2)
                         continue;
                     itemName = trim(vArray[0]);
@@ -2262,7 +2262,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
 
                 for(i = 1; i < configs.size(); i++)
                 {
-                    vArray = split(trim(configs[i]), "=");
+                    vArray = splitKeyValue(trim(configs[i]), "=");
                     if(vArray.size() != 2)
                         continue;
                     itemName = trim(vArray[0]);

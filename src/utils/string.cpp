@@ -45,6 +45,34 @@ std::vector<std::string_view> split(std::string_view s, char separator)
     return result;
 }
 
+/**
+ * Split string at the first occurrence of separator only.
+ *
+ * This function is designed for parsing key-value pairs where the value
+ * may contain the separator character. For example, in SS2022 protocol,
+ * the password field may contain '=' characters that should not be treated
+ * as additional separators.
+ */
+std::vector<std::string> splitKeyValue(const std::string &s, const std::string &separator)
+{
+    std::vector<std::string> result;
+    string_size pos = s.find(separator);
+
+    if (pos == std::string::npos)
+    {
+        // No separator found, return the whole string
+        result.push_back(s);
+    }
+    else
+    {
+        // Split only at the first occurrence of separator
+        result.push_back(s.substr(0, pos));
+        result.push_back(s.substr(pos + separator.size()));
+    }
+
+    return result;
+}
+
 std::string UTF8ToCodePoint(const std::string &data)
 {
     std::stringstream ss;
