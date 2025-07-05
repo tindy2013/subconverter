@@ -1568,7 +1568,14 @@ void proxyToQuanX(std::vector<Proxy> &nodes, INIReader &ini, std::vector<Ruleset
             proxyStr = "trojan = " + hostname + ":" + port + ", password=" + password;
             if(tlssecure)
             {
-                proxyStr += ", over-tls=true, tls-host=" + host;
+                if (transproto == "ws")
+                {
+                    proxyStr += ", obfs=wss, obfs-host=" + host + ", obfs-uri=" + path;
+                }
+                else
+                {
+                    proxyStr += ", over-tls=true, tls-host=" + host;
+                }
                 if(!tls13.is_undef())
                     proxyStr += ", tls13=" + std::string(tls13 ? "true" : "false");
             }
