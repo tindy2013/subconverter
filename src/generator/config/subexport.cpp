@@ -725,20 +725,20 @@ std::string proxyToClash(std::vector<Proxy> &nodes, const std::string &base_conf
 std::string generatePeer(Proxy &node, bool client_id_as_reserved = false)
 {
     std::string result;
-    result += "public-key = " + node.PublicKey;
-    result += ", endpoint = " + node.Hostname + ":" + std::to_string(node.Port);
+    result += "public-key=\"" + node.PublicKey + "\"";
+    result += ", endpoint=" + node.Hostname + ":" + std::to_string(node.Port);
     if(!node.PreSharedKey.empty())
-        result += ", preshared-key = " + node.PreSharedKey;
+        result += ", preshared-key=\"" + node.PreSharedKey + "\"";
     if(!node.AllowedIPs.empty())
-        result += ", allowed-ips = \"" + node.AllowedIPs + "\"";
+        result += ", allowed-ips=\"" + node.AllowedIPs + "\"";
     if(node.KeepAlive > 0)
-        result += ", keepalive = " + std::to_string(node.KeepAlive);
+        result += ", keepalive=" + std::to_string(node.KeepAlive);
     if(!node.ClientId.empty())
     {
         if(client_id_as_reserved)
-            result += ", reserved = [" + node.ClientId + "]";
+            result += ", reserved=[" + node.ClientId + "]";
         else
-            result += ", client-id = " + node.ClientId;
+            result += ", client-id=\"" + node.ClientId + "\"";
     }
     return result;
 }
@@ -1059,7 +1059,7 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
     }
 
     if(ext.enable_rule_generator)
-        rulesetToSurge(ini, ruleset_content_array, surge_ver, ext.overwrite_original_rules, ext.managed_config_prefix);
+        rulesetToSurge(ini, ruleset_content_array, surge_ver, ext.overwrite_original_rules, ext.managed_config_prefix, ext.embed_remote_rules);
 
     return ini.to_string();
 }
@@ -1421,7 +1421,7 @@ void proxyToQuan(std::vector<Proxy> &nodes, INIReader &ini, std::vector<RulesetC
     }
 
     if(ext.enable_rule_generator)
-        rulesetToSurge(ini, ruleset_content_array, -2, ext.overwrite_original_rules, "");
+        rulesetToSurge(ini, ruleset_content_array, -2, ext.overwrite_original_rules, "", ext.embed_remote_rules);
 }
 
 std::string proxyToQuanX(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext)
@@ -1690,7 +1690,7 @@ void proxyToQuanX(std::vector<Proxy> &nodes, INIReader &ini, std::vector<Ruleset
     }
 
     if(ext.enable_rule_generator)
-        rulesetToSurge(ini, ruleset_content_array, -1, ext.overwrite_original_rules, ext.managed_config_prefix);
+        rulesetToSurge(ini, ruleset_content_array, -1, ext.overwrite_original_rules, ext.managed_config_prefix, ext.embed_remote_rules);
 }
 
 std::string proxyToSSD(std::vector<Proxy> &nodes, std::string &group, std::string &userinfo, extra_settings &ext)
@@ -1944,7 +1944,7 @@ void proxyToMellow(std::vector<Proxy> &nodes, INIReader &ini, std::vector<Rulese
     }
 
     if(ext.enable_rule_generator)
-        rulesetToSurge(ini, ruleset_content_array, 0, ext.overwrite_original_rules, "");
+        rulesetToSurge(ini, ruleset_content_array, 0, ext.overwrite_original_rules, "", ext.embed_remote_rules);
 }
 
 std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext)
@@ -2054,7 +2054,7 @@ std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf,
             proxy = "wireguard, interface-ip=" + x.SelfIP;
             if(!x.SelfIPv6.empty())
                 proxy += ", interface-ipv6=" + x.SelfIPv6;
-            proxy += ", private-key=" + x.PrivateKey;
+            proxy += ", private-key=\"" + x.PrivateKey + "\"";
             for(const auto &y : x.DnsServers)
             {
                 if(isIPv4(y))
@@ -2168,7 +2168,7 @@ std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf,
     }
 
     if(ext.enable_rule_generator)
-        rulesetToSurge(ini, ruleset_content_array, -4, ext.overwrite_original_rules, ext.managed_config_prefix);
+        rulesetToSurge(ini, ruleset_content_array, -4, ext.overwrite_original_rules, ext.managed_config_prefix, ext.embed_remote_rules);
 
     return ini.to_string();
 }

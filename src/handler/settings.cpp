@@ -432,6 +432,7 @@ void readYAMLConf(YAML::Node &node)
         else
         {
             section["overwrite_original_rules"] >> global.overwriteOriginalRules;
+            section["embed_remote_rules"] >> global.embedRemoteRules;
             section["update_ruleset_on_request"] >> global.updateRulesetOnRequest;
         }
         const char *ruleset_title = section["rulesets"].IsDefined() ? "rulesets" : "surge_ruleset";
@@ -683,6 +684,7 @@ void readTOMLConf(toml::value &root)
     find_if_exist(section_ruleset,
                   "enabled", global.enableRuleGen,
                   "overwrite_original_rules", global.overwriteOriginalRules,
+                  "embed_remote_rules", global.embedRemoteRules,
                   "update_ruleset_on_request", global.updateRulesetOnRequest
     );
 
@@ -945,6 +947,7 @@ void readConf()
     if(global.enableRuleGen)
     {
         ini.get_bool_if_exist("overwrite_original_rules", global.overwriteOriginalRules);
+        ini.get_bool_if_exist("embed_remote_rules", global.embedRemoteRules);
         ini.get_bool_if_exist("update_ruleset_on_request", global.updateRulesetOnRequest);
         if(ini.item_prefix_exist("ruleset"))
         {
@@ -964,6 +967,7 @@ void readConf()
     else
     {
         global.overwriteOriginalRules = false;
+        global.embedRemoteRules = false;
         global.updateRulesetOnRequest = false;
     }
 
@@ -1092,6 +1096,7 @@ int loadExternalYAML(YAML::Node &node, ExternalConfig &ext)
 
     section["enable_rule_generator"] >> ext.enable_rule_generator;
     section["overwrite_original_rules"] >> ext.overwrite_original_rules;
+    section["embed_remote_rules"] >> ext.embed_remote_rules;
 
     const char *group_name = section["proxy_groups"].IsDefined() ? "proxy_groups" : "custom_proxy_group";
     if(section[group_name].size())
@@ -1155,6 +1160,7 @@ int loadExternalTOML(toml::value &root, ExternalConfig &ext)
     find_if_exist(section,
                   "enable_rule_generator", ext.enable_rule_generator,
                   "overwrite_original_rules", ext.overwrite_original_rules,
+                  "embed_remote_rules", ext.embed_remote_rules,
                   "clash_rule_base", ext.clash_rule_base,
                   "surge_rule_base", ext.surge_rule_base,
                   "surfboard_rule_base", ext.surfboard_rule_base,
@@ -1269,6 +1275,7 @@ int loadExternalConfig(std::string &path, ExternalConfig &ext)
 
     ini.get_bool_if_exist("overwrite_original_rules", ext.overwrite_original_rules);
     ini.get_bool_if_exist("enable_rule_generator", ext.enable_rule_generator);
+    ini.get_bool_if_exist("embed_remote_rules", ext.embed_remote_rules);
 
     if(ini.item_prefix_exist("rename"))
     {

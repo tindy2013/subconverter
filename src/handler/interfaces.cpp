@@ -437,6 +437,8 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     ext.quanx_dev_id = !argDeviceID.empty() ? argDeviceID : global.quanXDevID;
     ext.enable_rule_generator = global.enableRuleGen;
     ext.overwrite_original_rules = global.overwriteOriginalRules;
+    ext.embed_remote_rules = global.embedRemoteRules;
+
     if(!argExpandRulesets)
         ext.managed_config_prefix = global.managedConfigPrefix;
 
@@ -471,6 +473,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
                         lCustomProxyGroups = extconf.custom_proxy_group;
                     ext.enable_rule_generator = extconf.enable_rule_generator;
                     ext.overwrite_original_rules = extconf.overwrite_original_rules;
+                    ext.embed_remote_rules = extconf.embed_remote_rules;
                 }
             }
             if(!extconf.rename.empty())

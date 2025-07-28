@@ -19,6 +19,7 @@ struct extra_settings
 {
     bool enable_rule_generator = true;
     bool overwrite_original_rules = true;
+    bool embed_remote_rules = true;
     RegexMatchConfigs rename_array;
     RegexMatchConfigs emoji_array;
     bool add_emoji = false;

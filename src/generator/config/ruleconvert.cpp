@@ -256,7 +256,7 @@ std::string rulesetToClashStr(YAML::Node &base_rule, std::vector<RulesetContent>
     return output_content;
 }
 
-void rulesetToSurge(INIReader &base_rule, std::vector<RulesetContent> &ruleset_content_array, int surge_ver, bool overwrite_original_rules, const std::string &remote_path_prefix)
+void rulesetToSurge(INIReader &base_rule, std::vector<RulesetContent> &ruleset_content_array, int surge_ver, bool overwrite_original_rules, const std::string &remote_path_prefix, bool embed_remote_rules)
 {
     string_array allRules;
     std::string rule_group, rule_path, rule_path_typed, retrieved_rules, strLine;
@@ -325,72 +325,78 @@ void rulesetToSurge(INIReader &base_rule, std::vector<RulesetContent> &ruleset_c
         }
         else
         {
-            if(surge_ver == -1 && x.rule_type == RULESET_QUANX && isLink(rule_path))
+            if(!embed_remote_rules)
             {
-                strLine = rule_path + ", tag=" + rule_group + ", force-policy=" + rule_group + ", enabled=true";
-                base_rule.set("filter_remote", "{NONAME}", strLine);
-                continue;
-            }
-            if(fileExist(rule_path))
-            {
-                if(surge_ver > 2 && !remote_path_prefix.empty())
+                if(surge_ver == -1 && x.rule_type == RULESET_QUANX && isLink(rule_path))
                 {
-                    strLine = "RULE-SET," + remote_path_prefix + "/getruleset?type=1&url=" + urlSafeBase64Encode(rule_path_typed) + "," + rule_group;
-                    if(x.update_interval)
-                        strLine += ",update-interval=" + std::to_string(x.update_interval);
-                    allRules.emplace_back(strLine);
-                    continue;
-                }
-                else if(surge_ver == -1 && !remote_path_prefix.empty())
-                {
-                    strLine = remote_path_prefix + "/getruleset?type=2&url=" + urlSafeBase64Encode(rule_path_typed) + "&group=" + urlSafeBase64Encode(rule_group);
-                    strLine += ", tag=" + rule_group + ", enabled=true";
+                    strLine = rule_path + ", tag=" + rule_group + ", force-policy=" + rule_group + ", enabled=true";
                     base_rule.set("filter_remote", "{NONAME}", strLine);
                     continue;
                 }
-                else if(surge_ver == -4 && !remote_path_prefix.empty())
+                if(fileExist(rule_path))
                 {
-                    strLine = remote_path_prefix + "/getruleset?type=1&url=" + urlSafeBase64Encode(rule_path_typed) + "," + rule_group;
-                    base_rule.set("Remote Rule", "{NONAME}", strLine);
-                    continue;
-                }
-            }
-            else if(isLink(rule_path))
-            {
-                if(surge_ver > 2)
-                {
-                    if(x.rule_type != RULESET_SURGE)
+                    if(surge_ver > 2 && !remote_path_prefix.empty())
                     {
-                        if(!remote_path_prefix.empty())
-                            strLine = "RULE-SET," + remote_path_prefix + "/getruleset?type=1&url=" + urlSafeBase64Encode(rule_path_typed) + "," + rule_group;
-                        else
-                            continue;
+                        strLine = "RULE-SET," + remote_path_prefix + "/getruleset?type=1&url=" + urlSafeBase64Encode(rule_path_typed) + "," + rule_group;
+                        if(x.update_interval)
+                            strLine += ",update-interval=" + std::to_string(x.update_interval);
+                        allRules.emplace_back(strLine);
+                        continue;
                     }
-                    else
-                        strLine = "RULE-SET," + rule_path + "," + rule_group;
-
-                    if(x.update_interval)
-                        strLine += ",update-interval=" + std::to_string(x.update_interval);
-
-                    allRules.emplace_back(strLine);
-                    continue;
+                    else if(surge_ver == -1 && !remote_path_prefix.empty())
+                    {
+                        strLine = remote_path_prefix + "/getruleset?type=2&url=" + urlSafeBase64Encode(rule_path_typed) + "&group=" + urlSafeBase64Encode(rule_group);
+                        strLine += ", tag=" + rule_group + ", enabled=true";
+                        base_rule.set("filter_remote", "{NONAME}", strLine);
+                        continue;
+                    }
+                    else if(surge_ver == -4 && !remote_path_prefix.empty())
+                    {
+                        strLine = remote_path_prefix + "/getruleset?type=1&url=" + urlSafeBase64Encode(rule_path_typed) + "," + rule_group;
+                        base_rule.set("Remote Rule", "{NONAME}", strLine);
+                        continue;
+                    }
                 }
-                else if(surge_ver == -1 && !remote_path_prefix.empty())
+                else if(isLink(rule_path))
                 {
-                    strLine = remote_path_prefix + "/getruleset?type=2&url=" + urlSafeBase64Encode(rule_path_typed) + "&group=" + urlSafeBase64Encode(rule_group);
-                    strLine += ", tag=" + rule_group + ", enabled=true";
-                    base_rule.set("filter_remote", "{NONAME}", strLine);
-                    continue;
+                    if(surge_ver > 2)
+                    {
+                        if(x.rule_type != RULESET_SURGE)
+                        {
+                            if(!remote_path_prefix.empty())
+                                strLine = "RULE-SET," + remote_path_prefix + "/getruleset?type=1&url=" + urlSafeBase64Encode(rule_path_typed) + "," + rule_group;
+                            else
+                                continue;
+                        }
+                        else
+                            strLine = "RULE-SET," + rule_path + "," + rule_group;
+
+                        if(x.update_interval)
+                            strLine += ",update-interval=" + std::to_string(x.update_interval);
+
+                        allRules.emplace_back(strLine);
+                        continue;
+                    }
+                    else if(surge_ver == -1 && !remote_path_prefix.empty())
+                    {
+                        strLine = remote_path_prefix + "/getruleset?type=2&url=" + urlSafeBase64Encode(rule_path_typed) + "&group=" + urlSafeBase64Encode(rule_group);
+                        strLine += ", tag=" + rule_group + ", enabled=true";
+                        base_rule.set("filter_remote", "{NONAME}", strLine);
+                        continue;
+                    }
+                    else if(surge_ver == -4)
+                    {
+                        strLine = rule_path + "," + rule_group;
+                        base_rule.set("Remote Rule", "{NONAME}", strLine);
+                        continue;
+                    }
                 }
-                else if(surge_ver == -4)
+                else
                 {
-                    strLine = rule_path + "," + rule_group;
-                    base_rule.set("Remote Rule", "{NONAME}", strLine);
                     continue;
                 }
             }
-            else
-                continue;
+
             retrieved_rules = x.rule_content.get();
             if(retrieved_rules.empty())
             {
