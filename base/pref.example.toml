@@ -265,6 +265,10 @@ uri = "/clashr"
 target = "/sub?target=clashr"
 
 [[aliases]]
+uri = "/stash"
+target = "/sub?target=stash"
+
+[[aliases]]
 uri = "/surge"
 target = "/sub?target=surge"
 

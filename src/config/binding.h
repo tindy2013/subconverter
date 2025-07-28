@@ -285,21 +285,37 @@ namespace INIBinding
                 if(pos == String::npos)
                     continue;
                 conf.Group = x.substr(0, pos);
-                if(x.substr(pos + 1, 2) == "[]")
+                String rest = x.substr(pos + 1);
+                if(rest.substr(0, 2) == "[]")
                 {
-                    conf.Url = x.substr(pos + 1);
-                    //conf.Type = RulesetType::SurgeRuleset;
+                    conf.Url = rest;
                     confs.emplace_back(std::move(conf));
                     continue;
                 }
-                String::size_type epos = x.rfind(",");
-                if(pos != epos)
+                String::size_type fpos = rest.rfind(",flags=");
+                if(fpos != String::npos)
                 {
-                    conf.Interval = to_int(x.substr(epos + 1), 0);
-                    conf.Url = x.substr(pos + 1, epos - pos - 1);
+                    String flags_part = rest.substr(fpos + 7);
+                    String::size_type ipos = flags_part.find(',');
+                    if(ipos != String::npos)
+                    {
+                        conf.Interval = to_int(flags_part.substr(ipos + 1), 0);
+                        conf.Url = rest.substr(0, fpos) + ",flags=" + flags_part.substr(0, ipos);
+                    }
+                    else
+                        conf.Url = rest;
                 }
                 else
-                    conf.Url = x.substr(pos + 1);
+                {
+                    String::size_type epos = rest.rfind(",");
+                    if(epos != String::npos)
+                    {
+                        conf.Interval = to_int(rest.substr(epos + 1), 0);
+                        conf.Url = rest.substr(0, epos);
+                    }
+                    else
+                        conf.Url = rest;
+                }
                 confs.emplace_back(std::move(conf));
             }
             return confs;

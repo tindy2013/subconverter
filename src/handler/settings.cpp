@@ -248,7 +248,7 @@ void readRuleset(YAML::Node node, string_array &dest, bool scope_limit = true)
 void refreshRulesets(RulesetConfigs &ruleset_list, std::vector<RulesetContent> &ruleset_content_array)
 {
     eraseElements(ruleset_content_array);
-    std::string rule_group, rule_url, rule_url_typed, interval;
+    std::string rule_group, rule_url, rule_url_typed, flags;
     RulesetContent rc;
 
     std::string proxy = parseProxy(global.proxyRuleset);
@@ -257,11 +257,18 @@ void refreshRulesets(RulesetConfigs &ruleset_list, std::vector<RulesetContent> &
     {
         rule_group = x.Group;
         rule_url = x.Url;
-        std::string::size_type pos = x.Url.find("[]");
+        flags.clear();
+        std::string::size_type fpos = rule_url.rfind(",flags=");
+        if(fpos != std::string::npos)
+        {
+            flags = rule_url.substr(fpos + 7);
+            rule_url.erase(fpos);
+        }
+        std::string::size_type pos = rule_url.find("[]");
         if(pos != std::string::npos)
         {
             writeLog(0, "Adding rule '" + rule_url.substr(pos + 2) + "," + rule_group + "'.", LOG_LEVEL_INFO);
-            rc = {rule_group, "", "", RULESET_SURGE, std::async(std::launch::async, [=](){return rule_url.substr(pos);}), 0};
+            rc = {rule_group, "", "", flags, RULESET_SURGE, std::async(std::launch::async, [=](){return rule_url.substr(pos);}), 0};
         }
         else
         {
@@ -274,7 +281,7 @@ void refreshRulesets(RulesetConfigs &ruleset_list, std::vector<RulesetContent> &
                 type = iter->second;
             }
             writeLog(0, "Updating ruleset url '" + rule_url + "' with group '" + rule_group + "'.", LOG_LEVEL_INFO);
-            rc = {rule_group, rule_url, rule_url_typed, type, fetchFileAsync(rule_url, proxy, global.cacheRuleset, true, global.asyncFetchRuleset), x.Interval};
+            rc = {rule_group, rule_url, rule_url_typed, flags, type, fetchFileAsync(rule_url, proxy, global.cacheRuleset, true, global.asyncFetchRuleset), x.Interval};
         }
         ruleset_content_array.emplace_back(std::move(rc));
     }
@@ -393,6 +400,7 @@ void readYAMLConf(YAML::Node &node)
     {
         section = node["managed_config"];
         section["write_managed_config"] >> global.writeManagedConfig;
+        section["managed_config_url"] >> global.managedConfigUrl;
         section["managed_config_prefix"] >> global.managedConfigPrefix;
         section["config_update_interval"] >> global.updateInterval;
         section["config_update_strict"] >> global.updateStrict;
@@ -432,6 +440,7 @@ void readYAMLConf(YAML::Node &node)
         else
         {
             section["overwrite_original_rules"] >> global.overwriteOriginalRules;
+            section["embed_remote_rules"] >> global.embedRemoteRules;
             section["update_ruleset_on_request"] >> global.updateRulesetOnRequest;
         }
         const char *ruleset_title = section["rulesets"].IsDefined() ? "rulesets" : "surge_ruleset";
@@ -652,6 +661,7 @@ void readTOMLConf(toml::value &root)
     find_if_exist(section_managed,
                   "write_managed_config", global.writeManagedConfig,
                   "managed_config_prefix", global.managedConfigPrefix,
+                  "managed_config_url", global.managedConfigUrl,
                   "config_update_interval", global.updateInterval,
                   "config_update_strict", global.updateStrict,
                   "quanx_device_id", global.quanXDevID
@@ -683,6 +693,7 @@ void readTOMLConf(toml::value &root)
     find_if_exist(section_ruleset,
                   "enabled", global.enableRuleGen,
                   "overwrite_original_rules", global.overwriteOriginalRules,
+                  "embed_remote_rules", global.embedRemoteRules,
                   "update_ruleset_on_request", global.updateRulesetOnRequest
     );
 
@@ -921,6 +932,7 @@ void readConf()
     ini.enter_section("managed_config");
     ini.get_bool_if_exist("write_managed_config", global.writeManagedConfig);
     ini.get_if_exist("managed_config_prefix", global.managedConfigPrefix);
+    ini.get_if_exist("managed_config_url", global.managedConfigUrl);
     ini.get_int_if_exist("config_update_interval", global.updateInterval);
     ini.get_bool_if_exist("config_update_strict", global.updateStrict);
     ini.get_if_exist("quanx_device_id", global.quanXDevID);
@@ -945,6 +957,7 @@ void readConf()
     if(global.enableRuleGen)
     {
         ini.get_bool_if_exist("overwrite_original_rules", global.overwriteOriginalRules);
+        ini.get_bool_if_exist("embed_remote_rules", global.embedRemoteRules);
         ini.get_bool_if_exist("update_ruleset_on_request", global.updateRulesetOnRequest);
         if(ini.item_prefix_exist("ruleset"))
         {
@@ -964,6 +977,7 @@ void readConf()
     else
     {
         global.overwriteOriginalRules = false;
+        global.embedRemoteRules = false;
         global.updateRulesetOnRequest = false;
     }
 
@@ -991,6 +1005,7 @@ void readConf()
         global.templateVars[x.first] = x.second;
     }
     global.templateVars["managed_config_prefix"] = global.managedConfigPrefix;
+    global.templateVars["managed_config_url"] = global.managedConfigUrl;
 
     if(ini.section_exist("aliases"))
     {
@@ -1092,6 +1107,7 @@ int loadExternalYAML(YAML::Node &node, ExternalConfig &ext)
 
     section["enable_rule_generator"] >> ext.enable_rule_generator;
     section["overwrite_original_rules"] >> ext.overwrite_original_rules;
+    section["embed_remote_rules"] >> ext.embed_remote_rules;
 
     const char *group_name = section["proxy_groups"].IsDefined() ? "proxy_groups" : "custom_proxy_group";
     if(section[group_name].size())
@@ -1155,6 +1171,7 @@ int loadExternalTOML(toml::value &root, ExternalConfig &ext)
     find_if_exist(section,
                   "enable_rule_generator", ext.enable_rule_generator,
                   "overwrite_original_rules", ext.overwrite_original_rules,
+                  "embed_remote_rules", ext.embed_remote_rules,
                   "clash_rule_base", ext.clash_rule_base,
                   "surge_rule_base", ext.surge_rule_base,
                   "surfboard_rule_base", ext.surfboard_rule_base,
@@ -1243,6 +1260,9 @@ int loadExternalConfig(std::string &path, ExternalConfig &ext)
         importItems(vArray, global.APIMode);
         ext.custom_proxy_group = INIBinding::from<ProxyGroupConfig>::from_ini(vArray);
     }
+
+    ini.get_if_exist("managed_config_url", ext.managed_config_url);
+
     std::string ruleset_name = ini.item_prefix_exist("ruleset") ? "ruleset" : "surge_ruleset";
     if(ini.item_prefix_exist(ruleset_name))
     {
@@ -1269,6 +1289,7 @@ int loadExternalConfig(std::string &path, ExternalConfig &ext)
 
     ini.get_bool_if_exist("overwrite_original_rules", ext.overwrite_original_rules);
     ini.get_bool_if_exist("enable_rule_generator", ext.enable_rule_generator);
+    ini.get_bool_if_exist("embed_remote_rules", ext.embed_remote_rules);
 
     if(ini.item_prefix_exist("rename"))
     {
@@ -1290,6 +1311,23 @@ int loadExternalConfig(std::string &path, ExternalConfig &ext)
         ini.get_all("include_remarks", ext.include);
     if(ini.item_prefix_exist("exclude_remarks"))
         ini.get_all("exclude_remarks", ext.exclude);
+
+    if(ini.section_exist("General"))
+    {
+        ini.enter_section("General");
+        string_multimap tempmap;
+        ini.get_items(tempmap);
+        for(auto &x : tempmap)
+            ext.general[x.first] = x.second;
+    }
+    else if(ini.section_exist("general"))
+    {
+        ini.enter_section("general");
+        string_multimap tempmap;
+        ini.get_items(tempmap);
+        for(auto &x : tempmap)
+            ext.general[x.first] = x.second;
+    }
 
     if(ini.section_exist("template") && ext.tpl_args != nullptr)
     {

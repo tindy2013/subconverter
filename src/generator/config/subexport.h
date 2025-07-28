@@ -19,6 +19,7 @@ struct extra_settings
 {
     bool enable_rule_generator = true;
     bool overwrite_original_rules = true;
+    bool embed_remote_rules = true;
     RegexMatchConfigs rename_array;
     RegexMatchConfigs emoji_array;
     bool add_emoji = false;
@@ -31,7 +32,9 @@ struct extra_settings
     bool clash_script = false;
     std::string surge_ssr_path;
     std::string managed_config_prefix;
+    std::string managed_config_url;
     std::string quanx_dev_id;
+    string_map general;
     tribool udp = tribool();
     tribool tfo = tribool();
     tribool skip_cert_verify = tribool();
@@ -58,8 +61,8 @@ struct extra_settings
 #endif // NO_JS_RUNTIME
 };
 
-std::string proxyToClash(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, bool clashR, extra_settings &ext);
-void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGroupConfigs &extra_proxy_group, bool clashR, extra_settings &ext);
+std::string proxyToClash(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, bool clashR, bool uptree, extra_settings &ext);
+void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGroupConfigs &extra_proxy_group, bool clashR, bool uptree, extra_settings &ext);
 std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, int surge_ver, extra_settings &ext);
 std::string proxyToMellow(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext);
 void proxyToMellow(std::vector<Proxy> &nodes, INIReader &ini, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext);

@@ -1,4 +1,4 @@
-{% if request.target == "clash" or request.target == "clashr" %}
+{% if request.target == "clash" or request.target == "clashr" or request.target == "stash" %}
 
 port: {{ default(global.clash.http_port, "7890") }}
 socks-port: {{ default(global.clash.socks_port, "7891") }}

@@ -1,6 +1,7 @@
 #include <string>
 #include <map>
 
+
 #include "utils/base64/base64.h"
 #include "utils/ini_reader/ini_reader.h"
 #include "utils/network.h"
@@ -229,9 +230,10 @@ void hysteria2Construct(
     const std::string &hop_interval, 
     tribool tfo, 
     tribool scv, 
+    const tribool &udp,
     const std::string &underlying_proxy
 ) {
-    commonConstruct(node, ProxyType::Hysteria2, group, remarks, server, port, tribool(), tfo, scv, tribool(), underlying_proxy);
+    commonConstruct(node, ProxyType::Hysteria2, group, remarks, server, port, udp, tfo, scv, tribool(), underlying_proxy);
     node.UpSpeed = to_int(up);
     node.DownSpeed = to_int(down);
     node.Ports = ports;
@@ -756,6 +758,16 @@ void explodeSSRConf(std::string content, std::vector<Proxy> &nodes)
         obfs = GetMember(json["configs"][i], "obfs");
         obfsparam = GetMember(json["configs"][i], "obfsparam");
 
+        for(auto m = json["configs"][i].MemberBegin(); m != json["configs"][i].MemberEnd(); ++m)
+        {
+            std::string k = m->name.GetString();
+            if(k == "group" || k == "remarks" || k == "server" || k == "server_port" ||
+            k == "password" || k == "method" || k == "protocol" || k == "protocolparam" ||
+            k == "obfs" || k == "obfsparam") continue;
+
+            if(m->value.IsString()) addExtraField(node, k, m->value.GetString());
+        }
+
         ssrConstruct(node, group, remarks, server, port, protocol, method, obfs, password, obfsparam, protoparam);
         node.Id = index;
         nodes.emplace_back(std::move(node));
@@ -887,6 +899,17 @@ void explodeTrojan(std::string trojan, Proxy &node)
         trojan.erase(pos);
     }
 
+    string_array allParams = split(addition, "&");
+    for(auto &kvStr : allParams)
+    {
+        auto kv = split(kvStr, "=");
+        if(kv.size() != 2) continue;
+        std::string k = kv[0];
+        std::string v = kv[1];
+        if(k == "sni" || k == "peer" || k == "tfo" || k == "allowInsecure" || k == "group" || k == "ws" || k == "wspath") continue;
+        addExtraField(node, k, v);
+    }
+
     if(regGetMatch(trojan, "(.*?)@(.*):(.*)", 4, 0, &psk, &server, &port))
         return;
     if(port == "0")
@@ -1010,6 +1033,18 @@ void explodeNetch(std::string netch, Proxy &node)
     port = GetMember(json, "Port");
     if(port == "0")
         return;
+
+    for(auto m = json.MemberBegin(); m != json.MemberEnd(); ++m)
+    {
+        std::string k = m->name.GetString();
+        if(k == "Type" || k == "Group" || k == "Hostname" || k == "Port" || k == "EncryptMethod" ||
+        k == "Password" || k == "Protocol" || k == "OBFS" || k == "OBFSParam" || k == "ProtocolParam" ||
+        k == "UserID" || k == "AlterID" || k == "TransferProtocol" || k == "FakeType" ||
+        k == "Host" || k == "Path" || k == "Edge" || k == "TLSSecure" || k == "ServerName" ||
+        k == "EnableUDP" || k == "EnableTFO" || k == "AllowInsecure") continue;
+        if(m->value.IsString()) addExtraField(node, k, m->value.GetString());
+    }
+
     method = GetMember(json, "EncryptMethod");
     password = GetMember(json, "Password");
     if(remark.empty())
@@ -1093,7 +1128,7 @@ void explodeNetch(std::string netch, Proxy &node)
 
 void explodeClash(Node yamlnode, std::vector<Proxy> &nodes)
 {
-    std::string proxytype, ps, server, port, cipher, group, password, underlying_proxy; //common
+    std::string proxytype, ps, server, port, interface, cipher, group, password, underlying_proxy; //common
     std::string type = "none", id, aid = "0", net = "tcp", path, host, edge, tls, sni; //vmess
     std::string plugin, pluginopts, pluginopts_mode, pluginopts_host, pluginopts_mux; //ss
     std::string protocol, protoparam, obfs, obfsparam; //ssr
@@ -1114,12 +1149,23 @@ void explodeClash(Node yamlnode, std::vector<Proxy> &nodes)
         singleproxy["name"] >>= ps;
         singleproxy["server"] >>= server;
         singleproxy["port"] >>= port;
+        singleproxy["interface-name"] >>= interface;
         singleproxy["underlying-proxy"] >>= underlying_proxy;
-        if(port.empty() || port == "0")
+        if((port.empty() || port == "0") && proxytype != "direct")
             continue;
         udp = safe_as<std::string>(singleproxy["udp"]);
         tfo = safe_as<std::string>(singleproxy["fast-open"]);
         scv = safe_as<std::string>(singleproxy["skip-cert-verify"]);
+        for(auto it : singleproxy)
+        {
+            std::string k = it.first.as<std::string>();
+            if(it.second.IsScalar())
+            {
+                if(k != "type" && k != "name" && k != "server" && k != "port" && k != "underlying-proxy")
+                    addExtraField(node, k, it.second.as<std::string>());
+            }
+        }
+
         switch(hash_(proxytype))
         {
         case "vmess"_hash:
@@ -1343,7 +1389,8 @@ void explodeClash(Node yamlnode, std::vector<Proxy> &nodes)
                 singleproxy["disable_mtu_discovery"] >>= disable_mtu_discovery;
             singleproxy["hop-interval"] >>= hop_interval;
 
-            hysteriaConstruct(node, group, ps, server, port, ports, protocol, obfs_protocol, up, up_speed, down, down_speed, auth, auth_str, obfs, sni, fingerprint, ca, ca_str, recv_window_conn, recv_window, disable_mtu_discovery, hop_interval, alpn, tfo, scv, underlying_proxy);
+            hysteriaConstruct(node, group, ps, server, port, ports, protocol, obfs_protocol, up, up_speed, down, down_speed, auth, auth_str, obfs, sni, 
+                fingerprint, ca, ca_str, recv_window_conn, recv_window, disable_mtu_discovery, hop_interval, alpn, tfo, scv, underlying_proxy);
             break;
         case "hysteria2"_hash:
             group = HYSTERIA2_DEFAULT_GROUP;
@@ -1366,14 +1413,31 @@ void explodeClash(Node yamlnode, std::vector<Proxy> &nodes)
             singleproxy["cwnd"] >>= cwnd;
             singleproxy["hop-interval"] >>= hop_interval;
 
-            hysteria2Construct(node, group, ps, server, port, ports, up, down, password, obfs, obfs_password, sni, fingerprint, ca, ca_str, cwnd, alpn, hop_interval, tfo, scv, underlying_proxy);
+            hysteria2Construct(node, group, ps, server, port, ports, up, down,
+                   password, obfs, obfs_password, sni, fingerprint,
+                   alpn,
+                   ca,
+                   ca_str,
+                   cwnd,
+                   hop_interval,
+                   tfo, scv, udp, underlying_proxy);
             break;
 
+        case "direct"_hash:
+            node.Type = ProxyType::Direct;
+            node.Remark = ps;
+            node.UDP = udp;
+            node.TCPFastOpen = tfo;
+            node.AllowInsecure = scv;
+            node.UnderlyingProxy = underlying_proxy;
+            break;
+    break;
         default:
             continue;
         }
 
         node.Id = index;
+        node.Interface = interface;
         nodes.emplace_back(std::move(node));
         index++;
     }
@@ -1539,6 +1603,18 @@ void explodeStdHysteria2(std::string hysteria2, Proxy &node) {
             return;
     }
 
+    string_array params = split(addition, "&");
+    for(auto &p : params)
+    {
+        auto kv = split(p, "=");
+        if(kv.size() != 2) continue;
+        std::string k = kv[0];
+        std::string v = kv[1];
+        if(k == "password" || k == "insecure" || k == "up" || k == "down" ||
+        k == "alpn" || k == "obfs" || k == "obfs-password" || k == "sni" || k == "pinSHA256") continue;
+        addExtraField(node, k, v);
+    }
+
     scv = getUrlArg(addition, "insecure");
     up = getUrlArg(addition, "up");
     down = getUrlArg(addition, "down");
@@ -1551,7 +1627,7 @@ void explodeStdHysteria2(std::string hysteria2, Proxy &node) {
     if (remarks.empty())
         remarks = add + ":" + port;
 
-    hysteria2Construct(node, HYSTERIA2_DEFAULT_GROUP, remarks, add, port, port, up, down, password, obfs, obfs_password, sni, fingerprint, "", "", "", "", "", tribool(), scv, "");
+    hysteria2Construct(node, HYSTERIA2_DEFAULT_GROUP, remarks, add, port, port, up, down, password, obfs, obfs_password, sni, fingerprint, "", "", "", "", "", tribool(), scv, tribool(), "");
     return;
 }
 
@@ -1630,16 +1706,19 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
 
     for(auto &x : proxies)
     {
-        std::string remarks, server, port, method, username, password; //common
+        std::string remarks, server, group, port, method, username, password; //common
         std::string plugin, pluginopts, pluginopts_mode, pluginopts_host, mod_url, mod_md5; //ss
         std::string id, net, tls, host, edge, path; //v2
         std::string protocol, protoparam; //ssr
         std::string section, ip, ipv6, private_key, public_key, mtu, test_url, client_id, peer, keepalive; //wireguard
+        std::string ports, up, up_speed, down, down_speed, auth, auth_str, obfs, sni, fingerprint, ca, ca_str, recv_window_conn, recv_window, disable_mtu_discovery, hop_interval, alpn; //hysteria
+        std::string obfs_password, cwnd; //hysteria2
         string_array dns_servers;
         string_multimap wireguard_config;
         std::string version, aead = "1";
         std::string itemName, itemVal, config;
         std::vector<std::string> configs, vArray, headers, header;
+        std::string interface;
         tribool udp, tfo, scv, tls13;
         Proxy node;
 
@@ -1649,11 +1728,43 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
         */
         regGetMatch(x.second, proxystr, 3, 0, &remarks, &config);
         configs = split(config, ",");
-        if(configs.size() < 3)
+        if(configs.empty())
             continue;
         switch(hash_(configs[0]))
         {
         case "direct"_hash:
+            node.Type = ProxyType::Direct;
+            node.Remark = remarks;
+            interface.clear();
+            for(i = 1; i < configs.size(); i++)
+            {
+                vArray = split(configs[i], "=");
+                if(vArray.size() != 2) continue;
+                itemName = trim(vArray[0]);
+                itemVal = trim(vArray[1]);
+                switch(hash_(itemName))
+                {
+                case "interface"_hash:
+                    interface = itemVal;
+                    break;
+                case "udp-relay"_hash:
+                    udp = itemVal;
+                    break;
+                case "tfo"_hash:
+                    tfo = itemVal;
+                    break;
+                case "skip-cert-verify"_hash:
+                    scv = itemVal;
+                    break;
+                default:
+                    addExtraField(node, itemName, itemVal);
+                    break;
+                }
+            }
+            node.UDP = udp;
+            node.TCPFastOpen = tfo;
+            node.AllowInsecure = scv;
+            break;
         case "reject"_hash:
         case "reject-tinygif"_hash:
             continue;
@@ -1706,6 +1817,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
                     tfo = itemVal;
                     break;
                 default:
+                    addExtraField(node, itemName, itemVal);
                     continue;
                 }
             }
@@ -1755,6 +1867,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
                     tfo = itemVal;
                     break;
                 default:
+                    addExtraField(node, itemName, itemVal);
                     continue;
                 }
             }
@@ -1795,6 +1908,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
                     scv = itemVal;
                     break;
                 default:
+                    addExtraField(node, itemName, itemVal);
                     continue;
                 }
             }
@@ -1860,6 +1974,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
                 case "vmess-aead"_hash:
                     aead = itemVal == "true" ? "0" : "1";
                 default:
+                    addExtraField(node, itemName, itemVal);
                     continue;
                 }
             }
@@ -1890,6 +2005,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
                     scv = itemVal;
                     break;
                 default:
+                    addExtraField(node, itemName, itemVal);
                     continue;
                 }
             }
@@ -1926,6 +2042,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
                     scv = itemVal;
                     break;
                 default:
+                    addExtraField(node, itemName, itemVal);
                     continue;
                 }
             }
@@ -1969,6 +2086,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
                     version = itemVal;
                     break;
                 default:
+                    addExtraField(node, itemName, itemVal);
                     continue;
                 }
             }
@@ -2028,12 +2146,98 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
                 case "keepalive"_hash:
                     keepalive = itemVal;
                     break;
+                default:
+                    addExtraField(node, itemName, itemVal);
+                    break;
                 }
             }
 
             wireguardConstruct(node, WG_DEFAULT_GROUP, remarks, "", "0", ip, ipv6, private_key, "", "", dns_servers, mtu, keepalive, test_url, "", udp, "");
             parsePeers(node, peer);
             break;
+
+        case "hysteria2"_hash:
+            group = HYSTERIA2_DEFAULT_GROUP;
+            server = trim(configs[1]);
+            port = trim(configs[2]);
+            if(port == "0") continue;
+
+            password = trimQuote(configs[3]);
+
+            for(i = 4; i < configs.size(); i++)
+            {
+                vArray = split(configs[i], "=");
+                if(vArray.size() != 2)
+                    continue;
+                itemName = trim(vArray[0]);
+                itemVal = trim(vArray[1]);
+                switch(hash_(itemName))
+                {
+                case "sni"_hash:
+                    sni = itemVal;
+                    break;
+                case "tls-pubkey-sha256"_hash:
+                case "tls-cert-sha256"_hash:
+                    fingerprint = itemVal;
+                    break;
+                case "salamander-password"_hash:
+                    obfs_password = itemVal;
+                    break;
+                case "obfs"_hash:
+                    obfs = itemVal;
+                    break;
+                case "skip-cert-verify"_hash:
+                    scv = itemVal;
+                    break;
+                case "fast-open"_hash:
+                    tfo = itemVal;
+                    break;
+                case "udp"_hash:
+                    udp = itemVal;
+                    break;
+                case "download-bandwidth"_hash:
+                    down = itemVal;
+                    break;
+                case "upload-bandwidth"_hash:
+                    up = itemVal;
+                    break;
+                case "port-hopping"_hash:
+                    ports = itemVal;
+                    break;
+                case "hop-interval"_hash:
+                    hop_interval = itemVal;
+                    break;
+                case "alpn"_hash:
+                    alpn = itemVal;
+                    break;
+                case "cwnd"_hash:
+                    cwnd = itemVal;
+                    break;
+                case "ca"_hash:
+                    ca = itemVal;
+                    break;
+                case "ca-str"_hash:
+                    ca_str = itemVal;
+                    break;
+                default:
+                    addExtraField(node, itemName, itemVal);
+                    continue;
+                }
+            }
+
+            if(remarks.empty())
+                remarks = server + ":" + port;
+
+            hysteria2Construct(node, group, remarks, server, port, ports, up, down,
+                   password, obfs, obfs_password, sni, fingerprint,
+                   alpn, 
+                   ca,
+                   ca_str,
+                   cwnd,
+                   hop_interval,
+                   tfo, scv, udp, "");
+            break;
+
         default:
             switch(hash_(remarks))
             {
@@ -2104,6 +2308,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
                         tls13 = itemVal;
                         break;
                     default:
+                        addExtraField(node, itemName, itemVal);
                         continue;
                     }
                 }
@@ -2198,6 +2403,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
                     case "aead"_hash:
                         aead = itemVal == "true" ? "0" : "1";
                     default:
+                        addExtraField(node, itemName, itemVal);
                         continue;
                     }
                 }
@@ -2246,6 +2452,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
                         tls13 = itemVal;
                         break;
                     default:
+                        addExtraField(node, itemName, itemVal);
                         continue;
                     }
                 }
@@ -2291,6 +2498,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
                         tfo = itemVal;
                         break;
                     default:
+                        addExtraField(node, itemName, itemVal);
                         continue;
                     }
                 }
@@ -2311,6 +2519,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
         }
 
         node.Id = index;
+        node.Interface = interface;
         nodes.emplace_back(std::move(node));
         index++;
     }
