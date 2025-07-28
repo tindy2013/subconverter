@@ -229,9 +229,10 @@ void hysteria2Construct(
     const std::string &hop_interval, 
     tribool tfo, 
     tribool scv, 
+    const tribool &udp,
     const std::string &underlying_proxy
 ) {
-    commonConstruct(node, ProxyType::Hysteria2, group, remarks, server, port, tribool(), tfo, scv, tribool(), underlying_proxy);
+    commonConstruct(node, ProxyType::Hysteria2, group, remarks, server, port, udp, tfo, scv, tribool(), underlying_proxy);
     node.UpSpeed = to_int(up);
     node.DownSpeed = to_int(down);
     node.Ports = ports;
@@ -1343,7 +1344,8 @@ void explodeClash(Node yamlnode, std::vector<Proxy> &nodes)
                 singleproxy["disable_mtu_discovery"] >>= disable_mtu_discovery;
             singleproxy["hop-interval"] >>= hop_interval;
 
-            hysteriaConstruct(node, group, ps, server, port, ports, protocol, obfs_protocol, up, up_speed, down, down_speed, auth, auth_str, obfs, sni, fingerprint, ca, ca_str, recv_window_conn, recv_window, disable_mtu_discovery, hop_interval, alpn, tfo, scv, underlying_proxy);
+            hysteriaConstruct(node, group, ps, server, port, ports, protocol, obfs_protocol, up, up_speed, down, down_speed, auth, auth_str, obfs, sni, 
+                fingerprint, ca, ca_str, recv_window_conn, recv_window, disable_mtu_discovery, hop_interval, alpn, tfo, scv, underlying_proxy);
             break;
         case "hysteria2"_hash:
             group = HYSTERIA2_DEFAULT_GROUP;
@@ -1366,7 +1368,14 @@ void explodeClash(Node yamlnode, std::vector<Proxy> &nodes)
             singleproxy["cwnd"] >>= cwnd;
             singleproxy["hop-interval"] >>= hop_interval;
 
-            hysteria2Construct(node, group, ps, server, port, ports, up, down, password, obfs, obfs_password, sni, fingerprint, ca, ca_str, cwnd, alpn, hop_interval, tfo, scv, underlying_proxy);
+            hysteria2Construct(node, group, ps, server, port, ports, up, down,
+                   password, obfs, obfs_password, sni, fingerprint,
+                   alpn,
+                   ca,
+                   ca_str,
+                   cwnd,
+                   hop_interval,
+                   tfo, scv, udp, underlying_proxy);
             break;
 
         default:
@@ -1551,7 +1560,7 @@ void explodeStdHysteria2(std::string hysteria2, Proxy &node) {
     if (remarks.empty())
         remarks = add + ":" + port;
 
-    hysteria2Construct(node, HYSTERIA2_DEFAULT_GROUP, remarks, add, port, port, up, down, password, obfs, obfs_password, sni, fingerprint, "", "", "", "", "", tribool(), scv, "");
+    hysteria2Construct(node, HYSTERIA2_DEFAULT_GROUP, remarks, add, port, port, up, down, password, obfs, obfs_password, sni, fingerprint, "", "", "", "", "", tribool(), scv, tribool(), "");
     return;
 }
 
@@ -1630,11 +1639,13 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
 
     for(auto &x : proxies)
     {
-        std::string remarks, server, port, method, username, password; //common
+        std::string remarks, server, group, port, method, username, password; //common
         std::string plugin, pluginopts, pluginopts_mode, pluginopts_host, mod_url, mod_md5; //ss
         std::string id, net, tls, host, edge, path; //v2
         std::string protocol, protoparam; //ssr
         std::string section, ip, ipv6, private_key, public_key, mtu, test_url, client_id, peer, keepalive; //wireguard
+        std::string ports, up, up_speed, down, down_speed, auth, auth_str, obfs, sni, fingerprint, ca, ca_str, recv_window_conn, recv_window, disable_mtu_discovery, hop_interval, alpn; //hysteria
+        std::string obfs_password, cwnd; //hysteria2
         string_array dns_servers;
         string_multimap wireguard_config;
         std::string version, aead = "1";
@@ -2034,6 +2045,88 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
             wireguardConstruct(node, WG_DEFAULT_GROUP, remarks, "", "0", ip, ipv6, private_key, "", "", dns_servers, mtu, keepalive, test_url, "", udp, "");
             parsePeers(node, peer);
             break;
+
+        case "hysteria2"_hash:
+            group = HYSTERIA2_DEFAULT_GROUP;
+            server = trim(configs[1]);
+            port = trim(configs[2]);
+            if(port == "0") continue;
+
+            password = trimQuote(configs[3]);
+
+            for(i = 4; i < configs.size(); i++)
+            {
+                vArray = split(configs[i], "=");
+                if(vArray.size() != 2)
+                    continue;
+                itemName = trim(vArray[0]);
+                itemVal = trim(vArray[1]);
+                switch(hash_(itemName))
+                {
+                case "sni"_hash:
+                    sni = itemVal;
+                    break;
+                case "tls-pubkey-sha256"_hash:
+                case "tls-cert-sha256"_hash:
+                    fingerprint = itemVal;
+                    break;
+                case "salamander-password"_hash:
+                    obfs_password = itemVal;
+                    break;
+                case "obfs"_hash:
+                    obfs = itemVal;
+                    break;
+                case "skip-cert-verify"_hash:
+                    scv = itemVal;
+                    break;
+                case "fast-open"_hash:
+                    tfo = itemVal;
+                    break;
+                case "udp"_hash:
+                    udp = itemVal;
+                    break;
+                case "download-bandwidth"_hash:
+                    down = itemVal;
+                    break;
+                case "upload-bandwidth"_hash:
+                    up = itemVal;
+                    break;
+                case "port-hopping"_hash:
+                    ports = itemVal;
+                    break;
+                case "hop-interval"_hash:
+                    hop_interval = itemVal;
+                    break;
+                case "alpn"_hash:
+                    alpn = itemVal;
+                    break;
+                case "cwnd"_hash:
+                    cwnd = itemVal;
+                    break;
+                case "ca"_hash:
+                    ca = itemVal;
+                    break;
+                case "ca-str"_hash:
+                    ca_str = itemVal;
+                    break;
+                default:
+                    continue;
+                }
+            }
+
+            if(remarks.empty())
+                remarks = server + ":" + port;
+
+            hysteria2Construct(node, group, remarks, server, port, ports, up, down,
+                   password, obfs, obfs_password, sni, fingerprint,
+                   alpn, 
+                   ca,
+                   ca_str,
+                   cwnd,
+                   hop_interval,
+                   tfo, scv, udp, "");
+            break;
+
         default:
             switch(hash_(remarks))
             {

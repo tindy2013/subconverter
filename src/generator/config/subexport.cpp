@@ -266,6 +266,8 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
 
         std::string type = getProxyTypeName(x.Type);
         std::string pluginopts = replaceAllDistinct(x.PluginOption, ";", "&");
+        std::string &underlying_proxy = x.UnderlyingProxy;
+
         if(ext.append_proxy_type)
             x.Remark = "[" + type + "] " + x.Remark;
 
@@ -279,6 +281,9 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
         singleproxy["name"] = x.Remark;
         singleproxy["server"] = x.Hostname;
         singleproxy["port"] = x.Port;
+        
+        if (!underlying_proxy.empty())
+            singleproxy["underlying-proxy"] = underlying_proxy;
 
         switch(x.Type)
         {
@@ -530,32 +535,43 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
             break;
         case ProxyType::Hysteria2:
             singleproxy["type"] = "hysteria2";
-            if (!x.Ports.empty())
+
+            if(!x.Ports.empty())
                 singleproxy["ports"] = x.Ports;
-            if (!x.Up.empty())
+
+            if(x.UpSpeed)
                 singleproxy["up"] = x.UpSpeed;
-            if (!x.Down.empty())
+            if(x.DownSpeed)
                 singleproxy["down"] = x.DownSpeed;
-            if (!x.Password.empty())
+
+            if(!x.Password.empty())
                 singleproxy["password"] = x.Password;
-            if (!x.OBFS.empty())
+
+            if(!x.OBFS.empty())
                 singleproxy["obfs"] = x.OBFS;
-            if (!x.OBFSParam.empty())
+            if(!x.OBFSParam.empty())
                 singleproxy["obfs-password"] = x.OBFSParam;
-            if (!x.SNI.empty())
+
+            if(!x.SNI.empty())
                 singleproxy["sni"] = x.SNI;
-            if (!scv.is_undef())
+            if(!scv.is_undef())
                 singleproxy["skip-cert-verify"] = scv.get();
-            if (!x.Alpn.empty())
+            if(!x.Fingerprint.empty())
+                singleproxy["tls-pubkey-sha256"] = x.Fingerprint;
+
+            if(!x.Alpn.empty())
                 singleproxy["alpn"] = x.Alpn;
-            if (!x.Ca.empty())
+
+            if(!x.Ca.empty())
                 singleproxy["ca"] = x.Ca;
-            if (!x.CaStr.empty())
+            if(!x.CaStr.empty())
                 singleproxy["ca-str"] = x.CaStr;
-            if (x.CWND)
+
+            if(x.CWND)
                 singleproxy["cwnd"] = x.CWND;
-            if (x.HopInterval)
+            if(x.HopInterval)
                 singleproxy["hop-interval"] = x.HopInterval;
+
             break;
         default:
             continue;
@@ -783,10 +799,10 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
 
         std::string &hostname = x.Hostname, &username = x.Username, &password = x.Password, &method = x.EncryptMethod, &id = x.UserId, &transproto = x.TransferProtocol, &host = x.Host, &edge = x.Edge, &path = x.Path, &protocol = x.Protocol, &protoparam = x.ProtocolParam, &obfs = x.OBFS, &obfsparam = x.OBFSParam, &plugin = x.Plugin, &pluginopts = x.PluginOption, &underlying_proxy = x.UnderlyingProxy;
         std::string port = std::to_string(x.Port);
-        bool &tlssecure = x.TLSSecure;
+        bool &tlssecure = x.TLSSecure, udp = x.UDP.get();
 
-        tribool udp = ext.udp, tfo = ext.tfo, scv = ext.skip_cert_verify, tls13 = ext.tls13;
-        udp.define(x.UDP);
+        tribool tfo = ext.tfo, scv = ext.skip_cert_verify, tls13 = ext.tls13;
+        ext.udp.define(x.UDP);
         tfo.define(x.TCPFastOpen);
         scv.define(x.AllowInsecure);
         tls13.define(x.TLS13);
@@ -944,27 +960,57 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
         case ProxyType::Hysteria2:
             if(surge_ver < 4)
                 continue;
-            proxy = "hysteria, " + hostname + ", " + port + ", password=" + password;
+            proxy = "Hysteria2, " + hostname + ", " + port;
+
+            if(!x.Password.empty())
+                proxy += ", password=" + x.Password;
+            if(!x.Ports.empty() && x.Ports != port)
+                proxy += ", port-hopping=" + x.Ports;
+
+            if(x.UpSpeed)
+                proxy += ", upload-bandwidth=" + std::to_string(x.UpSpeed);
             if(x.DownSpeed)
-                proxy += ", download-bandwidth=" + x.DownSpeed;
-            
-            if(!scv.is_undef())
-                proxy += ",skip-cert-verify=" + std::string(scv.get() ? "true" : "false");
-            if(!x.Fingerprint.empty())
-                proxy += ",server-cert-fingerprint-sha256=" + x.Fingerprint;
+                proxy += ", download-bandwidth=" + std::to_string(x.DownSpeed);
+
+            if(!x.OBFS.empty())
+                proxy += ", obfs=" + x.OBFS;
+            if(!x.OBFSParam.empty())
+                proxy += ", salamander-password=" + x.OBFSParam;
+
+            if(x.CWND)
+                proxy += ", cwnd=" + std::to_string(x.CWND);
+            if(x.HopInterval)
+                proxy += ", hop-interval=" + std::to_string(x.HopInterval);
+            if(!x.Alpn.empty())
+                proxy += ", alpn=" + x.Alpn[0];
+
             if(!x.SNI.empty())
-                proxy += ",sni=" + x.SNI;
+                proxy += ", sni=" + x.SNI;
+            if(!x.Fingerprint.empty())
+                proxy += ", tls-pubkey-sha256=" + x.Fingerprint;
+
+            if(!x.Ca.empty())
+                proxy += ", ca=" + x.Ca;
+            if(!x.CaStr.empty())
+                proxy += ", ca-str=" + x.CaStr;
+
+            if(!scv.is_undef())
+                proxy += ", skip-cert-verify=" + scv.get_str();
+            if(!tfo.is_undef())
+                proxy += ", fast-open=" + tfo.get_str();
+            if(udp)
+                proxy += ", udp=true";
             break;
         default:
             continue;
         }
 
-        if(!tfo.is_undef())
-            proxy += ", tfo=" + tfo.get_str();
-        if(!udp.is_undef())
-            proxy += ", udp-relay=" + udp.get_str();
+        if(!ext.tfo.is_undef())
+            proxy += ", tfo=" + ext.tfo.get_str();
+        if(!ext.udp.is_undef())
+            proxy += ", udp-relay=" + ext.udp.get_str();
 
-        if (underlying_proxy != "")
+        if (!underlying_proxy.empty())
             proxy += ", underlying-proxy=" + underlying_proxy;
 
         if (ext.nodelist)
@@ -1975,12 +2021,17 @@ std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf,
         }
         processRemark(x.Remark, remarks_list);
 
-        std::string &hostname = x.Hostname, &username = x.Username, &password = x.Password, &method = x.EncryptMethod, &plugin = x.Plugin, &pluginopts = x.PluginOption, &id = x.UserId, &transproto = x.TransferProtocol, &host = x.Host, &path = x.Path, &protocol = x.Protocol, &protoparam = x.ProtocolParam, &obfs = x.OBFS, &obfsparam = x.OBFSParam;
+        std::string &hostname = x.Hostname, &username = x.Username, &password = x.Password,
+            &method = x.EncryptMethod, &plugin = x.Plugin, &pluginopts = x.PluginOption,
+            &id = x.UserId, &transproto = x.TransferProtocol, &host = x.Host, &path = x.Path,
+            &protocol = x.Protocol, &protoparam = x.ProtocolParam, &obfs = x.OBFS,
+            &obfsparam = x.OBFSParam, &underlying_proxy = x.UnderlyingProxy;
         std::string port = std::to_string(x.Port), aid = std::to_string(x.AlterId);
-        bool &tlssecure = x.TLSSecure;
+        bool &tlssecure = x.TLSSecure, udp = x.UDP.get();
 
         tribool scv = ext.skip_cert_verify;
         scv.define(x.AllowInsecure);
+        ext.udp.define(x.UDP);
 
         std::string proxy;
 
@@ -2068,13 +2119,53 @@ std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf,
                 proxy += ", keepalive=" + std::to_string(x.KeepAlive);
             proxy += ", peers=[{" + generatePeer(x, true) + "}]";
             break;
+        case ProxyType::Hysteria2:
+            proxy = "Hysteria2," + hostname + "," + port;
+            if (!password.empty())
+                proxy += ", \"" + password + "\"";
+            if (!x.Ports.empty() && x.Ports != port)
+                proxy += ", port-hopping=" + x.Ports;
+
+            if (x.UpSpeed)
+                proxy += ", upload-bandwidth=" + std::to_string(x.UpSpeed);
+            if (x.DownSpeed)
+                proxy += ", download-bandwidth=" + std::to_string(x.DownSpeed);
+
+            if (!obfs.empty())
+                proxy += ", obfs=" + obfs;
+            if (!obfsparam.empty())
+                proxy += ", salamander-password=" + obfsparam;
+
+            if (x.CWND)
+                proxy += ", cwnd=" + std::to_string(x.CWND);
+            if (x.HopInterval)
+                proxy += ", hop-interval=" + std::to_string(x.HopInterval);
+
+            if (!x.Alpn.empty())
+                proxy += ", alpn=" + x.Alpn[0];
+
+            if (!x.SNI.empty())
+                proxy += ", sni=" + x.SNI;
+            if (!x.Fingerprint.empty())
+                proxy += ", tls-pubkey-sha256=" + x.Fingerprint;
+
+            if (!x.Ca.empty())
+                proxy += ", ca=" + x.Ca;
+            if (!x.CaStr.empty())
+                proxy += ", ca-str=" + x.CaStr;
+
+            if (!scv.is_undef())
+                proxy += ", skip-cert-verify=" + scv.get_str();
+            break;
         default:
             continue;
         }
 
+        if (!underlying_proxy.empty())
+            proxy += ", underlying-proxy=" + underlying_proxy;
         if(ext.tfo)
             proxy += ",fast-open=true";
-        if(ext.udp)
+        if((ext.udp.is_undef() && udp) || ext.udp)
             proxy += ",udp=true";
 
 
@@ -2413,11 +2504,11 @@ void proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::v
             case ProxyType::Hysteria2:
             {
                 addSingBoxCommonMembers(proxy, x, "hysteria2", allocator);
-                if (!x.Ports.empty())
+                if(!x.Ports.empty())
                     proxy.AddMember("server_ports", stringArrayToJsonArray(x.Ports, ",", allocator), allocator);
-                if (!x.Up.empty())
+                if(x.UpSpeed)
                     proxy.AddMember("up_mbps", x.UpSpeed, allocator);
-                if (!x.Down.empty())
+                if(x.DownSpeed)
                     proxy.AddMember("down_mbps", x.DownSpeed, allocator);
                 if (!x.OBFS.empty())
                 {
