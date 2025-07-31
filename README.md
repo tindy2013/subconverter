@@ -25,6 +25,7 @@ Utility to convert between various proxy subscription formats.
 | ------------ | :--------: | :----------: | ----------- |
 | Clash        |     ✓      |      ✓       | clash       |
 | ClashR       |     ✓      |      ✓       | clashr      |
+| Stash        |     ✓      |      ✓       | stash      |
 | Quantumult   |     ✓      |      ✓       | quan        |
 | Quantumult X |     ✓      |      ✓       | quanx       |
 | Loon         |     ✓      |      ✓       | loon        |

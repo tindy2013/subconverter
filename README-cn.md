@@ -121,6 +121,7 @@
 | ---------------------- | :---: | :----: | -------------- |
 | Clash                  |   ✓   |    ✓   | clash          |
 | ClashR                 |   ✓   |    ✓   | clashr         |
+| Stash                  |   ✓   |    ✓   | stash         |
 | Quantumult (完整配置)      |   ✓   |    ✓   | quan           |
 | Quantumult X (完整配置)    |   ✓   |    ✓   | quanx          |
 | Loon                   |   ✓   |    ✓   | loon           |

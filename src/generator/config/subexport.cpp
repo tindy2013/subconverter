@@ -3,6 +3,8 @@
 #include <numeric>
 #include <cmath>
 #include <climits>
+#include <unordered_map>
+#include <unordered_set>
 
 #include "config/regmatch.h"
 #include "generator/config/subexport.h"
@@ -58,6 +60,48 @@ std::string vmessLinkConstruct(const std::string &remarks, const std::string &ad
     writer.String(tls.data());
     writer.EndObject();
     return sb.GetString();
+}
+
+static YAML::Node buildEmbeddedProxy(const std::string &name,
+                                     const std::unordered_map<std::string, YAML::Node> &dict,
+                                     std::unordered_set<std::string> &visited)
+{
+    if(visited.count(name))
+        return YAML::Node();
+    auto it = dict.find(name);
+    if(it == dict.end())
+        return YAML::Node();
+    visited.insert(name);
+    YAML::Node node = YAML::Clone(it->second);
+    if(node["underlying-proxy"])
+    {
+        YAML::Node up = node["underlying-proxy"];
+        if(up.IsScalar())
+        {
+            std::string child = up.as<std::string>();
+            if(!child.empty())
+                node["underlying-proxy"] = buildEmbeddedProxy(child, dict, visited);
+            else
+                node.remove("underlying-proxy");
+        }
+        else if(up.IsSequence())
+        {
+            YAML::Node seq;
+            for(auto child : up)
+            {
+                std::string ref = child.as<std::string>();
+                if(ref.empty()) continue;
+                YAML::Node emb = buildEmbeddedProxy(ref, dict, visited);
+                if(emb)
+                    seq.push_back(emb);
+            }
+            if(seq.size())
+                node["underlying-proxy"] = seq;
+            else
+                node.remove("underlying-proxy");
+        }
+    }
+    return node;
 }
 
 bool matchRange(const std::string &range, int target)
@@ -228,7 +272,7 @@ void groupGenerate(const std::string &rule, std::vector<Proxy> &nodelist, string
     }
 }
 
-void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGroupConfigs &extra_proxy_group, bool clashR, extra_settings &ext)
+void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGroupConfigs &extra_proxy_group, bool clashR, bool uptree, extra_settings &ext)
 {
     YAML::Node proxies, original_groups;
     std::vector<Proxy> nodelist;
@@ -282,9 +326,11 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
         singleproxy["server"] = x.Hostname;
         singleproxy["port"] = x.Port;
         
-        if (!underlying_proxy.empty())
+        if(!underlying_proxy.empty())
+        {
             singleproxy["underlying-proxy"] = underlying_proxy;
-
+        }
+            
         switch(x.Type)
         {
         case ProxyType::Shadowsocks:
@@ -592,6 +638,60 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
         nodelist.emplace_back(x);
     }
 
+    if (uptree)
+    {
+        std::unordered_map<std::string, YAML::Node> proxyDict;
+        for (const auto &p : proxies)
+            proxyDict.emplace(p["name"].as<std::string>(), p);
+
+        std::unordered_set<std::string> referenced;
+
+        for (std::size_t i = 0; i < proxies.size(); ++i)
+        {
+            YAML::Node node = proxies[i];
+            if (!node["underlying-proxy"])
+                continue;
+
+            auto collect = [&](const std::string &ref) {
+                if (ref.empty()) return YAML::Node();
+                std::unordered_set<std::string> visited;
+                YAML::Node emb = buildEmbeddedProxy(ref, proxyDict, visited);
+                referenced.insert(visited.begin(), visited.end());
+                return emb;
+            };
+
+            YAML::Node up = node["underlying-proxy"];
+            if (up.IsScalar())
+            {
+                node["underlying-proxy"] = collect(up.as<std::string>());
+                if (!node["underlying-proxy"])
+                    node.remove("underlying-proxy");
+            }
+            else if (up.IsSequence())
+            {
+                YAML::Node seq;
+                for (auto child : up)
+                {
+                    YAML::Node emb = collect(child.as<std::string>());
+                    if (emb) seq.push_back(emb);
+                }
+                if (seq.size())
+                    node["underlying-proxy"] = seq;
+                else
+                    node.remove("underlying-proxy");
+            }
+
+            proxies[i] = node;
+        }
+
+        YAML::Node filtered;
+        for (const YAML::Node &p : proxies)
+            if (!referenced.count(p["name"].as<std::string>()))
+                filtered.push_back(p);
+
+        proxies = filtered;
+    }
+
     if(proxy_compact)
         proxies.SetStyle(YAML::EmitterStyle::Flow);
 
@@ -687,7 +787,7 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
         yamlnode["Proxy Group"] = original_groups;
 }
 
-std::string proxyToClash(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, bool clashR, extra_settings &ext)
+std::string proxyToClash(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, bool clashR, bool uptree, extra_settings &ext)
 {
     YAML::Node yamlnode;
 
@@ -701,7 +801,7 @@ std::string proxyToClash(std::vector<Proxy> &nodes, const std::string &base_conf
         return "";
     }
 
-    proxyToClash(nodes, yamlnode, extra_proxy_group, clashR, ext);
+    proxyToClash(nodes, yamlnode, extra_proxy_group, clashR, uptree, ext);
 
     if(ext.nodelist)
         return YAML::Dump(yamlnode);

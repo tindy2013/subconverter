@@ -65,6 +65,7 @@ const std::vector<UAProfile> UAMatchList = {
     {"ClashX Pro","","","clash",true},
     {"ClashX","\\/([0-9.]+)","0.13","clash",true},
     {"Clash","","","clash",true},
+    {"Stash","","","stash",true},
     {"Kitsunebi","","","v2ray"},
     {"Loon","","","loon"},
     {"Pharos","","","mixed"},
@@ -317,7 +318,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     case "ss"_hash: case "ssd"_hash: case "ssr"_hash: case "sssub"_hash: case "v2ray"_hash: case "trojan"_hash: case "mixed"_hash:
         lSimpleSubscription = true;
         break;
-    case "clash"_hash: case "clashr"_hash: case "surge"_hash: case "quan"_hash: case "quanx"_hash: case "loon"_hash: case "surfboard"_hash: case "mellow"_hash: case "singbox"_hash:
+    case "clash"_hash: case "clashr"_hash: case "stash"_hash: case "surge"_hash: case "quan"_hash: case "quanx"_hash: case "loon"_hash: case "surfboard"_hash: case "mellow"_hash: case "singbox"_hash:
         break;
     default:
         *status_code = 400;
@@ -407,7 +408,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     /// check other flags
     ext.authorized = authorized;
     ext.append_proxy_type = argAppendType.get(global.appendType);
-    if((argTarget == "clash" || argTarget == "clashr") && argGenClashScript.is_undef())
+    if((argTarget == "clash" || argTarget == "clashr" || argTarget == "stash") && argGenClashScript.is_undef())
         argExpandRulesets.define(true);
 
     ext.clash_proxies_style = global.clashProxiesStyle;
@@ -762,14 +763,20 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     proxy = parseProxy(global.proxyConfig);
     switch(hash_(argTarget))
     {
-    case "clash"_hash: case "clashr"_hash:
-        writeLog(0, argTarget == "clashr" ? "Generate target: ClashR" : "Generate target: Clash", LOG_LEVEL_INFO);
+    case "clash"_hash: case "clashr"_hash: case "stash"_hash:
+        if(argTarget == "clash")
+            writeLog(0, "Generate target: Clash", LOG_LEVEL_INFO);
+        else if(argTarget == "clashr")
+            writeLog(0, "Generate target: ClashR", LOG_LEVEL_INFO);
+        else if(argTarget == "stash")
+            writeLog(0, "Generate target: Stash", LOG_LEVEL_INFO);
+
         tpl_args.local_vars["clash.new_field_name"] = ext.clash_new_field_name ? "true" : "false";
         response.headers["profile-update-interval"] = std::to_string(interval / 3600);
         if(ext.nodelist)
         {
             YAML::Node yamlnode;
-            proxyToClash(nodes, yamlnode, dummy_group, argTarget == "clashr", ext);
+            proxyToClash(nodes, yamlnode, dummy_group, argTarget == "clashr", argTarget == "stash", ext);
             output_content = YAML::Dump(yamlnode);
         }
         else
@@ -779,7 +786,7 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
                 *status_code = 400;
                 return base_content;
             }
-            output_content = proxyToClash(nodes, base_content, lRulesetContent, lCustomProxyGroups, argTarget == "clashr", ext);
+            output_content = proxyToClash(nodes, base_content, lRulesetContent, lCustomProxyGroups, argTarget == "clashr", argTarget == "stash", ext);
         }
 
         if(argUpload)
@@ -1128,7 +1135,7 @@ std::string surgeConfToClash(RESPONSE_CALLBACK_ARGS)
     ext.clash_proxy_groups_style = global.clashProxyGroupsStyle;
 
     ProxyGroupConfigs dummy_groups;
-    proxyToClash(nodes, clash, dummy_groups, false, ext);
+    proxyToClash(nodes, clash, dummy_groups, false, false, ext);
 
     section.clear();
     ini.get_items("Proxy", section);
