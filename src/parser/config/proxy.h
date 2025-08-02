@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 #include "utils/tribool.h"
 
@@ -125,9 +126,27 @@ struct Proxy
     tribool DisableMtuDiscovery;
     uint32_t HopInterval;
     StringArray Alpn;
+    std::unordered_map<std::string, std::string> Extra;
 
     uint32_t CWND = 0;
 };
+
+inline void addExtraField(Proxy &proxy, const std::string &key, const std::string &val)
+{
+    if(key.empty()) return;
+    proxy.Extra.emplace(key, val);
+}
+
+template<typename Fn>
+inline void forEachExtra(const Proxy &proxy, const std::string &prefix, Fn cb)
+{
+    const auto plen = prefix.size();
+    for(const auto &kv : proxy.Extra)
+    {
+        if(kv.first.rfind(prefix, 0) == 0 && kv.first.size() > plen)
+            cb(kv.first.substr(plen), kv.second);
+    }
+}
 
 #define SS_DEFAULT_GROUP "SSProvider"
 #define SSR_DEFAULT_GROUP "SSRProvider"

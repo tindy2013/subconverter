@@ -633,6 +633,11 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
             singleproxy.SetStyle(YAML::EmitterStyle::Block);
         else
             singleproxy.SetStyle(YAML::EmitterStyle::Flow);
+
+        forEachExtra(x, "clash_", [&](const std::string &k, const std::string &v){
+            singleproxy[k] = v;
+        });
+
         proxies.push_back(singleproxy);
         remarks_list.emplace_back(x.Remark);
         nodelist.emplace_back(x);
@@ -1113,6 +1118,10 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
         if (!underlying_proxy.empty())
             proxy += ", underlying-proxy=" + underlying_proxy;
 
+        forEachExtra(x, "surge_", [&](const std::string &k, const std::string &v){
+            proxy += ", " + k + "=" + v;
+        });
+
         if (ext.nodelist)
             output_nodelist += x.Remark + " = " + proxy + "\n";
         else
@@ -1282,6 +1291,24 @@ std::string proxyToSingle(std::vector<Proxy> &nodes, int types, extra_settings &
         default:
             continue;
         }
+
+        auto appendQuery = [&](const std::string &k, const std::string &v)
+        {
+            char sep = (proxyStr.find('?') == std::string::npos) ? '?' : '&';
+            proxyStr += sep + k + "=" + urlEncode(v);
+        };
+
+        forEachExtra(x, "single_", appendQuery);
+
+        switch (x.Type)
+        {
+            case ProxyType::Shadowsocks:   forEachExtra(x, "ss_",     appendQuery); break;
+            case ProxyType::ShadowsocksR:  forEachExtra(x, "ssr_",    appendQuery); break;
+            case ProxyType::VMess:         forEachExtra(x, "vmess_",  appendQuery); break;
+            case ProxyType::Trojan:        forEachExtra(x, "trojan_", appendQuery); break;
+            default: break;
+        }
+
         allLinks += proxyStr + "\n";
     }
 
@@ -1339,6 +1366,12 @@ std::string proxyToSSSub(std::string base_conf, std::vector<Proxy> &nodes, extra
         | AddMemberOrReplace("password", rapidjson::Value(password.c_str(), password.size()), alloc)
         | AddMemberOrReplace("plugin", rapidjson::Value(plugin.c_str(), plugin.size()), alloc)
         | AddMemberOrReplace("plugin_opts", rapidjson::Value(pluginopts.c_str(), pluginopts.size()), alloc);
+
+        forEachExtra(x, "sssub_", [&](const std::string &k, const std::string &v){
+            proxy.AddMember(rapidjson::Value(k.c_str(), alloc),
+                            rapidjson::Value(v.c_str(), alloc), alloc);
+        });
+
         proxies.PushBack(proxy, alloc);
     }
     return proxies | SerializeObject();
@@ -1494,6 +1527,8 @@ void proxyToQuan(std::vector<Proxy> &nodes, INIReader &ini, std::vector<RulesetC
         default:
             continue;
         }
+
+        forEachExtra(x, "quan_",   [&](const std::string &k, const std::string &v){  proxyStr += ", " + k + "=" + v; });
 
         ini.set("{NONAME}", proxyStr);
         remarks_list.emplace_back(x.Remark);
@@ -1751,6 +1786,8 @@ void proxyToQuanX(std::vector<Proxy> &nodes, INIReader &ini, std::vector<Ruleset
             proxyStr += ", tls-verification=" + scv.reverse().get_str();
         proxyStr += ", tag=" + x.Remark;
 
+        forEachExtra(x, "quanx_",  [&](const std::string &k, const std::string &v){  proxyStr += ", " + k + "=" + v; });
+
         ini.set("{NONAME}", proxyStr);
         remarks_list.emplace_back(x.Remark);
         nodelist.emplace_back(x);
@@ -1931,6 +1968,12 @@ std::string proxyToSSD(std::vector<Proxy> &nodes, std::string &group, std::strin
         default:
             continue;
         }
+
+        forEachExtra(x, "ssd_", [&](const std::string &k, const std::string &v){
+            writer.Key(k.c_str());
+            writer.String(v.c_str());
+        });
+
         index++;
     }
     writer.EndArray();
@@ -2032,7 +2075,9 @@ void proxyToMellow(std::vector<Proxy> &nodes, INIReader &ini, std::vector<Rulese
         default:
             continue;
         }
-
+        
+        forEachExtra(x, "mellow_", [&](const std::string &k, const std::string &v){  proxy   += ", " + k + "=" + v; });
+        
         ini.set("{NONAME}", proxy);
         remarks_list.emplace_back(x.Remark);
         nodelist.emplace_back(x);
@@ -2268,6 +2313,7 @@ std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf,
         if((ext.udp.is_undef() && udp) || ext.udp)
             proxy += ",udp=true";
 
+        forEachExtra(x, "loon_",   [&](const std::string &k, const std::string &v){  proxy   += ", " + k + "=" + v; });
 
         if(ext.nodelist)
             output_nodelist += x.Remark + " = " + proxy + "\n";
@@ -2681,6 +2727,12 @@ void proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::v
         {
             proxy.AddMember("tcp_fast_open", buildBooleanValue(tfo), allocator);
         }
+        
+        forEachExtra(x, "singbox_", [&](const std::string &k, const std::string &v){
+            proxy.AddMember(rapidjson::Value(k.c_str(), allocator),
+                            rapidjson::Value(v.c_str(), allocator), allocator);
+        });
+
         nodelist.push_back(x);
         remarks_list.emplace_back(x.Remark);
         outbounds.PushBack(proxy, allocator);

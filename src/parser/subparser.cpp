@@ -758,6 +758,16 @@ void explodeSSRConf(std::string content, std::vector<Proxy> &nodes)
         obfs = GetMember(json["configs"][i], "obfs");
         obfsparam = GetMember(json["configs"][i], "obfsparam");
 
+        for(auto m = json["configs"][i].MemberBegin(); m != json["configs"][i].MemberEnd(); ++m)
+        {
+            std::string k = m->name.GetString();
+            if(k == "group" || k == "remarks" || k == "server" || k == "server_port" ||
+            k == "password" || k == "method" || k == "protocol" || k == "protocolparam" ||
+            k == "obfs" || k == "obfsparam") continue;
+
+            if(m->value.IsString()) addExtraField(node, k, m->value.GetString());
+        }
+
         ssrConstruct(node, group, remarks, server, port, protocol, method, obfs, password, obfsparam, protoparam);
         node.Id = index;
         nodes.emplace_back(std::move(node));
@@ -889,6 +899,17 @@ void explodeTrojan(std::string trojan, Proxy &node)
         trojan.erase(pos);
     }
 
+    string_array allParams = split(addition, "&");
+    for(auto &kvStr : allParams)
+    {
+        auto kv = split(kvStr, "=");
+        if(kv.size() != 2) continue;
+        std::string k = kv[0];
+        std::string v = kv[1];
+        if(k == "sni" || k == "peer" || k == "tfo" || k == "allowInsecure" || k == "group" || k == "ws" || k == "wspath") continue;
+        addExtraField(node, k, v);
+    }
+
     if(regGetMatch(trojan, "(.*?)@(.*):(.*)", 4, 0, &psk, &server, &port))
         return;
     if(port == "0")
@@ -1012,6 +1033,18 @@ void explodeNetch(std::string netch, Proxy &node)
     port = GetMember(json, "Port");
     if(port == "0")
         return;
+
+    for(auto m = json.MemberBegin(); m != json.MemberEnd(); ++m)
+    {
+        std::string k = m->name.GetString();
+        if(k == "Type" || k == "Group" || k == "Hostname" || k == "Port" || k == "EncryptMethod" ||
+        k == "Password" || k == "Protocol" || k == "OBFS" || k == "OBFSParam" || k == "ProtocolParam" ||
+        k == "UserID" || k == "AlterID" || k == "TransferProtocol" || k == "FakeType" ||
+        k == "Host" || k == "Path" || k == "Edge" || k == "TLSSecure" || k == "ServerName" ||
+        k == "EnableUDP" || k == "EnableTFO" || k == "AllowInsecure") continue;
+        if(m->value.IsString()) addExtraField(node, k, m->value.GetString());
+    }
+
     method = GetMember(json, "EncryptMethod");
     password = GetMember(json, "Password");
     if(remark.empty())
@@ -1122,6 +1155,16 @@ void explodeClash(Node yamlnode, std::vector<Proxy> &nodes)
         udp = safe_as<std::string>(singleproxy["udp"]);
         tfo = safe_as<std::string>(singleproxy["fast-open"]);
         scv = safe_as<std::string>(singleproxy["skip-cert-verify"]);
+        for(auto it : singleproxy)
+        {
+            std::string k = it.first.as<std::string>();
+            if(it.second.IsScalar())
+            {
+                if(k != "type" && k != "name" && k != "server" && k != "port" && k != "underlying-proxy")
+                    addExtraField(node, k, it.second.as<std::string>());
+            }
+        }
+
         switch(hash_(proxytype))
         {
         case "vmess"_hash:
@@ -1549,6 +1592,18 @@ void explodeStdHysteria2(std::string hysteria2, Proxy &node) {
             return;
     }
 
+    string_array params = split(addition, "&");
+    for(auto &p : params)
+    {
+        auto kv = split(p, "=");
+        if(kv.size() != 2) continue;
+        std::string k = kv[0];
+        std::string v = kv[1];
+        if(k == "password" || k == "insecure" || k == "up" || k == "down" ||
+        k == "alpn" || k == "obfs" || k == "obfs-password" || k == "sni" || k == "pinSHA256") continue;
+        addExtraField(node, k, v);
+    }
+
     scv = getUrlArg(addition, "insecure");
     up = getUrlArg(addition, "up");
     down = getUrlArg(addition, "down");
@@ -1718,6 +1773,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
                     tfo = itemVal;
                     break;
                 default:
+                    addExtraField(node, itemName, itemVal);
                     continue;
                 }
             }
@@ -1767,6 +1823,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
                     tfo = itemVal;
                     break;
                 default:
+                    addExtraField(node, itemName, itemVal);
                     continue;
                 }
             }
@@ -1807,6 +1864,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
                     scv = itemVal;
                     break;
                 default:
+                    addExtraField(node, itemName, itemVal);
                     continue;
                 }
             }
@@ -1872,6 +1930,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
                 case "vmess-aead"_hash:
                     aead = itemVal == "true" ? "0" : "1";
                 default:
+                    addExtraField(node, itemName, itemVal);
                     continue;
                 }
             }
@@ -1902,6 +1961,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
                     scv = itemVal;
                     break;
                 default:
+                    addExtraField(node, itemName, itemVal);
                     continue;
                 }
             }
@@ -1938,6 +1998,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
                     scv = itemVal;
                     break;
                 default:
+                    addExtraField(node, itemName, itemVal);
                     continue;
                 }
             }
@@ -1981,6 +2042,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
                     version = itemVal;
                     break;
                 default:
+                    addExtraField(node, itemName, itemVal);
                     continue;
                 }
             }
@@ -2039,6 +2101,9 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
                     break;
                 case "keepalive"_hash:
                     keepalive = itemVal;
+                    break;
+                default:
+                    addExtraField(node, itemName, itemVal);
                     break;
                 }
             }
@@ -2111,6 +2176,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
                     ca_str = itemVal;
                     break;
                 default:
+                    addExtraField(node, itemName, itemVal);
                     continue;
                 }
             }
@@ -2198,6 +2264,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
                         tls13 = itemVal;
                         break;
                     default:
+                        addExtraField(node, itemName, itemVal);
                         continue;
                     }
                 }
@@ -2292,6 +2359,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
                     case "aead"_hash:
                         aead = itemVal == "true" ? "0" : "1";
                     default:
+                        addExtraField(node, itemName, itemVal);
                         continue;
                     }
                 }
@@ -2340,6 +2408,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
                         tls13 = itemVal;
                         break;
                     default:
+                        addExtraField(node, itemName, itemVal);
                         continue;
                     }
                 }
@@ -2385,6 +2454,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
                         tfo = itemVal;
                         break;
                     default:
+                        addExtraField(node, itemName, itemVal);
                         continue;
                     }
                 }
