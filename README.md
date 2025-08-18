@@ -111,3 +111,12 @@ Example:
 ;uncomment the following line and enter your token to enable upload function
 token = xxxxxxxxxxxxxxxxxxxxxxxx(Your Personal Access Token)
 ```
+
+## Additional Features
+
+- Stash is available as both a source and target format.
+- `managed_config_url` specifies the full link used for managed configuration headers.
+- `embed_remote_rules` embeds remote ruleset contents directly into the generated profile.
+- Rule URLs accept an optional `,flags=` parameter for Surge style rule-set flags.
+- The rule converter recognises `DOMAIN-WILDCARD` entries and converts them to `DOMAIN-REGEX` for Clash and Sing-box.
+- External configurations can include a `general` section to override Surge `[General]` options.
