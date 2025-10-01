@@ -159,7 +159,7 @@ void hysteriaConstruct(
     const std::string &alpn,
     tribool tfo,
     tribool scv,
-    const std::string &underlying_proxy = ""
+    const std::string &underlying_proxy
 ) {
     commonConstruct(node, ProxyType::Hysteria, group, remarks, server, port, tribool(), tfo, scv, tribool(), underlying_proxy);
     node.Ports = ports;
@@ -208,10 +208,33 @@ void hysteriaConstruct(
     }
 }
 
-void hysteria2Construct(Proxy &node, const std::string &group, const std::string &remarks, const std::string &server, const std::string &port,const std::string &up, const std::string &down, const std::string &password, const std::string &obfs, const std::string &obfs_password, const std::string &sni, const std::string &fingerprint, const std::string &alpn, const std::string &ca, const std::string &ca_str, const std::string &cwnd, tribool tfo, tribool scv, const std::string &underlying_proxy) {
+void hysteria2Construct(
+    Proxy &node, 
+    const std::string &group,
+    const std::string &remarks,
+    const std::string &server, 
+    const std::string &port,
+    const std::string &ports,
+    const std::string &up, 
+    const std::string &down,
+    const std::string &password,
+    const std::string &obfs,
+    const std::string &obfs_password,
+    const std::string &sni,
+    const std::string &fingerprint,
+    const std::string &alpn,
+    const std::string &ca,
+    const std::string &caStr,
+    const std::string &cwnd,
+    const std::string &hop_interval, 
+    tribool tfo, 
+    tribool scv, 
+    const std::string &underlying_proxy
+) {
     commonConstruct(node, ProxyType::Hysteria2, group, remarks, server, port, tribool(), tfo, scv, tribool(), underlying_proxy);
     node.UpSpeed = to_int(up);
     node.DownSpeed = to_int(down);
+    node.Ports = ports;
     node.Password = password;
     node.OBFS = obfs;
     node.OBFSParam = obfs_password;
@@ -222,9 +245,9 @@ void hysteria2Construct(Proxy &node, const std::string &group, const std::string
         node.Alpn = StringArray {alpn};
     }
     node.Ca = ca;
-    node.CaStr = ca_str;
+    node.CaStr = caStr;
     node.CWND = to_int(cwnd);
-
+    node.HopInterval = to_int(hop_interval);
 }
 
 void explodeVmess(std::string vmess, Proxy &node)
@@ -1324,6 +1347,7 @@ void explodeClash(Node yamlnode, std::vector<Proxy> &nodes)
             break;
         case "hysteria2"_hash:
             group = HYSTERIA2_DEFAULT_GROUP;
+            singleproxy["ports"] >>= ports;
             singleproxy["up"] >>= up;
             singleproxy["down"] >>= down;
             singleproxy["password"] >>= password;
@@ -1340,8 +1364,9 @@ void explodeClash(Node yamlnode, std::vector<Proxy> &nodes)
             singleproxy["ca"] >>= ca;
             singleproxy["ca-str"] >>= ca_str;
             singleproxy["cwnd"] >>= cwnd;
+            singleproxy["hop-interval"] >>= hop_interval;
 
-            hysteria2Construct(node, group, ps, server, port, up, down, password, obfs, obfs_password, sni, fingerprint, alpn, ca, ca_str, cwnd, tfo, scv, underlying_proxy);
+            hysteria2Construct(node, group, ps, server, port, ports, up, down, password, obfs, obfs_password, sni, fingerprint, ca, ca_str, cwnd, alpn, hop_interval, tfo, scv, underlying_proxy);
             break;
 
         default:
@@ -1526,7 +1551,7 @@ void explodeStdHysteria2(std::string hysteria2, Proxy &node) {
     if (remarks.empty())
         remarks = add + ":" + port;
 
-    hysteria2Construct(node, HYSTERIA2_DEFAULT_GROUP, remarks, add, port, up, down, password, obfs, obfs_password, sni, fingerprint, "", "", "", "", tribool(), scv, "");
+    hysteria2Construct(node, HYSTERIA2_DEFAULT_GROUP, remarks, add, port, port, up, down, password, obfs, obfs_password, sni, fingerprint, "", "", "", "", "", tribool(), scv, "");
     return;
 }
 

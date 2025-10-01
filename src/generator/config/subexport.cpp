@@ -530,6 +530,8 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
             break;
         case ProxyType::Hysteria2:
             singleproxy["type"] = "hysteria2";
+            if (!x.Ports.empty())
+                singleproxy["ports"] = x.Ports;
             if (!x.Up.empty())
                 singleproxy["up"] = x.UpSpeed;
             if (!x.Down.empty())
@@ -552,6 +554,8 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
                 singleproxy["ca-str"] = x.CaStr;
             if (x.CWND)
                 singleproxy["cwnd"] = x.CWND;
+            if (x.HopInterval)
+                singleproxy["hop-interval"] = x.HopInterval;
             break;
         default:
             continue;
@@ -723,8 +727,12 @@ std::string generatePeer(Proxy &node, bool client_id_as_reserved = false)
     std::string result;
     result += "public-key = " + node.PublicKey;
     result += ", endpoint = " + node.Hostname + ":" + std::to_string(node.Port);
+    if(!node.PreSharedKey.empty())
+        result += ", preshared-key = " + node.PreSharedKey;
     if(!node.AllowedIPs.empty())
         result += ", allowed-ips = \"" + node.AllowedIPs + "\"";
+    if(node.KeepAlive > 0)
+        result += ", keepalive = " + std::to_string(node.KeepAlive);
     if(!node.ClientId.empty())
     {
         if(client_id_as_reserved)
@@ -927,14 +935,10 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
             ini.set(real_section, "self-ip", x.SelfIP);
             if(!x.SelfIPv6.empty())
                 ini.set(real_section, "self-ip-v6", x.SelfIPv6);
-            if(!x.PreSharedKey.empty())
-                ini.set(real_section, "preshared-key", x.PreSharedKey);
             if(!x.DnsServers.empty())
                 ini.set(real_section, "dns-server", join(x.DnsServers, ","));
             if(x.Mtu > 0)
                 ini.set(real_section, "mtu", std::to_string(x.Mtu));
-            if(x.KeepAlive > 0)
-                ini.set(real_section, "keepalive", std::to_string(x.KeepAlive));
             ini.set(real_section, "peer", "(" + generatePeer(x) + ")");
             break;
         case ProxyType::Hysteria2:
@@ -976,7 +980,9 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
     if(ext.nodelist)
         return output_nodelist;
 
+    string_multimap original_groups;
     ini.set_current_section("Proxy Group");
+    ini.get_items(original_groups);
     ini.erase_section();
     for(const ProxyGroupConfig &x : extra_proxy_group)
     {
@@ -1035,6 +1041,18 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
                 group += ",persistent=" + x.Persistent.get_str();
             if(!x.EvaluateBeforeUse.is_undef())
                 group += ",evaluate-before-use=" + x.EvaluateBeforeUse.get_str();
+        }
+
+        auto iter = original_groups.find(x.Name);
+        if(iter != original_groups.end())
+        {
+            string_array vArray = split(iter->second, ",");
+            if(vArray.size() > 1)
+            {
+                std::string content = trim(vArray[vArray.size() - 1]);
+                if(content.find("icon-url") == 0)
+                    group += "," + content;
+            }
         }
 
         ini.set("{NONAME}", x.Name + " = " + group); //insert order
@@ -2395,6 +2413,8 @@ void proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::v
             case ProxyType::Hysteria2:
             {
                 addSingBoxCommonMembers(proxy, x, "hysteria2", allocator);
+                if (!x.Ports.empty())
+                    proxy.AddMember("server_ports", stringArrayToJsonArray(x.Ports, ",", allocator), allocator);
                 if (!x.Up.empty())
                     proxy.AddMember("up_mbps", x.UpSpeed, allocator);
                 if (!x.Down.empty())
@@ -2409,7 +2429,8 @@ void proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::v
                 }
                 if (!x.Password.empty())
                     proxy.AddMember("password", rapidjson::StringRef(x.Password.c_str()), allocator);
-                
+                if (x.HopInterval)
+                    proxy.AddMember("hop_interval", rapidjson::Value(formatSingBoxInterval(x.HopInterval).c_str(), allocator), allocator);
                 rapidjson::Value tls(rapidjson::kObjectType);
                 tls.AddMember("enabled", true, allocator);
                 if (!scv.is_undef())
