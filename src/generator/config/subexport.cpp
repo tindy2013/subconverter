@@ -1174,6 +1174,8 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
             continue;
         }
 
+        if(!x.DnsServers.empty())
+            proxy += ", dns-server=" + join(x.DnsServers, ",");
 
         if(!ext.tfo.is_undef())
             proxy += ", tfo=" + ext.tfo.get_str();

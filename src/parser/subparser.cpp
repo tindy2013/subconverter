@@ -1144,12 +1144,23 @@ void explodeClash(Node yamlnode, std::vector<Proxy> &nodes)
     for(uint32_t i = 0; i < yamlnode[section].size(); i++)
     {
         Proxy node;
+        dns_server.clear();
         singleproxy = yamlnode[section][i];
         singleproxy["type"] >>= proxytype;
         singleproxy["name"] >>= ps;
         singleproxy["server"] >>= server;
         singleproxy["port"] >>= port;
         singleproxy["interface-name"] >>= interface;
+        auto dnsnode = singleproxy["dns-server"];
+        if(dnsnode.IsSequence())
+            dnsnode >>= dns_server;
+        else
+        {
+            std::string dns;
+            dnsnode >>= dns;
+            if(!dns.empty())
+                dns_server.emplace_back(dns);
+        }
         singleproxy["underlying-proxy"] >>= underlying_proxy;
         if((port.empty() || port == "0") && proxytype != "direct")
             continue;
@@ -1348,11 +1359,21 @@ void explodeClash(Node yamlnode, std::vector<Proxy> &nodes)
 
             snellConstruct(node, group, ps, server, port, password, obfs, host, to_int(aid, 0), udp, tfo, scv, underlying_proxy);
             break;
-        case "wireguard"_hash:
+        case "wireguard"_hash: {
             group = WG_DEFAULT_GROUP;
             singleproxy["public-key"] >>= public_key;
             singleproxy["private-key"] >>= private_key;
-            singleproxy["dns"] >>= dns_server;
+            auto dnsnode2 = singleproxy["dns"];
+            if(dnsnode2.IsSequence()){
+                string_array extra_dns;
+                dnsnode2 >>= extra_dns;
+                dns_server.insert(dns_server.end(), extra_dns.begin(), extra_dns.end());
+            } else {
+                std::string dns;
+                dnsnode2 >>= dns;
+                if(!dns.empty())
+                    dns_server.emplace_back(dns);
+            }
             singleproxy["mtu"] >>= mtu;
             singleproxy["preshared-key"] >>= password;
             singleproxy["ip"] >>= ip;
@@ -1360,6 +1381,7 @@ void explodeClash(Node yamlnode, std::vector<Proxy> &nodes)
 
             wireguardConstruct(node, group, ps, server, port, ip, ipv6, private_key, public_key, password, dns_server, mtu, "0", "", "", udp, underlying_proxy);
             break;
+        }
         case "hysteria"_hash:
             group = HYSTERIA_DEFAULT_GROUP;
             singleproxy["ports"] >>= ports;
@@ -1431,13 +1453,13 @@ void explodeClash(Node yamlnode, std::vector<Proxy> &nodes)
             node.AllowInsecure = scv;
             node.UnderlyingProxy = underlying_proxy;
             break;
-    break;
         default:
             continue;
         }
 
         node.Id = index;
         node.Interface = interface;
+        node.DnsServers = dns_server;
         nodes.emplace_back(std::move(node));
         index++;
     }
