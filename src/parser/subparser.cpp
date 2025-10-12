@@ -1288,7 +1288,7 @@ void explodeClash(Node yamlnode, std::vector<Proxy> &nodes)
             singleproxy["username"] >>= user;
             singleproxy["password"] >>= password;
 
-            socksConstruct(node, group, ps, server, port, user, password, tribool(),  tribool(),  tribool(), underlying_proxy);
+            socksConstruct(node, group, ps, server, port, user, password, udp,  tribool(),  tribool(), underlying_proxy);
             break;
         case "ssr"_hash:
             group = SSR_DEFAULT_GROUP;
