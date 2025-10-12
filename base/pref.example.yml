@@ -117,6 +117,7 @@ aliases:
   - {uri: /v, target: /version}
   - {uri: /clash, target: "/sub?target=clash"}
   - {uri: /clashr, target: "/sub?target=clashr"}
+  - {uri: /stash, target: "/sub?target=stash"}
   - {uri: /surge, target: "/sub?target=surge"}
   - {uri: /quan, target: "/sub?target=quan"}
   - {uri: /quanx, target: "/sub?target=quanx"}

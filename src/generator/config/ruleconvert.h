@@ -24,6 +24,7 @@ struct RulesetContent
     std::string rule_group;
     std::string rule_path;
     std::string rule_path_typed;
+    std::string flags;
     int rule_type = RULESET_SURGE;
     std::shared_future<std::string> rule_content;
     int update_interval = 0;
@@ -32,7 +33,7 @@ struct RulesetContent
 std::string convertRuleset(const std::string &content, int type);
 void rulesetToClash(YAML::Node &base_rule, std::vector<RulesetContent> &ruleset_content_array, bool overwrite_original_rules, bool new_field_name);
 std::string rulesetToClashStr(YAML::Node &base_rule, std::vector<RulesetContent> &ruleset_content_array, bool overwrite_original_rules, bool new_field_name);
-void rulesetToSurge(INIReader &base_rule, std::vector<RulesetContent> &ruleset_content_array, int surge_ver, bool overwrite_original_rules, const std::string& remote_path_prefix);
+void rulesetToSurge(INIReader &base_rule, std::vector<RulesetContent> &ruleset_content_array, int surge_ver, bool overwrite_original_rules, const std::string& remote_path_prefix, bool embed_remote_rules);
 void rulesetToSingBox(rapidjson::Document &base_rule, std::vector<RulesetContent> &ruleset_content_array, bool overwrite_original_rules);
 
 #endif // RULECONVERT_H_INCLUDED

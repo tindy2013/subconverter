@@ -22,10 +22,10 @@ struct Settings
     RulesetConfigs customRulesets;
     RegexMatchConfigs streamNodeRules, timeNodeRules;
     std::vector<RulesetContent> rulesetsContent;
-    std::string listenAddress = "127.0.0.1", defaultUrls, insertUrls, managedConfigPrefix;
+    std::string listenAddress = "127.0.0.1", defaultUrls, insertUrls, managedConfigPrefix, managedConfigUrl;
     int listenPort = 25500, maxPendingConns = 10, maxConcurThreads = 4;
     bool prependInsert = true, skipFailedLinks = false;
-    bool APIMode = true, writeManagedConfig = false, enableRuleGen = true, updateRulesetOnRequest = false, overwriteOriginalRules = true;
+    bool APIMode = true, writeManagedConfig = false, enableRuleGen = true, updateRulesetOnRequest = false, overwriteOriginalRules = true, embedRemoteRules = false;
     bool printDbgInfo = false, CFWChildProcess = false, appendUserinfo = true, asyncFetchRuleset = false, surgeResolveHostname = true;
     std::string accessToken, basePath = "base";
     std::string custom_group;
@@ -76,6 +76,7 @@ struct ExternalConfig
 {
     ProxyGroupConfigs custom_proxy_group;
     RulesetConfigs surge_ruleset;
+    std::string managed_config_url;
     std::string clash_rule_base;
     std::string surge_rule_base;
     std::string surfboard_rule_base;
@@ -89,8 +90,10 @@ struct ExternalConfig
     RegexMatchConfigs emoji;
     string_array include;
     string_array exclude;
+    string_map general;
     template_args *tpl_args = nullptr;
     bool overwrite_original_rules = false;
+    bool embed_remote_rules = false;
     bool enable_rule_generator = true;
     tribool add_emoji;
     tribool remove_old_emoji;

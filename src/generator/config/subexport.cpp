@@ -3,6 +3,8 @@
 #include <numeric>
 #include <cmath>
 #include <climits>
+#include <unordered_map>
+#include <unordered_set>
 
 #include "config/regmatch.h"
 #include "generator/config/subexport.h"
@@ -58,6 +60,48 @@ std::string vmessLinkConstruct(const std::string &remarks, const std::string &ad
     writer.String(tls.data());
     writer.EndObject();
     return sb.GetString();
+}
+
+static YAML::Node buildEmbeddedProxy(const std::string &name,
+                                     const std::unordered_map<std::string, YAML::Node> &dict,
+                                     std::unordered_set<std::string> &visited)
+{
+    if(visited.count(name))
+        return YAML::Node();
+    auto it = dict.find(name);
+    if(it == dict.end())
+        return YAML::Node();
+    visited.insert(name);
+    YAML::Node node = YAML::Clone(it->second);
+    if(node["underlying-proxy"])
+    {
+        YAML::Node up = node["underlying-proxy"];
+        if(up.IsScalar())
+        {
+            std::string child = up.as<std::string>();
+            if(!child.empty())
+                node["underlying-proxy"] = buildEmbeddedProxy(child, dict, visited);
+            else
+                node.remove("underlying-proxy");
+        }
+        else if(up.IsSequence())
+        {
+            YAML::Node seq;
+            for(auto child : up)
+            {
+                std::string ref = child.as<std::string>();
+                if(ref.empty()) continue;
+                YAML::Node emb = buildEmbeddedProxy(ref, dict, visited);
+                if(emb)
+                    seq.push_back(emb);
+            }
+            if(seq.size())
+                node["underlying-proxy"] = seq;
+            else
+                node.remove("underlying-proxy");
+        }
+    }
+    return node;
 }
 
 bool matchRange(const std::string &range, int target)
@@ -228,7 +272,7 @@ void groupGenerate(const std::string &rule, std::vector<Proxy> &nodelist, string
     }
 }
 
-void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGroupConfigs &extra_proxy_group, bool clashR, extra_settings &ext)
+void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGroupConfigs &extra_proxy_group, bool clashR, bool uptree, extra_settings &ext)
 {
     YAML::Node proxies, original_groups;
     std::vector<Proxy> nodelist;
@@ -266,6 +310,8 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
 
         std::string type = getProxyTypeName(x.Type);
         std::string pluginopts = replaceAllDistinct(x.PluginOption, ";", "&");
+        std::string &underlying_proxy = x.UnderlyingProxy;
+
         if(ext.append_proxy_type)
             x.Remark = "[" + type + "] " + x.Remark;
 
@@ -279,7 +325,12 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
         singleproxy["name"] = x.Remark;
         singleproxy["server"] = x.Hostname;
         singleproxy["port"] = x.Port;
-
+        
+        if(!underlying_proxy.empty())
+        {
+            singleproxy["underlying-proxy"] = underlying_proxy;
+        }
+            
         switch(x.Type)
         {
         case ProxyType::Shadowsocks:
@@ -530,33 +581,53 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
             break;
         case ProxyType::Hysteria2:
             singleproxy["type"] = "hysteria2";
-            if (!x.Ports.empty())
+
+            if(!x.Ports.empty())
                 singleproxy["ports"] = x.Ports;
-            if (!x.Up.empty())
+
+            if(x.UpSpeed)
                 singleproxy["up"] = x.UpSpeed;
-            if (!x.Down.empty())
+            if(x.DownSpeed)
                 singleproxy["down"] = x.DownSpeed;
-            if (!x.Password.empty())
+
+            if(!x.Password.empty())
                 singleproxy["password"] = x.Password;
-            if (!x.OBFS.empty())
+
+            if(!x.OBFS.empty())
                 singleproxy["obfs"] = x.OBFS;
-            if (!x.OBFSParam.empty())
+            if(!x.OBFSParam.empty())
                 singleproxy["obfs-password"] = x.OBFSParam;
-            if (!x.SNI.empty())
+
+            if(!x.SNI.empty())
                 singleproxy["sni"] = x.SNI;
-            if (!scv.is_undef())
+            if(!scv.is_undef())
                 singleproxy["skip-cert-verify"] = scv.get();
-            if (!x.Alpn.empty())
+            if(!x.Fingerprint.empty())
+                singleproxy["tls-pubkey-sha256"] = x.Fingerprint;
+
+            if(!x.Alpn.empty())
                 singleproxy["alpn"] = x.Alpn;
-            if (!x.Ca.empty())
+
+            if(!x.Ca.empty())
                 singleproxy["ca"] = x.Ca;
-            if (!x.CaStr.empty())
+            if(!x.CaStr.empty())
                 singleproxy["ca-str"] = x.CaStr;
-            if (x.CWND)
+
+            if(x.CWND)
                 singleproxy["cwnd"] = x.CWND;
-            if (x.HopInterval)
+            if(x.HopInterval)
                 singleproxy["hop-interval"] = x.HopInterval;
+
             break;
+
+        case ProxyType::Direct:
+            singleproxy["type"] = "direct";
+            if(!x.Interface.empty())
+                singleproxy["interface-name"] = x.Interface;
+            singleproxy.remove("server");
+            singleproxy.remove("port");
+            break;
+            
         default:
             continue;
         }
@@ -571,9 +642,68 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
             singleproxy.SetStyle(YAML::EmitterStyle::Block);
         else
             singleproxy.SetStyle(YAML::EmitterStyle::Flow);
+
+        forEachExtra(x, "clash_", [&](const std::string &k, const std::string &v){
+            singleproxy[k] = v;
+        });
+
         proxies.push_back(singleproxy);
         remarks_list.emplace_back(x.Remark);
         nodelist.emplace_back(x);
+    }
+
+    if (uptree)
+    {
+        std::unordered_map<std::string, YAML::Node> proxyDict;
+        for (const auto &p : proxies)
+            proxyDict.emplace(p["name"].as<std::string>(), p);
+
+        std::unordered_set<std::string> referenced;
+
+        for (std::size_t i = 0; i < proxies.size(); ++i)
+        {
+            YAML::Node node = proxies[i];
+            if (!node["underlying-proxy"])
+                continue;
+
+            auto collect = [&](const std::string &ref) {
+                if (ref.empty()) return YAML::Node();
+                std::unordered_set<std::string> visited;
+                YAML::Node emb = buildEmbeddedProxy(ref, proxyDict, visited);
+                referenced.insert(visited.begin(), visited.end());
+                return emb;
+            };
+
+            YAML::Node up = node["underlying-proxy"];
+            if (up.IsScalar())
+            {
+                node["underlying-proxy"] = collect(up.as<std::string>());
+                if (!node["underlying-proxy"])
+                    node.remove("underlying-proxy");
+            }
+            else if (up.IsSequence())
+            {
+                YAML::Node seq;
+                for (auto child : up)
+                {
+                    YAML::Node emb = collect(child.as<std::string>());
+                    if (emb) seq.push_back(emb);
+                }
+                if (seq.size())
+                    node["underlying-proxy"] = seq;
+                else
+                    node.remove("underlying-proxy");
+            }
+
+            proxies[i] = node;
+        }
+
+        YAML::Node filtered;
+        for (const YAML::Node &p : proxies)
+            if (!referenced.count(p["name"].as<std::string>()))
+                filtered.push_back(p);
+
+        proxies = filtered;
     }
 
     if(proxy_compact)
@@ -671,7 +801,7 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
         yamlnode["Proxy Group"] = original_groups;
 }
 
-std::string proxyToClash(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, bool clashR, extra_settings &ext)
+std::string proxyToClash(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, bool clashR, bool uptree, extra_settings &ext)
 {
     YAML::Node yamlnode;
 
@@ -685,7 +815,7 @@ std::string proxyToClash(std::vector<Proxy> &nodes, const std::string &base_conf
         return "";
     }
 
-    proxyToClash(nodes, yamlnode, extra_proxy_group, clashR, ext);
+    proxyToClash(nodes, yamlnode, extra_proxy_group, clashR, uptree, ext);
 
     if(ext.nodelist)
         return YAML::Dump(yamlnode);
@@ -722,25 +852,67 @@ std::string proxyToClash(std::vector<Proxy> &nodes, const std::string &base_conf
 }
 
 // peer = (public-key = bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=, allowed-ips = "0.0.0.0/0, ::/0", endpoint = engage.cloudflareclient.com:2408, client-id = 139/184/125),(public-key = bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=, endpoint = engage.cloudflareclient.com:2408)
+
 std::string generatePeer(Proxy &node, bool client_id_as_reserved = false)
 {
     std::string result;
-    result += "public-key = " + node.PublicKey;
-    result += ", endpoint = " + node.Hostname + ":" + std::to_string(node.Port);
+    result += "public-key=\"" + node.PublicKey + "\"";
+    result += ", endpoint=" + node.Hostname + ":" + std::to_string(node.Port);
     if(!node.PreSharedKey.empty())
-        result += ", preshared-key = " + node.PreSharedKey;
+        result += ", preshared-key=\"" + node.PreSharedKey + "\"";
     if(!node.AllowedIPs.empty())
-        result += ", allowed-ips = \"" + node.AllowedIPs + "\"";
+        result += ", allowed-ips=\"" + node.AllowedIPs + "\"";
     if(node.KeepAlive > 0)
-        result += ", keepalive = " + std::to_string(node.KeepAlive);
+        result += ", keepalive=" + std::to_string(node.KeepAlive);
     if(!node.ClientId.empty())
     {
         if(client_id_as_reserved)
-            result += ", reserved = [" + node.ClientId + "]";
+            result += ", reserved=[" + node.ClientId + "]";
         else
-            result += ", client-id = " + node.ClientId;
+            result += ", client-id=\"" + node.ClientId + "\"";
     }
     return result;
+}
+
+static void surgeApplyRulesetFlags(INIReader &ini)
+{
+    string_multimap items;
+    ini.set_current_section("Rule");
+    ini.get_items(items);
+    if(items.empty())
+        return;
+
+    ini.erase_section();
+
+    auto process = [&](std::string line)
+    {
+        if(startsWith(line, "RULE-SET,") || startsWith(line, "DOMAIN-SET,"))
+        {
+            ini.set("{NONAME}", line);
+            return;
+        }
+
+        size_t first = line.find(',');
+        if(first == std::string::npos)
+        {
+            ini.set("{NONAME}", line);
+            return;
+        }
+        std::string type = line.substr(0, first);
+        size_t second = line.find(',', first + 1);
+        std::string pattern = second == std::string::npos ? line.substr(first + 1) : line.substr(first + 1, second - first - 1);
+
+        if(type == "DOMAIN" && (pattern.find('*') != std::string::npos || pattern.find('?') != std::string::npos))
+        {
+            type = "DOMAIN-WILDCARD";
+            line.replace(0, first, type);
+        }
+
+        ini.set("{NONAME}", line);
+    };
+
+    for(const auto &kv : items)
+        process(kv.second);
 }
 
 std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, int surge_ver, extra_settings &ext)
@@ -767,6 +939,14 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
         return "";
     }
 
+    if(!ext.general.empty())
+        for(auto &p : ext.general)
+        {
+            while(ini.item_exist("General", p.first))
+                ini.erase_first("General", p.first);
+            ini.set("General", p.first, p.second);
+        }
+
     ini.set_current_section("Proxy");
     ini.erase_section();
     ini.set("{NONAME}", "DIRECT = direct");
@@ -783,10 +963,10 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
 
         std::string &hostname = x.Hostname, &username = x.Username, &password = x.Password, &method = x.EncryptMethod, &id = x.UserId, &transproto = x.TransferProtocol, &host = x.Host, &edge = x.Edge, &path = x.Path, &protocol = x.Protocol, &protoparam = x.ProtocolParam, &obfs = x.OBFS, &obfsparam = x.OBFSParam, &plugin = x.Plugin, &pluginopts = x.PluginOption, &underlying_proxy = x.UnderlyingProxy;
         std::string port = std::to_string(x.Port);
-        bool &tlssecure = x.TLSSecure;
+        bool &tlssecure = x.TLSSecure, udp = x.UDP.get();
 
-        tribool udp = ext.udp, tfo = ext.tfo, scv = ext.skip_cert_verify, tls13 = ext.tls13;
-        udp.define(x.UDP);
+        tribool tfo = ext.tfo, scv = ext.skip_cert_verify, tls13 = ext.tls13;
+        ext.udp.define(x.UDP);
         tfo.define(x.TCPFastOpen);
         scv.define(x.AllowInsecure);
         tls13.define(x.TLS13);
@@ -944,28 +1124,70 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
         case ProxyType::Hysteria2:
             if(surge_ver < 4)
                 continue;
-            proxy = "hysteria, " + hostname + ", " + port + ", password=" + password;
+            proxy = "Hysteria2, " + hostname + ", " + port;
+
+            if(!x.Password.empty())
+                proxy += ", password=" + x.Password;
+            if(!x.Ports.empty() && x.Ports != port)
+                proxy += ", port-hopping=" + x.Ports;
+
+            if(x.UpSpeed)
+                proxy += ", upload-bandwidth=" + std::to_string(x.UpSpeed);
             if(x.DownSpeed)
-                proxy += ", download-bandwidth=" + x.DownSpeed;
-            
-            if(!scv.is_undef())
-                proxy += ",skip-cert-verify=" + std::string(scv.get() ? "true" : "false");
-            if(!x.Fingerprint.empty())
-                proxy += ",server-cert-fingerprint-sha256=" + x.Fingerprint;
+                proxy += ", download-bandwidth=" + std::to_string(x.DownSpeed);
+
+            if(!x.OBFS.empty())
+                proxy += ", obfs=" + x.OBFS;
+            if(!x.OBFSParam.empty())
+                proxy += ", salamander-password=" + x.OBFSParam;
+
+            if(x.CWND)
+                proxy += ", cwnd=" + std::to_string(x.CWND);
+            if(x.HopInterval)
+                proxy += ", hop-interval=" + std::to_string(x.HopInterval);
+            if(!x.Alpn.empty())
+                proxy += ", alpn=" + x.Alpn[0];
+
             if(!x.SNI.empty())
-                proxy += ",sni=" + x.SNI;
+                proxy += ", sni=" + x.SNI;
+            if(!x.Fingerprint.empty())
+                proxy += ", tls-pubkey-sha256=" + x.Fingerprint;
+
+            if(!x.Ca.empty())
+                proxy += ", ca=" + x.Ca;
+            if(!x.CaStr.empty())
+                proxy += ", ca-str=" + x.CaStr;
+
+            if(!scv.is_undef())
+                proxy += ", skip-cert-verify=" + scv.get_str();
+            if(!tfo.is_undef())
+                proxy += ", fast-open=" + tfo.get_str();
+            if(udp)
+                proxy += ", udp=true";
+            break;
+        case ProxyType::Direct:
+            proxy = "direct";
+            if(!x.Interface.empty())
+                proxy += ", interface=" + x.Interface;
             break;
         default:
             continue;
         }
 
-        if(!tfo.is_undef())
-            proxy += ", tfo=" + tfo.get_str();
-        if(!udp.is_undef())
-            proxy += ", udp-relay=" + udp.get_str();
+        if(!x.DnsServers.empty())
+            proxy += ", dns-server=" + join(x.DnsServers, ",");
 
-        if (underlying_proxy != "")
+        if(!ext.tfo.is_undef())
+            proxy += ", tfo=" + ext.tfo.get_str();
+        if(!ext.udp.is_undef())
+            proxy += ", udp-relay=" + ext.udp.get_str();
+
+        if (!underlying_proxy.empty())
             proxy += ", underlying-proxy=" + underlying_proxy;
+
+        forEachExtra(x, "surge_", [&](const std::string &k, const std::string &v){
+            proxy += ", " + k + "=" + v;
+        });
 
         if (ext.nodelist)
             output_nodelist += x.Remark + " = " + proxy + "\n";
@@ -1059,8 +1281,9 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
     }
 
     if(ext.enable_rule_generator)
-        rulesetToSurge(ini, ruleset_content_array, surge_ver, ext.overwrite_original_rules, ext.managed_config_prefix);
+        rulesetToSurge(ini, ruleset_content_array, surge_ver, ext.overwrite_original_rules, ext.managed_config_prefix, ext.embed_remote_rules);
 
+    surgeApplyRulesetFlags(ini);
     return ini.to_string();
 }
 
@@ -1136,6 +1359,24 @@ std::string proxyToSingle(std::vector<Proxy> &nodes, int types, extra_settings &
         default:
             continue;
         }
+
+        auto appendQuery = [&](const std::string &k, const std::string &v)
+        {
+            char sep = (proxyStr.find('?') == std::string::npos) ? '?' : '&';
+            proxyStr += sep + k + "=" + urlEncode(v);
+        };
+
+        forEachExtra(x, "single_", appendQuery);
+
+        switch (x.Type)
+        {
+            case ProxyType::Shadowsocks:   forEachExtra(x, "ss_",     appendQuery); break;
+            case ProxyType::ShadowsocksR:  forEachExtra(x, "ssr_",    appendQuery); break;
+            case ProxyType::VMess:         forEachExtra(x, "vmess_",  appendQuery); break;
+            case ProxyType::Trojan:        forEachExtra(x, "trojan_", appendQuery); break;
+            default: break;
+        }
+
         allLinks += proxyStr + "\n";
     }
 
@@ -1193,6 +1434,12 @@ std::string proxyToSSSub(std::string base_conf, std::vector<Proxy> &nodes, extra
         | AddMemberOrReplace("password", rapidjson::Value(password.c_str(), password.size()), alloc)
         | AddMemberOrReplace("plugin", rapidjson::Value(plugin.c_str(), plugin.size()), alloc)
         | AddMemberOrReplace("plugin_opts", rapidjson::Value(pluginopts.c_str(), pluginopts.size()), alloc);
+
+        forEachExtra(x, "sssub_", [&](const std::string &k, const std::string &v){
+            proxy.AddMember(rapidjson::Value(k.c_str(), alloc),
+                            rapidjson::Value(v.c_str(), alloc), alloc);
+        });
+
         proxies.PushBack(proxy, alloc);
     }
     return proxies | SerializeObject();
@@ -1349,6 +1596,8 @@ void proxyToQuan(std::vector<Proxy> &nodes, INIReader &ini, std::vector<RulesetC
             continue;
         }
 
+        forEachExtra(x, "quan_",   [&](const std::string &k, const std::string &v){  proxyStr += ", " + k + "=" + v; });
+
         ini.set("{NONAME}", proxyStr);
         remarks_list.emplace_back(x.Remark);
         nodelist.emplace_back(x);
@@ -1421,7 +1670,7 @@ void proxyToQuan(std::vector<Proxy> &nodes, INIReader &ini, std::vector<RulesetC
     }
 
     if(ext.enable_rule_generator)
-        rulesetToSurge(ini, ruleset_content_array, -2, ext.overwrite_original_rules, "");
+        rulesetToSurge(ini, ruleset_content_array, -2, ext.overwrite_original_rules, "", ext.embed_remote_rules);
 }
 
 std::string proxyToQuanX(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext)
@@ -1440,6 +1689,14 @@ std::string proxyToQuanX(std::vector<Proxy> &nodes, const std::string &base_conf
         writeLog(0, "QuantumultX base loader failed with error: " + ini.get_last_error(), LOG_LEVEL_ERROR);
         return "";
     }
+
+    if(!ext.general.empty())
+        for(auto &p : ext.general)
+        {
+            while(ini.item_exist("general", p.first))
+                ini.erase_first("general", p.first);
+            ini.set("general", p.first, p.second);
+        }
 
     proxyToQuanX(nodes, ini, ruleset_content_array, extra_proxy_group, ext);
 
@@ -1605,6 +1862,8 @@ void proxyToQuanX(std::vector<Proxy> &nodes, INIReader &ini, std::vector<Ruleset
             proxyStr += ", tls-verification=" + scv.reverse().get_str();
         proxyStr += ", tag=" + x.Remark;
 
+        forEachExtra(x, "quanx_",  [&](const std::string &k, const std::string &v){  proxyStr += ", " + k + "=" + v; });
+
         ini.set("{NONAME}", proxyStr);
         remarks_list.emplace_back(x.Remark);
         nodelist.emplace_back(x);
@@ -1690,7 +1949,7 @@ void proxyToQuanX(std::vector<Proxy> &nodes, INIReader &ini, std::vector<Ruleset
     }
 
     if(ext.enable_rule_generator)
-        rulesetToSurge(ini, ruleset_content_array, -1, ext.overwrite_original_rules, ext.managed_config_prefix);
+        rulesetToSurge(ini, ruleset_content_array, -1, ext.overwrite_original_rules, ext.managed_config_prefix, ext.embed_remote_rules);
 }
 
 std::string proxyToSSD(std::vector<Proxy> &nodes, std::string &group, std::string &userinfo, extra_settings &ext)
@@ -1785,6 +2044,12 @@ std::string proxyToSSD(std::vector<Proxy> &nodes, std::string &group, std::strin
         default:
             continue;
         }
+
+        forEachExtra(x, "ssd_", [&](const std::string &k, const std::string &v){
+            writer.Key(k.c_str());
+            writer.String(v.c_str());
+        });
+
         index++;
     }
     writer.EndArray();
@@ -1886,7 +2151,9 @@ void proxyToMellow(std::vector<Proxy> &nodes, INIReader &ini, std::vector<Rulese
         default:
             continue;
         }
-
+        
+        forEachExtra(x, "mellow_", [&](const std::string &k, const std::string &v){  proxy   += ", " + k + "=" + v; });
+        
         ini.set("{NONAME}", proxy);
         remarks_list.emplace_back(x.Remark);
         nodelist.emplace_back(x);
@@ -1944,7 +2211,7 @@ void proxyToMellow(std::vector<Proxy> &nodes, INIReader &ini, std::vector<Rulese
     }
 
     if(ext.enable_rule_generator)
-        rulesetToSurge(ini, ruleset_content_array, 0, ext.overwrite_original_rules, "");
+        rulesetToSurge(ini, ruleset_content_array, 0, ext.overwrite_original_rules, "", ext.embed_remote_rules);
 }
 
 std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext)
@@ -1975,12 +2242,17 @@ std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf,
         }
         processRemark(x.Remark, remarks_list);
 
-        std::string &hostname = x.Hostname, &username = x.Username, &password = x.Password, &method = x.EncryptMethod, &plugin = x.Plugin, &pluginopts = x.PluginOption, &id = x.UserId, &transproto = x.TransferProtocol, &host = x.Host, &path = x.Path, &protocol = x.Protocol, &protoparam = x.ProtocolParam, &obfs = x.OBFS, &obfsparam = x.OBFSParam;
+        std::string &hostname = x.Hostname, &username = x.Username, &password = x.Password,
+            &method = x.EncryptMethod, &plugin = x.Plugin, &pluginopts = x.PluginOption,
+            &id = x.UserId, &transproto = x.TransferProtocol, &host = x.Host, &path = x.Path,
+            &protocol = x.Protocol, &protoparam = x.ProtocolParam, &obfs = x.OBFS,
+            &obfsparam = x.OBFSParam, &underlying_proxy = x.UnderlyingProxy;
         std::string port = std::to_string(x.Port), aid = std::to_string(x.AlterId);
-        bool &tlssecure = x.TLSSecure;
+        bool &tlssecure = x.TLSSecure, udp = x.UDP.get();
 
         tribool scv = ext.skip_cert_verify;
         scv.define(x.AllowInsecure);
+        ext.udp.define(x.UDP);
 
         std::string proxy;
 
@@ -2054,7 +2326,7 @@ std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf,
             proxy = "wireguard, interface-ip=" + x.SelfIP;
             if(!x.SelfIPv6.empty())
                 proxy += ", interface-ipv6=" + x.SelfIPv6;
-            proxy += ", private-key=" + x.PrivateKey;
+            proxy += ", private-key=\"" + x.PrivateKey + "\"";
             for(const auto &y : x.DnsServers)
             {
                 if(isIPv4(y))
@@ -2068,15 +2340,56 @@ std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf,
                 proxy += ", keepalive=" + std::to_string(x.KeepAlive);
             proxy += ", peers=[{" + generatePeer(x, true) + "}]";
             break;
+        case ProxyType::Hysteria2:
+            proxy = "Hysteria2," + hostname + "," + port;
+            if (!password.empty())
+                proxy += ", \"" + password + "\"";
+            if (!x.Ports.empty() && x.Ports != port)
+                proxy += ", port-hopping=" + x.Ports;
+
+            if (x.UpSpeed)
+                proxy += ", upload-bandwidth=" + std::to_string(x.UpSpeed);
+            if (x.DownSpeed)
+                proxy += ", download-bandwidth=" + std::to_string(x.DownSpeed);
+
+            if (!obfs.empty())
+                proxy += ", obfs=" + obfs;
+            if (!obfsparam.empty())
+                proxy += ", salamander-password=" + obfsparam;
+
+            if (x.CWND)
+                proxy += ", cwnd=" + std::to_string(x.CWND);
+            if (x.HopInterval)
+                proxy += ", hop-interval=" + std::to_string(x.HopInterval);
+
+            if (!x.Alpn.empty())
+                proxy += ", alpn=" + x.Alpn[0];
+
+            if (!x.SNI.empty())
+                proxy += ", sni=" + x.SNI;
+            if (!x.Fingerprint.empty())
+                proxy += ", tls-pubkey-sha256=" + x.Fingerprint;
+
+            if (!x.Ca.empty())
+                proxy += ", ca=" + x.Ca;
+            if (!x.CaStr.empty())
+                proxy += ", ca-str=" + x.CaStr;
+
+            if (!scv.is_undef())
+                proxy += ", skip-cert-verify=" + scv.get_str();
+            break;
         default:
             continue;
         }
 
+        if (!underlying_proxy.empty())
+            proxy += ", underlying-proxy=" + underlying_proxy;
         if(ext.tfo)
             proxy += ",fast-open=true";
-        if(ext.udp)
+        if((ext.udp.is_undef() && udp) || ext.udp)
             proxy += ",udp=true";
 
+        forEachExtra(x, "loon_",   [&](const std::string &k, const std::string &v){  proxy   += ", " + k + "=" + v; });
 
         if(ext.nodelist)
             output_nodelist += x.Remark + " = " + proxy + "\n";
@@ -2168,7 +2481,7 @@ std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf,
     }
 
     if(ext.enable_rule_generator)
-        rulesetToSurge(ini, ruleset_content_array, -4, ext.overwrite_original_rules, ext.managed_config_prefix);
+        rulesetToSurge(ini, ruleset_content_array, -4, ext.overwrite_original_rules, ext.managed_config_prefix, ext.embed_remote_rules);
 
     return ini.to_string();
 }
@@ -2413,11 +2726,11 @@ void proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::v
             case ProxyType::Hysteria2:
             {
                 addSingBoxCommonMembers(proxy, x, "hysteria2", allocator);
-                if (!x.Ports.empty())
+                if(!x.Ports.empty())
                     proxy.AddMember("server_ports", stringArrayToJsonArray(x.Ports, ",", allocator), allocator);
-                if (!x.Up.empty())
+                if(x.UpSpeed)
                     proxy.AddMember("up_mbps", x.UpSpeed, allocator);
-                if (!x.Down.empty())
+                if(x.DownSpeed)
                     proxy.AddMember("down_mbps", x.DownSpeed, allocator);
                 if (!x.OBFS.empty())
                 {
@@ -2490,6 +2803,12 @@ void proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::v
         {
             proxy.AddMember("tcp_fast_open", buildBooleanValue(tfo), allocator);
         }
+        
+        forEachExtra(x, "singbox_", [&](const std::string &k, const std::string &v){
+            proxy.AddMember(rapidjson::Value(k.c_str(), allocator),
+                            rapidjson::Value(v.c_str(), allocator), allocator);
+        });
+
         nodelist.push_back(x);
         remarks_list.emplace_back(x.Remark);
         outbounds.PushBack(proxy, allocator);

@@ -121,6 +121,7 @@
 | ---------------------- | :---: | :----: | -------------- |
 | Clash                  |   ✓   |    ✓   | clash          |
 | ClashR                 |   ✓   |    ✓   | clashr         |
+| Stash                  |   ✓   |    ✓   | stash         |
 | Quantumult (完整配置)      |   ✓   |    ✓   | quan           |
 | Quantumult X (完整配置)    |   ✓   |    ✓   | quanx          |
 | Loon                   |   ✓   |    ✓   | loon           |
@@ -1443,3 +1444,12 @@ http://127.0.0.1:25500/getruleset?type=%TYPE%&url=%URL%&group=%GROUP%
 | group | type=2时必选 | mygroup | 规则对应的策略组名，生成Quantumult X类型（type=2）时必须提供                                                                                                                  |
 
 运行 subconverter 主程序后， 按照 [调用地址 (规则转换)](#调用地址-规则转换) 的对应内容替换即可得到指定类型的规则。
+
+## 其他特性
+
+- 支持 Stash 作为源和目标格式。
+- `managed_config_url` 可设定托管配置的完整链接。
+- `embed_remote_rules` 启用后会将远程规则直接嵌入输出。
+- 规则集链接支持 `,flags=` 参数以附加 Surge 风格标志。
+- 支持 `DOMAIN-WILDCARD` 规则类型，在 Clash 与 Sing-box 中会转换为 `DOMAIN-REGEX`。
+- 外部配置文件可在 `general` 段中覆盖 Surge 的 `[General]` 设置。
