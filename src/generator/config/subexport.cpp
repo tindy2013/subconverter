@@ -2068,6 +2068,16 @@ std::string proxyToLoon(std::vector<Proxy> &nodes, const std::string &base_conf,
                 proxy += ", keepalive=" + std::to_string(x.KeepAlive);
             proxy += ", peers=[{" + generatePeer(x, true) + "}]";
             break;
+        case ProxyType::Hysteria2:
+            proxy = "hysteria2," + hostname + "," + port + ",\"" + password + "\"";
+
+            if(!scv.is_undef())
+                proxy += ",skip-cert-verify=" + std::string(scv.get() ? "true" : "false");
+            if(!x.Fingerprint.empty())
+                proxy += ",tls-cert-sha256=" + x.Fingerprint;
+            if(!x.SNI.empty())
+                proxy += ",sni=" + x.SNI;
+            break;
         default:
             continue;
         }
