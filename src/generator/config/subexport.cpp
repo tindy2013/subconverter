@@ -795,6 +795,13 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
         string_array args, headers;
 
         std::stringstream ss;
+        // Preprocess IPv6
+        if (!hostname.empty() && hostname.front() == '[') {
+            hostname.erase(0, 1);
+        }
+        if (!hostname.empty() && hostname.back() == ']') {
+            hostname.pop_back();
+        }
 
         switch (x.Type)
         {

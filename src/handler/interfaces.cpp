@@ -609,6 +609,28 @@ std::string subconverter(RESPONSE_CALLBACK_ARGS)
     parse_set.time_rules = &time_temp;
     parse_set.sub_info = &subInfo;
     parse_set.authorized = authorized;
+    // modify UA header for Surge
+    auto it = request.headers.find("User-Agent");
+
+    if (it != request.headers.end()) {
+
+        std::string& user_agent_value = it->second;
+
+        std::string target_string = "surge";
+
+        auto search_it = std::search(
+                user_agent_value.begin(), user_agent_value.end(),
+                target_string.begin(), target_string.end(),
+                [](unsigned char ch1, unsigned char ch2) {
+                    return std::tolower(ch1) == std::tolower(ch2);
+                }
+        );
+
+        if (search_it != user_agent_value.end()) {
+            user_agent_value = "Subconverter_custom_header";
+        }
+    }
+
     parse_set.request_header = &request.headers;
     parse_set.js_runtime = ext.js_runtime;
     parse_set.js_context = ext.js_context;
