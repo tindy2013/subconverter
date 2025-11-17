@@ -3,6 +3,7 @@
 #include <numeric>
 #include <cmath>
 #include <climits>
+#include <cctype>
 
 #include "config/regmatch.h"
 #include "generator/config/subexport.h"
@@ -2258,6 +2259,25 @@ static rapidjson::Value stringArrayToJsonArray(const std::string &array, const s
     return result;
 }
 
+static rapidjson::Value buildSingBoxHysteria2ServerPorts(const std::string &ports, rapidjson::MemoryPoolAllocator<> &allocator)
+{
+    rapidjson::Value result(rapidjson::kArrayType);
+    string_array port_list = split(ports, ",");
+    for (const auto &raw_port : port_list)
+    {
+        std::string port_entry = trim(raw_port);
+        if (port_entry.empty())
+            continue;
+
+        const bool is_single_port = std::all_of(port_entry.begin(), port_entry.end(), [](unsigned char ch) { return std::isdigit(ch); });
+        if (is_single_port)
+            port_entry = port_entry + ":" + port_entry;
+
+        result.PushBack(rapidjson::Value(port_entry.c_str(), allocator), allocator);
+    }
+    return result;
+}
+
 void proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext) {
     using namespace rapidjson_ext;
     rapidjson::Document::AllocatorType &allocator = json.GetAllocator();
@@ -2424,7 +2444,7 @@ void proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::v
             {
                 addSingBoxCommonMembers(proxy, x, "hysteria2", allocator);
                 if (!x.Ports.empty())
-                    proxy.AddMember("server_ports", stringArrayToJsonArray(x.Ports, ",", allocator), allocator);
+                    proxy.AddMember("server_ports", buildSingBoxHysteria2ServerPorts(x.Ports, allocator), allocator);
                 if (!x.Up.empty())
                     proxy.AddMember("up_mbps", x.UpSpeed, allocator);
                 if (!x.Down.empty())
