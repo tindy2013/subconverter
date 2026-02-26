@@ -63,6 +63,32 @@ void vmessConstruct(Proxy &node, const std::string &group, const std::string &re
     node.TLSSecure = tls == "tls";
 }
 
+void vlessConstruct(Proxy &node, const std::string &group, const std::string &remarks, const std::string &add, const std::string &port, const std::string &id, const std::string &flow, const std::string &net, const std::string &type, const std::string &path, const std::string &host, const std::string &security, const std::string &sni, const std::string &fp, const std::string &pbk, const std::string &sid, tribool udp, tribool tfo, tribool scv, const std::string& underlying_proxy)
+{
+    commonConstruct(node, ProxyType::VLESS, group, remarks, add, port, udp, tfo, scv, tribool(), underlying_proxy);
+    node.UserId = id.empty() ? "00000000-0000-0000-0000-000000000000" : id;
+    node.EncryptMethod = "none";
+    node.TransferProtocol = net.empty() ? "tcp" : net;
+    node.Flow = flow;
+    node.ServerName = sni.empty() ? host : sni;
+    node.Fingerprint = fp;
+    node.PublicKey = pbk;
+    node.ShortId = sid;
+
+    if(net == "quic")
+    {
+        node.QUICSecure = host;
+        node.QUICSecret = path;
+    }
+    else
+    {
+        node.Host = (host.empty() && !isIPv4(add) && !isIPv6(add)) ? add.data() : trim(host);
+        node.Path = path.empty() ? "/" : trim(path);
+    }
+    node.FakeType = type;
+    node.TLSSecure = (security == "tls" || security == "xtls" || security == "reality");
+}
+
 void ssrConstruct(Proxy &node, const std::string &group, const std::string &remarks, const std::string &server, const std::string &port, const std::string &protocol, const std::string &method, const std::string &obfs, const std::string &password, const std::string &obfsparam, const std::string &protoparam, tribool udp, tribool tfo, tribool scv,const std::string& underlying_proxy)
 {
     commonConstruct(node, ProxyType::ShadowsocksR, group, remarks, server, port, udp, tfo, scv, tribool(), underlying_proxy);
@@ -108,13 +134,15 @@ void trojanConstruct(Proxy &node, const std::string &group, const std::string &r
     node.Path = path;
 }
 
-void snellConstruct(Proxy &node, const std::string &group, const std::string &remarks, const std::string &server, const std::string &port, const std::string &password, const std::string &obfs, const std::string &host, uint16_t version, tribool udp, tribool tfo, tribool scv, const std::string& underlying_proxy)
+void snellConstruct(Proxy &node, const std::string &group, const std::string &remarks, const std::string &server, const std::string &port, const std::string &password, const std::string &obfs, const std::string &host, uint16_t version, tribool reuse, const std::string &obfs_uri, tribool udp, tribool tfo, tribool scv, const std::string& underlying_proxy)
 {
     commonConstruct(node, ProxyType::Snell, group, remarks, server, port, udp, tfo, scv, tribool(), underlying_proxy);
     node.Password = password;
     node.OBFS = obfs;
     node.Host = host;
     node.SnellVersion = version;
+    node.SnellReuse = reuse;
+    node.OBFSUri = obfs_uri;
 }
 
 void wireguardConstruct(Proxy &node, const std::string &group, const std::string &remarks, const std::string &server, const std::string &port, const std::string &selfIp, const std::string &selfIpv6, const std::string &privKey, const std::string &pubKey, const std::string &psk, const string_array &dns, const std::string &mtu, const std::string &keepalive, const std::string &testUrl, const std::string &clientId, const tribool &udp, const std::string& underlying_proxy)
@@ -318,6 +346,235 @@ void explodeVmess(std::string vmess, Proxy &node)
     add = trim(add);
 
     vmessConstruct(node, V2RAY_DEFAULT_GROUP, ps, add, port, type, id, aid, net, "auto", path, host, "", tls, sni);
+}
+
+void explodeVless(std::string vless, Proxy &node)
+{
+    std::string remarks, add, port, id, flow, net, type, path, host, security, sni, fp, pbk, sid;
+    std::string url = regReplace(vless, "vless://", "");
+
+    // 提取 remarks (fragment)
+    size_t fragment_pos = url.find('#');
+    if(fragment_pos != std::string::npos)
+    {
+        remarks = urlDecode(url.substr(fragment_pos + 1));
+        url = url.substr(0, fragment_pos);
+    }
+
+    // 提取查询参数
+    size_t query_pos = url.find('?');
+    std::string query_string;
+    if(query_pos != std::string::npos)
+    {
+        query_string = url.substr(query_pos + 1);
+        url = url.substr(0, query_pos);
+    }
+
+    // 解析 uuid@server:port
+    size_t at_pos = url.find('@');
+    if(at_pos == std::string::npos)
+        return;
+
+    id = url.substr(0, at_pos);
+    std::string server_port = url.substr(at_pos + 1);
+
+    size_t colon_pos = server_port.rfind(':');
+    if(colon_pos == std::string::npos)
+        return;
+
+    add = server_port.substr(0, colon_pos);
+    port = server_port.substr(colon_pos + 1);
+
+    // 解析查询参数
+    std::map<std::string, std::string> params;
+    if(!query_string.empty())
+    {
+        std::vector<std::string> param_pairs = split(query_string, "&");
+        for(const auto &pair : param_pairs)
+        {
+            size_t eq_pos = pair.find('=');
+            if(eq_pos != std::string::npos)
+            {
+                std::string key = urlDecode(pair.substr(0, eq_pos));
+                std::string value = urlDecode(pair.substr(eq_pos + 1));
+                params[key] = value;
+            }
+        }
+    }
+
+    // 提取参数
+    net = params.count("type") ? params["type"] : "tcp";
+    security = params.count("security") ? params["security"] : "none";
+    flow = params.count("flow") ? params["flow"] : "";
+    sni = params.count("sni") ? params["sni"] : "";
+    fp = params.count("fp") ? params["fp"] : "";
+    pbk = params.count("pbk") ? params["pbk"] : "";
+    sid = params.count("sid") ? params["sid"] : "";
+
+    // 传输协议相关参数
+    if(net == "ws")
+    {
+        path = params.count("path") ? params["path"] : "/";
+        host = params.count("host") ? params["host"] : "";
+    }
+    else if(net == "http" || net == "h2")
+    {
+        path = params.count("path") ? params["path"] : "/";
+        host = params.count("host") ? params["host"] : "";
+    }
+    else if(net == "grpc")
+    {
+        path = params.count("serviceName") ? params["serviceName"] : "";
+    }
+    else if(net == "kcp")
+    {
+        type = params.count("headerType") ? params["headerType"] : "none";
+    }
+    else if(net == "quic")
+    {
+        type = params.count("headerType") ? params["headerType"] : "none";
+        host = params.count("quicSecurity") ? params["quicSecurity"] : "none";
+        path = params.count("key") ? params["key"] : "";
+    }
+
+    add = trim(add);
+
+    vlessConstruct(node, V2RAY_DEFAULT_GROUP, remarks, add, port, id, flow, net, type, path, host, security, sni, fp, pbk, sid, tribool(), tribool(), tribool(), "");
+}
+
+void explodeVlessConf(std::string content, std::vector<Proxy> &nodes)
+{
+    Document json;
+    rapidjson::Value nodejson, settings;
+    std::string group, ps, add, port, type, id, flow, net, path, host, security, sni, fp, pbk, sid;
+    tribool udp, tfo, scv;
+    uint32_t index = nodes.size();
+    std::string streamset = "streamSettings", tcpset = "tcpSettings", wsset = "wsSettings", grpcset = "grpcSettings";
+    regGetMatch(content, "((?i)streamsettings)", 2, 0, &streamset);
+    regGetMatch(content, "((?i)tcpsettings)", 2, 0, &tcpset);
+    regGetMatch(content, "((?i)wssettings)", 2, 0, &wsset);
+    regGetMatch(content, "((?i)grpcsettings)", 2, 0, &grpcset);
+
+    json.Parse(content.data());
+    if(json.HasParseError() || !json.IsObject())
+        return;
+
+    try
+    {
+        if(json.HasMember("outbounds")) //single config
+        {
+            for(uint32_t i = 0; i < json["outbounds"].Size(); i++)
+            {
+                nodejson = json["outbounds"][i];
+                std::string protocol = GetMember(nodejson, "protocol");
+
+                if(protocol != "vless")
+                    continue;
+
+                if(!nodejson.HasMember("settings") || !nodejson["settings"].HasMember("vnext") || nodejson["settings"]["vnext"].Size() == 0)
+                    continue;
+
+                Proxy node;
+                add = GetMember(nodejson["settings"]["vnext"][0], "address");
+                port = GetMember(nodejson["settings"]["vnext"][0], "port");
+                if(port == "0")
+                    continue;
+
+                if(nodejson["settings"]["vnext"][0]["users"].Size())
+                {
+                    id = GetMember(nodejson["settings"]["vnext"][0]["users"][0], "id");
+                    flow = GetMember(nodejson["settings"]["vnext"][0]["users"][0], "flow");
+                }
+
+                if(nodejson.HasMember(streamset.data()))
+                {
+                    net = GetMember(nodejson[streamset.data()], "network");
+                    security = GetMember(nodejson[streamset.data()], "security");
+
+                    // WebSocket
+                    if(net == "ws")
+                    {
+                        if(nodejson[streamset.data()].HasMember(wsset.data()))
+                            settings = nodejson[streamset.data()][wsset.data()];
+                        else
+                            settings.RemoveAllMembers();
+                        path = GetMember(settings, "path");
+                        if(settings.HasMember("headers"))
+                        {
+                            host = GetMember(settings["headers"], "Host");
+                        }
+                    }
+                    // gRPC
+                    else if(net == "grpc")
+                    {
+                        if(nodejson[streamset.data()].HasMember(grpcset.data()))
+                            settings = nodejson[streamset.data()][grpcset.data()];
+                        else
+                            settings.RemoveAllMembers();
+                        path = GetMember(settings, "serviceName");
+                    }
+                    // TCP
+                    else if(net == "tcp")
+                    {
+                        if(nodejson[streamset.data()].HasMember(tcpset.data()))
+                            settings = nodejson[streamset.data()][tcpset.data()];
+                        else
+                            settings.RemoveAllMembers();
+                        if(settings.IsObject() && settings.HasMember("header"))
+                        {
+                            type = GetMember(settings["header"], "type");
+                            if(type == "http")
+                            {
+                                if(settings["header"].HasMember("request"))
+                                {
+                                    if(settings["header"]["request"].HasMember("path") && settings["header"]["request"]["path"].Size())
+                                        settings["header"]["request"]["path"][0] >> path;
+                                    if(settings["header"]["request"].HasMember("headers"))
+                                    {
+                                        host = GetMember(settings["header"]["request"]["headers"], "Host");
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // TLS/XTLS/Reality settings
+                    if(security == "tls" && nodejson[streamset.data()].HasMember("tlsSettings"))
+                    {
+                        const auto& tlsSettings = nodejson[streamset.data()]["tlsSettings"];
+                        sni = GetMember(tlsSettings, "serverName");
+                        fp = GetMember(tlsSettings, "fingerprint");
+                    }
+                    else if(security == "xtls" && nodejson[streamset.data()].HasMember("xtlsSettings"))
+                    {
+                        const auto& xtlsSettings = nodejson[streamset.data()]["xtlsSettings"];
+                        sni = GetMember(xtlsSettings, "serverName");
+                        fp = GetMember(xtlsSettings, "fingerprint");
+                    }
+                    else if(security == "reality" && nodejson[streamset.data()].HasMember("realitySettings"))
+                    {
+                        const auto& realitySettings = nodejson[streamset.data()]["realitySettings"];
+                        sni = GetMember(realitySettings, "serverName");
+                        fp = GetMember(realitySettings, "fingerprint");
+                        pbk = GetMember(realitySettings, "publicKey");
+                        if(realitySettings.HasMember("shortId") && realitySettings["shortId"].IsString())
+                            sid = realitySettings["shortId"].GetString();
+                    }
+                }
+
+                ps = add + ":" + port;
+                vlessConstruct(node, V2RAY_DEFAULT_GROUP, ps, add, port, id, flow, net, type, path, host, security, sni, fp, pbk, sid, udp, tfo, scv, "");
+                node.Id = index;
+                nodes.emplace_back(std::move(node));
+                index++;
+            }
+            return;
+        }
+    }
+    catch(std::exception & e)
+    {
+        throw;
+    }
 }
 
 void explodeVmessConf(std::string content, std::vector<Proxy> &nodes)
@@ -1081,10 +1338,12 @@ void explodeNetch(std::string netch, Proxy &node)
     case "Snell"_hash:
         obfs = GetMember(json, "OBFS");
         host = GetMember(json, "Host");
+        path = GetMember(json, "OBFSUri");
         aid = GetMember(json, "SnellVersion");
+        transprot = GetMember(json, "SnellReuse");
         if(group.empty())
             group = SNELL_DEFAULT_GROUP;
-        snellConstruct(node, group, remark, address, port, password, obfs, host, to_int(aid, 0), udp, tfo, scv);
+        snellConstruct(node, group, remark, address, port, password, obfs, host, to_int(aid, 0), tribool(transprot), path, udp, tfo, scv);
         break;
     default:
         return;
@@ -1298,9 +1557,11 @@ void explodeClash(Node yamlnode, std::vector<Proxy> &nodes)
             singleproxy["psk"] >> password;
             singleproxy["obfs-opts"]["mode"] >>= obfs;
             singleproxy["obfs-opts"]["host"] >>= host;
+            singleproxy["obfs-opts"]["uri"] >>= path;
             singleproxy["version"] >>= aid;
+            singleproxy["reuse"] >>= plugin;
 
-            snellConstruct(node, group, ps, server, port, password, obfs, host, to_int(aid, 0), udp, tfo, scv, underlying_proxy);
+            snellConstruct(node, group, ps, server, port, password, obfs, host, to_int(aid, 0), tribool(plugin), path, udp, tfo, scv, underlying_proxy);
             break;
         case "wireguard"_hash:
             group = WG_DEFAULT_GROUP;
@@ -1368,6 +1629,63 @@ void explodeClash(Node yamlnode, std::vector<Proxy> &nodes)
 
             hysteria2Construct(node, group, ps, server, port, ports, up, down, password, obfs, obfs_password, sni, fingerprint, ca, ca_str, cwnd, alpn, hop_interval, tfo, scv, underlying_proxy);
             break;
+        case "vless"_hash:
+        {
+            group = V2RAY_DEFAULT_GROUP;
+            std::string flow, fp, pbk, sid, security;
+
+            singleproxy["uuid"] >>= id;
+            singleproxy["flow"] >>= flow;
+            net = singleproxy["network"].IsDefined() ? safe_as<std::string>(singleproxy["network"]) : "tcp";
+            singleproxy["servername"] >>= sni;
+            singleproxy["client-fingerprint"] >>= fp;
+
+            // 传输协议参数
+            switch(hash_(net))
+            {
+            case "ws"_hash:
+                if(singleproxy["ws-opts"].IsDefined())
+                {
+                    path = singleproxy["ws-opts"]["path"].IsDefined() ? safe_as<std::string>(singleproxy["ws-opts"]["path"]) : "/";
+                    singleproxy["ws-opts"]["headers"]["Host"] >>= host;
+                }
+                break;
+            case "grpc"_hash:
+                singleproxy["grpc-opts"]["grpc-service-name"] >>= path;
+                break;
+            case "h2"_hash:
+                singleproxy["h2-opts"]["path"] >>= path;
+                singleproxy["h2-opts"]["host"][0] >>= host;
+                break;
+            case "http"_hash:
+                singleproxy["http-opts"]["path"][0] >>= path;
+                singleproxy["http-opts"]["headers"]["Host"][0] >>= host;
+                break;
+            default:
+                net = "tcp";
+                break;
+            }
+
+            // TLS 和 Reality 配置
+            tls = safe_as<std::string>(singleproxy["tls"]) == "true" ? "tls" : "";
+            if(singleproxy["reality-opts"].IsDefined())
+            {
+                singleproxy["reality-opts"]["public-key"] >>= pbk;
+                singleproxy["reality-opts"]["short-id"] >>= sid;
+                security = "reality";
+            }
+            else if(!tls.empty())
+            {
+                security = "tls";
+            }
+            else
+            {
+                security = "none";
+            }
+
+            vlessConstruct(node, group, ps, server, port, id, flow, net, "", path, host, security, sni, fp, pbk, sid, udp, tfo, scv, underlying_proxy);
+            break;
+        }
 
         default:
             continue;
@@ -1638,6 +1956,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
         string_array dns_servers;
         string_multimap wireguard_config;
         std::string version, aead = "1";
+        std::string reuse; //snell
         std::string itemName, itemVal, config;
         std::vector<std::string> configs, vArray, headers, header;
         tribool udp, tfo, scv, tls13;
@@ -1866,6 +2185,51 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
 
             vmessConstruct(node, V2RAY_DEFAULT_GROUP, remarks, server, port, "", id, aead, net, method, path, host, edge, tls, "", udp, tfo, scv, tls13);
             break;
+        case "vless"_hash: //surge 5 style vless proxy
+        {
+            server = trim(configs[1]);
+            port = trim(configs[2]);
+            if(port == "0")
+                continue;
+
+            std::string flow, sni, fp, pbk, sid, security = "none";
+
+            for(i = 3; i < configs.size(); i++)
+            {
+                vArray = split(configs[i], "=");
+                if(vArray.size() != 2)
+                    continue;
+                itemName = trim(vArray[0]);
+                itemVal = trim(vArray[1]);
+                switch(hash_(itemName))
+                {
+                case "username"_hash:
+                    id = itemVal;
+                    break;
+                case "tls"_hash:
+                    if(itemVal == "true")
+                        security = "tls";
+                    break;
+                case "sni"_hash:
+                    sni = itemVal;
+                    break;
+                case "udp-relay"_hash:
+                    udp = itemVal;
+                    break;
+                case "tfo"_hash:
+                    tfo = itemVal;
+                    break;
+                case "skip-cert-verify"_hash:
+                    scv = itemVal;
+                    break;
+                default:
+                    continue;
+                }
+            }
+
+            vlessConstruct(node, V2RAY_DEFAULT_GROUP, remarks, server, port, id, flow, "tcp", "", "", sni, security, sni, fp, pbk, sid, udp, tfo, scv, "");
+            break;
+        }
         case "http"_hash: //http proxy
             server = trim(configs[1]);
             port = trim(configs[2]);
@@ -1956,6 +2320,12 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
                 case "obfs-host"_hash:
                     host = itemVal;
                     break;
+                case "obfs-uri"_hash:
+                    path = itemVal;
+                    break;
+                case "reuse"_hash:
+                    reuse = itemVal;
+                    break;
                 case "udp-relay"_hash:
                     udp = itemVal;
                     break;
@@ -1973,7 +2343,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
                 }
             }
 
-            snellConstruct(node, SNELL_DEFAULT_GROUP, remarks, server, port, password, plugin, host, to_int(version, 0), udp, tfo, scv);
+            snellConstruct(node, SNELL_DEFAULT_GROUP, remarks, server, port, password, plugin, host, to_int(version, 0), tribool(reuse), path, udp, tfo, scv);
             break;
         case "wireguard"_hash:
             for (i = 1; i < configs.size(); i++)
@@ -2427,6 +2797,7 @@ int explodeConfContent(const std::string &content, std::vector<Proxy> &nodes)
         break;
     case ConfType::V2Ray:
         explodeVmessConf(content, nodes);
+        explodeVlessConf(content, nodes);
         break;
     case ConfType::SSConf:
         explodeSSAndroid(content, nodes);
@@ -2447,24 +2818,29 @@ int explodeConfContent(const std::string &content, std::vector<Proxy> &nodes)
 
 void explode(const std::string &link, Proxy &node)
 {
-    if(startsWith(link, "ssr://"))
-        explodeSSR(link, node);
-    else if(startsWith(link, "vmess://") || startsWith(link, "vmess1://"))
-        explodeVmess(link, node);
-    else if(startsWith(link, "ss://"))
-        explodeSS(link, node);
-    else if(startsWith(link, "socks://") || startsWith(link, "https://t.me/socks") || startsWith(link, "tg://socks"))
-        explodeSocks(link, node);
-    else if(startsWith(link, "https://t.me/http") || startsWith(link, "tg://http")) //telegram style http link
-        explodeHTTP(link, node);
-    else if(startsWith(link, "Netch://"))
-        explodeNetch(link, node);
-    else if(startsWith(link, "trojan://"))
-        explodeTrojan(link, node);
-    else if (strFind(link, "hysteria2://") || strFind(link, "hy2://"))
-        explodeHysteria2(link, node);
-    else if(isLink(link))
-        explodeHTTPSub(link, node);
+    // 移除字符串前后的空白字符
+    std::string trimmed_link = trim(link);
+
+    if(startsWith(trimmed_link, "ssr://"))
+        explodeSSR(trimmed_link, node);
+    else if(startsWith(trimmed_link, "vmess://") || startsWith(trimmed_link, "vmess1://"))
+        explodeVmess(trimmed_link, node);
+    else if(startsWith(trimmed_link, "vless://"))
+        explodeVless(trimmed_link, node);
+    else if(startsWith(trimmed_link, "ss://"))
+        explodeSS(trimmed_link, node);
+    else if(startsWith(trimmed_link, "socks://") || startsWith(trimmed_link, "https://t.me/socks") || startsWith(trimmed_link, "tg://socks"))
+        explodeSocks(trimmed_link, node);
+    else if(startsWith(trimmed_link, "https://t.me/http") || startsWith(trimmed_link, "tg://http")) //telegram style http link
+        explodeHTTP(trimmed_link, node);
+    else if(startsWith(trimmed_link, "Netch://"))
+        explodeNetch(trimmed_link, node);
+    else if(startsWith(trimmed_link, "trojan://"))
+        explodeTrojan(trimmed_link, node);
+    else if (strFind(trimmed_link, "hysteria2://") || strFind(trimmed_link, "hy2://"))
+        explodeHysteria2(trimmed_link, node);
+    else if(isLink(trimmed_link))
+        explodeHTTPSub(trimmed_link, node);
 }
 
 void explodeSub(std::string sub, std::vector<Proxy> &nodes)
@@ -2511,7 +2887,7 @@ void explodeSub(std::string sub, std::vector<Proxy> &nodes)
     if(!processed)
     {
         sub = urlSafeBase64Decode(sub);
-        if(regFind(sub, "(vmess|shadowsocks|http|trojan)\\s*?="))
+        if(regFind(sub, "(vmess|vless|shadowsocks|http|trojan)\\s*?="))
         {
             if(explodeSurge(sub, nodes))
                 return;
@@ -2521,8 +2897,9 @@ void explodeSub(std::string sub, std::vector<Proxy> &nodes)
         while(getline(strstream, strLink, delimiter))
         {
             Proxy node;
-            if(strLink.rfind('\r') != std::string::npos)
-                strLink.erase(strLink.size() - 1);
+            // 移除行尾的 \r 和 \n
+            while(!strLink.empty() && (strLink.back() == '\r' || strLink.back() == '\n'))
+                strLink.pop_back();
             explode(strLink, node);
             if(strLink.empty() || node.Type == ProxyType::Unknown)
             {

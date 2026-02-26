@@ -60,6 +60,93 @@ std::string vmessLinkConstruct(const std::string &remarks, const std::string &ad
     return sb.GetString();
 }
 
+std::string vlessLinkConstruct(const Proxy &node)
+{
+    std::string url = "vless://" + node.UserId + "@" + node.Hostname + ":" + std::to_string(node.Port);
+    std::vector<std::string> params;
+
+    // 传输协议
+    if(!node.TransferProtocol.empty() && node.TransferProtocol != "tcp")
+        params.push_back("type=" + urlEncode(node.TransferProtocol));
+
+    // 安全类型
+    std::string security = "none";
+    if(node.TLSSecure)
+    {
+        if(!node.PublicKey.empty())
+            security = "reality";
+        else if(!node.Flow.empty())
+            security = "xtls";
+        else
+            security = "tls";
+    }
+    if(security != "none")
+        params.push_back("security=" + security);
+
+    // Flow
+    if(!node.Flow.empty())
+        params.push_back("flow=" + urlEncode(node.Flow));
+
+    // SNI
+    if(!node.ServerName.empty())
+        params.push_back("sni=" + urlEncode(node.ServerName));
+
+    // Fingerprint
+    if(!node.Fingerprint.empty())
+        params.push_back("fp=" + urlEncode(node.Fingerprint));
+
+    // Reality 参数
+    if(!node.PublicKey.empty())
+        params.push_back("pbk=" + urlEncode(node.PublicKey));
+    if(!node.ShortId.empty())
+        params.push_back("sid=" + urlEncode(node.ShortId));
+
+    // 传输协议相关参数
+    if(node.TransferProtocol == "ws")
+    {
+        if(!node.Path.empty())
+            params.push_back("path=" + urlEncode(node.Path));
+        if(!node.Host.empty())
+            params.push_back("host=" + urlEncode(node.Host));
+    }
+    else if(node.TransferProtocol == "http" || node.TransferProtocol == "h2")
+    {
+        if(!node.Path.empty())
+            params.push_back("path=" + urlEncode(node.Path));
+        if(!node.Host.empty())
+            params.push_back("host=" + urlEncode(node.Host));
+    }
+    else if(node.TransferProtocol == "grpc")
+    {
+        if(!node.Path.empty())
+            params.push_back("serviceName=" + urlEncode(node.Path));
+    }
+    else if(node.TransferProtocol == "kcp")
+    {
+        if(!node.FakeType.empty() && node.FakeType != "none")
+            params.push_back("headerType=" + urlEncode(node.FakeType));
+    }
+    else if(node.TransferProtocol == "quic")
+    {
+        if(!node.FakeType.empty() && node.FakeType != "none")
+            params.push_back("headerType=" + urlEncode(node.FakeType));
+        if(!node.QUICSecure.empty())
+            params.push_back("quicSecurity=" + urlEncode(node.QUICSecure));
+        if(!node.QUICSecret.empty())
+            params.push_back("key=" + urlEncode(node.QUICSecret));
+    }
+
+    // 拼接查询参数
+    if(!params.empty())
+        url += "?" + join(params, "&");
+
+    // 添加 remarks
+    if(!node.Remark.empty())
+        url += "#" + urlEncode(node.Remark);
+
+    return url;
+}
+
 bool matchRange(const std::string &range, int target)
 {
     string_array vArray = split(range, ",");
@@ -120,6 +207,7 @@ bool applyMatcher(const std::string &rule, std::string &real_rule, const Proxy &
         {ProxyType::Shadowsocks,  "SS"},
         {ProxyType::ShadowsocksR, "SSR"},
         {ProxyType::VMess,        "VMESS"},
+        {ProxyType::VLESS,        "VLESS"},
         {ProxyType::Trojan,       "TROJAN"},
         {ProxyType::Snell,        "SNELL"},
         {ProxyType::HTTP,         "HTTP"},
@@ -368,6 +456,53 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
                 continue;
             }
             break;
+        case ProxyType::VLESS:
+            singleproxy["type"] = "vless";
+            singleproxy["uuid"] = x.UserId;
+            singleproxy["tls"] = x.TLSSecure;
+            if(!x.Flow.empty())
+                singleproxy["flow"] = x.Flow;
+            if(!scv.is_undef())
+                singleproxy["skip-cert-verify"] = scv.get();
+            if(!x.ServerName.empty())
+                singleproxy["servername"] = x.ServerName;
+            if(!x.Fingerprint.empty())
+                singleproxy["client-fingerprint"] = x.Fingerprint;
+
+            // Reality 配置
+            if(!x.PublicKey.empty())
+            {
+                singleproxy["reality-opts"]["public-key"] = x.PublicKey;
+                if(!x.ShortId.empty())
+                    singleproxy["reality-opts"]["short-id"] = x.ShortId;
+            }
+
+            switch(hash_(x.TransferProtocol))
+            {
+            case "tcp"_hash:
+                break;
+            case "ws"_hash:
+                singleproxy["network"] = x.TransferProtocol;
+                singleproxy["ws-opts"]["path"] = x.Path;
+                if(!x.Host.empty())
+                    singleproxy["ws-opts"]["headers"]["Host"] = x.Host;
+                break;
+            case "grpc"_hash:
+                singleproxy["network"] = x.TransferProtocol;
+                if(!x.Path.empty())
+                    singleproxy["grpc-opts"]["grpc-service-name"] = x.Path;
+                break;
+            case "http"_hash:
+            case "h2"_hash:
+                singleproxy["network"] = "h2";
+                singleproxy["h2-opts"]["path"] = x.Path;
+                if(!x.Host.empty())
+                    singleproxy["h2-opts"]["host"].push_back(x.Host);
+                break;
+            default:
+                continue;
+            }
+            break;
         case ProxyType::ShadowsocksR:
             //ignoring all nodes with unsupported obfs, protocols and encryption
             if(ext.filter_deprecated)
@@ -453,7 +588,7 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
             }
             break;
         case ProxyType::Snell:
-            if (x.SnellVersion >= 4)
+            if(x.SnellVersion >= 4)
                 continue;
             singleproxy["type"] = "snell";
             singleproxy["psk"] = x.Password;
@@ -781,7 +916,7 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
 
         processRemark(x.Remark, remarks_list);
 
-        std::string &hostname = x.Hostname, &username = x.Username, &password = x.Password, &method = x.EncryptMethod, &id = x.UserId, &transproto = x.TransferProtocol, &host = x.Host, &edge = x.Edge, &path = x.Path, &protocol = x.Protocol, &protoparam = x.ProtocolParam, &obfs = x.OBFS, &obfsparam = x.OBFSParam, &plugin = x.Plugin, &pluginopts = x.PluginOption, &underlying_proxy = x.UnderlyingProxy;
+        std::string &hostname = x.Hostname, &username = x.Username, &password = x.Password, &method = x.EncryptMethod, &id = x.UserId, &transproto = x.TransferProtocol, &host = x.Host, &edge = x.Edge, &path = x.Path, &protocol = x.Protocol, &protoparam = x.ProtocolParam, &obfs = x.OBFS, &obfsparam = x.OBFSParam, &plugin = x.Plugin, &pluginopts = x.PluginOption, &underlying_proxy = x.UnderlyingProxy, &sni = x.ServerName;
         std::string port = std::to_string(x.Port);
         bool &tlssecure = x.TLSSecure;
 
@@ -849,6 +984,8 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
             if(!scv.is_undef())
                 proxy += ", skip-cert-verify=" + scv.get_str();
             break;
+        case ProxyType::VLESS:
+            continue; // VLESS only exported for Clash/Clash.Meta
         case ProxyType::ShadowsocksR:
             if(ext.surge_ssr_path.empty() || surge_ver < 2)
                 continue;
@@ -918,9 +1055,13 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf
                 proxy += ", obfs=" + obfs;
                 if(!host.empty())
                     proxy += ", obfs-host=" + host;
+                if(!x.OBFSUri.empty())
+                    proxy += ", obfs-uri=" + x.OBFSUri;
             }
             if(x.SnellVersion != 0)
                 proxy += ", version=" + std::to_string(x.SnellVersion);
+            if(!x.SnellReuse.is_undef())
+                proxy += ", reuse=" + x.SnellReuse.get_str();
             break;
         case ProxyType::WireGuard:
             if(surge_ver < 4 && surge_ver != -3)
@@ -1119,6 +1260,8 @@ std::string proxyToSingle(std::vector<Proxy> &nodes, int types, extra_settings &
                 continue;
             proxyStr = "vmess://" + base64Encode(vmessLinkConstruct(remark, hostname, port, faketype, id, aid, transproto, path, host, tlssecure ? "tls" : ""));
             break;
+        case ProxyType::VLESS:
+            continue; // VLESS only exported for Clash/Clash.Meta
         case ProxyType::Trojan:
             if(!trojan)
                 continue;
@@ -2327,6 +2470,8 @@ void proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::v
                     proxy.AddMember("transport", transport, allocator);
                 break;
             }
+            case ProxyType::VLESS:
+                continue; // VLESS only exported for Clash/Clash.Meta
             case ProxyType::Trojan:
             {
                 addSingBoxCommonMembers(proxy, x, "trojan", allocator);
