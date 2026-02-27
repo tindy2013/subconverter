@@ -131,6 +131,8 @@ namespace qjs
             JS_DefinePropertyValueStr(ctx, obj, "TLS13", js_traits<tribool>::wrap(ctx, n.TLS13), JS_PROP_C_W_E);
 
             JS_DefinePropertyValueStr(ctx, obj, "SnellVersion", JS_NewInt32(ctx, n.SnellVersion), JS_PROP_C_W_E);
+            JS_DefinePropertyValueStr(ctx, obj, "SnellReuse", js_traits<tribool>::wrap(ctx, n.SnellReuse), JS_PROP_C_W_E);
+            JS_DefinePropertyValueStr(ctx, obj, "OBFSUri", JS_NewString(ctx, n.OBFSUri), JS_PROP_C_W_E);
             JS_DefinePropertyValueStr(ctx, obj, "ServerName", JS_NewString(ctx, n.ServerName), JS_PROP_C_W_E);
 
             JS_DefinePropertyValueStr(ctx, obj, "SelfIP", JS_NewString(ctx, n.SelfIP), JS_PROP_C_W_E);
@@ -186,6 +188,8 @@ namespace qjs
             node.TLS13 = unwrap_free<tribool>(ctx, v, "TLS13");
 
             node.SnellVersion = unwrap_free<int32_t>(ctx, v, "SnellVersion");
+            node.SnellReuse = unwrap_free<tribool>(ctx, v, "SnellReuse");
+            node.OBFSUri = unwrap_free<std::string>(ctx, v, "OBFSUri");
             node.ServerName = unwrap_free<std::string>(ctx, v, "ServerName");
 
             node.SelfIP = unwrap_free<std::string>(ctx, v, "SelfIP");
