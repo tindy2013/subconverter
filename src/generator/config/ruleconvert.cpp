@@ -532,7 +532,7 @@ void rulesetToSingBox(rapidjson::Document &base_rule, std::vector<RulesetContent
             rules.Swap(base_rule["route"]["rules"]);
     }
 
-    auto dns_object = buildObject(allocator, "protocol", "dns", "outbound", "dns-out");
+    auto dns_object = buildObject(allocator, "protocol", "dns", "action", "hijack-dns");
     rules.PushBack(dns_object, allocator);
 
     if (global.singBoxAddClashModes)
