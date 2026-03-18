@@ -112,6 +112,18 @@ bool matchRange(const std::string &range, int target)
     return match;
 }
 
+static bool shouldOmitClashPortForHysteria2(const Proxy &node)
+{
+    if (node.Type != ProxyType::Hysteria2 || node.Ports.empty())
+        return false;
+
+    string_array port_list = split(node.Ports, ",");
+    if (port_list.size() > 1)
+        return true;
+
+    return trim(port_list[0]).find('-') != std::string::npos;
+}
+
 bool applyMatcher(const std::string &rule, std::string &real_rule, const Proxy &node)
 {
     std::string target, ret_real_rule;
@@ -279,7 +291,8 @@ void proxyToClash(std::vector<Proxy> &nodes, YAML::Node &yamlnode, const ProxyGr
 
         singleproxy["name"] = x.Remark;
         singleproxy["server"] = x.Hostname;
-        singleproxy["port"] = x.Port;
+        if (!shouldOmitClashPortForHysteria2(x))
+            singleproxy["port"] = x.Port;
 
         switch(x.Type)
         {

@@ -39,6 +39,31 @@ void commonConstruct(Proxy &node, ProxyType type, const std::string &group, cons
     node.TLS13 = tls13;
 }
 
+static std::string getPrimaryPortFromPortSpec(const std::string &port_spec)
+{
+    string_array port_list = split(port_spec, ",");
+    for (const auto &raw_port : port_list)
+    {
+        std::string port_entry = trim(raw_port);
+        if (port_entry.empty())
+            continue;
+
+        auto range_pos = port_entry.find('-');
+        if (range_pos != std::string::npos)
+        {
+            std::string range_begin = trim(port_entry.substr(0, range_pos));
+            if (regMatch(range_begin, R"(\d+)"))
+                return range_begin;
+            continue;
+        }
+
+        if (regMatch(port_entry, R"(\d+)"))
+            return port_entry;
+    }
+
+    return "";
+}
+
 void vmessConstruct(Proxy &node, const std::string &group, const std::string &remarks, const std::string &add, const std::string &port, const std::string &type, const std::string &id, const std::string &aid, const std::string &net, const std::string &cipher, const std::string &path, const std::string &host, const std::string &edge, const std::string &tls, const std::string &sni, tribool udp, tribool tfo, tribool scv, tribool tls13, const std::string& underlying_proxy)
 {
     commonConstruct(node, ProxyType::VMess, group, remarks, add, port, udp, tfo, scv, tls13, underlying_proxy);
@@ -1114,7 +1139,10 @@ void explodeClash(Node yamlnode, std::vector<Proxy> &nodes)
         singleproxy["name"] >>= ps;
         singleproxy["server"] >>= server;
         singleproxy["port"] >>= port;
+        singleproxy["ports"] >>= ports;
         singleproxy["underlying-proxy"] >>= underlying_proxy;
+        if((port.empty() || port == "0") && (proxytype == "hysteria" || proxytype == "hysteria2"))
+            port = getPrimaryPortFromPortSpec(ports);
         if(port.empty() || port == "0")
             continue;
         udp = safe_as<std::string>(singleproxy["udp"]);
@@ -1366,7 +1394,7 @@ void explodeClash(Node yamlnode, std::vector<Proxy> &nodes)
             singleproxy["cwnd"] >>= cwnd;
             singleproxy["hop-interval"] >>= hop_interval;
 
-            hysteria2Construct(node, group, ps, server, port, ports, up, down, password, obfs, obfs_password, sni, fingerprint, ca, ca_str, cwnd, alpn, hop_interval, tfo, scv, underlying_proxy);
+            hysteria2Construct(node, group, ps, server, port, ports, up, down, password, obfs, obfs_password, sni, fingerprint, alpn, ca, ca_str, cwnd, hop_interval, tfo, scv, underlying_proxy);
             break;
 
         default:
@@ -1506,7 +1534,7 @@ void explodeKitsunebi(std::string kit, Proxy &node)
 
 
 void explodeStdHysteria2(std::string hysteria2, Proxy &node) {
-    std::string add, port, password, host, insecure, up, down, alpn, obfs, obfs_password, remarks, sni, fingerprint;
+    std::string add, port, ports, password, host, insecure, up, down, alpn, obfs, obfs_password, remarks, sni, fingerprint;
     std::string addition;
     tribool scv;
     hysteria2 = hysteria2.substr(12);
@@ -1525,7 +1553,7 @@ void explodeStdHysteria2(std::string hysteria2, Proxy &node) {
     }
 
     if (strFind(hysteria2, "@")) {
-        if (regGetMatch(hysteria2, R"(^(.*?)@(.*)[:](\d+)$)", 4, 0, &password, &add, &port))
+        if (regGetMatch(hysteria2, R"(^(.*?)@(.*)[:](\d[\d,-]*)$)", 4, 0, &password, &add, &ports))
             return;
     } else {
         password = getUrlArg(addition, "password");
@@ -1535,9 +1563,17 @@ void explodeStdHysteria2(std::string hysteria2, Proxy &node) {
         if (!strFind(hysteria2, ":"))
             return;
 
-        if (regGetMatch(hysteria2, R"(^(.*)[:](\d+)$)", 3, 0, &add, &port))
+        if (regGetMatch(hysteria2, R"(^(.*)[:](\d[\d,-]*)$)", 3, 0, &add, &ports))
             return;
     }
+
+    if (regMatch(ports, R"(\d+)"))
+        port = ports;
+    else
+        port = getPrimaryPortFromPortSpec(ports);
+
+    if (port.empty())
+        return;
 
     scv = getUrlArg(addition, "insecure");
     up = getUrlArg(addition, "up");
@@ -1549,9 +1585,9 @@ void explodeStdHysteria2(std::string hysteria2, Proxy &node) {
     sni = getUrlArg(addition, "sni");
     fingerprint = getUrlArg(addition, "pinSHA256");
     if (remarks.empty())
-        remarks = add + ":" + port;
+        remarks = add + ":" + ports;
 
-    hysteria2Construct(node, HYSTERIA2_DEFAULT_GROUP, remarks, add, port, port, up, down, password, obfs, obfs_password, sni, fingerprint, "", "", "", "", "", tribool(), scv, "");
+    hysteria2Construct(node, HYSTERIA2_DEFAULT_GROUP, remarks, add, port, regMatch(ports, R"(\d+)") ? "" : ports, up, down, password, obfs, obfs_password, sni, fingerprint, "", "", "", "", "", tribool(), scv, "");
     return;
 }
 
