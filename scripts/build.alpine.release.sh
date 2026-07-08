@@ -2,7 +2,7 @@
 set -xe
 
 apk add gcc g++ build-base linux-headers cmake make autoconf automake libtool python3
-apk add mbedtls-dev mbedtls-static zlib-dev zlib-static rapidjson-dev pcre2-dev brotli-dev brotli-static zstd-dev zstd-static libpsl-dev libpsl-static
+apk add mbedtls-dev mbedtls-static zlib-dev zlib-static rapidjson-dev pcre2-dev pcre2-static brotli-dev brotli-static zstd-dev zstd-static libpsl-dev libpsl-static
 
 git clone https://github.com/curl/curl --depth=1 --branch curl-8_21_0
 cd curl
