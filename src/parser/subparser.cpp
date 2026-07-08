@@ -193,6 +193,7 @@ void hysteriaConstruct(
     node.AuthStr = auth_str;
     if (!auth.empty())
         node.AuthStr = base64Decode(auth);
+    node.TLSSecure = true;
     node.OBFS = obfs;
     node.SNI = sni;
     node.Fingerprint = fingerprint;
@@ -232,6 +233,7 @@ void hysteria2Construct(
     const std::string &underlying_proxy
 ) {
     commonConstruct(node, ProxyType::Hysteria2, group, remarks, server, port, tribool(), tfo, scv, tribool(), underlying_proxy);
+    node.TLSSecure = true;
     node.UpSpeed = to_int(up);
     node.DownSpeed = to_int(down);
     node.Ports = ports;
@@ -248,6 +250,25 @@ void hysteria2Construct(
     node.CaStr = caStr;
     node.CWND = to_int(cwnd);
     node.HopInterval = to_int(hop_interval);
+}
+
+void anyTLSConstruct(
+    Proxy &node,
+    const std::string &group,
+    const std::string &remarks,
+    const std::string &server,
+    const std::string &port,
+    const std::string &password,
+    const std::string &sni,
+    tribool udp,
+    tribool tfo,
+    tribool scv,
+    const std::string &underlying_proxy
+) {
+    commonConstruct(node, ProxyType::AnyTLS, group, remarks, server, port, udp, tfo, scv, tribool(), underlying_proxy);
+    node.TLSSecure = true;
+    node.Password = password;
+    node.SNI = sni;
 }
 
 void explodeVmess(std::string vmess, Proxy &node)
@@ -1366,9 +1387,15 @@ void explodeClash(Node yamlnode, std::vector<Proxy> &nodes)
             singleproxy["cwnd"] >>= cwnd;
             singleproxy["hop-interval"] >>= hop_interval;
 
-            hysteria2Construct(node, group, ps, server, port, ports, up, down, password, obfs, obfs_password, sni, fingerprint, ca, ca_str, cwnd, alpn, hop_interval, tfo, scv, underlying_proxy);
+            hysteria2Construct(node, group, ps, server, port, ports, up, down, password, obfs, obfs_password, sni, fingerprint, alpn, ca, ca_str, cwnd, hop_interval, tfo, scv, underlying_proxy);
             break;
+        case "anytls"_hash:
+            group = ANYTLS_DEFAULT_GROUP;
+            singleproxy["password"] >>= password;
+            singleproxy["sni"] >>= sni;
 
+            anyTLSConstruct(node, group, ps, server, port, password, sni, udp, tfo, scv, underlying_proxy);
+            break;
         default:
             continue;
         }
@@ -1564,6 +1591,37 @@ void explodeHysteria2(std::string hysteria2, Proxy &node) {
         explodeStdHysteria2(hysteria2, node);
         return;
     }
+}
+
+void explodeAnyTLS(std::string anytls, Proxy &node) {
+    std::string add, port, password, sni, remarks;
+    std::string addition;
+    tribool udp, scv;
+
+    anytls = anytls.substr(9);
+    string_size pos;
+    pos = anytls.rfind('#');
+    if (pos != std::string::npos) {
+        remarks = urlDecode(anytls.substr(pos + 1));
+        anytls.erase(pos);
+    }
+
+    pos = anytls.rfind('?');
+    if (pos != std::string::npos) {
+        addition = anytls.substr(pos + 1);
+        anytls.erase(pos);
+    }
+
+    if (regGetMatch(anytls, R"(^(.*?)@(.*)[:](\d+)$)", 4, 0, &password, &add, &port))
+        return;
+    if (port == "0")
+        return;
+    sni = getUrlArg(addition, "sni");
+    udp = getUrlArg(addition, "udp");
+    scv = getUrlArg(addition, "insecure");
+    if (remarks.empty())
+        remarks = add + ":" + port;
+    anyTLSConstruct(node, ANYTLS_DEFAULT_GROUP, remarks, add, port, password, sni, udp, tribool(), scv, "");
 }
 
 // peer = (public-key = bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=, allowed-ips = "0.0.0.0/0, ::/0", endpoint = engage.cloudflareclient.com:2408, client-id = 139/184/125),(public-key = bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=, endpoint = engage.cloudflareclient.com:2408)
@@ -2034,6 +2092,41 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
             wireguardConstruct(node, WG_DEFAULT_GROUP, remarks, "", "0", ip, ipv6, private_key, "", "", dns_servers, mtu, keepalive, test_url, "", udp, "");
             parsePeers(node, peer);
             break;
+        case "anytls"_hash:
+            server = trim(configs[1]);
+            port = trim(configs[2]);
+            if(port == "0")
+                continue;
+
+            for(i = 3; i < configs.size(); i++)
+            {
+                vArray = split(configs[i], "=");
+                if(vArray.size() != 2)
+                    continue;
+                itemName = trim(vArray[0]);
+                itemVal = trim(vArray[1]);
+                switch(hash_(itemName))
+                {
+                case "password"_hash:
+                    password = itemVal;
+                    break;
+                case "sni"_hash:
+                    host = itemVal;
+                    break;
+                case "udp-relay"_hash:
+                    udp = itemVal;
+                    break;
+                case "tfo"_hash:
+                    tfo = itemVal;
+                    break;
+                case "skip-cert-verify"_hash:
+                    scv = itemVal;
+                    break;
+                }
+            }
+
+            anyTLSConstruct(node, ANYTLS_DEFAULT_GROUP, remarks, server, port, password, host, udp, tfo, scv, "");
+            break;
         default:
             switch(hash_(remarks))
             {
@@ -2304,6 +2397,42 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
 
                 httpConstruct(node, HTTP_DEFAULT_GROUP, remarks, server, port, username, password, tls == "true", tfo, scv, tls13);
                 break;
+            case "anytls"_hash: //quantumult x style anytls link
+                server = trim(configs[0].substr(0, configs[0].rfind(':')));
+                port = trim(configs[0].substr(configs[0].rfind(':') + 1));
+                if (port == "0")
+                    continue;
+
+                for (i = 1; i < configs.size(); i++) {
+                    vArray = split(trim(configs[i]), "=");
+                    if (vArray.size() != 2)
+                        continue;
+                    itemName = trim(vArray[0]);
+                    itemVal = trim(vArray[1]);
+                    switch (hash_(itemName)) {
+                        case "password"_hash:
+                            password = itemVal;
+                            break;
+                        case "tag"_hash:
+                            remarks = itemVal;
+                            break;
+                        case "sni"_hash:
+                            host = itemVal;
+                            break;
+                        case "udp-relay"_hash:
+                            udp = itemVal;
+                            break;
+                        case "fast-open"_hash:
+                            tfo = itemVal;
+                            break;
+                        case "tls-verification"_hash:
+                            scv = itemVal == "false";
+                            break;
+                        case "tls13"_hash:
+                            tls13 = itemVal;
+                            break;
+                    }
+                }
             default:
                 continue;
             }
@@ -2463,6 +2592,8 @@ void explode(const std::string &link, Proxy &node)
         explodeTrojan(link, node);
     else if (strFind(link, "hysteria2://") || strFind(link, "hy2://"))
         explodeHysteria2(link, node);
+    else if (startsWith(link, "anytls://"))
+        explodeAnyTLS(link, node);
     else if(isLink(link))
         explodeHTTPSub(link, node);
 }

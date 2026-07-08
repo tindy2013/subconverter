@@ -1,6 +1,8 @@
 subconverter.exe
 .vscode
-cmake-build-debug
+cmake-build-debug*
 .idea
 base/cache
+build
+.xmake
 build
