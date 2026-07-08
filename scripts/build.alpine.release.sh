@@ -1,12 +1,12 @@
 #!/bin/bash
 set -xe
 
-apk add gcc g++ build-base linux-headers cmake make autoconf automake libtool python2 python3
-apk add mbedtls-dev mbedtls-static zlib-dev rapidjson-dev zlib-static pcre2-dev nghttp2-dev brotli-dev zstd-dev
+apk add gcc g++ build-base linux-headers cmake make autoconf automake libtool python3
+apk add mbedtls-dev mbedtls-static zlib-dev rapidjson-dev zlib-static pcre2-dev brotli-dev zstd-dev
 
 git clone https://github.com/curl/curl --depth=1 --branch curl-8_21_0
 cd curl
-cmake -DCURL_USE_MBEDTLS=ON -DHTTP_ONLY=ON -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_USE_LIBSSH2=OFF -DBUILD_CURL_EXE=OFF -DCURL_ZSTD=ON -DCURL_BROTLI=ON -DCURL_NGHTTP2=ON -DHAVE_LIBIDN2=OFF . > /dev/null
+cmake -DCURL_USE_MBEDTLS=ON -DHTTP_ONLY=ON -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_USE_LIBSSH2=OFF -DBUILD_CURL_EXE=OFF -DCURL_ZSTD=ON -DCURL_BROTLI=ON -DCURL_NGHTTP2=OFF -DHAVE_LIBIDN2=OFF . > /dev/null
 make install -j2 > /dev/null
 cd ..
 
@@ -45,7 +45,7 @@ cmake -DCMAKE_BUILD_TYPE=Release .
 make -j3
 rm subconverter
 # shellcheck disable=SC2046
-g++ -o base/subconverter $(find CMakeFiles/subconverter.dir/src/ -name "*.o")  -static -lpcre2-8 -lyaml-cpp -L/usr/lib64 -lcurl -lmbedtls -lmbedcrypto -lmbedx509 -lz -lnghttp2 -lbrotlicommon -lbrotlidec -lzstd -l:quickjs/libquickjs.a -llibcron -O3 -s
+g++ -o base/subconverter $(find CMakeFiles/subconverter.dir/src/ -name "*.o")  -static -lpcre2-8 -lyaml-cpp -L/usr/lib64 -lcurl -lmbedtls -lmbedcrypto -lmbedx509 -lz -lbrotlicommon -lbrotlidec -lzstd -l:quickjs/libquickjs.a -llibcron -O3 -s
 
 python3 -m ensurepip
 python3 -m pip install gitpython
