@@ -42,7 +42,7 @@ RUN set -xe && \
 #    [ -n "$SHA" ] && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h;\
 #    cmake -DCMAKE_BUILD_TYPE=Release -DUSE_EXTERNAL_CURL=ON -DUSE_EXTERNAL_RAPIDJSON=ON -DUSE_EXTERNAL_YAML_CPP=ON . && \
 #    make -j $THREADS && \
-    xmake f --root --static=false -m release -y -v --add-commit-hash="${ADD_COMMIT_HASH:-true}" && \
+    xmake f --root --kind=binary --mode=release -y -v --add-commit-hash="${ADD_COMMIT_HASH:-true}" && \
     xmake --root -v subconverter && \
     cp "$(find build -type f -name subconverter)" . && \
     python3 -m ensurepip && \
