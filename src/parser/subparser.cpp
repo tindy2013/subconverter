@@ -2611,25 +2611,33 @@ void explodeSub(std::string sub, std::vector<Proxy> &nodes)
         processed = true;
     }
 
-    //try to parse as clash configuration
-    try
-    {
-        if(!processed && regFind(sub, "\"?(Proxy|proxies)\"?:"))
-        {
-            regGetMatch(sub, R"(^(?:Proxy|proxies):$\s(?:(?:^ +?.*$| *?-.*$|)\s?)+)", 1, &sub);
-            Node yamlnode = Load(sub);
-            if(yamlnode.size() && (yamlnode["Proxy"].IsDefined() || yamlnode["proxies"].IsDefined()))
-            {
-                explodeClash(yamlnode, nodes);
-                processed = true;
-            }
+    // try to parse as clash configuration
+    // Compared with the older implementation:
+    // 1. We parse the whole YAML payload directly instead of first slicing out the
+    //    Proxy/proxies block with a regex. This is safer for nested YAML and avoids
+    //    losing context when the subscription contains other top-level sections.
+    // 2. We require Proxy/proxies to exist and be a YAML sequence before calling
+    //    explodeClash(), which is stricter than only checking whether the key exists.
+    // 3. `processed` is updated from the actual parse result (`!nodes.empty()`) so we
+    //    do not mark the subscription as handled when the YAML is valid but yields no nodes.
+    // 4. Parse exceptions are swallowed here so unsupported or malformed YAML can still
+    //    fall through to the Surge / normal subscription parsers below.
+    try {
+        if (!processed && regFind(sub, "\"?(Proxy|proxies)\"?:")) {
+        Node yamlnode = Load(sub);
+        bool has_proxy_section =
+            yamlnode.IsDefined() && yamlnode.IsMap() &&
+            ((yamlnode["Proxy"].IsDefined() && yamlnode["Proxy"].IsSequence()) ||
+            (yamlnode["proxies"].IsDefined() &&
+                yamlnode["proxies"].IsSequence()));
+        if (has_proxy_section) {
+            explodeClash(yamlnode, nodes);
+            processed = !nodes.empty();
         }
-    }
-    catch (std::exception &e)
-    {
-        //writeLog(0, e.what(), LOG_LEVEL_DEBUG);
-        //ignore
-        throw;
+        }
+    } catch (std::exception &e) {
+        // writeLog(0, e.what(), LOG_LEVEL_DEBUG);
+        // ignore
     }
 
     //try to parse as surge configuration
