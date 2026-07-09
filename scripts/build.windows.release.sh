@@ -52,6 +52,8 @@ set -xe
 #g++ $(find CMakeFiles/subconverter.dir/src -name "*.obj") curl/lib/libcurl.a -o base/subconverter.exe -static -lpcre2-8 -l:quickjs/libquickjs.a -llibcron -lyaml-cpp -lbrotlidec -lbrotlicommon -lzstd -lz -liphlpapi -lsecur32 -lcrypt32 -lbcrypt -lws2_32 -lwsock32 -s
 
 source ~/.xmake/profile 2>/dev/null || true
+# Remove system libcurl to avoid linker picking it up over the one xmake builds
+rm -f "$MINGW_PREFIX"/lib/libcurl*.a "$MINGW_PREFIX"/lib/libcurl*.dll.a
 xmake f --root --static=true -m release -y -v --add-commit-hash="${ADD_COMMIT_HASH:-true}"
 xmake --root -v subconverter
 cp "$(find build -name subconverter.exe -type f)" base/subconverter.exe
