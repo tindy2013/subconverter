@@ -18,7 +18,6 @@ add_requires("pcre2", "rapidjson", "toml11")
 includes("xmake/libcron.lua")
 includes("xmake/yaml-cpp-static.lua")
 includes("xmake/quickjspp.lua")
-includes("xmake/curl-static.lua")
 add_requires("libcron", {system = false})
 add_requires("yaml-cpp-static", {system = false})
 add_requires("quickjspp", {system = false})
@@ -27,8 +26,8 @@ if get_config("static") == true then
 else
     add_requires("yaml-cpp")
 end
-if not is_plat("macosx") and get_config("static") == true then
-    add_requires("curl-static", {system = false})
+if get_config("static") == true then
+    add_requires("libcurl", {system = false, configs = {shared = false, zlib = true, mbedtls = is_plat("linux")}})
 else
     add_requires("libcurl")
 end
@@ -45,11 +44,7 @@ target("subconverter")
     add_includedirs("src")
     add_includedirs("include")
     add_packages("pcre2", "rapidjson", "toml11", "libcron", "quickjspp")
-    if not is_plat("macosx") and get_config("static") == true then
-        add_packages("curl-static")
-    else
-        add_packages("libcurl")
-    end
+    add_packages("libcurl")
     if get_config("static") == true then
         add_packages("yaml-cpp-static")
     else

@@ -143,9 +143,13 @@ jobs:
       uses: msys2/setup-msys2@v2
       with:
         update: true
-        install: base-devel git mingw-w64-${{ matrix.env }}-gcc mingw-w64-${{ matrix.env }}-cmake mingw-w64-${{ matrix.env }}-pcre2 mingw-w64-${{ matrix.env }}-brotli mingw-w64-${{ matrix.env }}-zstd mingw-w64-x86_64-xmake patch
+        install: base-devel git mingw-w64-${{ matrix.env }}-gcc mingw-w64-${{ matrix.env }}-cmake mingw-w64-${{ matrix.env }}-pcre2 mingw-w64-${{ matrix.env }}-brotli mingw-w64-${{ matrix.env }}-zstd patch
         msystem: ${{ matrix.msystem }}
         path-type: inherit
+    - name: Install xmake
+      run: |
+        curl -fsSL https://xmake.io/shget.text | bash
+        source ~/.xmake/profile
     - name: Add commit id into version
       if: ${{ !startsWith(github.ref, 'refs/tags/') }}
       run: SHA=$(git rev-parse --short HEAD) && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h
