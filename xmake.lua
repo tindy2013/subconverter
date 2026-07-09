@@ -15,14 +15,11 @@ option("add-commit-hash")
 option_end()
 
 add_requires("pcre2", "rapidjson", "toml11")
-includes("xmake/libcron.lua")
-includes("xmake/yaml-cpp-static.lua")
 includes("xmake/quickjspp.lua")
 add_requires("libcron", {system = false})
-add_requires("yaml-cpp-static", {system = false})
 add_requires("quickjspp", {system = false})
 if get_config("static") == true then
-    add_requires("yaml-cpp-static", {system = false})
+    add_requires("yaml-cpp", {system = false, configs = {shared = false}})
 else
     add_requires("yaml-cpp")
 end
@@ -45,11 +42,7 @@ target("subconverter")
     add_includedirs("include")
     add_packages("pcre2", "rapidjson", "toml11", "libcron", "quickjspp")
     add_packages("libcurl")
-    if get_config("static") == true then
-        add_packages("yaml-cpp-static")
-    else
-        add_packages("yaml-cpp")
-    end
+    add_packages("yaml-cpp")
     add_defines("CURL_STATICLIB")
     add_defines("PCRE2_STATIC")
     add_defines("YAML_CPP_STATIC_DEFINE")
