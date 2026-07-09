@@ -8,7 +8,7 @@ ARG ADD_COMMIT_HASH="true"
 WORKDIR /subconverter
 COPY . /subconverter/
 RUN set -xe && \
-    apk add --no-cache --virtual .build-tools git g++ build-base linux-headers cmake ninja python3 curl unzip p7zip xmake && \
+    apk add --no-cache --virtual .build-tools git g++ build-base linux-headers cmake python3 curl unzip p7zip xmake && \
     apk add --no-cache --virtual .build-deps curl-dev rapidjson-dev pcre2-dev yaml-cpp-dev && \
 #    git clone https://github.com/ftk/quickjspp --depth=1 && \
 #    cd quickjspp && \
@@ -42,8 +42,6 @@ RUN set -xe && \
 #    [ -n "$SHA" ] && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h;\
 #    cmake -DCMAKE_BUILD_TYPE=Release -DUSE_EXTERNAL_CURL=ON -DUSE_EXTERNAL_RAPIDJSON=ON -DUSE_EXTERNAL_YAML_CPP=ON . && \
 #    make -j $THREADS && \
-    ls -alh && \
-    source "$HOME/.xmake/profile" && \
     xmake f --root --static=false -m release -y -v --add-commit-hash="${ADD_COMMIT_HASH:-true}" && \
     xmake --root -v subconverter && \
     cp "$(find build -type f -name subconverter)" . && \
