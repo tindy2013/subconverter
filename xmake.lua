@@ -24,12 +24,7 @@ else
     add_requires("yaml-cpp")
 end
 if get_config("static") == true then
-    if is_plat("windows", "mingw") then
-        add_requires("libcurl", {system = false, configs = {shared = false, zlib = true, brotli = true, zstd = true}})
-        add_requireconfs("libcurl.**", {system = false, override = true, configs = {shared = false}})
-    else
-        add_requires("libcurl", {system = false, configs = {shared = false, zlib = true, brotli = true, zstd = true, nghttp2 = true}})
-    end
+    add_requires("libcurl", {configs = {shared = false}})
 else
     add_requires("libcurl")
 end
