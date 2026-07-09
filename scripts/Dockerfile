@@ -8,8 +8,8 @@ ARG ADD_COMMIT_HASH="true"
 WORKDIR /subconverter
 COPY . /subconverter/
 RUN set -xe && \
-    apk add --no-cache --virtual .build-tools git g++ build-base linux-headers cmake python3 py3-gitpython curl unzip p7zip xmake && \
-    apk add --no-cache --virtual .build-deps curl-dev rapidjson-dev pcre2-dev yaml-cpp-dev && \
+    apk add --no-cache --virtual .build-tools git g++ build-base linux-headers cmake ninja-is-really-ninja pkgconf python3 py3-gitpython curl unzip p7zip xmake && \
+    apk add --no-cache --virtual .build-deps curl-dev yaml-cpp-dev && \
 #    git clone https://github.com/ftk/quickjspp --depth=1 && \
 #    cd quickjspp && \
 #    git submodule update --init && \

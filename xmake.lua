@@ -24,7 +24,7 @@ else
     add_requires("yaml-cpp")
 end
 if get_config("static") == true then
-    add_requires("libcurl", {system = false, configs = {shared = false, zlib = true}})
+    add_requires("libcurl", {system = false, configs = {shared = false, zlib = true, brotli = true, zstd = true, nghttp2 = true}})
 else
     add_requires("libcurl")
 end

@@ -47,8 +47,8 @@ set -xe
 ## shellcheck disable=SC2046
 #g++ -o base/subconverter $(find CMakeFiles/subconverter.dir/src/ -name "*.o")  -static -lpcre2-8 -lyaml-cpp -L/usr/lib64 -lcurl -lmbedtls -lmbedcrypto -lmbedx509 -lz -l:quickjs/libquickjs.a -llibcron -O3 -s
 
-apk add git g++ build-base linux-headers cmake python3 py3-gitpython curl unzip p7zip xmake
-apk add curl-dev curl-static openssl-dev openssl-libs-static mbedtls-dev mbedtls-static zlib-dev zlib-static rapidjson-dev pcre2-dev pcre2-static brotli-dev brotli-static zstd-dev zstd-static libpsl-dev libpsl-static
+apk add git g++ build-base linux-headers cmake ninja-is-really-ninja pkgconf python3 py3-gitpython curl unzip p7zip xmake
+apk add zlib-dev zlib-static brotli-dev brotli-static zstd-dev zstd-static nghttp2-dev nghttp2-static
 
 git config --global --add safe.directory '*'
 xmake f --root --static=true -m release -y -v --add-commit-hash="${ADD_COMMIT_HASH:-true}"
