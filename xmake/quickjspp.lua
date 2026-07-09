@@ -4,7 +4,7 @@ package("quickjspp")
     set_description("QuickJS C++ wrapper")
 
     add_urls("https://github.com/ftk/quickjspp.git")
-    add_versions("2022.7.22", "9cee4b4d27271d54b95f6f42bfdc534ebeaaeb72")
+    add_versions("2025.04.26", "01cdd3047ced48265b127790848a0ca88204f2c7")
 
     add_configs("shared", {description = "Build shared library.", default = false, type = "boolean", readonly = true})
 

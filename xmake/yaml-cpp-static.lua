@@ -1,6 +1,6 @@
 package("yaml-cpp-static")
     add_deps("cmake")
-    add_versions("0.8.0-SNAPSHOT", "eaf72053724814be3b99d38e292fca5797a57b7b")
+    add_versions("0.9.0-SNAPSHOT", "3a1c96f2180814a13587144b7f162f1e38ddda7d")
     set_urls("https://github.com/jbeder/yaml-cpp.git")
     on_install(function (package)
                 local configs = {}

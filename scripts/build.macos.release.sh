@@ -47,7 +47,7 @@ set -xe
 #sudo make install -j6 > /dev/null
 #cd ..
 
-brew reinstall xmake rapidjson pkgconfig
+brew reinstall xmake ninja rapidjson pkgconfig
 
 xmake f --root -m release -y -v --add-commit-hash="${ADD_COMMIT_HASH:-true}"
 xmake --root -v subconverter

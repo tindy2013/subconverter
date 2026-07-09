@@ -8,7 +8,7 @@ ARG ADD_COMMIT_HASH="true"
 WORKDIR /subconverter
 COPY . /subconverter/
 RUN set -xe && \
-    apk add --no-cache --virtual .build-tools git g++ build-base linux-headers cmake python3 curl unzip p7zip xmake && \
+    apk add --no-cache --virtual .build-tools git g++ build-base linux-headers cmake ninja python3 curl unzip p7zip xmake && \
     apk add --no-cache --virtual .build-deps curl-dev rapidjson-dev pcre2-dev yaml-cpp-dev && \
 #    git clone https://github.com/ftk/quickjspp --depth=1 && \
 #    cd quickjspp && \

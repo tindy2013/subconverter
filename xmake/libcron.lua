@@ -1,6 +1,6 @@
 package("libcron")
     add_deps("cmake")
-    add_versions("1.3.1", "41f238ceb09d4179e7346d78584a0c978e5d0059")
+    add_versions("1.3.3", "ee34810b11bd23c8be637345532f91059b68b2d7")
     set_urls("https://github.com/PerMalmberg/libcron.git")
     on_install(function (package)
             local configs = {}
