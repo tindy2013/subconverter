@@ -8,7 +8,7 @@ ARG ADD_COMMIT_HASH="true"
 WORKDIR /subconverter
 COPY . /subconverter/
 RUN set -xe && \
-    apk add --no-cache --virtual .build-tools git g++ build-base linux-headers cmake python3 curl unzip p7zip xmake && \
+    apk add --no-cache --virtual .build-tools git g++ build-base linux-headers cmake python3 py3-gitpython curl unzip p7zip xmake && \
     apk add --no-cache --virtual .build-deps curl-dev rapidjson-dev pcre2-dev yaml-cpp-dev && \
 #    git clone https://github.com/ftk/quickjspp --depth=1 && \
 #    cd quickjspp && \
@@ -45,8 +45,6 @@ RUN set -xe && \
     xmake f --root --static=false -m release -y -v --add-commit-hash="${ADD_COMMIT_HASH:-true}" && \
     xmake --root -v subconverter && \
     cp "$(find build -type f -name subconverter)" . && \
-    python3 -m ensurepip && \
-    python3 -m pip install gitpython && \
     python3 scripts/update_rules.py -c scripts/rules_config.conf
 
 # build final image
