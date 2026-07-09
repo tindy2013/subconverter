@@ -48,7 +48,7 @@ set -xe
 #g++ -o base/subconverter $(find CMakeFiles/subconverter.dir/src/ -name "*.o")  -static -lpcre2-8 -lyaml-cpp -L/usr/lib64 -lcurl -lmbedtls -lmbedcrypto -lmbedx509 -lz -l:quickjs/libquickjs.a -llibcron -O3 -s
 
 apk add git g++ build-base linux-headers cmake ninja-is-really-ninja pkgconf python3 py3-gitpython curl unzip p7zip xmake
-apk add zlib-dev zlib-static brotli-dev brotli-static zstd-dev zstd-static nghttp2-dev nghttp2-static
+apk add openssl-dev openssl-libs-static zlib-dev zlib-static brotli-dev brotli-static zstd-dev zstd-static nghttp2-dev nghttp2-static
 
 git config --global --add safe.directory '*'
 xmake f --root --static=true -m release -y -v --add-commit-hash="${ADD_COMMIT_HASH:-true}"

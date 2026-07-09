@@ -143,7 +143,7 @@ jobs:
       uses: msys2/setup-msys2@v2
       with:
         update: true
-        install: base-devel git mingw-w64-${{ matrix.env }}-gcc mingw-w64-${{ matrix.env }}-cmake mingw-w64-${{ matrix.env }}-zlib mingw-w64-${{ matrix.env }}-brotli mingw-w64-${{ matrix.env }}-zstd mingw-w64-${{ matrix.env }}-nghttp2 patch
+        install: base-devel git mingw-w64-${{ matrix.env }}-gcc mingw-w64-${{ matrix.env }}-cmake patch
         msystem: ${{ matrix.msystem }}
         path-type: inherit
     - name: Install xmake

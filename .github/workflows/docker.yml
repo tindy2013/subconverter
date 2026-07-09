@@ -1,12 +1,11 @@
 name: Publish Docker Image
-on: 
+on:
   push:
-    branches:
-      - '**'
+    branches: [ master ]
     tags:
       - '**'
 
-concurrency: 
+concurrency:
   group: ${{ github.ref }}-${{ github.workflow }}
   cancel-in-progress: true
 
@@ -33,7 +32,7 @@ jobs:
         run: |
           platform=${{ matrix.platform }}
           echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV    
-               
+
       - name: Checkout base
         uses: actions/checkout@v7
         with:
@@ -124,7 +123,7 @@ jobs:
         run: |
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
             $(printf '${{ env.REGISTRY_IMAGE }}@sha256:%s ' *)      
-    
+
       - name: Inspect image
         run: |
           docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:${{ steps.meta.outputs.version }}
